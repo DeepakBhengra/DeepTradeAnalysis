@@ -1,0 +1,37 @@
+{
+  "name": "pnb-15m-signal-engine",
+  "version": "1.0.0",
+  "description": "PNB NSE 15-minute strict signal engine using BB, RSI, and MACD",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:web": "npm run build --prefix web",
+    "build:all": "npm run build && npm run build:web",
+    "start": "node dist/main.js",
+    "start:api": "node dist/api/server.js",
+    "dev": "tsx src/main.ts",
+    "dev:api": "tsx src/api/server.ts",
+    "dev:web": "npm run dev --prefix web",
+    "dev:dashboard": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:dashboard:clean": "npx --yes kill-port 3001 5173 5174 && npm run dev:dashboard",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "backtest:morning": "tsx scripts/backtest-morning-decision.ts",
+    "backtest:dual-band": "tsx scripts/backtest-dual-band-deferral.ts",
+    "backtest:bb-trend": "tsx scripts/backtest-bb-trend.ts"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "kiteconnect": "^5.3.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.10.2",
+    "concurrently": "^9.1.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

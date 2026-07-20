@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+data/samco-ledger.json
+data/samco-settings.json
+data/samco-trade-log.json
+data/post-mortem/

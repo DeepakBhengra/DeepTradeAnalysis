@@ -1,0 +1,54 @@
+import type { DayScanStrategy } from "./backtest";
+import type { OrderSide } from "./paperTrading";
+
+export const DAY_ORDER_INITIAL_CASH = 300_000;
+export const ORDER_QUANTITY = 100;
+export const MAX_ENTRY_PRICE = 1900;
+
+export type DayOrderFillKind = "entry" | "exit";
+
+export interface DayOrderOpenPosition {
+  signalKey: string;
+  tradingSymbol: string;
+  symbol: string;
+  strategy: DayScanStrategy;
+  side: OrderSide;
+  quantity: number;
+  entryPrice: number;
+  entryTimeIst: string;
+}
+
+export interface DayOrderFill {
+  id: string;
+  kind: DayOrderFillKind;
+  signalKey: string;
+  tradingSymbol: string;
+  symbol: string;
+  strategy: DayScanStrategy;
+  side: OrderSide;
+  quantity: number;
+  price: number;
+  timeIst: string;
+  sessionIndex: number;
+  realizedPnL: number | null;
+}
+
+export interface DayOrderPortfolio {
+  cash: number;
+  openPositions: DayOrderOpenPosition[];
+  fills: DayOrderFill[];
+  realizedPnL: number;
+  skippedEntryKeys: string[];
+}
+
+export interface DayOrderPnLSummary {
+  cash: number;
+  deployedCapital: number;
+  equity: number;
+  unrealizedPnL: number;
+  realizedPnL: number;
+  totalPnL: number;
+  returnPct: number;
+}
+
+export type DayOrderSimStatus = "idle" | "running" | "complete";

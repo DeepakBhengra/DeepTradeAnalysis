@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --kite-bg: #ffffff;
+  --kite-surface: #ffffff;
+  --kite-border: #eeeeee;
+  --kite-text: #444444;
+  --kite-muted: #888888;
+  color-scheme: light;
+}
+
+.dark {
+  --kite-bg: #0d1117;
+  --kite-surface: #161b22;
+  --kite-border: #30363d;
+  --kite-text: #e6edf3;
+  --kite-muted: #8b949e;
+  color-scheme: dark;
+}
+
+@theme {
+  --color-kite-bg: var(--kite-bg);
+  --color-kite-surface: var(--kite-surface);
+  --color-kite-border: var(--kite-border);
+  --color-kite-text: var(--kite-text);
+  --color-kite-muted: var(--kite-muted);
+  --color-kite-green: #4caf50;
+  --color-kite-red: #df514c;
+  --color-kite-orange: #ff5722;
+  --color-kite-blue: #2196f3;
+  --color-kite-amber: #f59e0b;
+  --font-sans: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+@layer base {
+  body {
+    @apply m-0 min-w-[320px] bg-kite-bg text-kite-text font-sans antialiased;
+  }
+}

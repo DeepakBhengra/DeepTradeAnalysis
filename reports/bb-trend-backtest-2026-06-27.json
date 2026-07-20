@@ -1,0 +1,18 @@
+{
+  "generatedAt": "2026-06-27T07:24:33.769Z",
+  "symbol": "PNB",
+  "daysRequested": 50,
+  "summary": {
+    "tradingDays": 0,
+    "buySignals": 0,
+    "shortSignals": 0,
+    "holdDays": 0,
+    "targetsHit": 0,
+    "targetsMissed": 0,
+    "hitRatePct": null,
+    "avgProfitWhenHit": null,
+    "dateFrom": null,
+    "dateTo": null
+  },
+  "days": []
+}
