@@ -55,6 +55,14 @@ async function fetchJsonWithTimeout<T>(
   try {
     const response = await fetch(url, { signal: linked.signal });
     if (!response.ok) {
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        throw new Error(
+          response.status === 500
+            ? "Cannot reach the API server on port 3001. Restart with: npm run dev:dashboard (API + web), then retry."
+            : `Request failed: ${response.status}`,
+        );
+      }
       const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
       throw new Error(readApiErrorBody(body, `Request failed: ${response.status}`));
     }
@@ -226,7 +234,21 @@ async function fetchDayScanPayload<T>(
   url: string,
   signal?: AbortSignal,
 ): Promise<T> {
-  await assertApiReachable();
+  try {
+    await assertApiReachable();
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (
+      message.includes("Cannot reach the API server") ||
+      message.includes("Request failed: 500") ||
+      message.includes("timed out")
+    ) {
+      throw new Error(
+        "Cannot reach the API server on port 3001. Restart with: npm run dev:dashboard, ensure Kite is connected, then retry the scan.",
+      );
+    }
+    throw err;
+  }
 
   try {
     return await fetchJsonWithTimeout<T>(
@@ -242,7 +264,7 @@ async function fetchDayScanPayload<T>(
     const message = err instanceof Error ? err.message : String(err);
     if (message.includes("API route not found")) {
       throw new Error(
-        "Day scan API not available. Stop any old server on port 3001 and restart with: npm run dev:dashboard",
+        "Day scan API not available (missing deeppro/deepak route). Stop any old server on port 3001 and restart with: npm run dev:dashboard",
       );
     }
     throw err;
