@@ -3,7 +3,7 @@
   "interval": "15m",
   "rule": "deeppro",
   "study": "short_sell_square_off",
-  "generatedAtUtc": "2026-08-02T13:13:11Z",
+  "generatedAtUtc": "2026-08-02T13:39:35Z",
   "assumptions": {
     "side": "SELL (short)",
     "entryPrice": "event candle mid = (high + low) / 2",
@@ -11,6 +11,9 @@
     "bestSquareOff": "candle after entry with maximum short profit % before session end",
     "optimisticNote": "bestLow* fields use candle low (more optimistic fill)",
     "sessionEnd": "15:15",
+    "entryDeadlineIst": "14:00",
+    "minMacdHistDeltaPct": 0.01,
+    "qualityFilters": "Event before 14:00 IST and MACD hist \u0394 >= 0.01% of price \u2014 removes weak 0.08\u20130.25% same-day setups; keeps 0.30\u20130.70 / 0.75\u20132.0 rules.",
     "dataSourceNote": "Interim 15m history used because KITE_ACCESS_TOKEN is invalid in this environment. Re-run via Kite when token is available."
   },
   "window": {
@@ -19,11 +22,11 @@
     "to": "2026-07-31"
   },
   "summary": {
-    "signals": 20,
-    "positiveBestSquareOff": 18,
+    "signals": 12,
+    "positiveBestSquareOff": 12,
     "winRatePct": 100.0,
-    "avgBestProfitPct": 0.53,
-    "maxBestProfitPct": 2.49,
+    "avgBestProfitPct": 0.43,
+    "maxBestProfitPct": 0.8,
     "minBestProfitPct": 0.05
   },
   "trades": [
@@ -98,76 +101,6 @@
       "positive": true
     },
     {
-      "date": "16 Jun",
-      "dateKey": "2026-06-16",
-      "event": "15:15",
-      "eventKind": "stall_at_highs",
-      "eventRsi": 54.55,
-      "bbUpperProximity": {
-        "gapPct": 0.0942,
-        "signedGapPct": -0.0942,
-        "matchType": "close",
-        "price": 1805.0,
-        "bbLevel": 1806.7
-      },
-      "bbLowerProximity": {
-        "gapPct": 0.338,
-        "signedGapPct": -0.338,
-        "matchType": null,
-        "price": 1799.8,
-        "bbLevel": 1793.71
-      },
-      "sellPrice": 1802.4,
-      "sellClose": 1800.7,
-      "highlight": false,
-      "hasExitWindow": false,
-      "bestTimeIst": null,
-      "bestExitPrice": null,
-      "bestProfitPct": null,
-      "bestExitLow": null,
-      "bestLowTimeIst": null,
-      "bestLowProfitPct": null,
-      "eodTimeIst": null,
-      "eodExitPrice": null,
-      "eodProfitPct": null,
-      "positive": false
-    },
-    {
-      "date": "18 Jun",
-      "dateKey": "2026-06-18",
-      "event": "15:15",
-      "eventKind": "stall_at_highs",
-      "eventRsi": 72.12,
-      "bbUpperProximity": {
-        "gapPct": 0.0353,
-        "signedGapPct": 0.0353,
-        "matchType": "crossed",
-        "price": 1828.0,
-        "bbLevel": 1827.36
-      },
-      "bbLowerProximity": {
-        "gapPct": 0.5313,
-        "signedGapPct": -0.5313,
-        "matchType": null,
-        "price": 1822.5,
-        "bbLevel": 1812.8
-      },
-      "sellPrice": 1825.25,
-      "sellClose": 1824.8,
-      "highlight": false,
-      "hasExitWindow": false,
-      "bestTimeIst": null,
-      "bestExitPrice": null,
-      "bestProfitPct": null,
-      "bestExitLow": null,
-      "bestLowTimeIst": null,
-      "bestLowProfitPct": null,
-      "eodTimeIst": null,
-      "eodExitPrice": null,
-      "eodProfitPct": null,
-      "positive": false
-    },
-    {
       "date": "22 Jun",
       "dateKey": "2026-06-22",
       "event": "11:45",
@@ -203,111 +136,6 @@
       "positive": true
     },
     {
-      "date": "22 Jun",
-      "dateKey": "2026-06-22",
-      "event": "13:30",
-      "eventKind": "stall_at_highs",
-      "eventRsi": 73.74,
-      "bbUpperProximity": {
-        "gapPct": 0.0726,
-        "signedGapPct": -0.0726,
-        "matchType": "close",
-        "price": 1861.6,
-        "bbLevel": 1862.95
-      },
-      "bbLowerProximity": {
-        "gapPct": 1.2211,
-        "signedGapPct": -1.2211,
-        "matchType": null,
-        "price": 1857.7,
-        "bbLevel": 1835.0
-      },
-      "sellPrice": 1859.65,
-      "sellClose": 1859.0,
-      "highlight": false,
-      "hasExitWindow": true,
-      "bestTimeIst": "13:45",
-      "bestExitPrice": 1857.05,
-      "bestProfitPct": 0.14,
-      "bestExitLow": 1854.1,
-      "bestLowTimeIst": "13:45",
-      "bestLowProfitPct": 0.3,
-      "eodTimeIst": "15:15",
-      "eodExitPrice": 1863.55,
-      "eodProfitPct": -0.21,
-      "positive": true
-    },
-    {
-      "date": "23 Jun",
-      "dateKey": "2026-06-23",
-      "event": "10:30",
-      "eventKind": "stall_at_highs",
-      "eventRsi": 75.47,
-      "bbUpperProximity": {
-        "gapPct": 0.2959,
-        "signedGapPct": -0.2959,
-        "matchType": "close",
-        "price": 1893.9,
-        "bbLevel": 1899.5
-      },
-      "bbLowerProximity": {
-        "gapPct": 2.5034,
-        "signedGapPct": -2.5034,
-        "matchType": null,
-        "price": 1884.3,
-        "bbLevel": 1836.96
-      },
-      "sellPrice": 1889.1,
-      "sellClose": 1890.9,
-      "highlight": false,
-      "hasExitWindow": true,
-      "bestTimeIst": "15:15",
-      "bestExitPrice": 1866.25,
-      "bestProfitPct": 1.21,
-      "bestExitLow": 1862.3,
-      "bestLowTimeIst": "15:15",
-      "bestLowProfitPct": 1.42,
-      "eodTimeIst": "15:15",
-      "eodExitPrice": 1866.25,
-      "eodProfitPct": 1.21,
-      "positive": true
-    },
-    {
-      "date": "24 Jun",
-      "dateKey": "2026-06-24",
-      "event": "14:15",
-      "eventKind": "smi_exit_overbought",
-      "eventRsi": 59.43,
-      "bbUpperProximity": {
-        "gapPct": 0.2754,
-        "signedGapPct": -0.2754,
-        "matchType": "close",
-        "price": 1877.5,
-        "bbLevel": 1882.66
-      },
-      "bbLowerProximity": {
-        "gapPct": 0.4935,
-        "signedGapPct": -0.4935,
-        "matchType": null,
-        "price": 1874.4,
-        "bbLevel": 1865.15
-      },
-      "sellPrice": 1875.95,
-      "sellClose": 1875.0,
-      "highlight": false,
-      "hasExitWindow": true,
-      "bestTimeIst": "15:15",
-      "bestExitPrice": 1873.35,
-      "bestProfitPct": 0.14,
-      "bestExitLow": 1870.7,
-      "bestLowTimeIst": "15:15",
-      "bestLowProfitPct": 0.28,
-      "eodTimeIst": "15:15",
-      "eodExitPrice": 1873.35,
-      "eodProfitPct": 0.14,
-      "positive": true
-    },
-    {
       "date": "25 Jun",
       "dateKey": "2026-06-25",
       "event": "11:30",
@@ -329,7 +157,7 @@
       },
       "sellPrice": 1878.15,
       "sellClose": 1878.1,
-      "highlight": false,
+      "highlight": true,
       "hasExitWindow": true,
       "bestTimeIst": "13:45",
       "bestExitPrice": 1863.2,
@@ -518,41 +346,6 @@
       "positive": true
     },
     {
-      "date": "21 Jul",
-      "dateKey": "2026-07-21",
-      "event": "13:15",
-      "eventKind": "stall_at_highs",
-      "eventRsi": 77.44,
-      "bbUpperProximity": {
-        "gapPct": 0.1963,
-        "signedGapPct": -0.1963,
-        "matchType": "close",
-        "price": 1962.4,
-        "bbLevel": 1966.25
-      },
-      "bbLowerProximity": {
-        "gapPct": 0.735,
-        "signedGapPct": -0.735,
-        "matchType": null,
-        "price": 1960.1,
-        "bbLevel": 1945.68
-      },
-      "sellPrice": 1961.25,
-      "sellClose": 1961.9,
-      "highlight": false,
-      "hasExitWindow": true,
-      "bestTimeIst": "15:15",
-      "bestExitPrice": 1957.45,
-      "bestProfitPct": 0.19,
-      "bestExitLow": 1952.1,
-      "bestLowTimeIst": "15:15",
-      "bestLowProfitPct": 0.47,
-      "eodTimeIst": "15:15",
-      "eodExitPrice": 1957.45,
-      "eodProfitPct": 0.19,
-      "positive": true
-    },
-    {
       "date": "24 Jul",
       "dateKey": "2026-07-24",
       "event": "10:45",
@@ -655,76 +448,6 @@
       "eodTimeIst": "15:15",
       "eodExitPrice": 2002.05,
       "eodProfitPct": 0.56,
-      "positive": true
-    },
-    {
-      "date": "30 Jul",
-      "dateKey": "2026-07-30",
-      "event": "14:00",
-      "eventKind": "smi_cross",
-      "eventRsi": 45.73,
-      "bbUpperProximity": {
-        "gapPct": 0.2196,
-        "signedGapPct": -0.2196,
-        "matchType": "close",
-        "price": 2014.9,
-        "bbLevel": 2019.3
-      },
-      "bbLowerProximity": {
-        "gapPct": 0.1906,
-        "signedGapPct": -0.1906,
-        "matchType": "close",
-        "price": 2001.7,
-        "bbLevel": 1997.88
-      },
-      "sellPrice": 2008.3,
-      "sellClose": 2001.8,
-      "highlight": false,
-      "hasExitWindow": true,
-      "bestTimeIst": "14:15",
-      "bestExitPrice": 2001.65,
-      "bestProfitPct": 0.33,
-      "bestExitLow": 1996.7,
-      "bestLowTimeIst": "15:15",
-      "bestLowProfitPct": 0.58,
-      "eodTimeIst": "15:15",
-      "eodExitPrice": 2002.05,
-      "eodProfitPct": 0.31,
-      "positive": true
-    },
-    {
-      "date": "31 Jul",
-      "dateKey": "2026-07-31",
-      "event": "14:00",
-      "eventKind": "stall_at_highs",
-      "eventRsi": 88.47,
-      "bbUpperProximity": {
-        "gapPct": 0.3176,
-        "signedGapPct": -0.3176,
-        "matchType": null,
-        "price": 2042.5,
-        "bbLevel": 2048.99
-      },
-      "bbLowerProximity": {
-        "gapPct": 1.862,
-        "signedGapPct": -1.862,
-        "matchType": null,
-        "price": 2037.1,
-        "bbLevel": 1999.07
-      },
-      "sellPrice": 2039.8,
-      "sellClose": 2042.3,
-      "highlight": true,
-      "hasExitWindow": true,
-      "bestTimeIst": "15:15",
-      "bestExitPrice": 1989.0,
-      "bestProfitPct": 2.49,
-      "bestExitLow": 1966.9,
-      "bestLowTimeIst": "14:30",
-      "bestLowProfitPct": 3.57,
-      "eodTimeIst": "15:15",
-      "eodExitPrice": 1989.0,
-      "eodProfitPct": 2.49,
       "positive": true
     }
   ]

@@ -1,12 +1,7 @@
 {
   "symbol": "SUNPHARMA",
-  "generatedAtUtc": "2026-08-02T13:13:24Z",
+  "generatedAtUtc": "2026-08-02T13:39:35Z",
   "ranges": [
-    {
-      "label": "0.08 \u2013 0.25",
-      "min": 0.08,
-      "max": 0.25
-    },
     {
       "label": "0.30 \u2013 0.70",
       "min": 0.3,
@@ -32,107 +27,24 @@
       "from": "2026-06-04",
       "to": "2026-07-31"
     },
-    "totalTradable": 18,
-    "inRanges": 14,
-    "outsideRanges": 4,
+    "totalTradable": 12,
+    "inRanges": 7,
+    "outsideRanges": 5,
     "buckets": [
-      {
-        "profitRange": "0.08 \u2013 0.25",
-        "min": 0.08,
-        "max": 0.25,
-        "trades": 5,
-        "avgRsi": 69.97,
-        "bestBbUpperPct": 0.073,
-        "bestBbUpperMatch": "close",
-        "bestBbLowerPct": 0.493,
-        "bestBbLowerMatch": null,
-        "avgBbUpperPct": 0.224,
-        "avgBbLowerPct": 1.031,
-        "avgProfitPct": 0.15,
-        "primaryBestBbPct": 0.073,
-        "primaryBestBbSide": "upper",
-        "members": [
-          {
-            "date": "12 Jun",
-            "event": "12:45",
-            "eventRsi": 64.93,
-            "bbUpperPct": 0.3076,
-            "bbUpperMatch": null,
-            "bbLowerPct": 1.0442,
-            "bbLowerMatch": null,
-            "profitPct": 0.12,
-            "entryPrice": 1808.7,
-            "sqTime": "14:45",
-            "sqPrice": 1806.45
-          },
-          {
-            "date": "22 Jun",
-            "event": "11:45",
-            "eventRsi": 74.33,
-            "bbUpperPct": 0.2669,
-            "bbUpperMatch": "close",
-            "bbLowerPct": 1.6611,
-            "bbLowerMatch": null,
-            "profitPct": 0.14,
-            "entryPrice": 1851.35,
-            "sqTime": "12:00",
-            "sqPrice": 1848.85
-          },
-          {
-            "date": "22 Jun",
-            "event": "13:30",
-            "eventRsi": 73.74,
-            "bbUpperPct": 0.0726,
-            "bbUpperMatch": "close",
-            "bbLowerPct": 1.2211,
-            "bbLowerMatch": null,
-            "profitPct": 0.14,
-            "entryPrice": 1859.65,
-            "sqTime": "13:45",
-            "sqPrice": 1857.05
-          },
-          {
-            "date": "24 Jun",
-            "event": "14:15",
-            "eventRsi": 59.43,
-            "bbUpperPct": 0.2754,
-            "bbUpperMatch": "close",
-            "bbLowerPct": 0.4935,
-            "bbLowerMatch": null,
-            "profitPct": 0.14,
-            "entryPrice": 1875.95,
-            "sqTime": "15:15",
-            "sqPrice": 1873.35
-          },
-          {
-            "date": "21 Jul",
-            "event": "13:15",
-            "eventRsi": 77.44,
-            "bbUpperPct": 0.1963,
-            "bbUpperMatch": "close",
-            "bbLowerPct": 0.735,
-            "bbLowerMatch": null,
-            "profitPct": 0.19,
-            "entryPrice": 1961.25,
-            "sqTime": "15:15",
-            "sqPrice": 1957.45
-          }
-        ]
-      },
       {
         "profitRange": "0.30 \u2013 0.70",
         "min": 0.3,
         "max": 0.7,
-        "trades": 6,
-        "avgRsi": 64.2,
-        "bestBbUpperPct": 0.22,
-        "bestBbUpperMatch": "close",
-        "bestBbLowerPct": 0.191,
-        "bestBbLowerMatch": "close",
-        "avgBbUpperPct": 0.498,
-        "avgBbLowerPct": 1.641,
-        "avgProfitPct": 0.49,
-        "primaryBestBbPct": 0.22,
+        "trades": 5,
+        "avgRsi": 67.9,
+        "bestBbUpperPct": 0.315,
+        "bestBbUpperMatch": null,
+        "bestBbLowerPct": 0.875,
+        "bestBbLowerMatch": null,
+        "avgBbUpperPct": 0.554,
+        "avgBbLowerPct": 1.931,
+        "avgProfitPct": 0.52,
+        "primaryBestBbPct": 0.315,
         "primaryBestBbSide": "upper",
         "members": [
           {
@@ -199,19 +111,6 @@
             "entryPrice": 2013.35,
             "sqTime": "14:15",
             "sqPrice": 2001.65
-          },
-          {
-            "date": "30 Jul",
-            "event": "14:00",
-            "eventRsi": 45.73,
-            "bbUpperPct": 0.2196,
-            "bbUpperMatch": "close",
-            "bbLowerPct": 0.1906,
-            "bbLowerMatch": "close",
-            "profitPct": 0.33,
-            "entryPrice": 2008.3,
-            "sqTime": "14:15",
-            "sqPrice": 2001.65
           }
         ]
       },
@@ -219,31 +118,18 @@
         "profitRange": "0.75 \u2013 2.0",
         "min": 0.75,
         "max": 2.0,
-        "trades": 3,
-        "avgRsi": 63.6,
-        "bestBbUpperPct": 0.296,
-        "bestBbUpperMatch": "close",
+        "trades": 2,
+        "avgRsi": 57.67,
+        "bestBbUpperPct": 0.337,
+        "bestBbUpperMatch": null,
         "bestBbLowerPct": 0.327,
         "bestBbLowerMatch": null,
-        "avgBbUpperPct": 0.503,
-        "avgBbLowerPct": 1.462,
-        "avgProfitPct": 0.94,
-        "primaryBestBbPct": 0.296,
+        "avgBbUpperPct": 0.606,
+        "avgBbLowerPct": 0.941,
+        "avgProfitPct": 0.8,
+        "primaryBestBbPct": 0.337,
         "primaryBestBbSide": "upper",
         "members": [
-          {
-            "date": "23 Jun",
-            "event": "10:30",
-            "eventRsi": 75.47,
-            "bbUpperPct": 0.2959,
-            "bbUpperMatch": "close",
-            "bbLowerPct": 2.5034,
-            "bbLowerMatch": null,
-            "profitPct": 1.21,
-            "entryPrice": 1889.1,
-            "sqTime": "15:15",
-            "sqPrice": 1866.25
-          },
           {
             "date": "25 Jun",
             "event": "11:30",
@@ -281,6 +167,18 @@
         "eventRsi": 57.42
       },
       {
+        "date": "12 Jun",
+        "event": "12:45",
+        "profitPct": 0.12,
+        "eventRsi": 64.93
+      },
+      {
+        "date": "22 Jun",
+        "event": "11:45",
+        "profitPct": 0.14,
+        "eventRsi": 74.33
+      },
+      {
         "date": "02 Jul",
         "event": "12:00",
         "profitPct": 0.29,
@@ -291,12 +189,6 @@
         "event": "13:30",
         "profitPct": 0.05,
         "eventRsi": 72.99
-      },
-      {
-        "date": "31 Jul",
-        "event": "14:00",
-        "profitPct": 2.49,
-        "eventRsi": 88.47
       }
     ]
   },
@@ -308,94 +200,24 @@
       "from": "2026-06-04",
       "to": "2026-07-31"
     },
-    "totalTradable": 12,
-    "inRanges": 8,
-    "outsideRanges": 4,
+    "totalTradable": 3,
+    "inRanges": 3,
+    "outsideRanges": 0,
     "buckets": [
-      {
-        "profitRange": "0.08 \u2013 0.25",
-        "min": 0.08,
-        "max": 0.25,
-        "trades": 4,
-        "avgRsi": 29.44,
-        "bestBbUpperPct": 0.822,
-        "bestBbUpperMatch": null,
-        "bestBbLowerPct": 0.12,
-        "bestBbLowerMatch": "close",
-        "avgBbUpperPct": 0.962,
-        "avgBbLowerPct": 0.257,
-        "avgProfitPct": 0.14,
-        "primaryBestBbPct": 0.12,
-        "primaryBestBbSide": "lower",
-        "members": [
-          {
-            "date": "23 Jun",
-            "event": "14:30",
-            "eventRsi": 33.75,
-            "bbUpperPct": 0.8773,
-            "bbUpperMatch": null,
-            "bbLowerPct": 0.3679,
-            "bbLowerMatch": null,
-            "profitPct": 0.09,
-            "entryPrice": 1880.0,
-            "sqTime": "14:45",
-            "sqPrice": 1881.6
-          },
-          {
-            "date": "29 Jun",
-            "event": "14:45",
-            "eventRsi": 27.33,
-            "bbUpperPct": 1.2668,
-            "bbUpperMatch": null,
-            "bbLowerPct": 0.1203,
-            "bbLowerMatch": "close",
-            "profitPct": 0.15,
-            "entryPrice": 1871.95,
-            "sqTime": "15:00",
-            "sqPrice": 1874.8
-          },
-          {
-            "date": "10 Jul",
-            "event": "14:30",
-            "eventRsi": 32.35,
-            "bbUpperPct": 0.8218,
-            "bbUpperMatch": null,
-            "bbLowerPct": 0.2519,
-            "bbLowerMatch": "close",
-            "profitPct": 0.16,
-            "entryPrice": 1931.05,
-            "sqTime": "15:00",
-            "sqPrice": 1934.05
-          },
-          {
-            "date": "24 Jul",
-            "event": "13:30",
-            "eventRsi": 24.32,
-            "bbUpperPct": 0.8815,
-            "bbUpperMatch": null,
-            "bbLowerPct": 0.2897,
-            "bbLowerMatch": "close",
-            "profitPct": 0.15,
-            "entryPrice": 1940.35,
-            "sqTime": "14:00",
-            "sqPrice": 1943.2
-          }
-        ]
-      },
       {
         "profitRange": "0.30 \u2013 0.70",
         "min": 0.3,
         "max": 0.7,
-        "trades": 4,
-        "avgRsi": 26.7,
+        "trades": 3,
+        "avgRsi": 31.69,
         "bestBbUpperPct": 0.482,
         "bestBbUpperMatch": null,
-        "bestBbLowerPct": 0.051,
+        "bestBbLowerPct": 0.103,
         "bestBbLowerMatch": "close",
-        "avgBbUpperPct": 1.295,
-        "avgBbLowerPct": 0.185,
-        "avgProfitPct": 0.51,
-        "primaryBestBbPct": 0.051,
+        "avgBbUpperPct": 1.054,
+        "avgBbLowerPct": 0.229,
+        "avgProfitPct": 0.52,
+        "primaryBestBbPct": 0.103,
         "primaryBestBbSide": "lower",
         "members": [
           {
@@ -423,19 +245,6 @@
             "entryPrice": 1798.75,
             "sqTime": "14:30",
             "sqPrice": 1807.95
-          },
-          {
-            "date": "08 Jul",
-            "event": "14:15",
-            "eventRsi": 11.72,
-            "bbUpperPct": 2.0176,
-            "bbUpperMatch": null,
-            "bbLowerPct": 0.0513,
-            "bbLowerMatch": "close",
-            "profitPct": 0.48,
-            "entryPrice": 1879.25,
-            "sqTime": "15:15",
-            "sqPrice": 1888.35
           },
           {
             "date": "13 Jul",
@@ -470,31 +279,6 @@
         "members": []
       }
     ],
-    "outsideMembers": [
-      {
-        "date": "25 Jun",
-        "event": "13:45",
-        "profitPct": 0.29,
-        "eventRsi": 18.73
-      },
-      {
-        "date": "02 Jul",
-        "event": "14:45",
-        "profitPct": -0.06,
-        "eventRsi": 34.23
-      },
-      {
-        "date": "08 Jul",
-        "event": "15:00",
-        "profitPct": 0.06,
-        "eventRsi": 38.41
-      },
-      {
-        "date": "15 Jul",
-        "event": "14:45",
-        "profitPct": -0.06,
-        "eventRsi": 46.74
-      }
-    ]
+    "outsideMembers": []
   }
 }
