@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+import type { DayScanRuleVariant } from "../hooks/useVariantDayScan";
+import { DAY_SCAN_RULE_VARIANT_OPTIONS } from "../hooks/useVariantDayScan";
+
 interface DayScanRunControlsProps {
   date: string;
   onDateChange: (date: string) => void;
@@ -7,6 +10,8 @@ interface DayScanRunControlsProps {
   onRun: () => void;
   onStop: () => void;
   description: ReactNode;
+  ruleVariant?: DayScanRuleVariant;
+  onRuleVariantChange?: (variant: DayScanRuleVariant) => void;
 }
 
 export function DayScanRunControls({
@@ -16,6 +21,8 @@ export function DayScanRunControls({
   onRun,
   onStop,
   description,
+  ruleVariant,
+  onRuleVariantChange,
 }: DayScanRunControlsProps) {
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -30,6 +37,26 @@ export function DayScanRunControls({
             className="rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-sm text-kite-text disabled:opacity-50"
           />
         </label>
+        {ruleVariant != null && onRuleVariantChange != null && (
+          <label className="flex flex-col gap-1 text-xs text-kite-muted" htmlFor="dayscan-rule-variant">
+            Rule variant
+            <select
+              id="dayscan-rule-variant"
+              value={ruleVariant}
+              onChange={(event) =>
+                onRuleVariantChange(event.target.value as DayScanRuleVariant)
+              }
+              disabled={loading}
+              className="rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-sm text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {DAY_SCAN_RULE_VARIANT_OPTIONS.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <button
           type="button"
           onClick={onRun}

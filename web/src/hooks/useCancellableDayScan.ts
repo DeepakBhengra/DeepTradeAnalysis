@@ -17,6 +17,16 @@ export function useCancellableDayScan<T>(fetchScan: DayScanFetcher<T>) {
     abortRef.current?.abort();
   }, []);
 
+  const reset = useCallback(() => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setData(null);
+    setLoading(false);
+    setLoadingElapsedSec(0);
+    setError(null);
+    setInfo(null);
+  }, []);
+
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
@@ -60,13 +70,18 @@ export function useCancellableDayScan<T>(fetchScan: DayScanFetcher<T>) {
         setError(null);
         setInfo(null);
         const payload = await fetchScan(date, controller.signal);
-        if (controller.signal.aborted) {
+        if (controller.signal.aborted || abortRef.current !== controller) {
           return;
         }
         setData(payload);
       } catch (err) {
         if (err instanceof ScanStoppedError || controller.signal.aborted) {
-          setInfo("Scan stopped.");
+          if (abortRef.current === controller) {
+            setInfo("Scan stopped.");
+          }
+          return;
+        }
+        if (abortRef.current !== controller) {
           return;
         }
         const message = err instanceof Error ? err.message : String(err);
@@ -75,12 +90,12 @@ export function useCancellableDayScan<T>(fetchScan: DayScanFetcher<T>) {
       } finally {
         if (abortRef.current === controller) {
           abortRef.current = null;
+          setLoading(false);
         }
-        setLoading(false);
       }
     },
     [fetchScan],
   );
 
-  return { data, loading, loadingElapsedSec, error, info, run, stop };
+  return { data, loading, loadingElapsedSec, error, info, run, stop, reset };
 }
