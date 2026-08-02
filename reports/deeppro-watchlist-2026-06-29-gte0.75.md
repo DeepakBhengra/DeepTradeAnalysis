@@ -45,4 +45,5 @@
 
 - Same-day square-off only; no overnight holds.
 - Kite Connect historical 15m only — same deeppro engine as Post-Mortem / Day Scan.
+- Deeppro quality gates enabled (favor same-day SQ ≥ ~0.75%): SELL event 10:45–12:30 + RSI/BB rules; BUY stall/OS-exit + BB lower + event≤13:15.
 

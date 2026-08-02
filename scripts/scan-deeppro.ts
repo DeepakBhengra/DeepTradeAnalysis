@@ -311,6 +311,8 @@ async function main(): Promise<void> {
         `Peak SMI >= ${config.deeppro.minPeakSmi} in lookback`,
         "Upper Bollinger Band tagged in lookback",
         "MACD histogram declining on cross candle",
+        "Quality SELL gate: event 10:45–12:30, RSI≥67 (or low-RSI SMI-exit), BB upper gap≤1.75%",
+        "Quality BUY gate: stall_at_lows|smi_exit_oversold, event≤13:15, BB lower gap≤1.0%, RSI≤50 (≤60 if BB matched)",
       ],
     },
     chartPinkCircle: {
