@@ -2,6 +2,7 @@ import { config } from "../config.js";
 import { computeStochasticMomentum } from "../indicators/stochasticMomentum.js";
 import type {
   DeepakBbMatchType,
+  DeepakDecisionResult,
   DeepakTradeSignal,
   DeepproBbProximity,
   DeepproEventKind,
@@ -707,5 +708,46 @@ export function deepproSignalToTradeSignal(signal: DeepproSignal): DeepakTradeSi
     bbMatchType,
     profitTarget: 0,
     exit: null,
+  };
+}
+
+/** Adapt deeppro day signals into the Deepak decision shape used by dashboard/post-mortem. */
+export function evaluateDeepproDecision(
+  snapshots: IndicatorSnapshot[],
+  dateKey: string,
+): DeepakDecisionResult | null {
+  const day = evaluateDeepproDay(snapshots, dateKey);
+  if (day.signals.length === 0) {
+    return null;
+  }
+
+  const tradeSignals = day.signals.map(deepproSignalToTradeSignal);
+  const lastSignal = tradeSignals[tradeSignals.length - 1];
+  const lastSnapshot =
+    snapshots.find((snapshot) => {
+      const parts = getIstTimeParts(snapshot.timestamp);
+      return parts.dateKey === dateKey && formatIstTime(snapshot.timestamp) === lastSignal.timeIst;
+    }) ??
+    [...snapshots].reverse().find((snapshot) => {
+      const parts = getIstTimeParts(snapshot.timestamp);
+      return parts.dateKey === dateKey;
+    });
+
+  if (!lastSnapshot) {
+    return null;
+  }
+
+  return {
+    dateKey,
+    decision: lastSignal.side,
+    activeScenario: lastSignal.scenarioKey,
+    scenarioTrail: tradeSignals.map((signal) => ({
+      scenarioKey: signal.scenarioKey,
+      timeIst: signal.timeIst,
+      bbMatchType: signal.bbMatchType,
+    })),
+    signals: tradeSignals,
+    reasons: day.signals.flatMap((signal) => signal.reasons),
+    snapshot: lastSnapshot,
   };
 }

@@ -34,7 +34,7 @@ const subtitles: Record<AppWidget, string> = {
   deepakWatchPartyDayScan:
     "Run Deepak @ 10:15 entries with Deepak-2 watch-party stop-loss across 20 sector large-caps.",
   deepakPostMortem:
-    "Grade Deepak / Deepak-2 signals vs the session path for any NSE symbol and date.",
+    "Grade Deepak / Deepak-2 / Deeppro signals vs the session path for any NSE symbol and date.",
   dayScanSimulator:
     "Replay Deepak, Deepak-2, and Watch Party sector signals candle-by-candle from 09:15–15:00 IST.",
   dayOrderSimulator:
