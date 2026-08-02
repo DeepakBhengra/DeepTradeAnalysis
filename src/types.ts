@@ -191,6 +191,16 @@ export type DeepproEventKind =
   | "smi_exit_overbought"
   | "macd_bear_cross";
 
+export interface DeepproBbProximity {
+  /** Absolute gap % between price extreme and band (of close) */
+  gapPct: number;
+  /** Signed gap %: positive = outside/beyond band, negative = inside */
+  signedGapPct: number;
+  matchType: "crossed" | "close" | null;
+  price: number;
+  bbLevel: number;
+}
+
 export interface DeepproSignal {
   side: "SELL";
   rule: "deeppro";
@@ -204,7 +214,14 @@ export interface DeepproSignal {
   smi: number;
   smiSignal: number;
   peakSmi: number;
+  /** RSI at SMI cross candle */
   rsi: number;
+  /** RSI at event candle */
+  eventRsi: number;
+  /** BB upper proximity at event candle (high vs upper) */
+  bbUpperProximity: DeepproBbProximity;
+  /** BB lower proximity at event candle (low vs lower) */
+  bbLowerProximity: DeepproBbProximity;
   macdHistogram: number;
   reasons: string[];
 }

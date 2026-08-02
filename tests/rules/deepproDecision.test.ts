@@ -100,6 +100,11 @@ describe("evaluateDeepproSignals", () => {
     expect(result.signals[0].side).toBe("SELL");
     expect(result.signals[0].peakSmi).toBeGreaterThanOrEqual(70);
     expect(result.signals[0].timeIst).toMatch(/^\d{2}:\d{2}$/);
+    expect(Number.isFinite(result.signals[0].eventRsi)).toBe(true);
+    expect(Number.isFinite(result.signals[0].bbUpperProximity.gapPct)).toBe(true);
+    expect(Number.isFinite(result.signals[0].bbLowerProximity.gapPct)).toBe(true);
+    expect(result.signals[0].bbUpperProximity.price).toBeGreaterThan(0);
+    expect(result.signals[0].bbLowerProximity.price).toBeGreaterThan(0);
   });
 
   it("returns no signals on a quiet sideways day", () => {

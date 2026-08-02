@@ -82,6 +82,48 @@ def body_ratio(row) -> float:
     return abs(row["Close"] - row["Open"]) / rng
 
 
+def bb_upper_proximity(row) -> dict:
+    gap_abs = abs(row["High"] - row["bb_u"]) / abs(row["Close"]) * 100
+    signed = (row["High"] - row["bb_u"]) / abs(row["Close"]) * 100
+    if row["High"] >= row["bb_u"]:
+        match_type = "crossed"
+        gap = signed
+    elif gap_abs <= BB_CLOSE_PCT:
+        match_type = "close"
+        gap = gap_abs
+    else:
+        match_type = None
+        gap = gap_abs
+    return {
+        "gapPct": round(float(gap), 4),
+        "signedGapPct": round(float(signed), 4),
+        "matchType": match_type,
+        "price": round(float(row["High"]), 2),
+        "bbLevel": round(float(row["bb_u"]), 2),
+    }
+
+
+def bb_lower_proximity(row) -> dict:
+    gap_abs = abs(row["Low"] - row["bb_l"]) / abs(row["Close"]) * 100
+    signed = (row["bb_l"] - row["Low"]) / abs(row["Close"]) * 100
+    if row["Low"] <= row["bb_l"]:
+        match_type = "crossed"
+        gap = signed
+    elif gap_abs <= BB_CLOSE_PCT:
+        match_type = "close"
+        gap = gap_abs
+    else:
+        match_type = None
+        gap = gap_abs
+    return {
+        "gapPct": round(float(gap), 4),
+        "signedGapPct": round(float(signed), 4),
+        "matchType": match_type,
+        "price": round(float(row["Low"]), 2),
+        "bbLevel": round(float(row["bb_l"]), 2),
+    }
+
+
 def main() -> None:
     end = datetime.now()
     start = end - timedelta(days=55)
@@ -171,10 +213,13 @@ def main() -> None:
             event_kind = "stall_at_highs"
 
         t_idx = df.index.get_loc(event_time)
+        event_row = df.iloc[t_idx]
         fwd = df.iloc[t_idx : t_idx + 4]
         drop_pct = (
             (fwd.iloc[0]["Close"] - fwd["Low"].min()) / fwd.iloc[0]["Close"] * 100
         )
+        bb_upper = bb_upper_proximity(event_row)
+        bb_lower = bb_lower_proximity(event_row)
 
         signals.append(
             {
@@ -185,10 +230,14 @@ def main() -> None:
                 "side": "SELL",
                 "rule": "deeppro",
                 "close": round(float(cur["Close"]), 2),
+                "eventClose": round(float(event_row["Close"]), 2),
                 "peakSmi": round(peak_smi, 2),
                 "smi": round(float(cur["smi"]), 2),
                 "smiSignal": round(float(cur["smi_sig"]), 2),
                 "rsi": round(float(cur["rsi"]), 2),
+                "eventRsi": round(float(event_row["rsi"]), 2),
+                "bbUpperProximity": bb_upper,
+                "bbLowerProximity": bb_lower,
                 "macdHistogram": round(float(cur["hist"]), 4),
                 "forwardDropPct": round(float(drop_pct), 2),
                 "chartMatch": ts.strftime("%Y-%m-%d") == "2026-07-31",
@@ -240,13 +289,20 @@ def main() -> None:
     print(f"SUNPHARMA deeppro scan — last {len(trade_days)} trade days\n")
     print("Pink-circle reference (from chart): 2026-07-31 around 14:00 IST")
     print("  SMI cross 13:30 → stall 14:00 → dump/MACD×/SMI exit OB 14:15\n")
-    print(f"{'Date':<12} {'Cross':<7} {'Event':<7} {'Kind':<22} {'PeakSMI':>8} {'Drop%':>7}")
-    print("-" * 72)
+    print(
+        f"{'Date':<12} {'Event':<7} {'RSI':>7} {'BBup%':>8} {'BBlo%':>8} "
+        f"{'UpMatch':<8} {'LoMatch':<8} {'Drop%':>7}"
+    )
+    print("-" * 84)
     for row in signals:
         mark = "  <-- chart pink" if row["chartMatch"] else ""
+        up = row["bbUpperProximity"]
+        lo = row["bbLowerProximity"]
         print(
-            f"{row['date']:<12} {row['crossTimeIst']:<7} {row['eventTimeIst']:<7} "
-            f"{row['eventKind']:<22} {row['peakSmi']:8.1f} {row['forwardDropPct']:7.2f}{mark}"
+            f"{row['date']:<12} {row['eventTimeIst']:<7} {row['eventRsi']:7.2f} "
+            f"{up['gapPct']:8.3f} {lo['gapPct']:8.3f} "
+            f"{str(up['matchType'] or '-'):<8} {str(lo['matchType'] or '-'):<8} "
+            f"{row['forwardDropPct']:7.2f}{mark}"
         )
     print(f"\nMatches: {len(signals)}")
     print(f"Wrote {OUT_PATH}")

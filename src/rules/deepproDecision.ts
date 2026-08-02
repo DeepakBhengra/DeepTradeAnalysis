@@ -1,6 +1,7 @@
 import { config } from "../config.js";
 import { computeStochasticMomentum } from "../indicators/stochasticMomentum.js";
 import type {
+  DeepproBbProximity,
   DeepproSignal,
   DeepproScanResult,
   IndicatorSnapshot,
@@ -10,7 +11,66 @@ import {
   getIstTimeParts,
   isWithinIstSessionWindow,
 } from "../utils/marketTime.js";
-import { classifyBbTopMatch } from "./bollingerUtils.js";
+import {
+  bbMatchGapPct,
+  classifyBbBottomMatch,
+  classifyBbTopMatch,
+  pctDistance,
+} from "./bollingerUtils.js";
+
+function buildBbUpperProximity(snapshot: IndicatorSnapshot): DeepproBbProximity {
+  const matchType = classifyBbTopMatch(
+    snapshot.bollinger.upper,
+    snapshot.high,
+    snapshot.close,
+  );
+  const gapPct = matchType
+    ? bbMatchGapPct(
+        matchType,
+        "top",
+        snapshot.bollinger.upper,
+        snapshot.high,
+        snapshot.close,
+      )
+    : pctDistance(snapshot.bollinger.upper, snapshot.high, snapshot.close);
+  const signedGapPct =
+    ((snapshot.high - snapshot.bollinger.upper) / snapshot.close) * 100;
+
+  return {
+    gapPct,
+    signedGapPct,
+    matchType,
+    price: snapshot.high,
+    bbLevel: snapshot.bollinger.upper,
+  };
+}
+
+function buildBbLowerProximity(snapshot: IndicatorSnapshot): DeepproBbProximity {
+  const matchType = classifyBbBottomMatch(
+    snapshot.bollinger.lower,
+    snapshot.low,
+    snapshot.close,
+  );
+  const gapPct = matchType
+    ? bbMatchGapPct(
+        matchType,
+        "bottom",
+        snapshot.bollinger.lower,
+        snapshot.low,
+        snapshot.close,
+      )
+    : pctDistance(snapshot.bollinger.lower, snapshot.low, snapshot.close);
+  const signedGapPct =
+    ((snapshot.bollinger.lower - snapshot.low) / snapshot.close) * 100;
+
+  return {
+    gapPct,
+    signedGapPct,
+    matchType,
+    price: snapshot.low,
+    bbLevel: snapshot.bollinger.lower,
+  };
+}
 
 function isUsableSnapshot(snapshot: IndicatorSnapshot): boolean {
   return (
@@ -164,18 +224,20 @@ export function evaluateDeepproSignals(
       continue;
     }
 
-    let eventTimeIst = formatIstTime(snapshot.timestamp);
+    let eventIndex = index;
     let eventKind: DeepproSignal["eventKind"] = "smi_cross";
     let bestStallRatio = Number.POSITIVE_INFINITY;
+    let bestStallIndex: number | null = null;
     let swingHigh = Number.NEGATIVE_INFINITY;
     for (let i = lookbackFrom; i <= index; i++) {
       swingHigh = Math.max(swingHigh, snapshots[i].high);
     }
 
     for (let j = 1; j <= 3 && index + j < snapshots.length; j++) {
-      const later = snapshots[index + j];
-      const laterSmi = smiSeries[index + j];
-      const earlierSmi = smiSeries[index + j - 1];
+      const laterIndex = index + j;
+      const later = snapshots[laterIndex];
+      const laterSmi = smiSeries[laterIndex];
+      const earlierSmi = smiSeries[laterIndex - 1];
       if (!later || !laterSmi || !earlierSmi) {
         break;
       }
@@ -198,7 +260,8 @@ export function evaluateDeepproSignals(
         );
       if (stall && ratio <= bestStallRatio) {
         bestStallRatio = ratio;
-        eventTimeIst = formatIstTime(later.timestamp);
+        bestStallIndex = laterIndex;
+        eventIndex = laterIndex;
         eventKind = "stall_at_highs";
       }
 
@@ -206,27 +269,32 @@ export function evaluateDeepproSignals(
         const exitOb =
           earlierSmi.smi >= overboughtLevel && laterSmi.smi < overboughtLevel;
         if (exitOb && laterSmi.smi < laterSmi.signal) {
-          eventTimeIst = formatIstTime(later.timestamp);
+          eventIndex = laterIndex;
           eventKind = "smi_exit_overbought";
           continue;
         }
 
         const macdCross =
-          snapshots[index + j - 1].macd.macdLine >=
-            snapshots[index + j - 1].macd.signalLine &&
+          snapshots[laterIndex - 1].macd.macdLine >=
+            snapshots[laterIndex - 1].macd.signalLine &&
           later.macd.macdLine < later.macd.signalLine;
         if (macdCross) {
-          eventTimeIst = formatIstTime(later.timestamp);
+          eventIndex = laterIndex;
           eventKind = "macd_bear_cross";
         }
       }
     }
 
     // Prefer most doji-like stall near highs when present (chart pink annotation).
-    if (bestStallRatio !== Number.POSITIVE_INFINITY) {
-      // eventTimeIst / eventKind already hold the best stall
+    if (bestStallIndex !== null) {
+      eventIndex = bestStallIndex;
       eventKind = "stall_at_highs";
     }
+
+    const eventSnapshot = snapshots[eventIndex];
+    const eventTimeIst = formatIstTime(eventSnapshot.timestamp);
+    const bbUpperProximity = buildBbUpperProximity(eventSnapshot);
+    const bbLowerProximity = buildBbLowerProximity(eventSnapshot);
 
     signals.push({
       side: "SELL",
@@ -240,6 +308,9 @@ export function evaluateDeepproSignals(
       smiSignal: cur.signal,
       peakSmi: peak,
       rsi: snapshot.rsi,
+      eventRsi: eventSnapshot.rsi,
+      bbUpperProximity,
+      bbLowerProximity,
       macdHistogram: snapshot.macd.histogram,
       reasons: [
         `Stch Mtm(${config.deeppro.smi.lengthK},${config.deeppro.smi.lengthD},${config.deeppro.smi.lengthEma}) bearish cross from overbought`,
@@ -247,6 +318,9 @@ export function evaluateDeepproSignals(
         "Upper Bollinger Band tagged in lookback",
         "MACD histogram declining",
         `Event ${eventKind} at ${eventTimeIst} IST`,
+        `Event RSI ${eventSnapshot.rsi.toFixed(2)}`,
+        `BB upper gap ${bbUpperProximity.gapPct.toFixed(3)}% (${bbUpperProximity.matchType ?? "none"})`,
+        `BB lower gap ${bbLowerProximity.gapPct.toFixed(3)}% (${bbLowerProximity.matchType ?? "none"})`,
       ],
     });
   }

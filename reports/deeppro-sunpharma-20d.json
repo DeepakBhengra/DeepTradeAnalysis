@@ -56,10 +56,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 1931.7,
+      "eventClose": 1931.7,
       "peakSmi": 80.78,
       "smi": 71.82,
       "smiSignal": 74.27,
       "rsi": 69.4,
+      "eventRsi": 69.4,
+      "bbUpperProximity": {
+        "gapPct": 0.3421,
+        "signedGapPct": -0.3421,
+        "matchType": null,
+        "price": 1947.0,
+        "bbLevel": 1953.61
+      },
+      "bbLowerProximity": {
+        "gapPct": 3.9001,
+        "signedGapPct": -3.9001,
+        "matchType": null,
+        "price": 1930.5,
+        "bbLevel": 1855.16
+      },
       "macdHistogram": 5.9539,
       "forwardDropPct": 0.54,
       "chartMatch": false
@@ -72,10 +88,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 1957.1,
+      "eventClose": 1956.4,
       "peakSmi": 74.19,
       "smi": 66.88,
       "smiSignal": 68.75,
       "rsi": 61.17,
+      "eventRsi": 70.68,
+      "bbUpperProximity": {
+        "gapPct": 0.3145,
+        "signedGapPct": -0.3145,
+        "matchType": null,
+        "price": 1958.4,
+        "bbLevel": 1964.55
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.9172,
+        "signedGapPct": -0.9172,
+        "matchType": null,
+        "price": 1955.5,
+        "bbLevel": 1937.56
+      },
       "macdHistogram": 0.2856,
       "forwardDropPct": 0.33,
       "chartMatch": false
@@ -88,10 +120,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 1961.9,
+      "eventClose": 1961.9,
       "peakSmi": 81.18,
       "smi": 72.37,
       "smiSignal": 75.68,
       "rsi": 79.25,
+      "eventRsi": 77.44,
+      "bbUpperProximity": {
+        "gapPct": 0.1963,
+        "signedGapPct": -0.1963,
+        "matchType": "close",
+        "price": 1962.4,
+        "bbLevel": 1966.25
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.735,
+        "signedGapPct": -0.735,
+        "matchType": null,
+        "price": 1960.1,
+        "bbLevel": 1945.68
+      },
       "macdHistogram": 0.7092,
       "forwardDropPct": 0.24,
       "chartMatch": false
@@ -104,10 +152,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 1951.3,
+      "eventClose": 1948.5,
       "peakSmi": 70.23,
       "smi": 53.56,
       "smiSignal": 60.52,
       "rsi": 68.3,
+      "eventRsi": 60.38,
+      "bbUpperProximity": {
+        "gapPct": 0.6323,
+        "signedGapPct": -0.6323,
+        "matchType": null,
+        "price": 1950.3,
+        "bbLevel": 1962.62
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.8755,
+        "signedGapPct": -0.8755,
+        "matchType": null,
+        "price": 1947.2,
+        "bbLevel": 1930.14
+      },
       "macdHistogram": 1.1162,
       "forwardDropPct": 0.29,
       "chartMatch": false
@@ -120,10 +184,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 1971.7,
+      "eventClose": 1971.1,
       "peakSmi": 89.1,
       "smi": 84.02,
       "smiSignal": 84.88,
       "rsi": 68.6,
+      "eventRsi": 72.99,
+      "bbUpperProximity": {
+        "gapPct": 0.3145,
+        "signedGapPct": -0.3145,
+        "matchType": null,
+        "price": 1972.3,
+        "bbLevel": 1978.5
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.6955,
+        "signedGapPct": -1.6955,
+        "matchType": null,
+        "price": 1968.3,
+        "bbLevel": 1934.88
+      },
       "macdHistogram": 2.2708,
       "forwardDropPct": 0.27,
       "chartMatch": false
@@ -136,10 +216,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 2012.1,
+      "eventClose": 2013.4,
       "peakSmi": 81.79,
       "smi": 72.11,
       "smiSignal": 74.82,
       "rsi": 60.17,
+      "eventRsi": 62.19,
+      "bbUpperProximity": {
+        "gapPct": 0.3232,
+        "signedGapPct": -0.3232,
+        "matchType": null,
+        "price": 2016.0,
+        "bbLevel": 2022.51
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.1383,
+        "signedGapPct": -1.1383,
+        "matchType": null,
+        "price": 2010.7,
+        "bbLevel": 1987.78
+      },
       "macdHistogram": 0.6279,
       "forwardDropPct": 0.58,
       "chartMatch": false
@@ -152,10 +248,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 2001.8,
+      "eventClose": 2001.8,
       "peakSmi": 81.79,
       "smi": 20.86,
       "smiSignal": 41.38,
       "rsi": 45.73,
+      "eventRsi": 45.73,
+      "bbUpperProximity": {
+        "gapPct": 0.2196,
+        "signedGapPct": -0.2196,
+        "matchType": "close",
+        "price": 2014.9,
+        "bbLevel": 2019.3
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.1906,
+        "signedGapPct": -0.1906,
+        "matchType": "close",
+        "price": 2001.7,
+        "bbLevel": 1997.88
+      },
       "macdHistogram": -1.2257,
       "forwardDropPct": 0.09,
       "chartMatch": false
@@ -168,10 +280,26 @@
       "side": "SELL",
       "rule": "deeppro",
       "close": 2041.9,
+      "eventClose": 2042.3,
       "peakSmi": 87.87,
       "smi": 84.24,
       "smiSignal": 84.58,
       "rsi": 79.58,
+      "eventRsi": 88.47,
+      "bbUpperProximity": {
+        "gapPct": 0.3176,
+        "signedGapPct": -0.3176,
+        "matchType": null,
+        "price": 2042.5,
+        "bbLevel": 2048.99
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.862,
+        "signedGapPct": -1.862,
+        "matchType": null,
+        "price": 2037.1,
+        "bbLevel": 1999.07
+      },
       "macdHistogram": 2.4458,
       "forwardDropPct": 3.69,
       "chartMatch": true
