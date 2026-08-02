@@ -403,13 +403,22 @@ export const config = {
     },
     /** SMI overbought threshold (Kite shaded zone ~40) — SELL path */
     overboughtLevel: 40,
-    /** Require a deep overbought peak in lookback (chart-quality filter) */
-    minPeakSmi: 70,
+    /**
+     * Require a deep overbought peak in lookback (chart-quality filter).
+     * 65 (not 70) absorbs typical Kite vs chart/Yahoo 15m OHLC SMI drift of ~5–7 pts
+     * so pink-circle days like SUNPHARMA 25/29 Jun still qualify on live Kite data.
+     */
+    minPeakSmi: 65,
     /** SMI oversold threshold (mirror of overbought) — BUY path */
     oversoldLevel: -40,
     /** Require a deep oversold trough in lookback (mirror of minPeakSmi) */
-    maxTroughSmi: -70,
-    lookbackBars: 8,
+    maxTroughSmi: -65,
+    /**
+     * Bars used for peak/trough SMI + Bollinger tag checks (~4h on 15m).
+     * Longer than a single morning burst so the same impulse's deep OB/OS counts
+     * even when the SMI cross prints a few bars later.
+     */
+    lookbackBars: 16,
     /** Max body/range to treat a post-cross candle as stall/doji */
     stallBodyRatioMax: 0.35,
     /**

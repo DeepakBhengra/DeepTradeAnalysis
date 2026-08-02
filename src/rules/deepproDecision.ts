@@ -167,11 +167,33 @@ function isBeforeEntryDeadline(timeIst: string, deadlineIst: string): boolean {
   return parseHmToMinutes(timeIst) < parseHmToMinutes(deadlineIst);
 }
 
+/** Keep one signal per side+event candle (multiple SMI crosses can share one stall). */
+function dedupeDeepproSignals(signals: DeepproSignal[]): DeepproSignal[] {
+  const byEvent = new Map<string, DeepproSignal>();
+  for (const signal of signals) {
+    const key = `${signal.side}|${signal.eventTimeIst}`;
+    const existing = byEvent.get(key);
+    if (!existing) {
+      byEvent.set(key, signal);
+      continue;
+    }
+    // Prefer the deeper exhaustion peak/trough when two crosses map to one event.
+    const existingDepth = Math.abs(existing.peakSmi);
+    const nextDepth = Math.abs(signal.peakSmi);
+    if (nextDepth > existingDepth) {
+      byEvent.set(key, signal);
+    }
+  }
+  return [...byEvent.values()].sort((left, right) =>
+    left.timeIst.localeCompare(right.timeIst),
+  );
+}
+
 /**
  * deeppro — pink-circle pattern from Stch Mtm exhaustion reversals:
  *
  * 1. Stochastic Momentum (10,3,3) bearish cross while in/from overbought (SMI >= 40)
- * 2. Deep overbought peak in lookback (default peak SMI >= 70)
+ * 2. Deep overbought peak in lookback (default peak SMI >= 65)
  * 3. Upper Bollinger Band tagged in the same lookback
  * 4. MACD histogram declining on the cross candle (momentum fade)
  * 5. Meaningful MACD hist fade vs price (drops weak 0.08–0.25% setups)
@@ -396,7 +418,7 @@ export function evaluateDeepproSignals(
     rule: "deeppro",
     sessionStart,
     sessionEnd,
-    signals,
+    signals: dedupeDeepproSignals(signals),
   };
 }
 
@@ -404,7 +426,7 @@ export function evaluateDeepproSignals(
  * deeppro BUY — mirror of the short exhaustion pattern:
  *
  * 1. Stochastic Momentum (10,3,3) bullish cross while in/from oversold (SMI <= -40)
- * 2. Deep oversold trough in lookback (default trough SMI <= -70)
+ * 2. Deep oversold trough in lookback (default trough SMI <= -65)
  * 3. Lower Bollinger Band tagged in the same lookback
  * 4. MACD histogram rising on the cross candle (momentum recovery)
  * 5. Meaningful MACD hist rise vs price (drops weak 0.08–0.25% setups)
@@ -627,7 +649,7 @@ export function evaluateDeepproBuySignals(
     rule: "deeppro",
     sessionStart,
     sessionEnd,
-    signals,
+    signals: dedupeDeepproSignals(signals),
   };
 }
 

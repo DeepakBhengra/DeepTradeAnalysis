@@ -101,7 +101,7 @@ describe("evaluateDeepproSignals", () => {
     expect(result.rule).toBe("deeppro");
     expect(result.signals.length).toBeGreaterThanOrEqual(1);
     expect(result.signals[0].side).toBe("SELL");
-    expect(result.signals[0].peakSmi).toBeGreaterThanOrEqual(70);
+    expect(result.signals[0].peakSmi).toBeGreaterThanOrEqual(65);
     expect(result.signals[0].timeIst).toMatch(/^\d{2}:\d{2}$/);
     expect(Number.isFinite(result.signals[0].eventRsi)).toBe(true);
     expect(Number.isFinite(result.signals[0].bbUpperProximity.gapPct)).toBe(true);
