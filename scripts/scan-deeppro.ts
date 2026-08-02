@@ -2,7 +2,7 @@ import "../src/loadEnv.js";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { collectTradingDates } from "../src/backtest/runDeepakBacktest.js";
-import { resolveDashboardSymbol } from "../src/config.js";
+import { config, resolveDashboardSymbol } from "../src/config.js";
 import { fetchPnbCandles } from "../src/data/pnbFeed.js";
 import { buildIndicatorSnapshots } from "../src/indicators/compute.js";
 import { evaluateDeepproAcrossDays } from "../src/rules/deepproDecision.js";
@@ -302,15 +302,17 @@ async function main(): Promise<void> {
       source: `Kite Connect historical (${dashboardSymbol.exchange}:${dashboardSymbol.tradingSymbol}, 15minute)`,
     },
     definition: {
-      smi: "Stch Mtm(10,3,3) William Blau SMI",
-      overboughtLevel: 40,
-      minPeakSmi: 70,
-      lookbackBars: 8,
+      smi: `Stch Mtm(${config.deeppro.smi.lengthK},${config.deeppro.smi.lengthD},${config.deeppro.smi.lengthEma}) William Blau SMI`,
+      overboughtLevel: config.deeppro.overboughtLevel,
+      minPeakSmi: config.deeppro.minPeakSmi,
+      lookbackBars: config.deeppro.lookbackBars,
       requires: [
         "SMI bearish cross from overbought",
-        "Peak SMI >= 70 in lookback",
+        `Peak SMI >= ${config.deeppro.minPeakSmi} in lookback`,
         "Upper Bollinger Band tagged in lookback",
         "MACD histogram declining on cross candle",
+        "Quality SELL gate: event 10:45–12:30, RSI≥67 (or low-RSI SMI-exit), BB upper gap≤1.75%",
+        "Quality BUY gate: stall_at_lows|smi_exit_oversold, event≤13:15, BB lower gap≤1.0%, RSI≤50 (≤60 if BB matched)",
       ],
     },
     chartPinkCircle: {

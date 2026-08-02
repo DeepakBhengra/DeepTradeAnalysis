@@ -3,8 +3,43 @@ import { buildIndicatorSnapshots } from "../../src/indicators/compute.js";
 import {
   evaluateDeepproBuySignals,
   evaluateDeepproSignals,
+  passesDeepproBuyQuality,
+  passesDeepproSellQuality,
 } from "../../src/rules/deepproDecision.js";
-import type { Candle } from "../../src/types.js";
+import type { Candle, DeepproSignal } from "../../src/types.js";
+
+function stubSignal(
+  overrides: Partial<DeepproSignal> &
+    Pick<DeepproSignal, "side" | "eventTimeIst" | "eventKind" | "eventRsi">,
+): DeepproSignal {
+  return {
+    rule: "deeppro",
+    dateKey: "2026-06-29",
+    timeIst: overrides.eventTimeIst,
+    price: 100,
+    smi: 50,
+    smiSignal: 55,
+    peakSmi: overrides.side === "SELL" ? 80 : -80,
+    rsi: overrides.eventRsi,
+    bbUpperProximity: {
+      gapPct: 0.5,
+      signedGapPct: -0.5,
+      matchType: null,
+      price: 101,
+      bbLevel: 101.5,
+    },
+    bbLowerProximity: {
+      gapPct: 1.5,
+      signedGapPct: -1.5,
+      matchType: null,
+      price: 99,
+      bbLevel: 97.5,
+    },
+    macdHistogram: 1,
+    reasons: [],
+    ...overrides,
+  };
+}
 
 function istCandle(
   dateKey: string,
@@ -54,31 +89,43 @@ function buildRisingThenDumpDay(dateKey: string): Candle[] {
   ] as const;
 
   let price = 2000;
+  let peakHigh = 0;
   for (let i = 0; i < times.length; i++) {
     const [hour, minute] = times[i];
-    if (i <= 16) {
-      // push higher into overbought / upper BB
+    // Compress exhaustion into the quality SELL window (10:45–12:30).
+    if (i <= 8) {
+      // push higher into overbought / upper BB through ~11:15
       const open = price;
       const close = price + 3.5;
+      const high = close + 1.5;
+      peakHigh = Math.max(peakHigh, high);
       candles.push(
-        istCandle(dateKey, hour, minute, open, close + 1.5, open - 0.5, close),
+        istCandle(dateKey, hour, minute, open, high, open - 0.5, close),
       );
       price = close;
-    } else if (i === 17) {
-      // cross / rollover bar
+    } else if (i === 9) {
+      // cross / rollover bar ~11:30
       const open = price;
       const close = price - 1;
       candles.push(
         istCandle(dateKey, hour, minute, open, open + 1, close - 0.5, close),
       );
       price = close;
-    } else if (i === 18) {
-      // stall / doji near highs (must stay before entryDeadlineIst 14:00)
+    } else if (i === 10) {
+      // stall / doji near highs ~11:45 — extend high so BB upper gap clears quality max
       candles.push(
-        istCandle(dateKey, hour, minute, price, price + 0.4, price - 1.2, price + 0.05),
+        istCandle(
+          dateKey,
+          hour,
+          minute,
+          price,
+          peakHigh + 5,
+          price - 1.2,
+          price + 0.05,
+        ),
       );
     } else {
-      // dump (incl. 14:00+) — late bars must not look like stall/doji
+      // dump — late bars must not look like stall/doji
       const open = price;
       const close = price - 18;
       candles.push(
@@ -101,7 +148,7 @@ describe("evaluateDeepproSignals", () => {
     expect(result.rule).toBe("deeppro");
     expect(result.signals.length).toBeGreaterThanOrEqual(1);
     expect(result.signals[0].side).toBe("SELL");
-    expect(result.signals[0].peakSmi).toBeGreaterThanOrEqual(70);
+    expect(result.signals[0].peakSmi).toBeGreaterThanOrEqual(65);
     expect(result.signals[0].timeIst).toMatch(/^\d{2}:\d{2}$/);
     expect(Number.isFinite(result.signals[0].eventRsi)).toBe(true);
     expect(Number.isFinite(result.signals[0].bbUpperProximity.gapPct)).toBe(true);
@@ -137,22 +184,23 @@ describe("evaluateDeepproSignals", () => {
     let price = 1900;
     for (let i = 0; i < times.length; i++) {
       const [hour, minute] = times[i];
-      if (i <= 16) {
+      // Compress bounce setup into the quality BUY window (≤13:15).
+      if (i <= 8) {
         const open = price;
         const close = price - 3.2;
         candles.push(
           istCandle(dateKey, hour, minute, open, open + 0.5, close - 1.5, close),
         );
         price = close;
-      } else if (i === 17) {
+      } else if (i === 9) {
         const open = price;
         const close = price + 1;
         candles.push(
           istCandle(dateKey, hour, minute, open, close + 0.5, open - 1, close),
         );
         price = close;
-      } else if (i === 18) {
-        // stall at lows before entryDeadlineIst 14:00
+      } else if (i === 10) {
+        // stall at lows ~11:45
         candles.push(
           istCandle(dateKey, hour, minute, price, price + 1.2, price - 0.4, price + 0.05),
         );
@@ -247,5 +295,121 @@ describe("evaluateDeepproSignals", () => {
     const snapshots = buildIndicatorSnapshots(candles);
     const result = evaluateDeepproSignals(snapshots, dateKey);
     expect(result.signals).toHaveLength(0);
+  });
+
+  it("applies SELL quality gate for ≥0.75% favoring setups", () => {
+    expect(
+      passesDeepproSellQuality(
+        stubSignal({
+          side: "SELL",
+          eventTimeIst: "11:30",
+          eventKind: "stall_at_highs",
+          eventRsi: 68,
+          bbUpperProximity: {
+            gapPct: 0.7,
+            signedGapPct: -0.7,
+            matchType: null,
+            price: 100,
+            bbLevel: 100.7,
+          },
+        }),
+      ),
+    ).toBe(true);
+
+    // Too late for quality window
+    expect(
+      passesDeepproSellQuality(
+        stubSignal({
+          side: "SELL",
+          eventTimeIst: "13:00",
+          eventKind: "stall_at_highs",
+          eventRsi: 70,
+        }),
+      ),
+    ).toBe(false);
+
+    // Low-RSI SMI-exit exception (DIVISLAB-style)
+    expect(
+      passesDeepproSellQuality(
+        stubSignal({
+          side: "SELL",
+          eventTimeIst: "11:45",
+          eventKind: "smi_exit_overbought",
+          eventRsi: 41,
+          bbUpperProximity: {
+            gapPct: 0.75,
+            signedGapPct: -0.75,
+            matchType: null,
+            price: 100,
+            bbLevel: 100.8,
+          },
+          bbLowerProximity: {
+            gapPct: 0.22,
+            signedGapPct: 0.22,
+            matchType: "close",
+            price: 99,
+            bbLevel: 99.2,
+          },
+        }),
+      ),
+    ).toBe(true);
+  });
+
+  it("applies BUY quality gate for ≥0.75% favoring setups", () => {
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "10:30",
+          eventKind: "stall_at_lows",
+          eventRsi: 33,
+          bbLowerProximity: {
+            gapPct: 0.37,
+            signedGapPct: 0.37,
+            matchType: null,
+            price: 100,
+            bbLevel: 99.6,
+          },
+        }),
+      ),
+    ).toBe(true);
+
+    // Plain SMI cross is not enough
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "10:30",
+          eventKind: "smi_cross",
+          eventRsi: 25,
+          bbLowerProximity: {
+            gapPct: 0.2,
+            signedGapPct: 0.2,
+            matchType: "close",
+            price: 100,
+            bbLevel: 99.8,
+          },
+        }),
+      ),
+    ).toBe(false);
+
+    // Matched BB lower allows RSI up to 60
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "12:30",
+          eventKind: "stall_at_lows",
+          eventRsi: 56,
+          bbLowerProximity: {
+            gapPct: 0.17,
+            signedGapPct: 0.17,
+            matchType: "close",
+            price: 100,
+            bbLevel: 99.8,
+          },
+        }),
+      ),
+    ).toBe(true);
   });
 });

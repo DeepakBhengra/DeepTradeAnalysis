@@ -5,6 +5,12 @@ const STORE_ROOT = resolve(process.cwd(), "data/post-mortem");
 
 export type PostMortemVariantId = "deepak" | "deepak2" | "deeppro";
 
+/**
+ * Bump when deeppro detection thresholds change so Post-Mortem recomputes
+ * signal-day indexes instead of serving a stale cache.
+ */
+export const DEEPPRO_SIGNAL_DAYS_RULES_REVISION = 3;
+
 export interface StoredSignalDay {
   date: string;
   signalCount: number;
@@ -19,6 +25,8 @@ export interface StoredSignalDaysIndex {
   fromDate: string;
   toDate: string;
   variant: PostMortemVariantId;
+  /** Present for deeppro indexes; used to invalidate after rule tweaks. */
+  rulesRevision?: number;
   days: StoredSignalDay[];
   tradingDaysScanned: number;
   totalSignals: number;
@@ -115,6 +123,12 @@ export function loadSignalDaysIndex(
   if (!stored || stored.version !== 1 || !Array.isArray(stored.days)) {
     return null;
   }
+  if (
+    variantId === "deeppro" &&
+    stored.rulesRevision !== DEEPPRO_SIGNAL_DAYS_RULES_REVISION
+  ) {
+    return null;
+  }
   return stored;
 }
 
@@ -138,6 +152,9 @@ export function saveSignalDaysIndex(input: {
     fromDate: from,
     toDate: to,
     variant: variantId,
+    ...(variantId === "deeppro"
+      ? { rulesRevision: DEEPPRO_SIGNAL_DAYS_RULES_REVISION }
+      : {}),
     days: input.days,
     tradingDaysScanned: input.tradingDaysScanned,
     totalSignals: input.totalSignals,

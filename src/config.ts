@@ -403,19 +403,27 @@ export const config = {
     },
     /** SMI overbought threshold (Kite shaded zone ~40) — SELL path */
     overboughtLevel: 40,
-    /** Require a deep overbought peak in lookback (chart-quality filter) */
-    minPeakSmi: 70,
+    /**
+     * Require a deep overbought peak in lookback (chart-quality filter).
+     * Tuned on Kite 15m historical only — slight slack under a strict 70 so near-miss
+     * exhaustion peaks (e.g. ~69) still count on live Kite candles.
+     */
+    minPeakSmi: 65,
     /** SMI oversold threshold (mirror of overbought) — BUY path */
     oversoldLevel: -40,
     /** Require a deep oversold trough in lookback (mirror of minPeakSmi) */
-    maxTroughSmi: -70,
-    lookbackBars: 8,
+    maxTroughSmi: -65,
+    /**
+     * Bars used for peak/trough SMI + Bollinger tag checks (~4h on 15m).
+     * Longer than a single morning burst so the same impulse's deep OB/OS counts
+     * even when the SMI cross prints a few bars later.
+     */
+    lookbackBars: 16,
     /** Max body/range to treat a post-cross candle as stall/doji */
     stallBodyRatioMax: 0.35,
     /**
-     * Exclusive IST deadline for the deeppro event candle.
-     * Late entries disproportionately land in the weak 0.08–0.25% same-day band;
-     * mid/high bands (0.30–0.70, 0.75–2.0) cluster earlier in the session.
+     * Exclusive IST deadline for the deeppro event candle (hard cap).
+     * Quality filters below further tighten the practical entry window.
      */
     entryDeadlineIst: "14:00",
     /**
@@ -424,6 +432,44 @@ export const config = {
      * that rarely reach the 0.30%+ square-off bands.
      */
     minMacdHistDeltaPct: 0.01,
+    /**
+     * Post-detect quality gates tuned on Kite 15m watchlist study (2026-06-29)
+     * to favor same-day square-off profit ≥ ~0.75%.
+     *
+     * Intentionally does NOT over-trust: extreme peak/trough SMI alone, ultra-low
+     * BUY RSI (≤30), or SELL BB-upper match tags — those did not separate winners.
+     */
+    qualityFilter: {
+      enabled: true,
+      sell: {
+        /** Inclusive event window — winners clustered 10:45–12:30. */
+        eventFromIst: "10:45",
+        eventToIst: "12:30",
+        /** Ideal exhaustion RSI; DIVISLAB-like exits use the low-RSI exception. */
+        minEventRsi: 67,
+        /** Tight upper-band proximity (keeps DRREDDY ~1.67 / CIPLA ~1.59). */
+        maxBbUpperGapPct: 1.75,
+        /**
+         * Rare SELL exception: SMI exit from overbought with low RSI but price
+         * still pressed near the lower-band context of a failed pop (DIVISLAB).
+         */
+        allowLowRsiSmiExit: true,
+        lowRsiExitMaxEventRsi: 45,
+        lowRsiExitMaxBbLowerGapPct: 0.3,
+      },
+      buy: {
+        /** Avoid late weak bounces; 13:15 keeps INFY-style early-afternoon stalls. */
+        eventToIst: "13:15",
+        /** Soft RSI cap — do not require ultra-oversold ≤30. */
+        maxEventRsi: 50,
+        /** Must hug lower band. */
+        maxBbLowerGapPct: 1.0,
+        /** Prefer stall / OS-exit over plain SMI/MACD crosses. */
+        allowedEventKinds: ["stall_at_lows", "smi_exit_oversold"],
+        /** If BB lower is close/crossed, allow slightly higher RSI (GICRE 12:30). */
+        matchedBbMaxEventRsi: 60,
+      },
+    },
   },
 
   volume: {
