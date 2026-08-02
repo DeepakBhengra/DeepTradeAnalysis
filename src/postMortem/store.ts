@@ -3,7 +3,7 @@ import { dirname, join, resolve } from "node:path";
 
 const STORE_ROOT = resolve(process.cwd(), "data/post-mortem");
 
-export type PostMortemVariantId = "deepak" | "deepak2";
+export type PostMortemVariantId = "deepak" | "deepak2" | "deeppro";
 
 export interface StoredSignalDay {
   date: string;
@@ -46,10 +46,10 @@ function sanitizeSymbol(symbol: string): string {
 }
 
 function assertVariant(variant: string): PostMortemVariantId {
-  if (variant === "deepak" || variant === "deepak2") {
+  if (variant === "deepak" || variant === "deepak2" || variant === "deeppro") {
     return variant;
   }
-  throw new Error("Invalid variant. Use deepak or deepak2.");
+  throw new Error("Invalid variant. Use deepak, deepak2, or deeppro.");
 }
 
 function assertDateKey(date: string): string {

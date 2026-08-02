@@ -6,6 +6,7 @@ import {
   fetchDashboard,
   fetchDeepak2Backtest,
   fetchDeepakBacktest,
+  fetchDeepproBacktest,
   savePostMortemReport,
   savePostMortemSignalDays,
 } from "../api/client";
@@ -32,9 +33,18 @@ function readStoredSymbol(): string {
   return stored || DEFAULT_SYMBOL;
 }
 
+const VARIANT_LABEL: Record<PostMortemVariant, string> = {
+  deepak: "Deepak",
+  deepak2: "Deepak-2",
+  deeppro: "Deeppro",
+};
+
 function readStoredVariant(): PostMortemVariant {
   const stored = readLocalStorage(VARIANT_STORAGE_KEY);
-  return stored === "deepak2" ? "deepak2" : "deepak";
+  if (stored === "deepak2" || stored === "deeppro") {
+    return stored;
+  }
+  return "deepak";
 }
 
 interface LoadedReport {
@@ -137,7 +147,7 @@ export function DeepakPostMortemWidget({
             if (cached.days.length === 0) {
               setSelectedDate(null);
               setScanInfo(
-                `Cached: no ${variant === "deepak2" ? "Deepak-2" : "Deepak"} signals for ${normalized} (${fromDate} → ${toDate}). Saved ${cached.savedAt}.`,
+                `Cached: no ${VARIANT_LABEL[variant]} signals for ${normalized} (${fromDate} → ${toDate}). Saved ${cached.savedAt}.`,
               );
             } else {
               setSelectedDate((prev) =>
@@ -156,7 +166,9 @@ export function DeepakPostMortemWidget({
         const payload =
           variant === "deepak2"
             ? await fetchDeepak2Backtest(normalized, fromDate, toDate)
-            : await fetchDeepakBacktest(normalized, fromDate, toDate);
+            : variant === "deeppro"
+              ? await fetchDeepproBacktest(normalized, fromDate, toDate)
+              : await fetchDeepakBacktest(normalized, fromDate, toDate);
 
         const days = signalDaysFromTrades(payload.trades);
         setSignalDays(days);
@@ -179,7 +191,7 @@ export function DeepakPostMortemWidget({
         if (days.length === 0) {
           setSelectedDate(null);
           setScanInfo(
-            `No ${variant === "deepak2" ? "Deepak-2" : "Deepak"} signals for ${normalized} between ${fromDate} and ${toDate}.`,
+            `No ${VARIANT_LABEL[variant]} signals for ${normalized} between ${fromDate} and ${toDate}.`,
           );
         } else {
           setSelectedDate((prev) =>
@@ -260,12 +272,16 @@ export function DeepakPostMortemWidget({
         }
 
         const decision =
-          variant === "deepak2" ? payload.deepak2Decision : payload.deepakDecision;
+          variant === "deepak2"
+            ? payload.deepak2Decision
+            : variant === "deeppro"
+              ? payload.deepproDecision
+              : payload.deepakDecision;
         const graded = buildDeepakPostMortemReport(decision, payload.series, variant);
         if (!graded) {
           setLoaded(null);
           setReportError(
-            `No ${variant === "deepak2" ? "Deepak-2" : "Deepak"} decision for ${activeSymbol} on ${selectedDate}.`,
+            `No ${VARIANT_LABEL[variant]} decision for ${activeSymbol} on ${selectedDate}.`,
           );
           return;
         }
@@ -345,7 +361,7 @@ export function DeepakPostMortemWidget({
         runLabel="Scan signal days"
         loadingLabel="Scanning..."
         idPrefix="postmortem"
-        description="Scan Deepak BUY/SELL days for this symbol (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
+        description="Scan BUY/SELL days for the selected rule variant (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
       />
 
       <section className="flex flex-wrap items-end justify-between gap-3 border-b border-kite-border bg-kite-surface px-3 py-2">
@@ -363,10 +379,12 @@ export function DeepakPostMortemWidget({
               onChange={(event) =>
                 handleVariantChange(event.target.value as PostMortemVariant)
               }
-              className="rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none"
+              disabled={busy}
+              className="rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="deepak">Deepak</option>
               <option value="deepak2">Deepak-2</option>
+              <option value="deeppro">Deeppro</option>
             </select>
           </div>
 
@@ -443,8 +461,7 @@ export function DeepakPostMortemWidget({
 
         {scanLoading && (
           <section className="border border-kite-border bg-kite-surface p-3 text-xs text-kite-muted">
-            Scanning {activeSymbol} for {variant === "deepak2" ? "Deepak-2" : "Deepak"} signal
-            days…
+            Scanning {activeSymbol} for {VARIANT_LABEL[variant]} signal days…
           </section>
         )}
 

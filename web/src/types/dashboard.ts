@@ -203,6 +203,7 @@ export interface DashboardPayload {
   bbProximity: BbProximityReport | null;
   deepakDecision: DeepakDecisionResult | null;
   deepak2Decision: DeepakDecisionResult | null;
+  deepproDecision: DeepakDecisionResult | null;
   analysisDate: string | null;
   mode: "live" | "historical" | "simulation";
   simulation?: SimulationMeta;

@@ -2,7 +2,7 @@ import type { Decision, DeepakBbMatchType } from "./dashboard";
 
 export type PostMortemGrade = "RIGHT" | "MIXED" | "WRONG";
 
-export type PostMortemVariant = "deepak" | "deepak2";
+export type PostMortemVariant = "deepak" | "deepak2" | "deeppro";
 
 export type EnhancementPriority = "P0" | "P1" | "P2" | "P3";
 

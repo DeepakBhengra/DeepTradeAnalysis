@@ -222,6 +222,45 @@ export async function fetchDeepak2Backtest(
   }
 }
 
+export async function fetchDeepproBacktest(
+  symbol: string,
+  fromDate: string,
+  toDate: string,
+): Promise<DeepakBacktestPayload> {
+  const params = new URLSearchParams({
+    symbol,
+    from: fromDate,
+    to: toDate,
+  });
+
+  const url = `/api/backtest/deeppro?${params.toString()}`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+      const message = readApiErrorBody(body, `Backtest request failed: ${response.status}`);
+      if (message.includes("API route not found")) {
+        throw new Error(
+          "Deeppro backtest API not available. Stop any old server on port 3001 and restart with: npm run dev:dashboard",
+        );
+      }
+      throw new Error(message);
+    }
+    return response.json() as Promise<DeepakBacktestPayload>;
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error("Deeppro backtest request timed out after 120s. Check Kite credentials and API server.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function assertApiReachable(): Promise<void> {
   await fetchJsonWithTimeout<{ ok: boolean }>(
     "/api/health",
