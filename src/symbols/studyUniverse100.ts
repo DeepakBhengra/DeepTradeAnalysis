@@ -1,0 +1,125 @@
+/**
+ * 100 liquid NSE names for deeppro multi-stock studies.
+ * Extends the 50-name sector watchlist with additional large/mid liquid equities.
+ */
+export interface StudyUniverseEntry {
+  sector: string;
+  tradingSymbol: string;
+}
+
+const BASE_50: StudyUniverseEntry[] = [
+  { sector: "Bank", tradingSymbol: "HDFCBANK" },
+  { sector: "Bank", tradingSymbol: "ICICIBANK" },
+  { sector: "Bank", tradingSymbol: "SBIN" },
+  { sector: "Bank", tradingSymbol: "KOTAKBANK" },
+  { sector: "Bank", tradingSymbol: "AXISBANK" },
+  { sector: "Bank", tradingSymbol: "INDUSINDBK" },
+  { sector: "Bank", tradingSymbol: "BANKBARODA" },
+  { sector: "Bank", tradingSymbol: "PNB" },
+  { sector: "Bank", tradingSymbol: "CANBK" },
+  { sector: "IT", tradingSymbol: "TCS" },
+  { sector: "IT", tradingSymbol: "INFY" },
+  { sector: "IT", tradingSymbol: "HCLTECH" },
+  { sector: "IT", tradingSymbol: "WIPRO" },
+  { sector: "IT", tradingSymbol: "TECHM" },
+  { sector: "IT", tradingSymbol: "LTM" },
+  { sector: "IT", tradingSymbol: "PERSISTENT" },
+  { sector: "IT", tradingSymbol: "COFORGE" },
+  { sector: "IT", tradingSymbol: "KPITTECH" },
+  { sector: "Metal", tradingSymbol: "TATASTEEL" },
+  { sector: "Metal", tradingSymbol: "JSWSTEEL" },
+  { sector: "Metal", tradingSymbol: "HINDALCO" },
+  { sector: "Metal", tradingSymbol: "SAIL" },
+  { sector: "Metal", tradingSymbol: "JINDALSTEL" },
+  { sector: "Metal", tradingSymbol: "NATIONALUM" },
+  { sector: "Metal", tradingSymbol: "HINDZINC" },
+  { sector: "Metal", tradingSymbol: "VEDL" },
+  { sector: "Insurance", tradingSymbol: "HDFCLIFE" },
+  { sector: "Insurance", tradingSymbol: "ICICIPRULI" },
+  { sector: "Insurance", tradingSymbol: "SBILIFE" },
+  { sector: "Insurance", tradingSymbol: "LICI" },
+  { sector: "Insurance", tradingSymbol: "ICICIGI" },
+  { sector: "Insurance", tradingSymbol: "GICRE" },
+  { sector: "Insurance", tradingSymbol: "STARHEALTH" },
+  { sector: "Insurance", tradingSymbol: "POLICYBZR" },
+  { sector: "Automobile", tradingSymbol: "MARUTI" },
+  { sector: "Automobile", tradingSymbol: "M&M" },
+  { sector: "Automobile", tradingSymbol: "TMPV" },
+  { sector: "Automobile", tradingSymbol: "BAJAJ-AUTO" },
+  { sector: "Automobile", tradingSymbol: "EICHERMOT" },
+  { sector: "Automobile", tradingSymbol: "HEROMOTOCO" },
+  { sector: "Automobile", tradingSymbol: "TVSMOTOR" },
+  { sector: "Automobile", tradingSymbol: "ASHOKLEY" },
+  { sector: "Health", tradingSymbol: "SUNPHARMA" },
+  { sector: "Health", tradingSymbol: "DRREDDY" },
+  { sector: "Health", tradingSymbol: "CIPLA" },
+  { sector: "Health", tradingSymbol: "DIVISLAB" },
+  { sector: "Health", tradingSymbol: "APOLLOHOSP" },
+  { sector: "Health", tradingSymbol: "AUROPHARMA" },
+  { sector: "Health", tradingSymbol: "LUPIN" },
+  { sector: "Health", tradingSymbol: "ALKEM" },
+];
+
+const EXTRA_50: StudyUniverseEntry[] = [
+  { sector: "Bank", tradingSymbol: "FEDERALBNK" },
+  { sector: "Bank", tradingSymbol: "IDFCFIRSTB" },
+  { sector: "Bank", tradingSymbol: "AUBANK" },
+  { sector: "Bank", tradingSymbol: "YESBANK" },
+  { sector: "IT", tradingSymbol: "MPHASIS" },
+  { sector: "IT", tradingSymbol: "OFSS" },
+  { sector: "IT", tradingSymbol: "DIXON" },
+  { sector: "Energy", tradingSymbol: "RELIANCE" },
+  { sector: "Energy", tradingSymbol: "ONGC" },
+  { sector: "Energy", tradingSymbol: "BPCL" },
+  { sector: "Energy", tradingSymbol: "IOC" },
+  { sector: "Energy", tradingSymbol: "GAIL" },
+  { sector: "Energy", tradingSymbol: "POWERGRID" },
+  { sector: "Energy", tradingSymbol: "NTPC" },
+  { sector: "Energy", tradingSymbol: "TATAPOWER" },
+  { sector: "FMCG", tradingSymbol: "HINDUNILVR" },
+  { sector: "FMCG", tradingSymbol: "ITC" },
+  { sector: "FMCG", tradingSymbol: "NESTLEIND" },
+  { sector: "FMCG", tradingSymbol: "BRITANNIA" },
+  { sector: "FMCG", tradingSymbol: "TATACONSUM" },
+  { sector: "FMCG", tradingSymbol: "DABUR" },
+  { sector: "FMCG", tradingSymbol: "MARICO" },
+  { sector: "FMCG", tradingSymbol: "GODREJCP" },
+  { sector: "Finance", tradingSymbol: "BAJFINANCE" },
+  { sector: "Finance", tradingSymbol: "BAJAJFINSV" },
+  { sector: "Finance", tradingSymbol: "HDFCAMC" },
+  { sector: "Finance", tradingSymbol: "SBICARD" },
+  { sector: "Finance", tradingSymbol: "CHOLAFIN" },
+  { sector: "Finance", tradingSymbol: "PFC" },
+  { sector: "Finance", tradingSymbol: "RECLTD" },
+  { sector: "Finance", tradingSymbol: "SHRIRAMFIN" },
+  { sector: "Infra", tradingSymbol: "LT" },
+  { sector: "Infra", tradingSymbol: "ADANIENT" },
+  { sector: "Infra", tradingSymbol: "ADANIPORTS" },
+  { sector: "Infra", tradingSymbol: "ULTRACEMCO" },
+  { sector: "Infra", tradingSymbol: "AMBUJACEM" },
+  { sector: "Infra", tradingSymbol: "SHREECEM" },
+  { sector: "Infra", tradingSymbol: "GRASIM" },
+  { sector: "Infra", tradingSymbol: "SIEMENS" },
+  { sector: "Consumer", tradingSymbol: "TITAN" },
+  { sector: "Consumer", tradingSymbol: "ASIANPAINT" },
+  { sector: "Consumer", tradingSymbol: "PIDILITIND" },
+  { sector: "Consumer", tradingSymbol: "HAVELLS" },
+  { sector: "Consumer", tradingSymbol: "VOLTAS" },
+  { sector: "Consumer", tradingSymbol: "TRENT" },
+  { sector: "Telecom", tradingSymbol: "BHARTIARTL" },
+  { sector: "Health", tradingSymbol: "TORNTPHARM" },
+  { sector: "Health", tradingSymbol: "BIOCON" },
+  { sector: "Defence", tradingSymbol: "BEL" },
+  { sector: "Metal", tradingSymbol: "NMDC" },
+];
+
+export const STUDY_UNIVERSE_100: StudyUniverseEntry[] = [...BASE_50, ...EXTRA_50];
+
+export function assertStudyUniverseSize(expected = 100): void {
+  const symbols = new Set(STUDY_UNIVERSE_100.map((e) => e.tradingSymbol));
+  if (symbols.size !== expected) {
+    throw new Error(
+      `STUDY_UNIVERSE_100 expected ${expected} unique symbols, got ${symbols.size}`,
+    );
+  }
+}
