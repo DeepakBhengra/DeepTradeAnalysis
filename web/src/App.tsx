@@ -15,7 +15,6 @@ import { DeepakPostMortemWidget } from "./widgets/DeepakPostMortemWidget";
 import { DeepakWatchPartyDayScanWidget } from "./widgets/DeepakWatchPartyDayScanWidget";
 import { SamcoTradingWidget } from "./widgets/SamcoTradingWidget";
 import { StockDashboardWidget } from "./widgets/StockDashboardWidget";
-import { StockSimulatorWidget } from "./widgets/StockSimulatorWidget";
 import { readLocalStorage, writeLocalStorage } from "./utils/safeStorage";
 
 const TAB_STORAGE_KEY = "trading-active-widget";
@@ -23,7 +22,6 @@ const LEGACY_TAB_STORAGE_KEY = "pnb-active-widget";
 
 const subtitles: Record<AppWidget, string> = {
   stockDashboard: "15m signals and charts for any NSE equity.",
-  stockSimulator: "Replay a past session candle-by-candle as if live (10s per 15m bar).",
   deepakBacktest: "Backtest Deepak BUY/SELL scenarios over a date range for any NSE equity.",
   deepakDayScan: "Run Deepak BUY/SELL rules on 20 sector large-caps for a single session date.",
   deepak2Backtest:
@@ -81,9 +79,6 @@ function readStoredTab(): AppWidget {
   if (stored === "samcoTrading") {
     return "samcoTrading";
   }
-  if (stored === "stockSimulator") {
-    return "stockSimulator";
-  }
   return "stockDashboard";
 }
 
@@ -120,7 +115,6 @@ export function App() {
         isActive={activeWidget === "stockDashboard"}
         refreshTrigger={refreshTrigger}
       />
-      <StockSimulatorWidget isActive={activeWidget === "stockSimulator"} />
       <DeepakBacktestWidget
         isActive={activeWidget === "deepakBacktest"}
         refreshTrigger={refreshTrigger}

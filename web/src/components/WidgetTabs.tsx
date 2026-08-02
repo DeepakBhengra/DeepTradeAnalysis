@@ -1,6 +1,5 @@
 export type AppWidget =
   | "stockDashboard"
-  | "stockSimulator"
   | "deepakBacktest"
   | "deepakDayScan"
   | "deepak2Backtest"
@@ -19,7 +18,6 @@ interface WidgetTabsProps {
 
 const tabs: Array<{ id: AppWidget; label: string }> = [
   { id: "stockDashboard", label: "Stock 15m Dashboard" },
-  { id: "stockSimulator", label: "Stock 15m Simulator" },
   { id: "deepakBacktest", label: "Deepak Backtest" },
   { id: "deepakDayScan", label: "Deepak Day Scan" },
   { id: "deepak2Backtest", label: "Deepak-2 Backtest" },
