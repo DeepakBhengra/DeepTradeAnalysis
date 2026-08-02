@@ -18,6 +18,9 @@ LOOKBACK = 8
 STALL_BODY_RATIO = 0.35
 BB_CLOSE_PCT = 0.3
 SESSION_END = "15:15"
+# Drop late / weak-momentum setups that land in the 0.08–0.25% band.
+ENTRY_DEADLINE = "14:00"  # exclusive — event must be before this IST time
+MIN_MACD_HIST_DELTA_PCT = 0.01  # |Δhist| / close * 100
 REPORTS_DIR = Path(__file__).resolve().parents[1] / "reports"
 
 
@@ -184,6 +187,9 @@ def find_deeppro_events(df: pd.DataFrame) -> list[dict]:
             continue
         if not (cur["macd_hist"] < prev["macd_hist"]):
             continue
+        hist_delta_pct = abs(cur["macd_hist"] - prev["macd_hist"]) / abs(cur["Close"]) * 100
+        if hist_delta_pct < MIN_MACD_HIST_DELTA_PCT:
+            continue
 
         event_time = ts
         event_kind = "smi_cross"
@@ -224,6 +230,10 @@ def find_deeppro_events(df: pd.DataFrame) -> list[dict]:
             event_time = best_stall[1]
             event_kind = "stall_at_highs"
 
+        event_hm = event_time.strftime("%H:%M")
+        if event_hm >= ENTRY_DEADLINE:
+            continue
+
         events.append(
             {
                 "cross_ts": ts,
@@ -231,6 +241,7 @@ def find_deeppro_events(df: pd.DataFrame) -> list[dict]:
                 "event_kind": event_kind,
                 "event_rsi": float(df.loc[event_time, "rsi"]),
                 "peak_smi": peak_smi,
+                "hist_delta_pct": round(float(hist_delta_pct), 5),
             }
         )
 
@@ -363,6 +374,12 @@ def main() -> None:
             "bestSquareOff": "candle after entry with maximum short profit % before session end",
             "optimisticNote": "bestLow* fields use candle low (more optimistic fill)",
             "sessionEnd": SESSION_END,
+            "entryDeadlineIst": ENTRY_DEADLINE,
+            "minMacdHistDeltaPct": MIN_MACD_HIST_DELTA_PCT,
+            "qualityFilters": (
+                "Event before 14:00 IST and MACD hist Δ >= 0.01% of price — "
+                "removes weak 0.08–0.25% same-day setups; keeps 0.30–0.70 / 0.75–2.0 rules."
+            ),
             "dataSourceNote": (
                 "Interim 15m history used because KITE_ACCESS_TOKEN is invalid in this "
                 "environment. Re-run via Kite when token is available."
@@ -391,6 +408,7 @@ def main() -> None:
         f"- **Side:** short SELL at deeppro event time",
         f"- **Entry price:** event candle mid `(high + low) / 2`",
         f"- **Square-off:** best later same-day candle mid before `{SESSION_END}` IST",
+        f"- **Quality filters:** event before `{ENTRY_DEADLINE}` IST · MACD hist Δ ≥ `{MIN_MACD_HIST_DELTA_PCT}%` of price",
         f"- **Profit %:** `(sellPrice - squareOffPrice) / sellPrice * 100`",
         f"- **Window:** {len(days)} trade days ({days[0].date()} → {days[-1].date()})",
         f"- **Signals:** {len(rows)} · **Positive best SQ:** {len(positives)} ({win_rate}%) · **Avg best profit:** {avg_best}%",

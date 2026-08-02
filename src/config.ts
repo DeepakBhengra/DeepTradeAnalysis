@@ -412,6 +412,18 @@ export const config = {
     lookbackBars: 8,
     /** Max body/range to treat a post-cross candle as stall/doji */
     stallBodyRatioMax: 0.35,
+    /**
+     * Exclusive IST deadline for the deeppro event candle.
+     * Late entries disproportionately land in the weak 0.08–0.25% same-day band;
+     * mid/high bands (0.30–0.70, 0.75–2.0) cluster earlier in the session.
+     */
+    entryDeadlineIst: "14:00",
+    /**
+     * Min |Δ MACD histogram| / close * 100 on the SMI cross bar.
+     * Price-normalized so PNB and TCS share one threshold; filters weak fades
+     * that rarely reach the 0.30%+ square-off bands.
+     */
+    minMacdHistDeltaPct: 0.01,
   },
 
   volume: {

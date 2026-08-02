@@ -18,6 +18,9 @@ LOOKBACK = 8
 STALL_BODY_RATIO = 0.35
 BB_CLOSE_PCT = 0.3
 SESSION_END = "15:15"
+# Drop late / weak-momentum setups that land in the 0.08–0.25% band.
+ENTRY_DEADLINE = "14:00"  # exclusive — event must be before this IST time
+MIN_MACD_HIST_DELTA_PCT = 0.01  # |Δhist| / close * 100
 REPORTS_DIR = Path(__file__).resolve().parents[1] / "reports"
 
 
@@ -185,6 +188,9 @@ def find_deeppro_buy_events(df: pd.DataFrame):
             continue
         if not (cur["macd_hist"] > prev["macd_hist"]):
             continue
+        hist_delta_pct = abs(cur["macd_hist"] - prev["macd_hist"]) / abs(cur["Close"]) * 100
+        if hist_delta_pct < MIN_MACD_HIST_DELTA_PCT:
+            continue
 
         event_time = ts
         event_kind = "smi_cross"
@@ -225,12 +231,17 @@ def find_deeppro_buy_events(df: pd.DataFrame):
             event_time = best_stall[1]
             event_kind = "stall_at_lows"
 
+        event_hm = event_time.strftime("%H:%M")
+        if event_hm >= ENTRY_DEADLINE:
+            continue
+
         events.append(
             {
                 "cross_ts": ts,
                 "event_ts": event_time,
                 "event_kind": event_kind,
                 "trough_smi": trough_smi,
+                "hist_delta_pct": round(float(hist_delta_pct), 5),
             }
         )
 
@@ -358,12 +369,20 @@ def main() -> None:
                 "Deep oversold trough SMI <= -70 in lookback",
                 "Lower Bollinger Band tagged in lookback",
                 "MACD histogram rising on cross candle",
+                f"MACD hist Δ >= {MIN_MACD_HIST_DELTA_PCT}% of price",
+                f"Event before {ENTRY_DEADLINE} IST",
             ],
             "entryPrice": "event candle mid = (high + low) / 2",
             "squareOffPrice": "later same-day candle mid = (high + low) / 2",
             "bestSquareOff": "candle after entry with maximum long profit % before session end",
             "optimisticNote": "bestHigh* fields use candle high (more optimistic fill)",
             "sessionEnd": SESSION_END,
+            "entryDeadlineIst": ENTRY_DEADLINE,
+            "minMacdHistDeltaPct": MIN_MACD_HIST_DELTA_PCT,
+            "qualityFilters": (
+                "Event before 14:00 IST and MACD hist Δ >= 0.01% of price — "
+                "removes weak 0.08–0.25% same-day setups; keeps 0.30–0.70 / 0.75–2.0 rules."
+            ),
             "dataSourceNote": (
                 "Interim 15m history used because KITE_ACCESS_TOKEN is invalid in this "
                 "environment. Re-run via Kite when token is available."
@@ -391,6 +410,7 @@ def main() -> None:
         f"- **Symbol:** {report_symbol}",
         "- **Side:** BUY (long) at deeppro **mirror** event (oversold exhaustion)",
         "- **Pattern:** SMI bullish cross from oversold + BB lower tag + rising MACD hist",
+        f"- **Quality filters:** event before `{ENTRY_DEADLINE}` IST · MACD hist Δ ≥ `{MIN_MACD_HIST_DELTA_PCT}%` of price",
         "- **Entry price:** event candle mid `(high + low) / 2`",
         f"- **Square-off:** best later same-day candle mid before `{SESSION_END}` IST",
         "- **Profit %:** `(squareOffPrice - buyPrice) / buyPrice * 100`",

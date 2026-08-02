@@ -72,13 +72,13 @@ function buildRisingThenDumpDay(dateKey: string): Candle[] {
         istCandle(dateKey, hour, minute, open, open + 1, close - 0.5, close),
       );
       price = close;
-    } else if (i === 18 || i === 19) {
-      // stall / doji near highs
+    } else if (i === 18) {
+      // stall / doji near highs (must stay before entryDeadlineIst 14:00)
       candles.push(
         istCandle(dateKey, hour, minute, price, price + 0.4, price - 1.2, price + 0.05),
       );
     } else {
-      // dump
+      // dump (incl. 14:00+) — late bars must not look like stall/doji
       const open = price;
       const close = price - 18;
       candles.push(
@@ -151,7 +151,8 @@ describe("evaluateDeepproSignals", () => {
           istCandle(dateKey, hour, minute, open, close + 0.5, open - 1, close),
         );
         price = close;
-      } else if (i === 18 || i === 19) {
+      } else if (i === 18) {
+        // stall at lows before entryDeadlineIst 14:00
         candles.push(
           istCandle(dateKey, hour, minute, price, price + 1.2, price - 0.4, price + 0.05),
         );
@@ -173,6 +174,59 @@ describe("evaluateDeepproSignals", () => {
       expect(result.signals[0].peakSmi).toBeLessThanOrEqual(-40);
       expect(Number.isFinite(result.signals[0].eventRsi)).toBe(true);
       expect(Number.isFinite(result.signals[0].bbLowerProximity.gapPct)).toBe(true);
+    }
+  });
+
+  it("rejects deeppro SELL when the event lands at/after the 14:00 deadline", () => {
+    const dateKey = "2026-07-25";
+    const candles = buildRisingThenDumpDay(dateKey);
+    // Force a late-only stall profile: flatten early afternoon, dump only after 14:00
+    // by rebuilding the analysis day with cross at 13:45 and stall at 14:00+.
+    const trimmed = candles.filter((c) => {
+      const iso = c.timestamp.toISOString();
+      return !iso.includes("2026-07-25");
+    });
+    const times = [
+      [9, 15], [9, 30], [9, 45], [10, 0], [10, 15], [10, 30], [10, 45],
+      [11, 0], [11, 15], [11, 30], [11, 45], [12, 0], [12, 15], [12, 30],
+      [12, 45], [13, 0], [13, 15], [13, 30], [13, 45], [14, 0], [14, 15],
+      [14, 30], [14, 45], [15, 0], [15, 15],
+    ] as const;
+    let price = 2000;
+    for (let i = 0; i < times.length; i++) {
+      const [hour, minute] = times[i];
+      if (i <= 17) {
+        const open = price;
+        const close = price + 3.5;
+        trimmed.push(
+          istCandle(dateKey, hour, minute, open, close + 1.5, open - 0.5, close),
+        );
+        price = close;
+      } else if (i === 18) {
+        const open = price;
+        const close = price - 1;
+        trimmed.push(
+          istCandle(dateKey, hour, minute, open, open + 1, close - 0.5, close),
+        );
+        price = close;
+      } else if (i === 19 || i === 20) {
+        trimmed.push(
+          istCandle(dateKey, hour, minute, price, price + 0.4, price - 1.2, price + 0.05),
+        );
+      } else {
+        const open = price;
+        const close = price - 18;
+        trimmed.push(
+          istCandle(dateKey, hour, minute, open, open + 1, close - 5, close),
+        );
+        price = close;
+      }
+    }
+
+    const snapshots = buildIndicatorSnapshots(trimmed);
+    const result = evaluateDeepproSignals(snapshots, dateKey);
+    for (const signal of result.signals) {
+      expect(signal.eventTimeIst < "14:00").toBe(true);
     }
   });
 

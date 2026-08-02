@@ -10,6 +10,7 @@ import {
   formatIstTime,
   getIstTimeParts,
   isWithinIstSessionWindow,
+  parseHmToMinutes,
 } from "../utils/marketTime.js";
 import {
   bbMatchGapPct,
@@ -147,6 +148,21 @@ function troughSmi(values: Array<{ smi: number }>, from: number, to: number): nu
   return trough;
 }
 
+function macdHistDeltaPct(
+  prevHistogram: number,
+  curHistogram: number,
+  close: number,
+): number {
+  if (!Number.isFinite(close) || close === 0) {
+    return 0;
+  }
+  return (Math.abs(curHistogram - prevHistogram) / Math.abs(close)) * 100;
+}
+
+function isBeforeEntryDeadline(timeIst: string, deadlineIst: string): boolean {
+  return parseHmToMinutes(timeIst) < parseHmToMinutes(deadlineIst);
+}
+
 /**
  * deeppro — pink-circle pattern from Stch Mtm exhaustion reversals:
  *
@@ -154,6 +170,8 @@ function troughSmi(values: Array<{ smi: number }>, from: number, to: number): nu
  * 2. Deep overbought peak in lookback (default peak SMI >= 70)
  * 3. Upper Bollinger Band tagged in the same lookback
  * 4. MACD histogram declining on the cross candle (momentum fade)
+ * 5. Meaningful MACD hist fade vs price (drops weak 0.08–0.25% setups)
+ * 6. Event candle before entry deadline (default before 14:00 IST)
  *
  * Signal time = SMI bearish-cross candle (IST). Event time may also surface a
  * nearby stall/doji at highs or SMI exit from overbought (chart annotation).
@@ -169,6 +187,8 @@ export function evaluateDeepproSignals(
     overboughtLevel,
     minPeakSmi,
     stallBodyRatioMax,
+    entryDeadlineIst,
+    minMacdHistDeltaPct,
   } = config.deeppro;
 
   const resolvedDateKey =
@@ -252,6 +272,15 @@ export function evaluateDeepproSignals(
       continue;
     }
 
+    const histDeltaPct = macdHistDeltaPct(
+      prevSnapshot.macd.histogram,
+      snapshot.macd.histogram,
+      snapshot.close,
+    );
+    if (histDeltaPct < minMacdHistDeltaPct) {
+      continue;
+    }
+
     let eventIndex = index;
     let eventKind: DeepproSignal["eventKind"] = "smi_cross";
     let bestStallRatio = Number.POSITIVE_INFINITY;
@@ -321,6 +350,10 @@ export function evaluateDeepproSignals(
 
     const eventSnapshot = snapshots[eventIndex];
     const eventTimeIst = formatIstTime(eventSnapshot.timestamp);
+    if (!isBeforeEntryDeadline(eventTimeIst, entryDeadlineIst)) {
+      continue;
+    }
+
     const bbUpperProximity = buildBbUpperProximity(eventSnapshot);
     const bbLowerProximity = buildBbLowerProximity(eventSnapshot);
 
@@ -345,7 +378,8 @@ export function evaluateDeepproSignals(
         `Peak SMI ${peak.toFixed(1)} >= ${minPeakSmi}`,
         "Upper Bollinger Band tagged in lookback",
         "MACD histogram declining",
-        `Event ${eventKind} at ${eventTimeIst} IST`,
+        `MACD hist Δ ${histDeltaPct.toFixed(3)}% >= ${minMacdHistDeltaPct}% of price`,
+        `Event ${eventKind} at ${eventTimeIst} IST (before ${entryDeadlineIst})`,
         `Event RSI ${eventSnapshot.rsi.toFixed(2)}`,
         `BB upper gap ${bbUpperProximity.gapPct.toFixed(3)}% (${bbUpperProximity.matchType ?? "none"})`,
         `BB lower gap ${bbLowerProximity.gapPct.toFixed(3)}% (${bbLowerProximity.matchType ?? "none"})`,
@@ -369,6 +403,8 @@ export function evaluateDeepproSignals(
  * 2. Deep oversold trough in lookback (default trough SMI <= -70)
  * 3. Lower Bollinger Band tagged in the same lookback
  * 4. MACD histogram rising on the cross candle (momentum recovery)
+ * 5. Meaningful MACD hist rise vs price (drops weak 0.08–0.25% setups)
+ * 6. Event candle before entry deadline (default before 14:00 IST)
  *
  * Signal time = SMI bullish-cross candle (IST). Event time may also surface a
  * nearby stall/doji at lows or SMI exit from oversold.
@@ -384,6 +420,8 @@ export function evaluateDeepproBuySignals(
     oversoldLevel,
     maxTroughSmi,
     stallBodyRatioMax,
+    entryDeadlineIst,
+    minMacdHistDeltaPct,
   } = config.deeppro;
 
   const resolvedDateKey =
@@ -466,6 +504,15 @@ export function evaluateDeepproBuySignals(
       continue;
     }
 
+    const histDeltaPct = macdHistDeltaPct(
+      prevSnapshot.macd.histogram,
+      snapshot.macd.histogram,
+      snapshot.close,
+    );
+    if (histDeltaPct < minMacdHistDeltaPct) {
+      continue;
+    }
+
     let eventIndex = index;
     let eventKind: DeepproSignal["eventKind"] = "smi_cross";
     let bestStallRatio = Number.POSITIVE_INFINITY;
@@ -534,6 +581,10 @@ export function evaluateDeepproBuySignals(
 
     const eventSnapshot = snapshots[eventIndex];
     const eventTimeIst = formatIstTime(eventSnapshot.timestamp);
+    if (!isBeforeEntryDeadline(eventTimeIst, entryDeadlineIst)) {
+      continue;
+    }
+
     const bbUpperProximity = buildBbUpperProximity(eventSnapshot);
     const bbLowerProximity = buildBbLowerProximity(eventSnapshot);
 
@@ -558,7 +609,8 @@ export function evaluateDeepproBuySignals(
         `Trough SMI ${trough.toFixed(1)} <= ${maxTroughSmi}`,
         "Lower Bollinger Band tagged in lookback",
         "MACD histogram rising",
-        `Event ${eventKind} at ${eventTimeIst} IST`,
+        `MACD hist Δ ${histDeltaPct.toFixed(3)}% >= ${minMacdHistDeltaPct}% of price`,
+        `Event ${eventKind} at ${eventTimeIst} IST (before ${entryDeadlineIst})`,
         `Event RSI ${eventSnapshot.rsi.toFixed(2)}`,
         `BB upper gap ${bbUpperProximity.gapPct.toFixed(3)}% (${bbUpperProximity.matchType ?? "none"})`,
         `BB lower gap ${bbLowerProximity.gapPct.toFixed(3)}% (${bbLowerProximity.matchType ?? "none"})`,

@@ -12,9 +12,9 @@ from pathlib import Path
 
 REPORTS_DIR = Path(__file__).resolve().parents[1] / "reports"
 
-# Inclusive ranges requested by user. Gaps between bands are "outside".
+# Kept bands after dropping the weak 0.08–0.25 range from deeppro.
+# Gaps / sub-0.30 outcomes are reported as "outside".
 PROFIT_RANGES = [
-    {"id": "r1", "label": "0.08 – 0.25", "min": 0.08, "max": 0.25},
     {"id": "r2", "label": "0.30 – 0.70", "min": 0.30, "max": 0.70},
     {"id": "r3", "label": "0.75 – 2.0", "min": 0.75, "max": 2.0},
 ]
@@ -178,7 +178,8 @@ def write_markdown(symbol: str, sell_report: dict, buy_report: dict, path: Path)
         f"# {symbol} deeppro profit-range categorization (60d)",
         "",
         f"- **Generated (UTC):** {datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')}",
-        f"- **Ranges:** 0.08–0.25 · 0.30–0.70 · 0.75–2.0 (inclusive)",
+        "- **Ranges:** 0.30–0.70 · 0.75–2.0 (inclusive) — weak 0.08–0.25 band dropped from deeppro",
+        "- **Quality filters (deeppro):** event before 14:00 IST · MACD hist Δ ≥ 0.01% of price",
         "- **Avg RSI:** mean event RSI of trades in that profit range",
         "- **Best BB proximity:** tightest (smallest) gap % in that range",
         "- For SELL, primary BB focus is **upper**; for BUY, primary BB focus is **lower**",
