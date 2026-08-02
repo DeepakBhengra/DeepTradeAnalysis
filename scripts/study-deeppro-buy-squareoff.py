@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -11,8 +12,6 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-SYMBOL = "SUNPHARMA.NS"
-REPORT_SYMBOL = "SUNPHARMA"
 OVERSOLD = -40
 MAX_TROUGH_SMI = -70
 LOOKBACK = 8
@@ -20,6 +19,13 @@ STALL_BODY_RATIO = 0.35
 BB_CLOSE_PCT = 0.3
 SESSION_END = "15:15"
 REPORTS_DIR = Path(__file__).resolve().parents[1] / "reports"
+
+
+def resolve_symbol(raw: str) -> tuple[str, str]:
+    trading = raw.strip().upper().replace(".NS", "")
+    if ":" in trading:
+        trading = trading.split(":")[-1]
+    return f"{trading}.NS", trading
 
 
 def ema(series: pd.Series, period: int) -> pd.Series:
@@ -136,17 +142,17 @@ def long_profit_pct(entry: float, exit_price: float) -> float:
     return (exit_price - entry) / entry * 100.0
 
 
-def fetch_df() -> pd.DataFrame:
+def fetch_df(yahoo_symbol: str) -> pd.DataFrame:
     end = datetime.now()
     start = end - timedelta(days=59)
-    df = yf.Ticker(SYMBOL).history(
+    df = yf.Ticker(yahoo_symbol).history(
         start=start.strftime("%Y-%m-%d"),
         end=(end + timedelta(days=1)).strftime("%Y-%m-%d"),
         interval="15m",
         auto_adjust=True,
     )
     if df.empty:
-        raise SystemExit("No candles returned")
+        raise SystemExit(f"No candles returned for {yahoo_symbol}")
     df = df.tz_convert("Asia/Kolkata").between_time("09:15", SESSION_END)
     df["bb_u"], df["bb_m"], df["bb_l"] = bollinger(df["Close"])
     df["rsi"] = rsi(df["Close"])
@@ -293,7 +299,12 @@ def best_square_off(df: pd.DataFrame, event_ts: pd.Timestamp, buy_price: float) 
 
 
 def main() -> None:
-    df = fetch_df()
+    parser = argparse.ArgumentParser(description="deeppro BUY square-off study")
+    parser.add_argument("--symbol", default="SUNPHARMA", help="NSE trading symbol")
+    args = parser.parse_args()
+    yahoo_symbol, report_symbol = resolve_symbol(args.symbol)
+
+    df = fetch_df(yahoo_symbol)
     events, days = find_deeppro_buy_events(df)
 
     rows = []
@@ -317,6 +328,7 @@ def main() -> None:
                 "buyPrice": buy_price,
                 "buyClose": buy_close,
                 "troughSmi": round(float(event["trough_smi"]), 2),
+                "highlight": False,
                 **{
                     k: (bool(v) if isinstance(v, (np.bool_, bool)) else v)
                     for k, v in sq.items()
@@ -329,9 +341,12 @@ def main() -> None:
     profits = [r["bestProfitPct"] for r in tradable if r["bestProfitPct"] is not None]
     avg_best = round(sum(profits) / len(profits), 2) if profits else None
     win_rate = round(100 * len(positives) / len(tradable), 1) if tradable else 0.0
+    if tradable:
+        best_row = max(tradable, key=lambda row: row["bestProfitPct"] or float("-inf"))
+        best_row["highlight"] = True
 
     payload = {
-        "symbol": REPORT_SYMBOL,
+        "symbol": report_symbol,
         "interval": "15m",
         "rule": "deeppro",
         "study": "buy_square_off",
@@ -371,8 +386,9 @@ def main() -> None:
     }
 
     md_lines = [
-        f"# {REPORT_SYMBOL} deeppro BUY square-off study",
+        f"# {report_symbol} deeppro BUY square-off study",
         "",
+        f"- **Symbol:** {report_symbol}",
         "- **Side:** BUY (long) at deeppro **mirror** event (oversold exhaustion)",
         "- **Pattern:** SMI bullish cross from oversold + BB lower tag + rising MACD hist",
         "- **Entry price:** event candle mid `(high + low) / 2`",
@@ -396,10 +412,18 @@ def main() -> None:
                 f"{row['buyPrice']:.2f} | — | — | no exit window |"
             )
             continue
+        date_cell = f"**{row['date']}**" if row["highlight"] else row["date"]
+        event_cell = f"**{row['event']}**" if row["highlight"] else row["event"]
+        profit_cell = (
+            f"**{row['bestProfitPct']:.2f}%**"
+            if row["highlight"]
+            else f"{row['bestProfitPct']:.2f}%"
+        )
+        rsi_cell = f"**{row['eventRsi']:.2f}**" if row["highlight"] else f"{row['eventRsi']:.2f}"
         md_lines.append(
-            f"| {row['date']} | {row['event']} | {row['eventRsi']:.2f} | {up} | {lo} | "
+            f"| {date_cell} | {event_cell} | {rsi_cell} | {up} | {lo} | "
             f"{row['buyPrice']:.2f} | {row['bestTimeIst']} | {row['bestExitPrice']:.2f} | "
-            f"{row['bestProfitPct']:.2f}% |"
+            f"{profit_cell} |"
         )
 
     md_lines.extend(
@@ -450,12 +474,13 @@ def main() -> None:
         raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    json_path = REPORTS_DIR / "deeppro-sunpharma-buy-squareoff-60d.json"
-    md_path = REPORTS_DIR / "deeppro-sunpharma-buy-squareoff-60d.md"
+    tag = report_symbol.lower()
+    json_path = REPORTS_DIR / f"deeppro-{tag}-buy-squareoff-60d.json"
+    md_path = REPORTS_DIR / f"deeppro-{tag}-buy-squareoff-60d.md"
     json_path.write_text(json.dumps(payload, indent=2, default=json_default))
     md_path.write_text("\n".join(md_lines))
 
-    print(f"{REPORT_SYMBOL} deeppro BUY square-off study")
+    print(f"{report_symbol} deeppro BUY square-off study")
     print(
         f"Window: {len(days)} trade days · Signals: {len(rows)} · "
         f"Win rate: {win_rate}% · Avg best: {avg_best}%\n"
@@ -474,10 +499,11 @@ def main() -> None:
                 f"{row['buyPrice']:9.2f} {'—':<8} {'—':>9} {'n/a':>8}"
             )
             continue
+        mark = " <-- best" if row["highlight"] else ""
         print(
             f"{row['date']:<8} {row['event']:<6} {row['eventRsi']:7.2f} {up:<16} {lo:<16} "
             f"{row['buyPrice']:9.2f} {row['bestTimeIst']:<8} {row['bestExitPrice']:9.2f} "
-            f"{row['bestProfitPct']:7.2f}%"
+            f"{row['bestProfitPct']:7.2f}%{mark}"
         )
     print(f"\nWrote {md_path}")
     print(f"Wrote {json_path}")

@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -11,8 +12,6 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
-SYMBOL = "SUNPHARMA.NS"
-REPORT_SYMBOL = "SUNPHARMA"
 OVERBOUGHT = 40
 MIN_PEAK_SMI = 70
 LOOKBACK = 8
@@ -20,6 +19,13 @@ STALL_BODY_RATIO = 0.35
 BB_CLOSE_PCT = 0.3
 SESSION_END = "15:15"
 REPORTS_DIR = Path(__file__).resolve().parents[1] / "reports"
+
+
+def resolve_symbol(raw: str) -> tuple[str, str]:
+    trading = raw.strip().upper().replace(".NS", "")
+    if ":" in trading:
+        trading = trading.split(":")[-1]
+    return f"{trading}.NS", trading
 
 
 def ema(series: pd.Series, period: int) -> pd.Series:
@@ -136,17 +142,17 @@ def short_profit_pct(entry: float, exit_price: float) -> float:
     return (entry - exit_price) / entry * 100.0
 
 
-def fetch_df() -> pd.DataFrame:
+def fetch_df(yahoo_symbol: str) -> pd.DataFrame:
     end = datetime.now()
     start = end - timedelta(days=59)
-    df = yf.Ticker(SYMBOL).history(
+    df = yf.Ticker(yahoo_symbol).history(
         start=start.strftime("%Y-%m-%d"),
         end=(end + timedelta(days=1)).strftime("%Y-%m-%d"),
         interval="15m",
         auto_adjust=True,
     )
     if df.empty:
-        raise SystemExit("No candles returned")
+        raise SystemExit(f"No candles returned for {yahoo_symbol}")
     df = df.tz_convert("Asia/Kolkata").between_time("09:15", SESSION_END)
     df["bb_u"], df["bb_m"], df["bb_l"] = bollinger(df["Close"])
     df["rsi"] = rsi(df["Close"])
@@ -302,7 +308,12 @@ def best_square_off(df: pd.DataFrame, event_ts: pd.Timestamp, sell_price: float)
 
 
 def main() -> None:
-    df = fetch_df()
+    parser = argparse.ArgumentParser(description="deeppro short-SELL square-off study")
+    parser.add_argument("--symbol", default="SUNPHARMA", help="NSE trading symbol")
+    args = parser.parse_args()
+    yahoo_symbol, report_symbol = resolve_symbol(args.symbol)
+
+    df = fetch_df(yahoo_symbol)
     events, days = find_deeppro_events(df)
 
     rows = []
@@ -325,10 +336,7 @@ def main() -> None:
                 "bbLowerProximity": bb_lower,
                 "sellPrice": sell_price,
                 "sellClose": sell_close,
-                "chartMatch": bool(
-                    event_ts.strftime("%Y-%m-%d") == "2026-07-31"
-                    and event_ts.strftime("%H:%M") == "14:00"
-                ),
+                "highlight": False,
                 **{k: (bool(v) if isinstance(v, (np.bool_, bool)) else v) for k, v in sq.items()},
             }
         )
@@ -338,9 +346,12 @@ def main() -> None:
     profits = [r["bestProfitPct"] for r in tradable if r["bestProfitPct"] is not None]
     avg_best = round(sum(profits) / len(profits), 2) if profits else None
     win_rate = round(100 * len(positives) / len(tradable), 1) if tradable else 0.0
+    if tradable:
+        best_row = max(tradable, key=lambda row: row["bestProfitPct"] or float("-inf"))
+        best_row["highlight"] = True
 
     payload = {
-        "symbol": REPORT_SYMBOL,
+        "symbol": report_symbol,
         "interval": "15m",
         "rule": "deeppro",
         "study": "short_sell_square_off",
@@ -374,8 +385,9 @@ def main() -> None:
     }
 
     md_lines = [
-        f"# {REPORT_SYMBOL} deeppro short-SELL square-off study",
+        f"# {report_symbol} deeppro short-SELL square-off study",
         "",
+        f"- **Symbol:** {report_symbol}",
         f"- **Side:** short SELL at deeppro event time",
         f"- **Entry price:** event candle mid `(high + low) / 2`",
         f"- **Square-off:** best later same-day candle mid before `{SESSION_END}` IST",
@@ -398,11 +410,11 @@ def main() -> None:
                 f"{row['sellPrice']:.2f} | — | — | no exit window |"
             )
             continue
-        date_cell = f"**{row['date']}**" if row["chartMatch"] else row["date"]
-        event_cell = f"**{row['event']}**" if row["chartMatch"] else row["event"]
+        date_cell = f"**{row['date']}**" if row["highlight"] else row["date"]
+        event_cell = f"**{row['event']}**" if row["highlight"] else row["event"]
         profit = row["bestProfitPct"]
-        profit_cell = f"**{profit:.2f}%**" if row["chartMatch"] else f"{profit:.2f}%"
-        rsi_cell = f"**{row['eventRsi']:.2f}**" if row["chartMatch"] else f"{row['eventRsi']:.2f}"
+        profit_cell = f"**{profit:.2f}%**" if row["highlight"] else f"{profit:.2f}%"
+        rsi_cell = f"**{row['eventRsi']:.2f}**" if row["highlight"] else f"{row['eventRsi']:.2f}"
         md_lines.append(
             f"| {date_cell} | {event_cell} | {rsi_cell} | {up} | {lo} | "
             f"{row['sellPrice']:.2f} | {row['bestTimeIst']} | {row['bestExitPrice']:.2f} | {profit_cell} |"
@@ -439,7 +451,7 @@ def main() -> None:
             "- **Best SQ off** = highest profit using candle mid prices (aligned with engine mid-price convention).",
             "- **Best low SQ** = theoretical best if cover filled at that candle's low.",
             "- Same-day only; no overnight holds.",
-            "- Chart pink-circle reference row: **31 Jul 14:00**.",
+            "- Highlighted row = best profit % in the window.",
             "",
         ]
     )
@@ -456,12 +468,13 @@ def main() -> None:
         raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
     REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-    json_path = REPORTS_DIR / "deeppro-sunpharma-short-squareoff-60d.json"
-    md_path = REPORTS_DIR / "deeppro-sunpharma-short-squareoff-60d.md"
+    tag = report_symbol.lower()
+    json_path = REPORTS_DIR / f"deeppro-{tag}-short-squareoff-60d.json"
+    md_path = REPORTS_DIR / f"deeppro-{tag}-short-squareoff-60d.md"
     json_path.write_text(json.dumps(payload, indent=2, default=json_default))
     md_path.write_text("\n".join(md_lines))
 
-    print(f"{REPORT_SYMBOL} deeppro short-SELL square-off study")
+    print(f"{report_symbol} deeppro short-SELL square-off study")
     print(f"Window: {len(days)} trade days · Signals: {len(rows)} · Win rate: {win_rate}% · Avg best: {avg_best}%\n")
     print(
         f"{'Date':<8} {'Event':<6} {'RSI':>7} {'BBup%':<16} {'BBlo%':<16} "
@@ -477,7 +490,7 @@ def main() -> None:
                 f"{row['sellPrice']:9.2f} {'—':<8} {'—':>9} {'n/a':>8}"
             )
             continue
-        mark = " <-- pink" if row["chartMatch"] else ""
+        mark = " <-- best" if row["highlight"] else ""
         print(
             f"{row['date']:<8} {row['event']:<6} {row['eventRsi']:7.2f} {up:<16} {lo:<16} "
             f"{row['sellPrice']:9.2f} {row['bestTimeIst']:<8} {row['bestExitPrice']:9.2f} "

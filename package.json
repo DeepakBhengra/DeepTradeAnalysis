@@ -22,7 +22,9 @@
     "scan:deeppro:sunpharma": "tsx scripts/scan-deeppro.ts --symbol SUNPHARMA --trade-days 20",
     "scan:deeppro:sunpharma:60d": "tsx scripts/scan-deeppro.ts --symbol SUNPHARMA --trade-days 60",
     "study:deeppro:short": "python3 scripts/study-deeppro-short-squareoff.py",
-    "study:deeppro:buy": "python3 scripts/study-deeppro-buy-squareoff.py"
+    "study:deeppro:buy": "python3 scripts/study-deeppro-buy-squareoff.py",
+    "study:deeppro:short:tcs": "python3 scripts/study-deeppro-short-squareoff.py --symbol TCS",
+    "study:deeppro:buy:tcs": "python3 scripts/study-deeppro-buy-squareoff.py --symbol TCS"
   },
   "dependencies": {
     "cors": "^2.8.5",

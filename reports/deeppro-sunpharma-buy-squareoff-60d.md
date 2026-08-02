@@ -1,5 +1,6 @@
 # SUNPHARMA deeppro BUY square-off study
 
+- **Symbol:** SUNPHARMA
 - **Side:** BUY (long) at deeppro **mirror** event (oversold exhaustion)
 - **Pattern:** SMI bullish cross from oversold + BB lower tag + rising MACD hist
 - **Entry price:** event candle mid `(high + low) / 2`
@@ -21,7 +22,7 @@
 | 08 Jul | 14:15 | 11.72 | 2.018 | 0.051 (close) | 1879.25 | 15:15 | 1888.35 | 0.48% |
 | 08 Jul | 15:00 | 38.41 | 1.392 | 0.644 | 1887.20 | 15:15 | 1888.35 | 0.06% |
 | 10 Jul | 14:30 | 32.35 | 0.822 | 0.252 (close) | 1931.05 | 15:00 | 1934.05 | 0.16% |
-| 13 Jul | 11:15 | 33.25 | 1.144 | 0.393 | 1917.50 | 13:45 | 1930.20 | 0.66% |
+| **13 Jul** | **11:15** | **33.25** | 1.144 | 0.393 | 1917.50 | 13:45 | 1930.20 | **0.66%** |
 | 15 Jul | 14:45 | 46.74 | 0.256 (close) | 0.135 (close) | 1953.50 | 15:00 | 1952.30 | -0.06% |
 | 24 Jul | 13:30 | 24.32 | 0.881 | 0.290 (close) | 1940.35 | 14:00 | 1943.20 | 0.15% |
 

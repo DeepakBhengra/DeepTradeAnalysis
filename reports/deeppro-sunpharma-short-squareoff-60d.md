@@ -1,5 +1,6 @@
 # SUNPHARMA deeppro short-SELL square-off study
 
+- **Symbol:** SUNPHARMA
 - **Side:** short SELL at deeppro event time
 - **Entry price:** event candle mid `(high + low) / 2`
 - **Square-off:** best later same-day candle mid before `15:15` IST
@@ -61,4 +62,4 @@
 - **Best SQ off** = highest profit using candle mid prices (aligned with engine mid-price convention).
 - **Best low SQ** = theoretical best if cover filled at that candle's low.
 - Same-day only; no overnight holds.
-- Chart pink-circle reference row: **31 Jul 14:00**.
+- Highlighted row = best profit % in the window.
