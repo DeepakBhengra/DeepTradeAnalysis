@@ -4,6 +4,7 @@ import { assertKiteApiKeys, config, getKiteAppUrl, getKiteRedirectUrl } from "..
 import {
   getKiteAccessToken,
   hasValidKiteAccessToken,
+  normalizeAndValidateKiteAccessToken,
   persistKiteAccessTokenToEnv,
 } from "./kiteTokenStore.js";
 
@@ -78,4 +79,10 @@ export function getActiveKiteAccessToken(): string {
   }
 
   return getKiteAccessToken();
+}
+
+export function setManualKiteAccessToken(accessToken: string): KiteAuthStatus {
+  const normalized = normalizeAndValidateKiteAccessToken(accessToken);
+  persistKiteAccessTokenToEnv(normalized);
+  return getKiteAuthStatus();
 }

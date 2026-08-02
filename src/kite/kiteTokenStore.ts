@@ -23,6 +23,16 @@ export function hasValidKiteAccessToken(): boolean {
   return token.length > 0 && !PLACEHOLDER_TOKENS.has(token);
 }
 
+export function normalizeAndValidateKiteAccessToken(token: string): string {
+  const normalized = normalizeToken(token);
+  if (!normalized || PLACEHOLDER_TOKENS.has(normalized)) {
+    throw new Error(
+      "Enter a valid Kite access token (not a placeholder value).",
+    );
+  }
+  return normalized;
+}
+
 export function setKiteAccessToken(token: string): void {
   const normalized = normalizeToken(token);
   runtimeAccessToken = normalized;
