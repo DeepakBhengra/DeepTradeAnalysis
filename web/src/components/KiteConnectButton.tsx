@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchKiteStatus, type KiteAuthStatus } from "../api/kiteAuth";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
+import {
+  fetchKiteStatus,
+  submitKiteAccessToken,
+  type KiteAuthStatus,
+} from "../api/kiteAuth";
 
 interface KiteConnectButtonProps {
   onConnected?: () => void;
@@ -17,7 +21,10 @@ function buildLoginHref(status: KiteAuthStatus | null): string | null {
 export function KiteConnectButton({ onConnected }: KiteConnectButtonProps) {
   const [status, setStatus] = useState<KiteAuthStatus | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [accessToken, setAccessToken] = useState("");
+  const [showTokenForm, setShowTokenForm] = useState(false);
 
   const loginHref = useMemo(() => buildLoginHref(status), [status]);
 
@@ -27,6 +34,9 @@ export function KiteConnectButton({ onConnected }: KiteConnectButtonProps) {
       const next = await fetchKiteStatus();
       setStatus(next);
       setError(null);
+      if (!next.connected) {
+        setShowTokenForm(true);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(
@@ -60,41 +70,102 @@ export function KiteConnectButton({ onConnected }: KiteConnectButtonProps) {
 
   const connected = status?.connected ?? false;
 
+  async function handleSaveToken(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    try {
+      setSaving(true);
+      setError(null);
+      const next = await submitKiteAccessToken(accessToken);
+      setStatus(next);
+      setAccessToken("");
+      setShowTokenForm(false);
+      onConnected?.();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setError(message);
+    } finally {
+      setSaving(false);
+    }
+  }
+
   return (
     <div className="flex flex-col items-end gap-1">
-      {loginHref ? (
-        <a
-          href={loginHref}
-          className={`inline-flex cursor-pointer items-center rounded-sm border px-2.5 py-1 text-xs no-underline ${
-            connected
-              ? "border-kite-green text-kite-green hover:bg-kite-surface"
-              : "border-kite-orange bg-kite-orange text-white hover:opacity-90"
-          }`}
+      <div className="flex items-center gap-2">
+        {!connected && (
+          <button
+            type="button"
+            onClick={() => setShowTokenForm((open) => !open)}
+            className="cursor-pointer rounded-sm border border-kite-orange bg-kite-orange px-2.5 py-1 text-xs text-white hover:opacity-90"
+          >
+            {loading ? "Checking Kite..." : "Enter Kite token"}
+          </button>
+        )}
+        {connected ? (
+          <button
+            type="button"
+            onClick={() => setShowTokenForm((open) => !open)}
+            className="cursor-pointer rounded-sm border border-kite-green px-2.5 py-1 text-xs text-kite-green hover:bg-kite-surface"
+          >
+            Update Kite token
+          </button>
+        ) : null}
+        {loginHref ? (
+          <a
+            href={loginHref}
+            className="inline-flex cursor-pointer items-center rounded-sm border border-kite-border bg-kite-surface px-2.5 py-1 text-xs text-kite-text no-underline hover:bg-kite-bg"
+          >
+            {connected ? "Reconnect via Zerodha" : "Login via Zerodha"}
+          </a>
+        ) : null}
+      </div>
+
+      {showTokenForm && (
+        <form
+          onSubmit={(event) => void handleSaveToken(event)}
+          className="mt-1 flex w-[min(100vw-2rem,320px)] flex-col items-stretch gap-1.5 rounded-sm border border-kite-border bg-kite-surface p-2"
         >
-          {loading ? "Checking Kite..." : connected ? "Reconnect Kite" : "Connect Kite"}
-        </a>
-      ) : (
-        <button
-          type="button"
-          disabled={loading}
-          onClick={() => void loadStatus()}
-          className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2.5 py-1 text-xs text-kite-text hover:bg-kite-surface disabled:opacity-60"
-        >
-          {loading ? "Checking Kite..." : "Connect Kite"}
-        </button>
+          <label className="text-[10px] font-medium uppercase tracking-wide text-kite-muted">
+            Kite access token
+          </label>
+          <input
+            type="password"
+            autoComplete="off"
+            spellCheck={false}
+            value={accessToken}
+            onChange={(event) => setAccessToken(event.target.value)}
+            placeholder="Paste today's access token"
+            className="border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text outline-none focus:border-kite-orange"
+          />
+          <div className="flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowTokenForm(false);
+                setAccessToken("");
+                setError(null);
+              }}
+              className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-[10px] text-kite-text hover:bg-kite-surface"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving || accessToken.trim().length === 0}
+              className="cursor-pointer rounded-sm border border-kite-orange bg-kite-orange px-2 py-1 text-[10px] font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? "Saving..." : "Save token"}
+            </button>
+          </div>
+        </form>
       )}
+
       <p className="m-0 max-w-[240px] text-right text-[10px] text-kite-muted">
         {connected
           ? "Kite session active for today"
-          : "Opens API login on port 3001"}
+          : "Paste today's Kite access token to connect"}
       </p>
-      {status?.redirectUrl && (
-        <p className="m-0 max-w-[240px] truncate text-right text-[10px] text-kite-muted">
-          Callback: {status.redirectUrl}
-        </p>
-      )}
       {error && (
-        <p className="m-0 max-w-[240px] text-right text-[10px] text-kite-red">
+        <p className="m-0 max-w-[280px] text-right text-[10px] text-kite-red">
           {error}
         </p>
       )}

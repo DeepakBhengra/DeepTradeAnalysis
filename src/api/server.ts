@@ -7,6 +7,7 @@ import {
   completeKiteLogin,
   getKiteAuthStatus,
   getKiteLoginUrl,
+  setManualKiteAccessToken,
 } from "../kite/kiteAuth.js";
 import {
   getSamcoAuthStatus,
@@ -104,6 +105,26 @@ app.get("/api/health", (_req, res) => {
 
 app.get("/api/kite/status", (_req, res) => {
   res.json(getKiteAuthStatus());
+});
+
+app.post("/api/kite/token", (req, res) => {
+  try {
+    const accessToken =
+      typeof req.body?.accessToken === "string"
+        ? req.body.accessToken
+        : typeof req.body?.access_token === "string"
+          ? req.body.access_token
+          : "";
+
+    const status = setManualKiteAccessToken(accessToken);
+    cache.clear();
+    simulationCache.clear();
+    dayScanSimulationCache.clear();
+    res.json(status);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    res.status(400).json({ error: message });
+  }
 });
 
 app.get("/api/kite/login", (req, res) => {
