@@ -8,12 +8,12 @@
 - **SELL profit %:** `(sell - sq) / sell * 100`
 - **BUY profit %:** `(sq - buy) / buy * 100`
 - **Filter:** profit ≥ 0.75%
-- **Stocks scanned:** 50 · with signals: 38 · in report: 14
-- **Trades scanned:** 48
+- **Stocks scanned:** 50 · with signals: 25 · in report: 14
+- **Trades scanned:** 31
 - **Trades in report:** 16 (9 SELL · 7 BUY)
 - **Fetch errors:** 0
 - **Data:** Kite Connect historical (NSE sector watchlist, 15minute)
-- **Generated (UTC):** 2026-08-02T17:51:08.144Z
+- **Generated (UTC):** 2026-08-02T18:14:35.612Z
 
 ## SELL
 
