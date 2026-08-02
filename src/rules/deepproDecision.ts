@@ -217,8 +217,11 @@ export function passesDeepproSellQuality(signal: DeepproSignal): boolean {
 
 /**
  * BUY quality gate — favors same-day square-off ≥ ~0.75%:
- * stall/OS-exit, BB lower tight, event ≤ 13:15, RSI ≤ 50 (or ≤ 60 with BB match).
- * Does not require ultra-low RSI ≤ 30.
+ * stall/OS-exit + one of:
+ *   A) BB lower matched (not both-band squeeze; after 11:00 needs RSI≥40)
+ *   B) unmatched morning proximity (event≤10:30, BB lower gap≤0.65)
+ *   C) rare extreme late stall (RSI≤12, MACD hist≤-5, event≤12:30)
+ * Soft RSI caps still apply (≤50, or ≤60 when BB lower matched).
  */
 export function passesDeepproBuyQuality(signal: DeepproSignal): boolean {
   const quality = config.deeppro.qualityFilter;
@@ -236,9 +239,51 @@ export function passesDeepproBuyQuality(signal: DeepproSignal): boolean {
     return false;
   }
 
-  const bbMatched = signal.bbLowerProximity.matchType != null;
-  const maxRsi = bbMatched ? buy.matchedBbMaxEventRsi : buy.maxEventRsi;
-  return signal.eventRsi <= maxRsi;
+  const bbLowerMatched = signal.bbLowerProximity.matchType != null;
+  const bbUpperMatched = signal.bbUpperProximity.matchType != null;
+  const maxRsi = bbLowerMatched ? buy.matchedBbMaxEventRsi : buy.maxEventRsi;
+  if (signal.eventRsi > maxRsi) {
+    return false;
+  }
+
+  if (buy.rejectBothBandsMatched && bbLowerMatched && bbUpperMatched) {
+    return false;
+  }
+
+  // Path A — BB lower confirmed
+  if (bbLowerMatched) {
+    const needsRecovery = !isInInclusiveHmWindow(
+      signal.eventTimeIst,
+      null,
+      buy.matchedRecoveryAfterIst,
+    );
+    if (needsRecovery && signal.eventRsi < buy.matchedRecoveryMinEventRsi) {
+      return false;
+    }
+    return true;
+  }
+
+  // Path B — unmatched morning proximity
+  if (
+    isInInclusiveHmWindow(signal.eventTimeIst, null, buy.unmatchedEventToIst) &&
+    signal.bbLowerProximity.gapPct <= buy.unmatchedMaxBbLowerGapPct
+  ) {
+    return true;
+  }
+
+  // Path C — rare extreme late stall
+  if (
+    buy.allowExtremeStallException &&
+    signal.eventKind === "stall_at_lows" &&
+    signal.eventRsi <= buy.extremeStallMaxEventRsi &&
+    signal.bbLowerProximity.gapPct <= buy.extremeStallMaxBbLowerGapPct &&
+    signal.macdHistogram <= buy.extremeStallMaxMacdHist &&
+    isInInclusiveHmWindow(signal.eventTimeIst, null, buy.extremeStallEventToIst)
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 function withSellQualityReasons(signal: DeepproSignal): DeepproSignal {
@@ -258,7 +303,7 @@ function withBuyQualityReasons(signal: DeepproSignal): DeepproSignal {
     ...signal,
     reasons: [
       ...signal.reasons,
-      `Quality BUY: ${buy.allowedEventKinds.join("|")}, event≤${buy.eventToIst}, BB lower gap≤${buy.maxBbLowerGapPct}%, RSI≤${buy.maxEventRsi} (≤${buy.matchedBbMaxEventRsi} if BB matched)`,
+      `Quality BUY: ${buy.allowedEventKinds.join("|")}; BB-lower match (no dual-band squeeze; after ${buy.matchedRecoveryAfterIst} RSI≥${buy.matchedRecoveryMinEventRsi}) or unmatched≤${buy.unmatchedEventToIst} gap≤${buy.unmatchedMaxBbLowerGapPct}% or extreme stall RSI≤${buy.extremeStallMaxEventRsi}`,
     ],
   };
 }

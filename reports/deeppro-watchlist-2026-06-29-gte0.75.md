@@ -8,12 +8,12 @@
 - **SELL profit %:** `(sell - sq) / sell * 100`
 - **BUY profit %:** `(sq - buy) / buy * 100`
 - **Filter:** profit ≥ 0.75%
-- **Stocks scanned:** 50 · with signals: 25 · in report: 14
-- **Trades scanned:** 31
+- **Stocks scanned:** 50 · with signals: 20 · in report: 14
+- **Trades scanned:** 24
 - **Trades in report:** 16 (9 SELL · 7 BUY)
 - **Fetch errors:** 0
 - **Data:** Kite Connect historical (NSE sector watchlist, 15minute)
-- **Generated (UTC):** 2026-08-02T18:14:35.612Z
+- **Generated (UTC):** 2026-08-02T19:13:26.221Z
 
 ## SELL
 
@@ -45,5 +45,5 @@
 
 - Same-day square-off only; no overnight holds.
 - Kite Connect historical 15m only — same deeppro engine as Post-Mortem / Day Scan.
-- Deeppro quality gates enabled (favor same-day SQ ≥ ~0.75%): SELL event 10:45–12:30 + RSI/BB rules; BUY stall/OS-exit + BB lower + event≤13:15.
+- Deeppro quality gates enabled (favor same-day SQ ≥ ~0.75%): SELL event 10:45–12:30 + RSI/BB rules; BUY stall/OS-exit with BB-match recovery / morning unmatched proximity / extreme-stall paths.
 

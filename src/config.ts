@@ -458,16 +458,40 @@ export const config = {
         lowRsiExitMaxBbLowerGapPct: 0.3,
       },
       buy: {
-        /** Avoid late weak bounces; 13:15 keeps INFY-style early-afternoon stalls. */
+        /** Hard cap; practical entries are further limited by paths below. */
         eventToIst: "13:15",
         /** Soft RSI cap — do not require ultra-oversold ≤30. */
         maxEventRsi: 50,
-        /** Must hug lower band. */
+        /** Outer BB lower proximity cap (matched path / extreme exception). */
         maxBbLowerGapPct: 1.0,
         /** Prefer stall / OS-exit over plain SMI/MACD crosses. */
         allowedEventKinds: ["stall_at_lows", "smi_exit_oversold"],
         /** If BB lower is close/crossed, allow slightly higher RSI (GICRE 12:30). */
         matchedBbMaxEventRsi: 60,
+        /**
+         * Path B — unmatched proximity BUYs only in the morning.
+         * Tuned on 2026-06-01 (late bank/metal stalls failed) vs 2026-06-29 winners.
+         */
+        unmatchedEventToIst: "10:30",
+        unmatchedMaxBbLowerGapPct: 0.65,
+        /**
+         * Path A — after this IST time, BB-matched BUY needs RSI recovering
+         * (≥40). Mid-morning waterfall touches (PNB/TMPV 1 Jun) stay out;
+         * afternoon recovery stalls (INFY/GICRE 29 Jun) stay in.
+         */
+        matchedRecoveryAfterIst: "11:00",
+        matchedRecoveryMinEventRsi: 40,
+        /** Reject chop when price tags both Bollinger bands on the event candle. */
+        rejectBothBandsMatched: true,
+        /**
+         * Path C — rare late extreme stall (EICHERMOT 29 Jun): RSI≤12 with
+         * deeply negative MACD hist, still near the lower band.
+         */
+        allowExtremeStallException: true,
+        extremeStallMaxEventRsi: 12,
+        extremeStallMaxBbLowerGapPct: 0.9,
+        extremeStallMaxMacdHist: -5,
+        extremeStallEventToIst: "12:30",
       },
     },
   },

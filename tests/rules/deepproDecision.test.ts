@@ -356,6 +356,7 @@ describe("evaluateDeepproSignals", () => {
   });
 
   it("applies BUY quality gate for ≥0.75% favoring setups", () => {
+    // Path B — early unmatched proximity (INDUSINDBK 29 Jun)
     expect(
       passesDeepproBuyQuality(
         stubSignal({
@@ -393,7 +394,7 @@ describe("evaluateDeepproSignals", () => {
       ),
     ).toBe(false);
 
-    // Matched BB lower allows RSI up to 60
+    // Path A — matched BB lower with recovering RSI (GICRE 29 Jun 12:30)
     expect(
       passesDeepproBuyQuality(
         stubSignal({
@@ -407,6 +408,90 @@ describe("evaluateDeepproSignals", () => {
             matchType: "close",
             price: 100,
             bbLevel: 99.8,
+          },
+        }),
+      ),
+    ).toBe(true);
+
+    // Late unmatched stall rejected (1 Jun bank/metal noise)
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "11:30",
+          eventKind: "stall_at_lows",
+          eventRsi: 30,
+          bbLowerProximity: {
+            gapPct: 0.36,
+            signedGapPct: 0.36,
+            matchType: null,
+            price: 100,
+            bbLevel: 99.6,
+          },
+        }),
+      ),
+    ).toBe(false);
+
+    // Mid-morning BB-touch waterfall (PNB 1 Jun) — matched but RSI still weak
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "11:30",
+          eventKind: "stall_at_lows",
+          eventRsi: 30,
+          bbLowerProximity: {
+            gapPct: 0.2,
+            signedGapPct: 0.2,
+            matchType: "close",
+            price: 100,
+            bbLevel: 99.8,
+          },
+        }),
+      ),
+    ).toBe(false);
+
+    // Dual-band squeeze rejected (SBIN 1 Jun)
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "11:30",
+          eventKind: "stall_at_lows",
+          eventRsi: 43,
+          bbUpperProximity: {
+            gapPct: 0.21,
+            signedGapPct: -0.21,
+            matchType: "close",
+            price: 101,
+            bbLevel: 101.2,
+          },
+          bbLowerProximity: {
+            gapPct: 0.06,
+            signedGapPct: 0.06,
+            matchType: "crossed",
+            price: 100,
+            bbLevel: 99.9,
+          },
+        }),
+      ),
+    ).toBe(false);
+
+    // Path C — extreme late stall exception (EICHERMOT 29 Jun)
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "12:30",
+          eventKind: "stall_at_lows",
+          eventRsi: 10,
+          macdHistogram: -15,
+          bbLowerProximity: {
+            gapPct: 0.87,
+            signedGapPct: 0.87,
+            matchType: null,
+            price: 100,
+            bbLevel: 99.1,
           },
         }),
       ),
