@@ -185,6 +185,38 @@ export interface Deepak3DayScanEntry {
   snapshots: IndicatorSnapshot[];
 }
 
+export type DeepproEventKind =
+  | "smi_cross"
+  | "stall_at_highs"
+  | "smi_exit_overbought"
+  | "macd_bear_cross";
+
+export interface DeepproSignal {
+  side: "SELL";
+  rule: "deeppro";
+  dateKey: string;
+  /** SMI bearish-cross candle time (IST) */
+  timeIst: string;
+  /** Nearby chart-event time (stall / OB exit / MACD cross) */
+  eventTimeIst: string;
+  eventKind: DeepproEventKind;
+  price: number;
+  smi: number;
+  smiSignal: number;
+  peakSmi: number;
+  rsi: number;
+  macdHistogram: number;
+  reasons: string[];
+}
+
+export interface DeepproScanResult {
+  dateKey: string;
+  rule: "deeppro";
+  sessionStart: string;
+  sessionEnd: string;
+  signals: DeepproSignal[];
+}
+
 export interface ParameterCheckCandleRef {
   timeIst: string;
   intervalLabel: string;

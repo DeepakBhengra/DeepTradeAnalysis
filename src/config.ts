@@ -392,6 +392,24 @@ export const config = {
     macdHistogramFlatThreshold: 0.15,
   },
 
+  /** deeppro — Stch Mtm exhaustion reversal (pink-circle pattern) */
+  deeppro: {
+    sessionStart: "09:15",
+    sessionEnd: "15:30",
+    smi: {
+      lengthK: 10,
+      lengthD: 3,
+      lengthEma: 3,
+    },
+    /** SMI overbought threshold (Kite shaded zone ~40) */
+    overboughtLevel: 40,
+    /** Require a deep overbought peak in lookback (chart-quality filter) */
+    minPeakSmi: 70,
+    lookbackBars: 8,
+    /** Max body/range to treat a post-cross candle as stall/doji */
+    stallBodyRatioMax: 0.35,
+  },
+
   volume: {
     smaPeriod: 20,
     spikeThreshold: 1.5,
