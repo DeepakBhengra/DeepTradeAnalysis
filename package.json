@@ -20,7 +20,8 @@
     "backtest:dual-band": "tsx scripts/backtest-dual-band-deferral.ts",
     "backtest:bb-trend": "tsx scripts/backtest-bb-trend.ts",
     "scan:deeppro:sunpharma": "tsx scripts/scan-deeppro.ts --symbol SUNPHARMA --trade-days 20",
-    "scan:deeppro:sunpharma:60d": "tsx scripts/scan-deeppro.ts --symbol SUNPHARMA --trade-days 60"
+    "scan:deeppro:sunpharma:60d": "tsx scripts/scan-deeppro.ts --symbol SUNPHARMA --trade-days 60",
+    "study:deeppro:short": "python3 scripts/study-deeppro-short-squareoff.py"
   },
   "dependencies": {
     "cors": "^2.8.5",
