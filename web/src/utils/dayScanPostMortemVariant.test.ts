@@ -24,7 +24,7 @@ function stubPayload(
     series: [],
     reasons: [],
     ...overrides,
-  } as DashboardPayload;
+  } as unknown as DashboardPayload;
 }
 
 describe("dayScanPostMortemVariant", () => {
