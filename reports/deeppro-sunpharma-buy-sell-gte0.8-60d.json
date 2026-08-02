@@ -1,0 +1,94 @@
+{
+  "symbol": "SUNPHARMA",
+  "rule": "deeppro",
+  "titleSuffix": "square-off study (profit \u2265 0.8%)",
+  "generatedAtUtc": "2026-08-02T17:19:09Z",
+  "window": {
+    "tradeDays": 41,
+    "from": "2026-06-04",
+    "to": "2026-07-31"
+  },
+  "summary": {
+    "trades": 2,
+    "sellCount": 2,
+    "buyCount": 0,
+    "avgBestProfitPct": 0.8,
+    "maxBestProfitPct": 0.8
+  },
+  "trades": [
+    {
+      "date": "25 Jun",
+      "dateKey": "2026-06-25",
+      "event": "11:30",
+      "eventKind": "stall_at_highs",
+      "eventRsi": 54.11,
+      "bbUpperProximity": {
+        "gapPct": 0.337,
+        "signedGapPct": -0.337,
+        "matchType": null,
+        "price": 1879.3,
+        "bbLevel": 1885.63
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.3274,
+        "signedGapPct": -0.3274,
+        "matchType": null,
+        "price": 1877.0,
+        "bbLevel": 1870.85
+      },
+      "sellPrice": 1878.15,
+      "sellClose": 1878.1,
+      "highlight": true,
+      "hasExitWindow": true,
+      "bestTimeIst": "13:45",
+      "bestExitPrice": 1863.2,
+      "bestProfitPct": 0.8,
+      "bestExitLow": 1859.3,
+      "bestLowTimeIst": "15:00",
+      "bestLowProfitPct": 1.0,
+      "eodTimeIst": "15:15",
+      "eodExitPrice": 1863.55,
+      "eodProfitPct": 0.78,
+      "positive": true,
+      "side": "SELL",
+      "entryPrice": 1878.15
+    },
+    {
+      "date": "29 Jun",
+      "dateKey": "2026-06-29",
+      "event": "12:00",
+      "eventKind": "stall_at_highs",
+      "eventRsi": 61.23,
+      "bbUpperProximity": {
+        "gapPct": 0.8754,
+        "signedGapPct": -0.8754,
+        "matchType": null,
+        "price": 1888.5,
+        "bbLevel": 1905.0
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.5554,
+        "signedGapPct": -1.5554,
+        "matchType": null,
+        "price": 1884.5,
+        "bbLevel": 1855.18
+      },
+      "sellPrice": 1886.5,
+      "sellClose": 1885.3,
+      "highlight": false,
+      "hasExitWindow": true,
+      "bestTimeIst": "14:30",
+      "bestExitPrice": 1871.4,
+      "bestProfitPct": 0.8,
+      "bestExitLow": 1868.5,
+      "bestLowTimeIst": "14:30",
+      "bestLowProfitPct": 0.95,
+      "eodTimeIst": "15:15",
+      "eodExitPrice": 1873.2,
+      "eodProfitPct": 0.71,
+      "positive": true,
+      "side": "SELL",
+      "entryPrice": 1886.5
+    }
+  ]
+}

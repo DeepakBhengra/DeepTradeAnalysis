@@ -1,0 +1,21 @@
+{
+  "symbol": "SUNPHARMA",
+  "rule": "deeppro",
+  "filter": "best same-day square-off profit % > 0.8",
+  "maxTrades": 60,
+  "generatedAtUtc": "2026-08-02T17:18:44Z",
+  "window": {
+    "tradeDays": 41,
+    "from": "2026-06-04",
+    "to": "2026-07-31"
+  },
+  "summary": {
+    "sellSignalsGtFilter": 0,
+    "buySignalsGtFilter": 0,
+    "combinedSignalsGtFilter": 0,
+    "reportedTrades": 0,
+    "sourceSellSignals": 12,
+    "sourceBuySignals": 3
+  },
+  "trades": []
+}
