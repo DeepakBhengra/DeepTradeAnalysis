@@ -401,10 +401,14 @@ export const config = {
       lengthD: 3,
       lengthEma: 3,
     },
-    /** SMI overbought threshold (Kite shaded zone ~40) */
+    /** SMI overbought threshold (Kite shaded zone ~40) — SELL path */
     overboughtLevel: 40,
     /** Require a deep overbought peak in lookback (chart-quality filter) */
     minPeakSmi: 70,
+    /** SMI oversold threshold (mirror of overbought) — BUY path */
+    oversoldLevel: -40,
+    /** Require a deep oversold trough in lookback (mirror of minPeakSmi) */
+    maxTroughSmi: -70,
     lookbackBars: 8,
     /** Max body/range to treat a post-cross candle as stall/doji */
     stallBodyRatioMax: 0.35,

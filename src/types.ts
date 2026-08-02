@@ -188,8 +188,11 @@ export interface Deepak3DayScanEntry {
 export type DeepproEventKind =
   | "smi_cross"
   | "stall_at_highs"
+  | "stall_at_lows"
   | "smi_exit_overbought"
-  | "macd_bear_cross";
+  | "smi_exit_oversold"
+  | "macd_bear_cross"
+  | "macd_bull_cross";
 
 export interface DeepproBbProximity {
   /** Absolute gap % between price extreme and band (of close) */
@@ -202,17 +205,18 @@ export interface DeepproBbProximity {
 }
 
 export interface DeepproSignal {
-  side: "SELL";
+  side: "BUY" | "SELL";
   rule: "deeppro";
   dateKey: string;
-  /** SMI bearish-cross candle time (IST) */
+  /** SMI cross candle time (IST) */
   timeIst: string;
-  /** Nearby chart-event time (stall / OB exit / MACD cross) */
+  /** Nearby chart-event time (stall / OB-OS exit / MACD cross) */
   eventTimeIst: string;
   eventKind: DeepproEventKind;
   price: number;
   smi: number;
   smiSignal: number;
+  /** Peak SMI (SELL) or trough SMI (BUY, most negative) in lookback */
   peakSmi: number;
   /** RSI at SMI cross candle */
   rsi: number;

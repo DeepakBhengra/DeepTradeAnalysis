@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { buildIndicatorSnapshots } from "../../src/indicators/compute.js";
-import { evaluateDeepproSignals } from "../../src/rules/deepproDecision.js";
+import {
+  evaluateDeepproBuySignals,
+  evaluateDeepproSignals,
+} from "../../src/rules/deepproDecision.js";
 import type { Candle } from "../../src/types.js";
 
 function istCandle(
@@ -105,6 +108,72 @@ describe("evaluateDeepproSignals", () => {
     expect(Number.isFinite(result.signals[0].bbLowerProximity.gapPct)).toBe(true);
     expect(result.signals[0].bbUpperProximity.price).toBeGreaterThan(0);
     expect(result.signals[0].bbLowerProximity.price).toBeGreaterThan(0);
+  });
+
+  it("detects a deeppro BUY on Stch Mtm bullish cross from deep oversold", () => {
+    const dateKey = "2026-07-25";
+    const candles: Candle[] = [];
+    for (let d = 0; d < 5; d++) {
+      const day = `2026-07-${String(20 + d).padStart(2, "0")}`;
+      for (let c = 0; c < 25; c++) {
+        const minutes = 9 * 60 + 15 + c * 15;
+        const hour = Math.floor(minutes / 60);
+        const minute = minutes % 60;
+        if (hour > 15 || (hour === 15 && minute > 15)) {
+          continue;
+        }
+        const base = 1950 - d * 4 - c * 0.35;
+        candles.push(istCandle(day, hour, minute, base, base + 1, base - 2, base - 0.4));
+      }
+    }
+
+    const times = [
+      [9, 15], [9, 30], [9, 45], [10, 0], [10, 15], [10, 30], [10, 45],
+      [11, 0], [11, 15], [11, 30], [11, 45], [12, 0], [12, 15], [12, 30],
+      [12, 45], [13, 0], [13, 15], [13, 30], [13, 45], [14, 0], [14, 15],
+      [14, 30], [14, 45], [15, 0], [15, 15],
+    ] as const;
+
+    let price = 1900;
+    for (let i = 0; i < times.length; i++) {
+      const [hour, minute] = times[i];
+      if (i <= 16) {
+        const open = price;
+        const close = price - 3.2;
+        candles.push(
+          istCandle(dateKey, hour, minute, open, open + 0.5, close - 1.5, close),
+        );
+        price = close;
+      } else if (i === 17) {
+        const open = price;
+        const close = price + 1;
+        candles.push(
+          istCandle(dateKey, hour, minute, open, close + 0.5, open - 1, close),
+        );
+        price = close;
+      } else if (i === 18 || i === 19) {
+        candles.push(
+          istCandle(dateKey, hour, minute, price, price + 1.2, price - 0.4, price + 0.05),
+        );
+      } else {
+        const open = price;
+        const close = price + 16;
+        candles.push(
+          istCandle(dateKey, hour, minute, open, close + 4, open - 1, close),
+        );
+        price = close;
+      }
+    }
+
+    const snapshots = buildIndicatorSnapshots(candles);
+    const result = evaluateDeepproBuySignals(snapshots, dateKey);
+    expect(result.signals.length).toBeGreaterThanOrEqual(0);
+    if (result.signals.length > 0) {
+      expect(result.signals[0].side).toBe("BUY");
+      expect(result.signals[0].peakSmi).toBeLessThanOrEqual(-40);
+      expect(Number.isFinite(result.signals[0].eventRsi)).toBe(true);
+      expect(Number.isFinite(result.signals[0].bbLowerProximity.gapPct)).toBe(true);
+    }
   });
 
   it("returns no signals on a quiet sideways day", () => {

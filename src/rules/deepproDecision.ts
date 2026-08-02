@@ -108,6 +108,23 @@ function taggedUpperBand(
   return false;
 }
 
+function taggedLowerBand(
+  snapshots: IndicatorSnapshot[],
+  from: number,
+  to: number,
+): boolean {
+  for (let i = from; i <= to; i++) {
+    const snapshot = snapshots[i];
+    if (!snapshot) {
+      continue;
+    }
+    if (classifyBbBottomMatch(snapshot.bollinger.lower, snapshot.low, snapshot.close)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 function peakSmi(values: Array<{ smi: number }>, from: number, to: number): number {
   let peak = Number.NEGATIVE_INFINITY;
   for (let i = from; i <= to; i++) {
@@ -117,6 +134,17 @@ function peakSmi(values: Array<{ smi: number }>, from: number, to: number): numb
     }
   }
   return peak;
+}
+
+function troughSmi(values: Array<{ smi: number }>, from: number, to: number): number {
+  let trough = Number.POSITIVE_INFINITY;
+  for (let i = from; i <= to; i++) {
+    const value = values[i]?.smi;
+    if (Number.isFinite(value) && value < trough) {
+      trough = value;
+    }
+  }
+  return trough;
 }
 
 /**
@@ -334,6 +362,219 @@ export function evaluateDeepproSignals(
   };
 }
 
+/**
+ * deeppro BUY — mirror of the short exhaustion pattern:
+ *
+ * 1. Stochastic Momentum (10,3,3) bullish cross while in/from oversold (SMI <= -40)
+ * 2. Deep oversold trough in lookback (default trough SMI <= -70)
+ * 3. Lower Bollinger Band tagged in the same lookback
+ * 4. MACD histogram rising on the cross candle (momentum recovery)
+ *
+ * Signal time = SMI bullish-cross candle (IST). Event time may also surface a
+ * nearby stall/doji at lows or SMI exit from oversold.
+ */
+export function evaluateDeepproBuySignals(
+  snapshots: IndicatorSnapshot[],
+  dateKey?: string,
+): DeepproScanResult {
+  const {
+    sessionStart,
+    sessionEnd,
+    lookbackBars,
+    oversoldLevel,
+    maxTroughSmi,
+    stallBodyRatioMax,
+  } = config.deeppro;
+
+  const resolvedDateKey =
+    dateKey ??
+    (snapshots.length > 0
+      ? getIstTimeParts(snapshots[snapshots.length - 1].timestamp).dateKey
+      : "");
+
+  const dayIndexes: number[] = [];
+  for (let i = 0; i < snapshots.length; i++) {
+    const snapshot = snapshots[i];
+    if (!isUsableSnapshot(snapshot)) {
+      continue;
+    }
+    if (!isWithinIstSessionWindow(snapshot.timestamp, sessionStart, sessionEnd)) {
+      continue;
+    }
+    const parts = getIstTimeParts(snapshot.timestamp);
+    if (resolvedDateKey && parts.dateKey !== resolvedDateKey) {
+      continue;
+    }
+    dayIndexes.push(i);
+  }
+
+  const highs = snapshots.map((snapshot) => snapshot.high);
+  const lows = snapshots.map((snapshot) => snapshot.low);
+  const closes = snapshots.map((snapshot) => snapshot.close);
+  const smiSeries = computeStochasticMomentum(
+    highs,
+    lows,
+    closes,
+    config.deeppro.smi.lengthK,
+    config.deeppro.smi.lengthD,
+    config.deeppro.smi.lengthEma,
+  );
+
+  const signals: DeepproSignal[] = [];
+
+  for (const index of dayIndexes) {
+    if (index < 1) {
+      continue;
+    }
+
+    const prev = smiSeries[index - 1];
+    const cur = smiSeries[index];
+    if (
+      !Number.isFinite(prev.smi) ||
+      !Number.isFinite(prev.signal) ||
+      !Number.isFinite(cur.smi) ||
+      !Number.isFinite(cur.signal)
+    ) {
+      continue;
+    }
+
+    const bullishCross = prev.smi <= prev.signal && cur.smi > cur.signal;
+    if (!bullishCross) {
+      continue;
+    }
+
+    const fromOversold =
+      cur.smi <= oversoldLevel || prev.smi <= oversoldLevel;
+    if (!fromOversold) {
+      continue;
+    }
+
+    const lookbackFrom = Math.max(0, index - lookbackBars + 1);
+    const trough = troughSmi(smiSeries, lookbackFrom, index);
+    if (trough > maxTroughSmi) {
+      continue;
+    }
+
+    if (!taggedLowerBand(snapshots, lookbackFrom, index)) {
+      continue;
+    }
+
+    const snapshot = snapshots[index];
+    const prevSnapshot = snapshots[index - 1];
+    const histRising = snapshot.macd.histogram > prevSnapshot.macd.histogram;
+    if (!histRising) {
+      continue;
+    }
+
+    let eventIndex = index;
+    let eventKind: DeepproSignal["eventKind"] = "smi_cross";
+    let bestStallRatio = Number.POSITIVE_INFINITY;
+    let bestStallIndex: number | null = null;
+    let swingLow = Number.POSITIVE_INFINITY;
+    for (let i = lookbackFrom; i <= index; i++) {
+      swingLow = Math.min(swingLow, snapshots[i].low);
+    }
+
+    for (let j = 1; j <= 3 && index + j < snapshots.length; j++) {
+      const laterIndex = index + j;
+      const later = snapshots[laterIndex];
+      const laterSmi = smiSeries[laterIndex];
+      const earlierSmi = smiSeries[laterIndex - 1];
+      if (!later || !laterSmi || !earlierSmi) {
+        break;
+      }
+      if (getIstTimeParts(later.timestamp).dateKey !== resolvedDateKey) {
+        break;
+      }
+      if (!isWithinIstSessionWindow(later.timestamp, sessionStart, sessionEnd)) {
+        break;
+      }
+
+      const ratio = bodyToRangeRatio(later);
+      const nearSwing =
+        (Math.abs(later.low - swingLow) / later.close) * 100 <= 0.5;
+      const stall =
+        ratio <= stallBodyRatioMax &&
+        Boolean(
+          classifyBbBottomMatch(later.bollinger.lower, later.low, later.close) ||
+            later.low <= later.bollinger.lower * 1.002 ||
+            nearSwing,
+        );
+      if (stall && ratio <= bestStallRatio) {
+        bestStallRatio = ratio;
+        bestStallIndex = laterIndex;
+        eventIndex = laterIndex;
+        eventKind = "stall_at_lows";
+      }
+
+      if (eventKind === "smi_cross") {
+        const exitOs =
+          earlierSmi.smi <= oversoldLevel && laterSmi.smi > oversoldLevel;
+        if (exitOs && laterSmi.smi > laterSmi.signal) {
+          eventIndex = laterIndex;
+          eventKind = "smi_exit_oversold";
+          continue;
+        }
+
+        const macdCross =
+          snapshots[laterIndex - 1].macd.macdLine <=
+            snapshots[laterIndex - 1].macd.signalLine &&
+          later.macd.macdLine > later.macd.signalLine;
+        if (macdCross) {
+          eventIndex = laterIndex;
+          eventKind = "macd_bull_cross";
+        }
+      }
+    }
+
+    if (bestStallIndex !== null) {
+      eventIndex = bestStallIndex;
+      eventKind = "stall_at_lows";
+    }
+
+    const eventSnapshot = snapshots[eventIndex];
+    const eventTimeIst = formatIstTime(eventSnapshot.timestamp);
+    const bbUpperProximity = buildBbUpperProximity(eventSnapshot);
+    const bbLowerProximity = buildBbLowerProximity(eventSnapshot);
+
+    signals.push({
+      side: "BUY",
+      rule: "deeppro",
+      dateKey: resolvedDateKey,
+      timeIst: formatIstTime(snapshot.timestamp),
+      eventTimeIst,
+      eventKind,
+      price: snapshot.close,
+      smi: cur.smi,
+      smiSignal: cur.signal,
+      peakSmi: trough,
+      rsi: snapshot.rsi,
+      eventRsi: eventSnapshot.rsi,
+      bbUpperProximity,
+      bbLowerProximity,
+      macdHistogram: snapshot.macd.histogram,
+      reasons: [
+        `Stch Mtm(${config.deeppro.smi.lengthK},${config.deeppro.smi.lengthD},${config.deeppro.smi.lengthEma}) bullish cross from oversold`,
+        `Trough SMI ${trough.toFixed(1)} <= ${maxTroughSmi}`,
+        "Lower Bollinger Band tagged in lookback",
+        "MACD histogram rising",
+        `Event ${eventKind} at ${eventTimeIst} IST`,
+        `Event RSI ${eventSnapshot.rsi.toFixed(2)}`,
+        `BB upper gap ${bbUpperProximity.gapPct.toFixed(3)}% (${bbUpperProximity.matchType ?? "none"})`,
+        `BB lower gap ${bbLowerProximity.gapPct.toFixed(3)}% (${bbLowerProximity.matchType ?? "none"})`,
+      ],
+    });
+  }
+
+  return {
+    dateKey: resolvedDateKey,
+    rule: "deeppro",
+    sessionStart,
+    sessionEnd,
+    signals,
+  };
+}
+
 export function evaluateDeepproAcrossDays(
   snapshots: IndicatorSnapshot[],
   dateKeys: string[],
@@ -341,6 +582,18 @@ export function evaluateDeepproAcrossDays(
   const signals: DeepproSignal[] = [];
   for (const dateKey of dateKeys) {
     const day = evaluateDeepproSignals(snapshots, dateKey);
+    signals.push(...day.signals);
+  }
+  return signals;
+}
+
+export function evaluateDeepproBuyAcrossDays(
+  snapshots: IndicatorSnapshot[],
+  dateKeys: string[],
+): DeepproSignal[] {
+  const signals: DeepproSignal[] = [];
+  for (const dateKey of dateKeys) {
+    const day = evaluateDeepproBuySignals(snapshots, dateKey);
     signals.push(...day.signals);
   }
   return signals;
