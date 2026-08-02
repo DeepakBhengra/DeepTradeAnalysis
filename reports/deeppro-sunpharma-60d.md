@@ -3,7 +3,7 @@
 - **Symbol:** SUNPHARMA
 - **Interval:** 15m
 - **Rule:** deeppro
-- **Generated (UTC):** 2026-08-02T12:02:39Z
+- **Generated (UTC):** 2026-08-02T12:02:48Z
 - **Trade days scanned:** 41 (2026-06-04 → 2026-07-31)
 - **Requested trade days:** 60
 - **Data source:** Yahoo Finance (SUNPHARMA.NS)

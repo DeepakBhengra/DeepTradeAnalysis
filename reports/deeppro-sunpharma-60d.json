@@ -2,7 +2,7 @@
   "symbol": "SUNPHARMA",
   "interval": "15m",
   "rule": "deeppro",
-  "generatedAtUtc": "2026-08-02T12:02:39Z",
+  "generatedAtUtc": "2026-08-02T12:02:48Z",
   "requestedTradeDays": 60,
   "tradeDaysScanned": [
     "2026-06-04",
