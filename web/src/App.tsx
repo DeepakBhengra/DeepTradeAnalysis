@@ -24,7 +24,7 @@ const subtitles: Record<AppWidget, string> = {
   stockDashboard: "15m signals and charts for any NSE equity.",
   deepakBacktest: "Backtest Deepak BUY/SELL scenarios over a date range for any NSE equity.",
   deepakDayScan:
-    "Run Deepak / Deepak-2 / Deepak-3 / Watch Party rules on 20 sector large-caps for a single session date.",
+    "Run Deepak / Deepak-2 / Deepak-3 / Watch Party / Deeppro rules on sector large-caps for a single session date.",
   deepak2Backtest:
     "Backtest Deepak-2 BUY/SELL scenarios (10:15 IST session) over a date range for any NSE equity.",
   deepak2DayScan:
@@ -34,7 +34,7 @@ const subtitles: Record<AppWidget, string> = {
   deepakWatchPartyDayScan:
     "Run Deepak @ 10:15 entries with Deepak-2 watch-party stop-loss across 20 sector large-caps.",
   deepakPostMortem:
-    "Grade Deepak / Deepak-2 signals vs the session path for any NSE symbol and date.",
+    "Grade Deepak / Deepak-2 / Deeppro signals vs the session path for any NSE symbol and date.",
   dayScanSimulator:
     "Replay Deepak, Deepak-2, and Watch Party sector signals candle-by-candle from 09:15–15:00 IST.",
   dayOrderSimulator:

@@ -5,6 +5,7 @@ import {
   fetchDeepak3DayScan,
   fetchDeepakDayScan,
   fetchDeepakWatchPartyDayScan,
+  fetchDeepproDayScan,
 } from "../api/client";
 import type {
   DeepakDayScanPayload,
@@ -27,6 +28,8 @@ function fetchByVariant(
       return fetchDeepak3DayScan(date, signal);
     case "watchParty":
       return fetchDeepakWatchPartyDayScan(date, signal);
+    case "deeppro":
+      return fetchDeepproDayScan(date, signal);
     case "deepak":
     default:
       return fetchDeepakDayScan(date, signal);

@@ -6,6 +6,7 @@ import {
   fetchDashboard,
   fetchDeepak2Backtest,
   fetchDeepakBacktest,
+  fetchDeepproBacktest,
   savePostMortemReport,
   savePostMortemSignalDays,
 } from "../api/client";
@@ -16,6 +17,7 @@ import { StockSymbolInput } from "../components/StockSymbolInput";
 import type { DashboardSeriesPoint } from "../types/dashboard";
 import type { DeepakPostMortemReport, PostMortemVariant } from "../types/postMortem";
 import {
+  POST_MORTEM_RULE_VARIANT_LABEL,
   POST_MORTEM_RULE_VARIANT_OPTIONS,
   isPostMortemRuleVariant,
 } from "../types/ruleVariant";
@@ -142,7 +144,7 @@ export function DeepakPostMortemWidget({
             if (cached.days.length === 0) {
               setSelectedDate(null);
               setScanInfo(
-                `Cached: no ${variant === "deepak2" ? "Deepak-2" : "Deepak"} signals for ${normalized} (${fromDate} → ${toDate}). Saved ${cached.savedAt}.`,
+                `Cached: no ${POST_MORTEM_RULE_VARIANT_LABEL[variant]} signals for ${normalized} (${fromDate} → ${toDate}). Saved ${cached.savedAt}.`,
               );
             } else {
               setSelectedDate((prev) =>
@@ -161,7 +163,9 @@ export function DeepakPostMortemWidget({
         const payload =
           variant === "deepak2"
             ? await fetchDeepak2Backtest(normalized, fromDate, toDate)
-            : await fetchDeepakBacktest(normalized, fromDate, toDate);
+            : variant === "deeppro"
+              ? await fetchDeepproBacktest(normalized, fromDate, toDate)
+              : await fetchDeepakBacktest(normalized, fromDate, toDate);
 
         const days = signalDaysFromTrades(payload.trades);
         setSignalDays(days);
@@ -184,7 +188,7 @@ export function DeepakPostMortemWidget({
         if (days.length === 0) {
           setSelectedDate(null);
           setScanInfo(
-            `No ${variant === "deepak2" ? "Deepak-2" : "Deepak"} signals for ${normalized} between ${fromDate} and ${toDate}.`,
+            `No ${POST_MORTEM_RULE_VARIANT_LABEL[variant]} signals for ${normalized} between ${fromDate} and ${toDate}.`,
           );
         } else {
           setSelectedDate((prev) =>
@@ -265,12 +269,16 @@ export function DeepakPostMortemWidget({
         }
 
         const decision =
-          variant === "deepak2" ? payload.deepak2Decision : payload.deepakDecision;
+          variant === "deepak2"
+            ? payload.deepak2Decision
+            : variant === "deeppro"
+              ? payload.deepproDecision
+              : payload.deepakDecision;
         const graded = buildDeepakPostMortemReport(decision, payload.series, variant);
         if (!graded) {
           setLoaded(null);
           setReportError(
-            `No ${variant === "deepak2" ? "Deepak-2" : "Deepak"} decision for ${activeSymbol} on ${selectedDate}.`,
+            `No ${POST_MORTEM_RULE_VARIANT_LABEL[variant]} decision for ${activeSymbol} on ${selectedDate}.`,
           );
           return;
         }
@@ -436,8 +444,7 @@ export function DeepakPostMortemWidget({
 
         {scanLoading && (
           <section className="border border-kite-border bg-kite-surface p-3 text-xs text-kite-muted">
-            Scanning {activeSymbol} for {variant === "deepak2" ? "Deepak-2" : "Deepak"} signal
-            days…
+            Scanning {activeSymbol} for {POST_MORTEM_RULE_VARIANT_LABEL[variant]} signal days…
           </section>
         )}
 

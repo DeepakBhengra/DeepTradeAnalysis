@@ -11,6 +11,7 @@ import { buildIndicatorSnapshots } from "../indicators/compute.js";
 import { buildVolumeSnapshots } from "../indicators/volume.js";
 import { computeConfidenceScore } from "../rules/confidenceScore.js";
 import { evaluateDeepakDecision, evaluateDeepak2Decision } from "../rules/deepakDecision.js";
+import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
 import { evaluateDepthAnalysis } from "../rules/depthAnalysis.js";
 import {
   buildSidewaysDebug,
@@ -72,6 +73,7 @@ export interface DashboardPayload {
   bbProximity: BbProximityReport | null;
   deepakDecision: DeepakDecisionResult | null;
   deepak2Decision: DeepakDecisionResult | null;
+  deepproDecision: DeepakDecisionResult | null;
   analysisDate: string | null;
   mode: "live" | "historical" | "simulation";
   series: DashboardSeriesPoint[];
@@ -166,6 +168,7 @@ function emptyPayload(
     bbProximity: null,
     deepakDecision: null,
     deepak2Decision: null,
+    deepproDecision: null,
     analysisDate,
     mode,
     series: [],
@@ -198,6 +201,8 @@ function buildPayloadFromCandles(input: {
     targetDateKey != null
       ? evaluateDeepak2Decision(snapshots, targetDateKey)
       : null;
+  const deepproDecision =
+    targetDateKey != null ? evaluateDeepproDecision(snapshots, targetDateKey) : null;
   const volumeAnalysis = evaluateVolumeAnalysis(candles);
   const sidewaysTrend = evaluateSidewaysTrend(snapshots, { targetDateKey });
   const sidewaysDebug = buildSidewaysDebug(snapshots, { targetDateKey });
@@ -238,6 +243,8 @@ function buildPayloadFromCandles(input: {
   const deepakReasons = deepakDecision?.reasons ?? [];
   const deepak2Reasons =
     deepak2Decision?.reasons.map((reason) => `[Deepak-2] ${reason}`) ?? [];
+  const deepproReasons =
+    deepproDecision?.reasons.map((reason) => `[Deeppro] ${reason}`) ?? [];
 
   const referenceCandle =
     analysisDate && series.length > 0
@@ -259,6 +266,7 @@ function buildPayloadFromCandles(input: {
     reasons: [
       ...deepakReasons,
       ...deepak2Reasons,
+      ...deepproReasons,
       ...volumeReasons,
       ...depthReasons,
       ...confidenceReasons,
@@ -274,6 +282,7 @@ function buildPayloadFromCandles(input: {
     bbProximity,
     deepakDecision,
     deepak2Decision,
+    deepproDecision,
     analysisDate: analysisDate ?? null,
     mode,
     series,

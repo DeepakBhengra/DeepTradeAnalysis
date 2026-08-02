@@ -285,6 +285,49 @@ export async function fetchDeepak3DayScan(
   return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
 }
 
+export async function fetchDeepproDayScan(
+  date: string,
+  signal?: AbortSignal,
+): Promise<DeepakDayScanPayload> {
+  const params = new URLSearchParams({ date });
+  const url = `/api/backtest/deeppro/day-scan?${params.toString()}`;
+  return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
+}
+
+export async function fetchDeepproBacktest(
+  symbol: string,
+  fromDate: string,
+  toDate: string,
+): Promise<DeepakBacktestPayload> {
+  const params = new URLSearchParams({
+    symbol,
+    from: fromDate,
+    to: toDate,
+  });
+
+  const url = `/api/backtest/deeppro?${params.toString()}`;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+      const message = readApiErrorBody(body, `Backtest request failed: ${response.status}`);
+      throw new Error(message);
+    }
+    return (await response.json()) as DeepakBacktestPayload;
+  } catch (err) {
+    if (err instanceof DOMException && err.name === "AbortError") {
+      throw new Error("Deeppro backtest request timed out after 120s.");
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function fetchDayScanSimulation(
   date: string,
   sessionIndex: number,

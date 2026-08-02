@@ -18,6 +18,7 @@ import { formatIstDateTime } from "./istTime";
 const VARIANT_LABEL: Record<PostMortemVariant, string> = {
   deepak: "Deepak",
   deepak2: "Deepak-2",
+  deeppro: "Deeppro",
 };
 
 export function seriesTimeIst(timeSeconds: number): string {

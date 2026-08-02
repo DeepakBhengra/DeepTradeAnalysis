@@ -61,6 +61,8 @@ import { buildDeepak2DayScanPayload } from "./buildDeepak2DayScanPayload.js";
 import { buildDeepakWatchPartyBacktestPayload } from "./buildDeepakWatchPartyBacktestPayload.js";
 import { buildDeepakWatchPartyDayScanPayload } from "./buildDeepakWatchPartyDayScanPayload.js";
 import { buildDeepak3DayScanPayload } from "./buildDeepak3DayScanPayload.js";
+import { buildDeepproBacktestPayload } from "./buildDeepproBacktestPayload.js";
+import { buildDeepproDayScanPayload } from "./buildDeepproDayScanPayload.js";
 import {
   buildDayScanSimulationPayload,
 } from "./buildDayScanSimulationPayload.js";
@@ -516,6 +518,59 @@ app.get("/api/backtest/deepak-3/day-scan", disableSocketTimeout, async (req, res
     const status =
       message.includes("date") ||
       message.includes("Invalid")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
+app.get("/api/backtest/deeppro/day-scan", disableSocketTimeout, async (req, res) => {
+  try {
+    const dateParam = typeof req.query.date === "string" ? req.query.date : undefined;
+
+    if (!dateParam) {
+      res.status(400).json({ error: "Missing date. Use YYYY-MM-DD." });
+      return;
+    }
+
+    const payload = await buildDeepproDayScanPayload({ date: dateParam });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("date") ||
+      message.includes("Invalid")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
+app.get("/api/backtest/deeppro", async (req, res) => {
+  try {
+    const symbolParam =
+      typeof req.query.symbol === "string" ? req.query.symbol : undefined;
+    const fromParam = typeof req.query.from === "string" ? req.query.from : undefined;
+    const toParam = typeof req.query.to === "string" ? req.query.to : undefined;
+
+    if (!fromParam || !toParam) {
+      res.status(400).json({ error: "Missing from or to date. Use YYYY-MM-DD." });
+      return;
+    }
+
+    const payload = await buildDeepproBacktestPayload({
+      symbol: symbolParam ?? defaultDashboardSymbolId,
+      fromDate: fromParam,
+      toDate: toParam,
+    });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("date") ||
+      message.includes("symbol") ||
+      message.includes("Invalid") ||
+      message.includes("Enter a valid")
         ? 400
         : 500;
     res.status(status).json({ error: message });

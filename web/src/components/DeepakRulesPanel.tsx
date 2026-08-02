@@ -49,10 +49,25 @@ const WATCH_PARTY_RULES = [
   "Uses Deepak entry rules with Deepak-2 exit discipline",
 ];
 
+const DEEPPRO_RULES = [
+  "Stch Mtm (10,3,3) cross from deep overbought (SELL) or oversold (BUY)",
+  "Require peak SMI ≥ 70 (SELL) or trough SMI ≤ -70 (BUY) in lookback",
+  "Tag matching Bollinger Band in the same lookback window",
+  "MACD histogram must fade on the cross candle (price-normalized Δ)",
+  "Event candle must be before 14:00 IST (late entries filtered)",
+];
+
+const DEEPPRO_SCENARIOS = [
+  { label: "smi cross", side: "BUY/SELL" as const, number: 1 },
+  { label: "stall at highs / lows", side: "BUY/SELL" as const, number: 2 },
+  { label: "smi exit overbought / oversold", side: "BUY/SELL" as const, number: 3 },
+  { label: "macd bear / bull cross", side: "BUY/SELL" as const, number: 4 },
+];
+
 export function DeepakRulesPanel({
   variant = "deepak",
 }: {
-  variant?: "deepak" | "deepak2" | "deepak3" | "watchParty";
+  variant?: "deepak" | "deepak2" | "deepak3" | "watchParty" | "deeppro";
 }) {
   const [expanded, setExpanded] = useState(false);
   const sessionLabel =
@@ -66,8 +81,15 @@ export function DeepakRulesPanel({
         ? "Deepak-2 Buy / Sell Rules"
         : variant === "watchParty"
           ? "Watch Party Buy / Sell Rules"
-          : "Deepak Buy / Sell Rules";
-  const scenarios = variant === "deepak3" ? DEEPAK3_SCENARIOS : TRADE_SCENARIOS;
+          : variant === "deeppro"
+            ? "Deeppro Buy / Sell Rules"
+            : "Deepak Buy / Sell Rules";
+  const scenarios =
+    variant === "deepak3"
+      ? DEEPAK3_SCENARIOS
+      : variant === "deeppro"
+        ? DEEPPRO_SCENARIOS
+        : TRADE_SCENARIOS;
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
       <button
@@ -84,12 +106,20 @@ export function DeepakRulesPanel({
       {expanded && (
         <div className="mt-3 space-y-3 text-xs text-kite-text">
           <p className="m-0 text-kite-muted">
-            {sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from
-            average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.
+            {variant === "deeppro"
+              ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · no adaptive target exit in day scan.`
+              : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
           </p>
           {variant === "watchParty" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {WATCH_PARTY_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          )}
+          {variant === "deeppro" && (
+            <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
+              {DEEPPRO_RULES.map((rule) => (
                 <li key={rule}>{rule}</li>
               ))}
             </ul>
@@ -199,7 +229,11 @@ export function DeepakRulesPanel({
                     <td className="px-2 py-1.5">{scenario.label}</td>
                     <td
                       className={`px-2 py-1.5 font-medium ${
-                        scenario.side === "BUY" ? "text-kite-green" : "text-kite-red"
+                        scenario.side === "BUY"
+                          ? "text-kite-green"
+                          : scenario.side === "SELL"
+                            ? "text-kite-red"
+                            : "text-kite-text"
                       }`}
                     >
                       {scenario.side} {scenario.number}

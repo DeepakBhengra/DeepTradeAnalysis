@@ -11,12 +11,14 @@ describe("ruleVariant helpers", () => {
     expect(isDayScanRuleVariant("deepak2")).toBe(true);
     expect(isDayScanRuleVariant("deepak3")).toBe(true);
     expect(isDayScanRuleVariant("watchParty")).toBe(true);
+    expect(isDayScanRuleVariant("deeppro")).toBe(true);
     expect(isDayScanRuleVariant("other")).toBe(false);
   });
 
   it("accepts known post-mortem variants", () => {
     expect(isPostMortemRuleVariant("deepak")).toBe(true);
     expect(isPostMortemRuleVariant("deepak2")).toBe(true);
+    expect(isPostMortemRuleVariant("deeppro")).toBe(true);
     expect(isPostMortemRuleVariant("deepak3")).toBe(false);
     expect(isPostMortemRuleVariant("watchParty")).toBe(false);
   });
