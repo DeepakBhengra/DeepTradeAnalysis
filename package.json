@@ -24,7 +24,8 @@
     "study:deeppro:short": "python3 scripts/study-deeppro-short-squareoff.py",
     "study:deeppro:buy": "python3 scripts/study-deeppro-buy-squareoff.py",
     "study:deeppro:short:tcs": "python3 scripts/study-deeppro-short-squareoff.py --symbol TCS",
-    "study:deeppro:buy:tcs": "python3 scripts/study-deeppro-buy-squareoff.py --symbol TCS"
+    "study:deeppro:buy:tcs": "python3 scripts/study-deeppro-buy-squareoff.py --symbol TCS",
+    "study:deeppro:ranges": "python3 scripts/study-deeppro-profit-ranges.py --symbols TCS,SUNPHARMA"
   },
   "dependencies": {
     "cors": "^2.8.5",

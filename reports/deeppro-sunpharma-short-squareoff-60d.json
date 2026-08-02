@@ -3,7 +3,7 @@
   "interval": "15m",
   "rule": "deeppro",
   "study": "short_sell_square_off",
-  "generatedAtUtc": "2026-08-02T13:04:33Z",
+  "generatedAtUtc": "2026-08-02T13:13:11Z",
   "assumptions": {
     "side": "SELL (short)",
     "entryPrice": "event candle mid = (high + low) / 2",
