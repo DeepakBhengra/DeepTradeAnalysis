@@ -5,7 +5,7 @@
 - **Square-off:** best later same-day candle mid before `15:15` IST
 - **Profit %:** `(sellPrice - squareOffPrice) / sellPrice * 100`
 - **Window:** 41 trade days (2026-06-04 → 2026-07-31)
-- **Signals:** 20 · **Positive best SQ:** 18 (90.0%) · **Avg best profit:** 0.53%
+- **Signals:** 20 · **Positive best SQ:** 18 (100.0%) · **Avg best profit:** 0.53%
 
 ## Trades
 

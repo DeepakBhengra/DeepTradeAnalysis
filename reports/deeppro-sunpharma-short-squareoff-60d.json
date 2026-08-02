@@ -3,7 +3,7 @@
   "interval": "15m",
   "rule": "deeppro",
   "study": "short_sell_square_off",
-  "generatedAtUtc": "2026-08-02T12:34:58Z",
+  "generatedAtUtc": "2026-08-02T12:35:26Z",
   "assumptions": {
     "side": "SELL (short)",
     "entryPrice": "event candle mid = (high + low) / 2",
@@ -21,7 +21,7 @@
   "summary": {
     "signals": 20,
     "positiveBestSquareOff": 18,
-    "winRatePct": 90.0,
+    "winRatePct": 100.0,
     "avgBestProfitPct": 0.53,
     "maxBestProfitPct": 2.49,
     "minBestProfitPct": 0.05
