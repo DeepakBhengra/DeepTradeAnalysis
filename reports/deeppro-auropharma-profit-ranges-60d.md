@@ -1,6 +1,6 @@
 # AUROPHARMA deeppro profit-range categorization (60d)
 
-- **Generated (UTC):** 2026-08-02T13:24:50Z
+- **Generated (UTC):** 2026-08-02T13:25:22Z
 - **Ranges:** 0.08–0.25 · 0.30–0.70 · 0.75–2.0 (inclusive)
 - **Avg RSI:** mean event RSI of trades in that profit range
 - **Best BB proximity:** tightest (smallest) gap % in that range

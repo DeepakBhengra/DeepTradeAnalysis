@@ -3,7 +3,7 @@
   "interval": "15m",
   "rule": "deeppro",
   "study": "buy_square_off",
-  "generatedAtUtc": "2026-08-02T13:24:50Z",
+  "generatedAtUtc": "2026-08-02T13:25:22Z",
   "assumptions": {
     "side": "BUY (long) \u2014 mirror of deeppro short pattern",
     "pattern": [
