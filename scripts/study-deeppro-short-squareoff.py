@@ -79,6 +79,55 @@ def bb_upper_touch(row) -> bool:
     return abs(row["High"] - row["bb_u"]) / abs(row["Close"]) * 100 <= BB_CLOSE_PCT
 
 
+def bb_upper_proximity(row) -> dict:
+    gap_abs = abs(row["High"] - row["bb_u"]) / abs(row["Close"]) * 100
+    signed = (row["High"] - row["bb_u"]) / abs(row["Close"]) * 100
+    if row["High"] >= row["bb_u"]:
+        match_type = "crossed"
+        gap = signed
+    elif gap_abs <= BB_CLOSE_PCT:
+        match_type = "close"
+        gap = gap_abs
+    else:
+        match_type = None
+        gap = gap_abs
+    return {
+        "gapPct": round(float(gap), 4),
+        "signedGapPct": round(float(signed), 4),
+        "matchType": match_type,
+        "price": round(float(row["High"]), 2),
+        "bbLevel": round(float(row["bb_u"]), 2),
+    }
+
+
+def bb_lower_proximity(row) -> dict:
+    gap_abs = abs(row["Low"] - row["bb_l"]) / abs(row["Close"]) * 100
+    signed = (row["bb_l"] - row["Low"]) / abs(row["Close"]) * 100
+    if row["Low"] <= row["bb_l"]:
+        match_type = "crossed"
+        gap = signed
+    elif gap_abs <= BB_CLOSE_PCT:
+        match_type = "close"
+        gap = gap_abs
+    else:
+        match_type = None
+        gap = gap_abs
+    return {
+        "gapPct": round(float(gap), 4),
+        "signedGapPct": round(float(signed), 4),
+        "matchType": match_type,
+        "price": round(float(row["Low"]), 2),
+        "bbLevel": round(float(row["bb_l"]), 2),
+    }
+
+
+def format_bb_pct(proximity: dict) -> str:
+    text = f"{proximity['gapPct']:.3f}"
+    if proximity["matchType"]:
+        text += f" ({proximity['matchType']})"
+    return text
+
+
 def mid_price(row) -> float:
     return (row["High"] + row["Low"]) / 2.0
 
@@ -262,6 +311,8 @@ def main() -> None:
         event_row = df.loc[event_ts]
         sell_price = round(mid_price(event_row), 2)  # short entry at candle mid
         sell_close = round(float(event_row["Close"]), 2)
+        bb_upper = bb_upper_proximity(event_row)
+        bb_lower = bb_lower_proximity(event_row)
         sq = best_square_off(df, event_ts, sell_price)
         rows.append(
             {
@@ -269,7 +320,9 @@ def main() -> None:
                 "dateKey": event_ts.strftime("%Y-%m-%d"),
                 "event": event_ts.strftime("%H:%M"),
                 "eventKind": event["event_kind"],
-                "eventRsi": round(event["event_rsi"], 2),
+                "eventRsi": round(float(event_row["rsi"]), 2),
+                "bbUpperProximity": bb_upper,
+                "bbLowerProximity": bb_lower,
                 "sellPrice": sell_price,
                 "sellClose": sell_close,
                 "chartMatch": bool(
@@ -332,23 +385,27 @@ def main() -> None:
         "",
         "## Trades",
         "",
-        "| Date | Event | Sell price | Best SQ off | SQ price | Profit % |",
-        "|------|-------|------------|-------------|----------|----------|",
+        "| Date | Event | RSI | BB upper % | BB lower % | Sell price | Best SQ off | SQ price | Profit % |",
+        "|------|-------|-----|------------|------------|------------|-------------|----------|----------|",
     ]
 
     for row in rows:
+        up = format_bb_pct(row["bbUpperProximity"])
+        lo = format_bb_pct(row["bbLowerProximity"])
         if not row["hasExitWindow"]:
             md_lines.append(
-                f"| {row['date']} | {row['event']} | {row['sellPrice']:.2f} | — | — | no exit window |"
+                f"| {row['date']} | {row['event']} | {row['eventRsi']:.2f} | {up} | {lo} | "
+                f"{row['sellPrice']:.2f} | — | — | no exit window |"
             )
             continue
         date_cell = f"**{row['date']}**" if row["chartMatch"] else row["date"]
         event_cell = f"**{row['event']}**" if row["chartMatch"] else row["event"]
         profit = row["bestProfitPct"]
         profit_cell = f"**{profit:.2f}%**" if row["chartMatch"] else f"{profit:.2f}%"
+        rsi_cell = f"**{row['eventRsi']:.2f}**" if row["chartMatch"] else f"{row['eventRsi']:.2f}"
         md_lines.append(
-            f"| {date_cell} | {event_cell} | {row['sellPrice']:.2f} | "
-            f"{row['bestTimeIst']} | {row['bestExitPrice']:.2f} | {profit_cell} |"
+            f"| {date_cell} | {event_cell} | {rsi_cell} | {up} | {lo} | "
+            f"{row['sellPrice']:.2f} | {row['bestTimeIst']} | {row['bestExitPrice']:.2f} | {profit_cell} |"
         )
 
     md_lines.extend(
@@ -356,15 +413,18 @@ def main() -> None:
             "",
             "## Detail (incl. optimistic low fill & EOD)",
             "",
-            "| Date | Event | Sell | Best mid SQ | Mid profit | Best low SQ | Low profit | EOD SQ | EOD profit |",
-            "|------|-------|------|-------------|------------|-------------|------------|--------|------------|",
+            "| Date | Event | RSI | BB upper % | BB lower % | Sell | Best mid SQ | Mid profit | Best low SQ | Low profit | EOD SQ | EOD profit |",
+            "|------|-------|-----|------------|------------|------|-------------|------------|-------------|------------|--------|------------|",
         ]
     )
     for row in rows:
         if not row["hasExitWindow"]:
             continue
+        up = format_bb_pct(row["bbUpperProximity"])
+        lo = format_bb_pct(row["bbLowerProximity"])
         md_lines.append(
-            f"| {row['date']} | {row['event']} | {row['sellPrice']:.2f} | "
+            f"| {row['date']} | {row['event']} | {row['eventRsi']:.2f} | {up} | {lo} | "
+            f"{row['sellPrice']:.2f} | "
             f"{row['bestTimeIst']} @ {row['bestExitPrice']:.2f} | {row['bestProfitPct']:.2f}% | "
             f"{row['bestLowTimeIst']} @ {row['bestExitLow']:.2f} | {row['bestLowProfitPct']:.2f}% | "
             f"{row['eodTimeIst']} @ {row['eodExitPrice']:.2f} | {row['eodProfitPct']:.2f}% |"
@@ -403,16 +463,25 @@ def main() -> None:
 
     print(f"{REPORT_SYMBOL} deeppro short-SELL square-off study")
     print(f"Window: {len(days)} trade days · Signals: {len(rows)} · Win rate: {win_rate}% · Avg best: {avg_best}%\n")
-    print(f"{'Date':<8} {'Event':<6} {'Sell':>9} {'Best SQ':<8} {'SQ px':>9} {'Profit%':>8}")
-    print("-" * 56)
+    print(
+        f"{'Date':<8} {'Event':<6} {'RSI':>7} {'BBup%':<16} {'BBlo%':<16} "
+        f"{'Sell':>9} {'Best SQ':<8} {'SQ px':>9} {'Profit%':>8}"
+    )
+    print("-" * 100)
     for row in rows:
+        up = format_bb_pct(row["bbUpperProximity"])
+        lo = format_bb_pct(row["bbLowerProximity"])
         if not row["hasExitWindow"]:
-            print(f"{row['date']:<8} {row['event']:<6} {row['sellPrice']:9.2f} {'—':<8} {'—':>9} {'n/a':>8}")
+            print(
+                f"{row['date']:<8} {row['event']:<6} {row['eventRsi']:7.2f} {up:<16} {lo:<16} "
+                f"{row['sellPrice']:9.2f} {'—':<8} {'—':>9} {'n/a':>8}"
+            )
             continue
         mark = " <-- pink" if row["chartMatch"] else ""
         print(
-            f"{row['date']:<8} {row['event']:<6} {row['sellPrice']:9.2f} "
-            f"{row['bestTimeIst']:<8} {row['bestExitPrice']:9.2f} {row['bestProfitPct']:7.2f}%{mark}"
+            f"{row['date']:<8} {row['event']:<6} {row['eventRsi']:7.2f} {up:<16} {lo:<16} "
+            f"{row['sellPrice']:9.2f} {row['bestTimeIst']:<8} {row['bestExitPrice']:9.2f} "
+            f"{row['bestProfitPct']:7.2f}%{mark}"
         )
     print(f"\nWrote {md_path}")
     print(f"Wrote {json_path}")

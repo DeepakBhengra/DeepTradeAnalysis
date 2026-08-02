@@ -3,7 +3,7 @@
   "interval": "15m",
   "rule": "deeppro",
   "study": "short_sell_square_off",
-  "generatedAtUtc": "2026-08-02T12:35:26Z",
+  "generatedAtUtc": "2026-08-02T12:44:00Z",
   "assumptions": {
     "side": "SELL (short)",
     "entryPrice": "event candle mid = (high + low) / 2",
@@ -33,6 +33,20 @@
       "event": "13:45",
       "eventKind": "stall_at_highs",
       "eventRsi": 57.42,
+      "bbUpperProximity": {
+        "gapPct": 0.5222,
+        "signedGapPct": -0.5222,
+        "matchType": null,
+        "price": 1790.8,
+        "bbLevel": 1800.14
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.7375,
+        "signedGapPct": -0.7375,
+        "matchType": null,
+        "price": 1787.9,
+        "bbLevel": 1774.71
+      },
       "sellPrice": 1789.35,
       "sellClose": 1788.5,
       "chartMatch": false,
@@ -54,6 +68,20 @@
       "event": "12:45",
       "eventKind": "stall_at_highs",
       "eventRsi": 64.93,
+      "bbUpperProximity": {
+        "gapPct": 0.3076,
+        "signedGapPct": -0.3076,
+        "matchType": null,
+        "price": 1810.3,
+        "bbLevel": 1815.87
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.0442,
+        "signedGapPct": -1.0442,
+        "matchType": null,
+        "price": 1807.1,
+        "bbLevel": 1788.2
+      },
       "sellPrice": 1808.7,
       "sellClose": 1809.7,
       "chartMatch": false,
@@ -75,6 +103,20 @@
       "event": "15:15",
       "eventKind": "stall_at_highs",
       "eventRsi": 54.55,
+      "bbUpperProximity": {
+        "gapPct": 0.0942,
+        "signedGapPct": -0.0942,
+        "matchType": "close",
+        "price": 1805.0,
+        "bbLevel": 1806.7
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.338,
+        "signedGapPct": -0.338,
+        "matchType": null,
+        "price": 1799.8,
+        "bbLevel": 1793.71
+      },
       "sellPrice": 1802.4,
       "sellClose": 1800.7,
       "chartMatch": false,
@@ -96,6 +138,20 @@
       "event": "15:15",
       "eventKind": "stall_at_highs",
       "eventRsi": 72.12,
+      "bbUpperProximity": {
+        "gapPct": 0.0353,
+        "signedGapPct": 0.0353,
+        "matchType": "crossed",
+        "price": 1828.0,
+        "bbLevel": 1827.36
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.5313,
+        "signedGapPct": -0.5313,
+        "matchType": null,
+        "price": 1822.5,
+        "bbLevel": 1812.8
+      },
       "sellPrice": 1825.25,
       "sellClose": 1824.8,
       "chartMatch": false,
@@ -117,6 +173,20 @@
       "event": "11:45",
       "eventKind": "stall_at_highs",
       "eventRsi": 74.33,
+      "bbUpperProximity": {
+        "gapPct": 0.2669,
+        "signedGapPct": -0.2669,
+        "matchType": "close",
+        "price": 1853.0,
+        "bbLevel": 1857.94
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.6611,
+        "signedGapPct": -1.6611,
+        "matchType": null,
+        "price": 1849.7,
+        "bbLevel": 1818.96
+      },
       "sellPrice": 1851.35,
       "sellClose": 1850.6,
       "chartMatch": false,
@@ -138,6 +208,20 @@
       "event": "13:30",
       "eventKind": "stall_at_highs",
       "eventRsi": 73.74,
+      "bbUpperProximity": {
+        "gapPct": 0.0726,
+        "signedGapPct": -0.0726,
+        "matchType": "close",
+        "price": 1861.6,
+        "bbLevel": 1862.95
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.2211,
+        "signedGapPct": -1.2211,
+        "matchType": null,
+        "price": 1857.7,
+        "bbLevel": 1835.0
+      },
       "sellPrice": 1859.65,
       "sellClose": 1859.0,
       "chartMatch": false,
@@ -159,6 +243,20 @@
       "event": "10:30",
       "eventKind": "stall_at_highs",
       "eventRsi": 75.47,
+      "bbUpperProximity": {
+        "gapPct": 0.2959,
+        "signedGapPct": -0.2959,
+        "matchType": "close",
+        "price": 1893.9,
+        "bbLevel": 1899.5
+      },
+      "bbLowerProximity": {
+        "gapPct": 2.5034,
+        "signedGapPct": -2.5034,
+        "matchType": null,
+        "price": 1884.3,
+        "bbLevel": 1836.96
+      },
       "sellPrice": 1889.1,
       "sellClose": 1890.9,
       "chartMatch": false,
@@ -180,6 +278,20 @@
       "event": "14:15",
       "eventKind": "smi_exit_overbought",
       "eventRsi": 59.43,
+      "bbUpperProximity": {
+        "gapPct": 0.2754,
+        "signedGapPct": -0.2754,
+        "matchType": "close",
+        "price": 1877.5,
+        "bbLevel": 1882.66
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.4935,
+        "signedGapPct": -0.4935,
+        "matchType": null,
+        "price": 1874.4,
+        "bbLevel": 1865.15
+      },
       "sellPrice": 1875.95,
       "sellClose": 1875.0,
       "chartMatch": false,
@@ -201,6 +313,20 @@
       "event": "11:30",
       "eventKind": "stall_at_highs",
       "eventRsi": 54.11,
+      "bbUpperProximity": {
+        "gapPct": 0.337,
+        "signedGapPct": -0.337,
+        "matchType": null,
+        "price": 1879.3,
+        "bbLevel": 1885.63
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.3274,
+        "signedGapPct": -0.3274,
+        "matchType": null,
+        "price": 1877.0,
+        "bbLevel": 1870.85
+      },
       "sellPrice": 1878.15,
       "sellClose": 1878.1,
       "chartMatch": false,
@@ -222,6 +348,20 @@
       "event": "12:00",
       "eventKind": "stall_at_highs",
       "eventRsi": 61.23,
+      "bbUpperProximity": {
+        "gapPct": 0.8754,
+        "signedGapPct": -0.8754,
+        "matchType": null,
+        "price": 1888.5,
+        "bbLevel": 1905.0
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.5554,
+        "signedGapPct": -1.5554,
+        "matchType": null,
+        "price": 1884.5,
+        "bbLevel": 1855.18
+      },
       "sellPrice": 1886.5,
       "sellClose": 1885.3,
       "chartMatch": false,
@@ -243,6 +383,20 @@
       "event": "12:00",
       "eventKind": "stall_at_highs",
       "eventRsi": 54.78,
+      "bbUpperProximity": {
+        "gapPct": 0.2243,
+        "signedGapPct": -0.2243,
+        "matchType": "close",
+        "price": 1878.0,
+        "bbLevel": 1882.21
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.3922,
+        "signedGapPct": -0.3922,
+        "matchType": null,
+        "price": 1873.9,
+        "bbLevel": 1866.54
+      },
       "sellPrice": 1875.95,
       "sellClose": 1876.2,
       "chartMatch": false,
@@ -264,6 +418,20 @@
       "event": "12:15",
       "eventKind": "smi_exit_overbought",
       "eventRsi": 76.85,
+      "bbUpperProximity": {
+        "gapPct": 1.1578,
+        "signedGapPct": -1.1578,
+        "matchType": null,
+        "price": 1913.8,
+        "bbLevel": 1935.95
+      },
+      "bbLowerProximity": {
+        "gapPct": 2.8222,
+        "signedGapPct": -2.8222,
+        "matchType": null,
+        "price": 1910.5,
+        "bbLevel": 1856.51
+      },
       "sellPrice": 1912.15,
       "sellClose": 1913.0,
       "chartMatch": false,
@@ -285,6 +453,20 @@
       "event": "10:45",
       "eventKind": "smi_cross",
       "eventRsi": 69.4,
+      "bbUpperProximity": {
+        "gapPct": 0.3421,
+        "signedGapPct": -0.3421,
+        "matchType": null,
+        "price": 1947.0,
+        "bbLevel": 1953.61
+      },
+      "bbLowerProximity": {
+        "gapPct": 3.9001,
+        "signedGapPct": -3.9001,
+        "matchType": null,
+        "price": 1930.5,
+        "bbLevel": 1855.16
+      },
       "sellPrice": 1938.75,
       "sellClose": 1931.7,
       "chartMatch": false,
@@ -306,6 +488,20 @@
       "event": "12:00",
       "eventKind": "stall_at_highs",
       "eventRsi": 70.68,
+      "bbUpperProximity": {
+        "gapPct": 0.3145,
+        "signedGapPct": -0.3145,
+        "matchType": null,
+        "price": 1958.4,
+        "bbLevel": 1964.55
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.9172,
+        "signedGapPct": -0.9172,
+        "matchType": null,
+        "price": 1955.5,
+        "bbLevel": 1937.56
+      },
       "sellPrice": 1956.95,
       "sellClose": 1956.4,
       "chartMatch": false,
@@ -327,6 +523,20 @@
       "event": "13:15",
       "eventKind": "stall_at_highs",
       "eventRsi": 77.44,
+      "bbUpperProximity": {
+        "gapPct": 0.1963,
+        "signedGapPct": -0.1963,
+        "matchType": "close",
+        "price": 1962.4,
+        "bbLevel": 1966.25
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.735,
+        "signedGapPct": -0.735,
+        "matchType": null,
+        "price": 1960.1,
+        "bbLevel": 1945.68
+      },
       "sellPrice": 1961.25,
       "sellClose": 1961.9,
       "chartMatch": false,
@@ -348,6 +558,20 @@
       "event": "10:45",
       "eventKind": "stall_at_highs",
       "eventRsi": 60.38,
+      "bbUpperProximity": {
+        "gapPct": 0.6323,
+        "signedGapPct": -0.6323,
+        "matchType": null,
+        "price": 1950.3,
+        "bbLevel": 1962.62
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.8755,
+        "signedGapPct": -0.8755,
+        "matchType": null,
+        "price": 1947.2,
+        "bbLevel": 1930.14
+      },
       "sellPrice": 1948.75,
       "sellClose": 1948.5,
       "chartMatch": false,
@@ -369,6 +593,20 @@
       "event": "13:30",
       "eventKind": "stall_at_highs",
       "eventRsi": 72.99,
+      "bbUpperProximity": {
+        "gapPct": 0.3145,
+        "signedGapPct": -0.3145,
+        "matchType": null,
+        "price": 1972.3,
+        "bbLevel": 1978.5
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.6955,
+        "signedGapPct": -1.6955,
+        "matchType": null,
+        "price": 1968.3,
+        "bbLevel": 1934.88
+      },
       "sellPrice": 1970.3,
       "sellClose": 1971.1,
       "chartMatch": false,
@@ -390,6 +628,20 @@
       "event": "13:15",
       "eventKind": "macd_bear_cross",
       "eventRsi": 62.19,
+      "bbUpperProximity": {
+        "gapPct": 0.3232,
+        "signedGapPct": -0.3232,
+        "matchType": null,
+        "price": 2016.0,
+        "bbLevel": 2022.51
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.1383,
+        "signedGapPct": -1.1383,
+        "matchType": null,
+        "price": 2010.7,
+        "bbLevel": 1987.78
+      },
       "sellPrice": 2013.35,
       "sellClose": 2013.4,
       "chartMatch": false,
@@ -411,6 +663,20 @@
       "event": "14:00",
       "eventKind": "smi_cross",
       "eventRsi": 45.73,
+      "bbUpperProximity": {
+        "gapPct": 0.2196,
+        "signedGapPct": -0.2196,
+        "matchType": "close",
+        "price": 2014.9,
+        "bbLevel": 2019.3
+      },
+      "bbLowerProximity": {
+        "gapPct": 0.1906,
+        "signedGapPct": -0.1906,
+        "matchType": "close",
+        "price": 2001.7,
+        "bbLevel": 1997.88
+      },
       "sellPrice": 2008.3,
       "sellClose": 2001.8,
       "chartMatch": false,
@@ -432,6 +698,20 @@
       "event": "14:00",
       "eventKind": "stall_at_highs",
       "eventRsi": 88.47,
+      "bbUpperProximity": {
+        "gapPct": 0.3176,
+        "signedGapPct": -0.3176,
+        "matchType": null,
+        "price": 2042.5,
+        "bbLevel": 2048.99
+      },
+      "bbLowerProximity": {
+        "gapPct": 1.862,
+        "signedGapPct": -1.862,
+        "matchType": null,
+        "price": 2037.1,
+        "bbLevel": 1999.07
+      },
       "sellPrice": 2039.8,
       "sellClose": 2042.3,
       "chartMatch": true,
