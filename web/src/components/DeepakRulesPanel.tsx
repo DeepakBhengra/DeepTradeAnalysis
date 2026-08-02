@@ -43,10 +43,25 @@ const DEEPAK_RSI_EXTREME_RULES = [
   "Recovery SELL: 3 consecutive lower closes with falling RSI (each ≤ 60), tip by 12:00 IST (scenario 7)",
 ];
 
+const DEEPPRO_RULES = [
+  "Stch Mtm (10,3,3) cross from deep overbought (SELL) or oversold (BUY)",
+  "Require peak SMI ≥ 70 (SELL) or trough SMI ≤ -70 (BUY) in lookback",
+  "Tag matching Bollinger Band in the same lookback window",
+  "MACD histogram must fade on the cross candle (price-normalized Δ)",
+  "Event candle must be before 14:00 IST (late entries filtered)",
+];
+
+const DEEPPRO_SCENARIOS = [
+  { label: "smi cross", side: "BUY" as const, number: 1 },
+  { label: "stall at highs / lows", side: "SELL" as const, number: 2 },
+  { label: "smi exit overbought / oversold", side: "BUY" as const, number: 3 },
+  { label: "macd bear / bull cross", side: "SELL" as const, number: 4 },
+];
+
 export function DeepakRulesPanel({
   variant = "deepak",
 }: {
-  variant?: "deepak" | "deepak2" | "deepak3";
+  variant?: "deepak" | "deepak2" | "deepak3" | "deeppro";
 }) {
   const [expanded, setExpanded] = useState(false);
   const sessionLabel =
@@ -58,8 +73,15 @@ export function DeepakRulesPanel({
       ? "Deepak-3 Buy / Sell Rules"
       : variant === "deepak2"
         ? "Deepak-2 Buy / Sell Rules"
-        : "Deepak Buy / Sell Rules";
-  const scenarios = variant === "deepak3" ? DEEPAK3_SCENARIOS : TRADE_SCENARIOS;
+        : variant === "deeppro"
+          ? "Deeppro Buy / Sell Rules"
+          : "Deepak Buy / Sell Rules";
+  const scenarios =
+    variant === "deepak3"
+      ? DEEPAK3_SCENARIOS
+      : variant === "deeppro"
+        ? DEEPPRO_SCENARIOS
+        : TRADE_SCENARIOS;
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -77,9 +99,17 @@ export function DeepakRulesPanel({
       {expanded && (
         <div className="mt-3 space-y-3 text-xs text-kite-text">
           <p className="m-0 text-kite-muted">
-            {sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from
-            average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.
+            {variant === "deeppro"
+              ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
+              : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
           </p>
+          {variant === "deeppro" && (
+            <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
+              {DEEPPRO_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          )}
           {variant === "deepak3" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {DEEPAK3_GATES.map((gate) => (
