@@ -177,6 +177,8 @@ interface TradeRow {
   eventRsi: number;
   bbUpperGapPct: number;
   bbLowerGapPct: number;
+  bbUpperMatchType: string | null;
+  bbLowerMatchType: string | null;
   entryPrice: number;
   bestTimeIst: string | null;
   bestExitPrice: number | null;
@@ -184,8 +186,24 @@ interface TradeRow {
   eodTimeIst: string | null;
   eodExitPrice: number | null;
   eodProfitPct: number | null;
+  hasExitWindow: boolean;
   positive: boolean;
   peakSmi: number;
+}
+
+function formatBbPct(gapPct: number, matchType: string | null): string {
+  const base = gapPct.toFixed(3);
+  return matchType ? `${base} (${matchType})` : base;
+}
+
+function formatProfitCell(trade: TradeRow): string {
+  if (!trade.hasExitWindow) {
+    return "no exit window";
+  }
+  if (trade.bestProfitPct == null) {
+    return "—";
+  }
+  return `${trade.bestProfitPct.toFixed(2)}%`;
 }
 
 function toTradeRow(
@@ -219,6 +237,8 @@ function toTradeRow(
     eventRsi: round(signal.eventRsi),
     bbUpperGapPct: round(signal.bbUpperProximity.gapPct, 3),
     bbLowerGapPct: round(signal.bbLowerProximity.gapPct, 3),
+    bbUpperMatchType: signal.bbUpperProximity.matchType,
+    bbLowerMatchType: signal.bbLowerProximity.matchType,
     entryPrice,
     bestTimeIst: sq.bestTimeIst,
     bestExitPrice: sq.bestExitPrice,
@@ -226,9 +246,42 @@ function toTradeRow(
     eodTimeIst: sq.eodTimeIst,
     eodExitPrice: sq.eodExitPrice,
     eodProfitPct: sq.eodProfitPct,
+    hasExitWindow: sq.hasExitWindow,
     positive: sq.positive,
     peakSmi: round(signal.peakSmi, 1),
   };
+}
+
+function writeSideTable(
+  lines: string[],
+  title: string,
+  priceHeader: string,
+  trades: TradeRow[],
+): void {
+  lines.push(
+    "",
+    `## ${title}`,
+    "",
+    `| Date | Event | RSI | BB upper % | BB lower % | ${priceHeader} | Best SQ off | SQ price | Profit % |`,
+    "|------|-------|-----|------------|------------|------------|-------------|----------|----------|",
+  );
+
+  if (trades.length === 0) {
+    lines.push("| — | — | — | — | — | — | — | — | *none* |");
+    return;
+  }
+
+  for (const trade of trades) {
+    if (!trade.hasExitWindow) {
+      lines.push(
+        `| ${trade.date} | ${trade.event} | ${trade.eventRsi.toFixed(2)} | ${formatBbPct(trade.bbUpperGapPct, trade.bbUpperMatchType)} | ${formatBbPct(trade.bbLowerGapPct, trade.bbLowerMatchType)} | ${trade.entryPrice.toFixed(2)} | — | — | no exit window |`,
+      );
+      continue;
+    }
+    lines.push(
+      `| ${trade.date} | ${trade.event} | ${trade.eventRsi.toFixed(2)} | ${formatBbPct(trade.bbUpperGapPct, trade.bbUpperMatchType)} | ${formatBbPct(trade.bbLowerGapPct, trade.bbLowerMatchType)} | ${trade.entryPrice.toFixed(2)} | ${trade.bestTimeIst ?? "—"} | ${trade.bestExitPrice?.toFixed(2) ?? "—"} | ${formatProfitCell(trade)} |`,
+    );
+  }
 }
 
 function writeMarkdown(payload: {
@@ -241,6 +294,7 @@ function writeMarkdown(payload: {
     sellCount: number;
     buyCount: number;
     minProfitPct: number | null;
+    scannedTrades: number;
   };
   trades: TradeRow[];
   source: string;
@@ -254,7 +308,7 @@ function writeMarkdown(payload: {
       : `profit ≥ ${summary.minProfitPct}%`;
 
   const lines = [
-    `# ${payload.symbol} deeppro BUY + SELL square-off study (${payload.titleSuffix})`,
+    `# ${payload.symbol} deeppro BUY + SELL square-off (${payload.titleSuffix})`,
     "",
     `- **Symbol:** ${payload.symbol}`,
     `- **Rule:** deeppro (Stch Mtm exhaustion) — SELL overbought + BUY oversold mirror`,
@@ -262,68 +316,22 @@ function writeMarkdown(payload: {
     `- **Square-off:** best later same-day candle mid before \`${SESSION_END}\` IST`,
     `- **SELL profit %:** \`(sell - sq) / sell * 100\``,
     `- **BUY profit %:** \`(sq - buy) / buy * 100\``,
-    `- **Window:** ${payload.window.tradeDays} trade days (${payload.window.from} → ${payload.window.to})`,
+    `- **Window:** last ${summary.scannedTrades} deeppro trades (${payload.window.from} → ${payload.window.to})`,
     `- **Filter:** ${profitFilter}`,
     `- **Trades in report:** ${summary.trades} (${summary.sellCount} SELL · ${summary.buyCount} BUY)`,
     `- **Data:** ${payload.source}`,
     `- **Generated (UTC):** ${payload.generatedAtUtc}`,
-    "",
-    "## Trades",
-    "",
-    "| Date | Side | Event | Kind | RSI | Peak SMI | BB upper % | BB lower % | Entry | Best SQ off | SQ price | Profit % |",
-    "|------|------|-------|------|-----|----------|------------|------------|-------|-------------|----------|----------|",
   ];
 
-  if (trades.length === 0) {
-    lines.push("| — | — | — | — | — | — | — | — | — | — | — | — |");
-  } else {
-    for (const trade of trades) {
-      lines.push(
-        `| ${trade.date} | ${trade.side} | ${trade.event} | ${trade.eventKind} | ${trade.eventRsi.toFixed(2)} | ${trade.peakSmi.toFixed(1)} | ${trade.bbUpperGapPct.toFixed(3)} | ${trade.bbLowerGapPct.toFixed(3)} | ${trade.entryPrice.toFixed(2)} | ${trade.bestTimeIst ?? "—"} | ${trade.bestExitPrice?.toFixed(2) ?? "—"} | ${trade.bestProfitPct?.toFixed(2) ?? "—"}% |`,
-      );
-    }
-  }
-
-  lines.push(
-    "",
-    "## SELL only",
-    "",
-    "| Date | Event | RSI | Entry | Best SQ off | SQ price | Profit % |",
-    "|------|-------|-----|-------|-------------|----------|----------|",
-  );
-  if (sells.length === 0) {
-    lines.push("| — | — | — | — | — | — | *none* |");
-  } else {
-    for (const trade of sells) {
-      lines.push(
-        `| ${trade.date} | ${trade.event} | ${trade.eventRsi.toFixed(2)} | ${trade.entryPrice.toFixed(2)} | ${trade.bestTimeIst ?? "—"} | ${trade.bestExitPrice?.toFixed(2) ?? "—"} | ${trade.bestProfitPct?.toFixed(2) ?? "—"}% |`,
-      );
-    }
-  }
-
-  lines.push(
-    "",
-    "## BUY only",
-    "",
-    "| Date | Event | RSI | Entry | Best SQ off | SQ price | Profit % |",
-    "|------|-------|-----|-------|-------------|----------|----------|",
-  );
-  if (buys.length === 0) {
-    lines.push("| — | — | — | — | — | — | *none* |");
-  } else {
-    for (const trade of buys) {
-      lines.push(
-        `| ${trade.date} | ${trade.event} | ${trade.eventRsi.toFixed(2)} | ${trade.entryPrice.toFixed(2)} | ${trade.bestTimeIst ?? "—"} | ${trade.bestExitPrice?.toFixed(2) ?? "—"} | ${trade.bestProfitPct?.toFixed(2) ?? "—"}% |`,
-      );
-    }
-  }
+  writeSideTable(lines, "SELL", "Sell price", sells);
+  writeSideTable(lines, "BUY", "Buy price", buys);
 
   lines.push(
     "",
     "## Notes",
     "",
     "- Same-day square-off only; no overnight holds.",
-    "- Uses the same deeppro engine + Kite historical feed as Post-Mortem / Day Scan.",
+    "- Kite Connect historical 15m only — same deeppro engine as Post-Mortem / Day Scan.",
     "",
   );
 
@@ -334,9 +342,12 @@ async function main(): Promise<void> {
   const { symbol, tradeDays, minProfitPct, tag } = parseArgs(process.argv.slice(2));
   const dashboardSymbol = resolveDashboardSymbol(symbol);
 
-  // Fetch enough calendar span for ~tradeDays sessions + indicator warmup.
+  // Wide calendar span so we can assemble the newest N deeppro trades.
+  // Kite 15m history caps around 200 calendar days including warmup padding.
   const toDate = new Date();
-  const fromDate = new Date(toDate.getTime() - (tradeDays + 25) * 24 * 60 * 60 * 1000);
+  const fromDate = new Date(
+    toDate.getTime() - Math.min(Math.max(tradeDays * 2, 90), 150) * 24 * 60 * 60 * 1000,
+  );
   const fromKey = fromDate.toISOString().slice(0, 10);
   const toKey = toDate.toISOString().slice(0, 10);
 
@@ -348,28 +359,36 @@ async function main(): Promise<void> {
     toDate: toKey,
   });
   const snapshots = buildIndicatorSnapshots(candles);
-  const allDates = collectDeepproTradingDates(snapshots);
-  const targetDates = allDates.slice(-tradeDays);
+  const targetDates = collectDeepproTradingDates(snapshots);
 
-  const trades: TradeRow[] = [];
+  const scanned: TradeRow[] = [];
   for (const dateKey of targetDates) {
     const day = evaluateDeepproDay(snapshots, dateKey);
     for (const signal of day.signals) {
       const row = toTradeRow(signal, snapshots);
-      if (!row) {
-        continue;
+      if (row) {
+        scanned.push(row);
       }
-      if (
-        minProfitPct != null &&
-        (row.bestProfitPct == null || row.bestProfitPct < minProfitPct)
-      ) {
-        continue;
-      }
-      trades.push(row);
     }
   }
 
-  trades.sort((left, right) => left.dateKey.localeCompare(right.dateKey));
+  // Newest N deeppro trades (BUY + SELL), then optional profit filter.
+  scanned.sort((left, right) => {
+    const byDate = left.dateKey.localeCompare(right.dateKey);
+    if (byDate !== 0) {
+      return byDate;
+    }
+    return left.event.localeCompare(right.event);
+  });
+  const lastTrades = scanned.slice(-tradeDays);
+
+  const trades = lastTrades.filter((row) => {
+    if (minProfitPct == null) {
+      return true;
+    }
+    // Inclusive threshold (0.80% counts for "more than / at least 0.8").
+    return row.bestProfitPct != null && row.bestProfitPct >= minProfitPct;
+  });
 
   mkdirSync(REPORTS_DIR, { recursive: true });
   const base = `deeppro-${dashboardSymbol.tradingSymbol.toLowerCase()}-${tag}`;
@@ -381,18 +400,21 @@ async function main(): Promise<void> {
     symbol: dashboardSymbol.tradingSymbol,
     rule: "deeppro",
     titleSuffix:
-      minProfitPct == null ? `last ${tradeDays}d` : `profit ≥ ${minProfitPct}%`,
+      minProfitPct == null
+        ? `last ${tradeDays} trades`
+        : `profit ≥ ${minProfitPct}% · last ${tradeDays} trades`,
     generatedAtUtc: new Date().toISOString(),
     window: {
-      from: targetDates[0] ?? fromKey,
-      to: targetDates[targetDates.length - 1] ?? toKey,
-      tradeDays: targetDates.length,
+      from: lastTrades[0]?.dateKey ?? fromKey,
+      to: lastTrades[lastTrades.length - 1]?.dateKey ?? toKey,
+      tradeDays: lastTrades.length,
     },
     summary: {
       trades: trades.length,
       sellCount: trades.filter((trade) => trade.side === "SELL").length,
       buyCount: trades.filter((trade) => trade.side === "BUY").length,
       minProfitPct,
+      scannedTrades: lastTrades.length,
     },
     data: {
       source,
@@ -428,7 +450,7 @@ async function main(): Promise<void> {
       {
         ok: true,
         symbol: payload.symbol,
-        tradeDays: targetDates.length,
+        scannedTrades: lastTrades.length,
         trades: payload.summary.trades,
         sellCount: payload.summary.sellCount,
         buyCount: payload.summary.buyCount,
