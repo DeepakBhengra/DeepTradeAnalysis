@@ -1,0 +1,25 @@
+{
+  "symbol": "SUNPHARMA",
+  "interval": "15m",
+  "rule": "deeppro",
+  "status": "blocked_missing_kite_access_token",
+  "requestedTradeDays": 60,
+  "tradeDayCount": 0,
+  "tradeDaysScanned": [],
+  "matchCount": 0,
+  "matches": [],
+  "dataRange": {
+    "from": "",
+    "to": "",
+    "source": "Kite Connect historical (NSE:SUNPHARMA, 15minute)"
+  },
+  "notes": [
+    "Historical candles must be fetched from Kite, not Yahoo Finance.",
+    "KITE_API_KEY/KITE_API_SECRET are configured, but KITE_ACCESS_TOKEN is expired or invalid.",
+    "Connect Kite or set a valid daily KITE_ACCESS_TOKEN, then run: npm run scan:deeppro:sunpharma:60d"
+  ],
+  "artifacts": {
+    "json": "reports/deeppro-sunpharma-60d.json",
+    "markdown": "reports/deeppro-sunpharma-60d.md"
+  }
+}

@@ -468,3 +468,97 @@ deepakDecision3: {
 ```
 
 Tests: `tests/rules/deepak3Decision.test.ts`, `tests/api/buildDeepak3DayScanPayload.test.ts`.
+
+---
+
+## Deeppro (deepakpro) — Stch Mtm exhaustion reversal
+
+**Deeppro** is a standalone 15m rule for overbought / oversold exhaustion reversals (the pink-circle pattern on Kite Stch Mtm charts). It is separate from Deepak / Deepak-2 / Deepak-3 scenario trails.
+
+Implementation: `src/rules/deepproDecision.ts`, SMI in `src/indicators/stochasticMomentum.js`, config in `config.deeppro`.
+
+### How it works
+
+1. Compute **Stochastic Momentum Index** SMI(10,3,3) on 15m OHLC (William Blau: double-smoothed distance of close from the midpoint of the high/low range).
+2. On each session candle, look for an SMI **cross** from an extreme zone, with Bollinger and MACD confirmation in a short lookback.
+3. Optionally shift the **event time** up to 3 bars after the cross to a stall/doji, SMI exit from the extreme, or MACD line cross (chart annotation style).
+4. Apply quality gates so late / weak-momentum setups (historically the weak **0.08–0.25%** same-day band) are rejected; kept setups target the **0.30–0.70%** and **0.75–2.0%** same-day square-off bands.
+
+| Concept | Meaning |
+|---------|---------|
+| **Signal time** | IST time of the SMI cross candle |
+| **Event time** | IST time used for entry annotation (cross, stall, SMI exit, or MACD cross) |
+| **Entry study price** | Event candle mid `(high + low) / 2` |
+| **Square-off study** | Best later same-day mid before 15:15 IST |
+
+### SELL rules (short)
+
+All of the following must hold:
+
+| # | Rule | Default |
+|---|------|---------|
+| 1 | SMI bearish cross (`SMI` was ≥ signal, now &lt; signal) | SMI(10,3,3) |
+| 2 | Cross from overbought | SMI ≥ **40** on cross or prior bar |
+| 3 | Deep overbought peak in lookback | Peak SMI ≥ **70** over last **8** bars |
+| 4 | Upper Bollinger Band tagged in that lookback | Crossed or close (0.3% of close) |
+| 5 | MACD histogram declining on the cross bar | `hist[t] &lt; hist[t−1]` |
+| 6 | Meaningful fade vs price | `\|Δhist\| / close × 100` ≥ **0.01** |
+| 7 | Event before deadline | Event time **&lt; 14:00 IST** |
+
+**Event kinds (SELL):** `smi_cross` · `stall_at_highs` · `smi_exit_overbought` · `macd_bear_cross`  
+Stall/doji = body/range ≤ **0.35**, near swing high or upper band.
+
+### BUY rules (long — mirror)
+
+| # | Rule | Default |
+|---|------|---------|
+| 1 | SMI bullish cross (`SMI` was ≤ signal, now &gt; signal) | SMI(10,3,3) |
+| 2 | Cross from oversold | SMI ≤ **−40** on cross or prior bar |
+| 3 | Deep oversold trough in lookback | Trough SMI ≤ **−70** over last **8** bars |
+| 4 | Lower Bollinger Band tagged in that lookback | Crossed or close (0.3% of close) |
+| 5 | MACD histogram rising on the cross bar | `hist[t] &gt; hist[t−1]` |
+| 6 | Meaningful rise vs price | `\|Δhist\| / close × 100` ≥ **0.01** |
+| 7 | Event before deadline | Event time **&lt; 14:00 IST** |
+
+**Event kinds (BUY):** `smi_cross` · `stall_at_lows` · `smi_exit_oversold` · `macd_bull_cross`
+
+### Configuration
+
+From `config.deeppro` in `src/config.ts`:
+
+```ts
+deeppro: {
+  sessionStart: "09:15",
+  sessionEnd: "15:30",
+  smi: { lengthK: 10, lengthD: 3, lengthEma: 3 },
+  overboughtLevel: 40,
+  minPeakSmi: 70,
+  oversoldLevel: -40,
+  maxTroughSmi: -70,
+  lookbackBars: 8,
+  stallBodyRatioMax: 0.35,
+  entryDeadlineIst: "14:00",      // exclusive
+  minMacdHistDeltaPct: 0.01,      // |Δhist| / close * 100
+}
+```
+
+### Scripts and reports
+
+| Command | Purpose |
+|---------|---------|
+| `npm run scan:deeppro:sunpharma` | Kite scan (needs valid `KITE_ACCESS_TOKEN`) |
+| `npm run study:deeppro:short -- --symbol SYM` | 60d short square-off study (Yahoo 15m interim) |
+| `npm run study:deeppro:buy -- --symbol SYM` | 60d long square-off study |
+| `npm run study:deeppro:ranges -- --symbols A,B` | Bucket profits into **0.30–0.70** and **0.75–2.0** with avg RSI / best BB |
+
+Reports land under `reports/deeppro-{symbol}-*.md`.
+
+### API surface (engine)
+
+| Function | Side |
+|----------|------|
+| `evaluateDeepproSignals(snapshots, date?)` | SELL |
+| `evaluateDeepproBuySignals(snapshots, date?)` | BUY |
+| `evaluateDeepproAcrossDays` / `evaluateDeepproBuyAcrossDays` | Multi-day helpers |
+
+Tests: `tests/rules/deepproDecision.test.ts`, `tests/indicators/stochasticMomentum.test.ts`.
