@@ -9,7 +9,8 @@ export type AppWidget =
   | "dayScanSimulator"
   | "dayOrderSimulator"
   | "samcoTrading"
-  | "deepakPostMortem";
+  | "deepakPostMortem"
+  | "dayScanPostMortem";
 
 interface WidgetTabsProps {
   active: AppWidget;
@@ -25,6 +26,7 @@ const tabs: Array<{ id: AppWidget; label: string }> = [
   { id: "deepak3DayScan", label: "Deepak-3 Day Scan" },
   { id: "deepakWatchPartyDayScan", label: "Watch Party Day Scan" },
   { id: "deepakPostMortem", label: "Deepak Post-Mortem" },
+  { id: "dayScanPostMortem", label: "Day Scan Post-Mortem" },
   { id: "dayScanSimulator", label: "Day Scan Simulator" },
   { id: "dayOrderSimulator", label: "Day Order Simulator" },
   { id: "samcoTrading", label: "Samco Trading" },

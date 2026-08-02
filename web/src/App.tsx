@@ -11,6 +11,7 @@ import { DeepakBacktestWidget } from "./widgets/DeepakBacktestWidget";
 import { DeepakDayScanWidget } from "./widgets/DeepakDayScanWidget";
 import { DayOrderSimulatorWidget } from "./widgets/DayOrderSimulatorWidget";
 import { DayScanSimulatorWidget } from "./widgets/DayScanSimulatorWidget";
+import { DayScanPostMortemWidget } from "./widgets/DayScanPostMortemWidget";
 import { DeepakPostMortemWidget } from "./widgets/DeepakPostMortemWidget";
 import { DeepakWatchPartyDayScanWidget } from "./widgets/DeepakWatchPartyDayScanWidget";
 import { SamcoTradingWidget } from "./widgets/SamcoTradingWidget";
@@ -35,6 +36,8 @@ const subtitles: Record<AppWidget, string> = {
     "Run Deepak @ 10:15 entries with Deepak-2 watch-party stop-loss across 20 sector large-caps.",
   deepakPostMortem:
     "Grade Deepak / Deepak-2 / Deeppro signals vs the session path for any NSE symbol and date.",
+  dayScanPostMortem:
+    "Day-scan a session date with any rule variant, then grade signal stocks vs the session path.",
   dayScanSimulator:
     "Replay Deepak, Deepak-2, and Watch Party sector signals candle-by-candle from 09:15–15:00 IST.",
   dayOrderSimulator:
@@ -70,6 +73,9 @@ function readStoredTab(): AppWidget {
   }
   if (stored === "deepakPostMortem") {
     return "deepakPostMortem";
+  }
+  if (stored === "dayScanPostMortem") {
+    return "dayScanPostMortem";
   }
   if (stored === "dayScanSimulator") {
     return "dayScanSimulator";
@@ -142,6 +148,10 @@ export function App() {
       />
       <DeepakPostMortemWidget
         isActive={activeWidget === "deepakPostMortem"}
+        refreshTrigger={refreshTrigger}
+      />
+      <DayScanPostMortemWidget
+        isActive={activeWidget === "dayScanPostMortem"}
         refreshTrigger={refreshTrigger}
       />
       <DayScanSimulationProvider>
