@@ -405,8 +405,8 @@ export const config = {
     overboughtLevel: 40,
     /**
      * Require a deep overbought peak in lookback (chart-quality filter).
-     * 65 (not 70) absorbs typical Kite vs chart/Yahoo 15m OHLC SMI drift of ~5–7 pts
-     * so pink-circle days like SUNPHARMA 25/29 Jun still qualify on live Kite data.
+     * Tuned on Kite 15m historical only — slight slack under a strict 70 so near-miss
+     * exhaustion peaks (e.g. ~69) still count on live Kite candles.
      */
     minPeakSmi: 65,
     /** SMI oversold threshold (mirror of overbought) — BUY path */
