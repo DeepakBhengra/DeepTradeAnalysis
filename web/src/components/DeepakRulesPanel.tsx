@@ -43,14 +43,20 @@ const DEEPAK_RSI_EXTREME_RULES = [
   "Recovery SELL: 3 consecutive lower closes with falling RSI (each ≤ 60), tip by 12:00 IST (scenario 7)",
 ];
 
+const WATCH_PARTY_RULES = [
+  "Entry: Deepak BUY/SELL tip evaluated at 10:15 IST only",
+  "Stop-loss: Deepak-2 watch-party stop from the opposing Deepak-2 path",
+  "Uses Deepak entry rules with Deepak-2 exit discipline",
+];
+
 export function DeepakRulesPanel({
   variant = "deepak",
 }: {
-  variant?: "deepak" | "deepak2" | "deepak3";
+  variant?: "deepak" | "deepak2" | "deepak3" | "watchParty";
 }) {
   const [expanded, setExpanded] = useState(false);
   const sessionLabel =
-    variant === "deepak2"
+    variant === "deepak2" || variant === "watchParty"
       ? "Session 10:15–15:30 IST"
       : "Session 09:15–15:30 IST";
   const titleLabel =
@@ -58,9 +64,10 @@ export function DeepakRulesPanel({
       ? "Deepak-3 Buy / Sell Rules"
       : variant === "deepak2"
         ? "Deepak-2 Buy / Sell Rules"
-        : "Deepak Buy / Sell Rules";
+        : variant === "watchParty"
+          ? "Watch Party Buy / Sell Rules"
+          : "Deepak Buy / Sell Rules";
   const scenarios = variant === "deepak3" ? DEEPAK3_SCENARIOS : TRADE_SCENARIOS;
-
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
       <button
@@ -80,6 +87,13 @@ export function DeepakRulesPanel({
             {sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from
             average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.
           </p>
+          {variant === "watchParty" && (
+            <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
+              {WATCH_PARTY_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          )}
           {variant === "deepak3" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {DEEPAK3_GATES.map((gate) => (

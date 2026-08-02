@@ -1,9 +1,9 @@
 import type { Decision, DeepakBbMatchType } from "./dashboard";
+import type { PostMortemRuleVariant } from "./ruleVariant";
 
 export type PostMortemGrade = "RIGHT" | "MIXED" | "WRONG";
 
-export type PostMortemVariant = "deepak" | "deepak2";
-
+export type PostMortemVariant = PostMortemRuleVariant;
 export type EnhancementPriority = "P0" | "P1" | "P2" | "P3";
 
 export interface PostMortemMidPoint {

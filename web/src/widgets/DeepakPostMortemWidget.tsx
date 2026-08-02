@@ -11,9 +11,14 @@ import {
 } from "../api/client";
 import { DateRangePicker } from "../components/DateRangePicker";
 import { DeepakPostMortemReportView } from "../components/DeepakPostMortemReport";
+import { RuleVariantSelect } from "../components/RuleVariantSelect";
 import { StockSymbolInput } from "../components/StockSymbolInput";
 import type { DashboardSeriesPoint } from "../types/dashboard";
 import type { DeepakPostMortemReport, PostMortemVariant } from "../types/postMortem";
+import {
+  POST_MORTEM_RULE_VARIANT_OPTIONS,
+  isPostMortemRuleVariant,
+} from "../types/ruleVariant";
 import { buildDeepakPostMortemReport } from "../utils/buildDeepakPostMortemReport";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 import {
@@ -34,7 +39,7 @@ function readStoredSymbol(): string {
 
 function readStoredVariant(): PostMortemVariant {
   const stored = readLocalStorage(VARIANT_STORAGE_KEY);
-  return stored === "deepak2" ? "deepak2" : "deepak";
+  return isPostMortemRuleVariant(stored) ? stored : "deepak";
 }
 
 interface LoadedReport {
@@ -345,30 +350,18 @@ export function DeepakPostMortemWidget({
         runLabel="Scan signal days"
         loadingLabel="Scanning..."
         idPrefix="postmortem"
-        description="Scan Deepak BUY/SELL days for this symbol (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
+        description="Scan BUY/SELL days for the selected rule variant (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
       />
 
       <section className="flex flex-wrap items-end justify-between gap-3 border-b border-kite-border bg-kite-surface px-3 py-2">
         <div className="flex flex-wrap items-end gap-3">
-          <div>
-            <label
-              className="mb-0.5 block text-[10px] uppercase tracking-wide text-kite-muted"
-              htmlFor="postmortem-variant"
-            >
-              Rule variant
-            </label>
-            <select
-              id="postmortem-variant"
-              value={variant}
-              onChange={(event) =>
-                handleVariantChange(event.target.value as PostMortemVariant)
-              }
-              className="rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none"
-            >
-              <option value="deepak">Deepak</option>
-              <option value="deepak2">Deepak-2</option>
-            </select>
-          </div>
+          <RuleVariantSelect
+            id="postmortem-variant"
+            value={variant}
+            options={POST_MORTEM_RULE_VARIANT_OPTIONS}
+            onChange={handleVariantChange}
+            disabled={busy}
+          />
 
           <div>
             <label
