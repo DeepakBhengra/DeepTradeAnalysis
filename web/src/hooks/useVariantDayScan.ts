@@ -5,6 +5,7 @@ import {
   fetchDeepak3DayScan,
   fetchDeepakDayScan,
   fetchDeepakWatchPartyDayScan,
+  fetchDeepproDayScan,
 } from "../api/client";
 import type {
   DeepakDayScanPayload,
@@ -12,7 +13,12 @@ import type {
 } from "../types/backtest";
 import { useCancellableDayScan } from "./useCancellableDayScan";
 
-export type DayScanRuleVariant = "deepak" | "deepak2" | "deepak3" | "watchParty";
+export type DayScanRuleVariant =
+  | "deepak"
+  | "deepak2"
+  | "deepak3"
+  | "watchParty"
+  | "deeppro";
 
 export type VariantDayScanPayload = DeepakDayScanPayload | DeepakWatchPartyDayScanPayload;
 
@@ -24,6 +30,7 @@ export const DAY_SCAN_RULE_VARIANT_OPTIONS: ReadonlyArray<{
   { value: "deepak2", label: "Deepak-2" },
   { value: "deepak3", label: "Deepak-3" },
   { value: "watchParty", label: "Watch Party" },
+  { value: "deeppro", label: "Deeppro" },
 ];
 
 export const DAY_SCAN_RULE_VARIANT_LABEL: Record<DayScanRuleVariant, string> = {
@@ -31,6 +38,7 @@ export const DAY_SCAN_RULE_VARIANT_LABEL: Record<DayScanRuleVariant, string> = {
   deepak2: "Deepak-2",
   deepak3: "Deepak-3",
   watchParty: "Watch Party",
+  deeppro: "Deeppro",
 };
 
 export function isDayScanRuleVariant(
@@ -40,7 +48,8 @@ export function isDayScanRuleVariant(
     value === "deepak" ||
     value === "deepak2" ||
     value === "deepak3" ||
-    value === "watchParty"
+    value === "watchParty" ||
+    value === "deeppro"
   );
 }
 
@@ -56,6 +65,8 @@ function fetchByVariant(
       return fetchDeepak3DayScan(date, signal);
     case "watchParty":
       return fetchDeepakWatchPartyDayScan(date, signal);
+    case "deeppro":
+      return fetchDeepproDayScan(date, signal);
     case "deepak":
     default:
       return fetchDeepakDayScan(date, signal);

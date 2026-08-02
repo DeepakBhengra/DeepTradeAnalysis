@@ -7,6 +7,7 @@ const fetchDeepakDayScan = vi.fn();
 const fetchDeepak2DayScan = vi.fn();
 const fetchDeepak3DayScan = vi.fn();
 const fetchDeepakWatchPartyDayScan = vi.fn();
+const fetchDeepproDayScan = vi.fn();
 
 vi.mock("../api/client", () => ({
   ScanStoppedError: class ScanStoppedError extends Error {
@@ -20,6 +21,7 @@ vi.mock("../api/client", () => ({
   fetchDeepak3DayScan: (...args: unknown[]) => fetchDeepak3DayScan(...args),
   fetchDeepakWatchPartyDayScan: (...args: unknown[]) =>
     fetchDeepakWatchPartyDayScan(...args),
+  fetchDeepproDayScan: (...args: unknown[]) => fetchDeepproDayScan(...args),
 }));
 
 const payload = {
@@ -47,6 +49,10 @@ describe("useVariantDayScan", () => {
     fetchDeepakWatchPartyDayScan.mockResolvedValue({
       ...payload,
       label: "watchParty",
+    });
+    fetchDeepproDayScan.mockResolvedValue({
+      ...payload,
+      label: "deeppro",
     });
   });
 
@@ -81,5 +87,11 @@ describe("useVariantDayScan", () => {
       await result.current.run("2026-05-11");
     });
     expect(fetchDeepakWatchPartyDayScan).toHaveBeenCalledTimes(1);
+
+    rerender({ variant: "deeppro" });
+    await act(async () => {
+      await result.current.run("2026-05-11");
+    });
+    expect(fetchDeepproDayScan).toHaveBeenCalledTimes(1);
   });
 });

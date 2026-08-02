@@ -22,6 +22,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deepak2: "deepak-2-day-scan",
   deepak3: "deepak-3-day-scan",
   watchParty: "deepak-watch-party-day-scan",
+  deeppro: "deeppro-day-scan",
 };
 
 function readStoredVariant(): DayScanRuleVariant {
@@ -38,6 +39,8 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
       return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks across Bank, IT, Metal, Insurance, Automobile, and Health using ${label} sure-shot filters (session 09:15 IST). May take 2–15 minutes depending on Kite response time.`;
     case "watchParty":
       return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks for Deepak entries at 10:15 IST with Deepak-2 watch-party stop-loss exits. May take 2–15 minutes depending on Kite response time.`;
+    case "deeppro":
+      return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take 2–15 minutes depending on Kite response time.`;
     case "deepak":
     default:
       return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks across Bank, IT, Metal, Insurance, Automobile, and Health using ${label} rules. May take 2–15 minutes depending on Kite response time.`;
@@ -46,8 +49,8 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
 
 function rulesPanelVariant(
   variant: DayScanRuleVariant,
-): "deepak" | "deepak2" | "deepak3" {
-  if (variant === "deepak2" || variant === "deepak3") {
+): "deepak" | "deepak2" | "deepak3" | "deeppro" {
+  if (variant === "deepak2" || variant === "deepak3" || variant === "deeppro") {
     return variant;
   }
   return "deepak";

@@ -285,6 +285,15 @@ export async function fetchDeepak3DayScan(
   return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
 }
 
+export async function fetchDeepproDayScan(
+  date: string,
+  signal?: AbortSignal,
+): Promise<DeepakDayScanPayload> {
+  const params = new URLSearchParams({ date });
+  const url = `/api/backtest/deeppro/day-scan?${params.toString()}`;
+  return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
+}
+
 export async function fetchDayScanSimulation(
   date: string,
   sessionIndex: number,

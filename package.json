@@ -18,7 +18,9 @@
     "test:watch": "vitest",
     "backtest:morning": "tsx scripts/backtest-morning-decision.ts",
     "backtest:dual-band": "tsx scripts/backtest-dual-band-deferral.ts",
-    "backtest:bb-trend": "tsx scripts/backtest-bb-trend.ts"
+    "backtest:bb-trend": "tsx scripts/backtest-bb-trend.ts",
+    "scan:deeppro:sunpharma": "tsx scripts/scan-deeppro.ts --symbol SUNPHARMA --trade-days 20",
+    "scan:deeppro:sunpharma:60d": "tsx scripts/scan-deeppro.ts --symbol SUNPHARMA --trade-days 60"
   },
   "dependencies": {
     "cors": "^2.8.5",

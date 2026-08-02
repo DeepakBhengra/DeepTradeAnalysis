@@ -24,7 +24,7 @@ const subtitles: Record<AppWidget, string> = {
   stockDashboard: "15m signals and charts for any NSE equity.",
   deepakBacktest: "Backtest Deepak BUY/SELL scenarios over a date range for any NSE equity.",
   deepakDayScan:
-    "Run Deepak / Deepak-2 / Deepak-3 / Watch Party rules on sector large-caps for a single session date.",
+    "Run Deepak / Deepak-2 / Deepak-3 / Watch Party / Deeppro rules on sector large-caps for a single session date.",
   deepak2Backtest:
     "Backtest Deepak-2 BUY/SELL scenarios (10:15 IST session) over a date range for any NSE equity.",
   deepak2DayScan:
