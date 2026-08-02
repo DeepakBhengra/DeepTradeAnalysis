@@ -58,6 +58,20 @@ describe("WidgetTabs", () => {
     expect(onChange).toHaveBeenCalledWith("deepakDayScan");
   });
 
+  it("renders Day Scan Post-Mortem tab and calls onChange", () => {
+    const onChange = vi.fn();
+
+    render(<WidgetTabs active="stockDashboard" onChange={onChange} />);
+
+    const tab = screen.getByRole("button", { name: "Day Scan Post-Mortem" });
+
+    expect(tab).toBeTruthy();
+
+    fireEvent.click(tab);
+
+    expect(onChange).toHaveBeenCalledWith("dayScanPostMortem");
+  });
+
   it("renders Day Scan Simulator tab and calls onChange", () => {
     const onChange = vi.fn();
 

@@ -12,6 +12,8 @@ interface DayScanRunControlsProps {
   description: ReactNode;
   ruleVariant?: DayScanRuleVariant;
   onRuleVariantChange?: (variant: DayScanRuleVariant) => void;
+  /** Prefix for input ids when multiple day-scan control blocks are mounted. */
+  idPrefix?: string;
 }
 
 export function DayScanRunControls({
@@ -23,13 +25,18 @@ export function DayScanRunControls({
   description,
   ruleVariant,
   onRuleVariantChange,
+  idPrefix = "dayscan",
 }: DayScanRunControlsProps) {
+  const dateId = `${idPrefix}-session-date`;
+  const variantId = `${idPrefix}-rule-variant`;
+
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
       <div className="flex flex-wrap items-end gap-3">
-        <label className="flex flex-col gap-1 text-xs text-kite-muted">
+        <label className="flex flex-col gap-1 text-xs text-kite-muted" htmlFor={dateId}>
           Session date
           <input
+            id={dateId}
             type="date"
             value={date}
             onChange={(event) => onDateChange(event.target.value)}
@@ -38,10 +45,10 @@ export function DayScanRunControls({
           />
         </label>
         {ruleVariant != null && onRuleVariantChange != null && (
-          <label className="flex flex-col gap-1 text-xs text-kite-muted" htmlFor="dayscan-rule-variant">
+          <label className="flex flex-col gap-1 text-xs text-kite-muted" htmlFor={variantId}>
             Rule variant
             <select
-              id="dayscan-rule-variant"
+              id={variantId}
               value={ruleVariant}
               onChange={(event) =>
                 onRuleVariantChange(event.target.value as DayScanRuleVariant)
