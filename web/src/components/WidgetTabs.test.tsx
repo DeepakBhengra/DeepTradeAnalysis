@@ -8,16 +8,16 @@ describe("WidgetTabs", () => {
     render(<WidgetTabs active="stockDashboard" onChange={() => undefined} />);
 
     const stockTab = screen.getByRole("button", { name: "Stock 15m Dashboard" });
-    const simulatorTab = screen.getByRole("button", { name: "Stock 15m Simulator" });
+    const backtestTab = screen.getByRole("button", { name: "Deepak Backtest" });
 
     expect(stockTab.className).toContain("border-kite-orange");
-    expect(simulatorTab.className).toContain("border-transparent");
+    expect(backtestTab.className).toContain("border-transparent");
   });
 
   it("renders Stock 15m dashboard tab and calls onChange", () => {
     const onChange = vi.fn();
 
-    render(<WidgetTabs active="stockSimulator" onChange={onChange} />);
+    render(<WidgetTabs active="deepakBacktest" onChange={onChange} />);
 
     const stockTab = screen.getByRole("button", {
       name: "Stock 15m Dashboard",
@@ -108,5 +108,6 @@ describe("WidgetTabs", () => {
       screen.queryByRole("button", { name: "NIFTY Bank 15m Dashboard" }),
     ).toBeNull();
     expect(screen.queryByRole("button", { name: "Order Simulator" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Stock 15m Simulator" })).toBeNull();
   });
 });
