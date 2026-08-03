@@ -1,10 +1,12 @@
 # PNB 15m Signal Engine
 
-PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail) and the **Deeppro** Stch Mtm exhaustion rules — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
+PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail), the **Deeppro** Stch Mtm exhaustion rules, and **RulePNB** (PNB favourable profit-range RSI/SMI/BB gates) — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
 
 Implementation (Deepak): `src/rules/deepakDecision.ts`, `src/rules/deepakCore.ts`, `src/rules/deepakTarget.ts`, `src/rules/bollingerUtils.ts`.
 
 Implementation (Deeppro): `src/rules/deepproDecision.ts`, `src/indicators/stochasticMomentum.ts`, `config.deeppro` in `src/config.ts`.
+
+Implementation (RulePNB): `src/rules/rulePnbDecision.ts`, `config.rulePnb` in `src/config.ts`.
 
 
 ---
@@ -630,3 +632,34 @@ Example reports under `reports/` (e.g. `deeppro-universe100-2026-01-01_to_2026-0
 - `tests/rules/deepproDecision.test.ts` — detection + SELL/BUY quality paths  
 - `tests/api/buildDeepproDayScanPayload.test.ts` — Day Scan payload wiring  
 - `tests/indicators/stochasticMomentum.test.ts` — SMI math
+
+## RulePNB (PNB-only favourable profit-range gates)
+
+**RulePNB** encodes the practical takeaway from the PNB 60-day rule-free best BUY/SELL study: favourable RSI / Stch Mtm (SMI) / Bollinger proximity bands by profit range.
+
+It is a **totally separate rule for PNB only**:
+- Does **not** scan the 100-stock sector watchlist
+- Does **not** share Deepak / Deepak-2 / Deeppro scenario logic
+- Does **not** mix RulePNB reasons into the main dashboard decision/reasons list
+- Backtest / Post-Mortem reject any symbol other than **PNB**
+
+| Surface | Detail |
+|--------|--------|
+| **Widget tab** | **Day Scan** → rule variant **RulePNB** (PNB only); also **Day Scan Post-Mortem** and symbol **Post-Mortem** (symbol locked to PNB) |
+| **API** | `GET /api/backtest/rule-pnb/day-scan?date=YYYY-MM-DD` · `GET /api/backtest/rule-pnb?symbol=PNB&from=&to=` |
+| **Payload builder** | `buildRulePnbDayScanPayload()` in `src/api/buildRulePnbDayScanPayload.ts` |
+| **Decision engine** | `evaluateRulePnbDay` / `evaluateRulePnbDecision` in `src/rules/rulePnbDecision.ts` |
+| **Config** | `config.rulePnb` (`tradingSymbol: "PNB"`) in `src/config.ts` |
+
+### Scenarios
+
+1. **BUY quality** (`rulePnb buy quality`) — best 1.7%–0.9% band: RSI 25–50, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close).
+2. **SELL quality** (`rulePnb sell quality`) — mid/low SELL bands: RSI 50–70, SMI ≥ 40, near BB upper (gap ≤ 0.8% or crossed/close).
+3. **BUY extended** (`rulePnb buy extended`) — biggest-mover 3%–1.8% style: prefer negative SMI; RSI mixed; BB lower gaps can be wider (≤ 1.4%). Used only when no BUY quality fires that day.
+
+Entry price = candle mid `(high+low)/2`. Event candle must be before **14:00 IST**. One earliest BUY and one earliest SELL per session date.
+
+### Tests
+
+- `tests/rules/rulePnbDecision.test.ts` — quality matchers + quiet day  
+- `tests/api/buildRulePnbDayScanPayload.test.ts` — Day Scan payload wiring

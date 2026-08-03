@@ -505,6 +505,52 @@ export const config = {
     },
   },
 
+  /**
+   * RulePNB — PNB-only favourable profit-range indicator gates (60d study).
+   * Completely separate from Deepak / Deepak-2 / Deeppro. Applies only to PNB.
+   * Tuned from rule-free best BUY/SELL buckets: 1.7%–0.9% quality +
+   * 3%–1.8% biggest-mover BUY / mid-low SELL bands.
+   */
+  rulePnb: {
+    /** Exclusive symbol — RulePNB never evaluates other stocks. */
+    tradingSymbol: "PNB",
+    sessionStart: "09:15",
+    sessionEnd: "15:30",
+    /** Exclusive IST deadline for the entry candle (hard cap). */
+    entryDeadlineIst: "14:00",
+    /**
+     * Matches Zerodha Kite Stch Mtm (same as deeppro):
+     * %K=10, %K smooth=3, %D (signal EMA)=10.
+     */
+    smi: {
+      lengthK: 10,
+      lengthD: 3,
+      lengthEma: 10,
+    },
+    /** Best BUY quality (1.7%–0.9% band): RSI ~25–50, SMI ≤ −40, near BB lower. */
+    buyQuality: {
+      minRsi: 25,
+      maxRsi: 50,
+      maxSmi: -40,
+      maxBbLowerGapPct: 0.7,
+    },
+    /**
+     * Biggest-mover BUY (3%–1.8%): prefer negative SMI; RSI mixed;
+     * BB lower gaps can be wider (trend-day opens).
+     */
+    buyExtended: {
+      requireNegativeSmi: true,
+      maxBbLowerGapPct: 1.4,
+    },
+    /** Best SELL quality: RSI ~50–70, SMI ≥ 40, near BB upper. */
+    sellQuality: {
+      minRsi: 50,
+      maxRsi: 70,
+      minSmi: 40,
+      maxBbUpperGapPct: 0.8,
+    },
+  },
+
   volume: {
     smaPeriod: 20,
     spikeThreshold: 1.5,

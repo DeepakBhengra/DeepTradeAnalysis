@@ -58,10 +58,25 @@ const DEEPPRO_SCENARIOS = [
   { label: "macd bear / bull cross", side: "SELL" as const, number: 4 },
 ];
 
+const RULEPNB_RULES = [
+  "PNB stock only — never evaluates other symbols; separate from Deepak / Deeppro",
+  "BUY quality (1.7%–0.9%): RSI 25–50, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
+  "SELL quality (1.7%–0.9% / 0.8%–0.4%): RSI 50–70, SMI ≥ 40, near BB upper (gap ≤ 0.8% or crossed/close)",
+  "BUY extended (3%–1.8% movers): prefer negative SMI; RSI mixed; BB lower gaps can be wider (≤ 1.4%)",
+  "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
+  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+];
+
+const RULEPNB_SCENARIOS = [
+  { label: "buy quality", side: "BUY" as const, number: 1 },
+  { label: "sell quality", side: "SELL" as const, number: 1 },
+  { label: "buy extended", side: "BUY" as const, number: 2 },
+];
+
 export function DeepakRulesPanel({
   variant = "deepak",
 }: {
-  variant?: "deepak" | "deepak2" | "deepak3" | "deeppro";
+  variant?: "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb";
 }) {
   const [expanded, setExpanded] = useState(false);
   const sessionLabel =
@@ -75,13 +90,17 @@ export function DeepakRulesPanel({
         ? "Deepak-2 Buy / Sell Rules"
         : variant === "deeppro"
           ? "Deeppro Buy / Sell Rules"
-          : "Deepak Buy / Sell Rules";
+          : variant === "rulePnb"
+            ? "RulePNB Buy / Sell Rules"
+            : "Deepak Buy / Sell Rules";
   const scenarios =
     variant === "deepak3"
       ? DEEPAK3_SCENARIOS
       : variant === "deeppro"
         ? DEEPPRO_SCENARIOS
-        : TRADE_SCENARIOS;
+        : variant === "rulePnb"
+          ? RULEPNB_SCENARIOS
+          : TRADE_SCENARIOS;
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -101,11 +120,20 @@ export function DeepakRulesPanel({
           <p className="m-0 text-kite-muted">
             {variant === "deeppro"
               ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
+              : variant === "rulePnb"
+                ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
               : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
           </p>
           {variant === "deeppro" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {DEEPPRO_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          )}
+          {variant === "rulePnb" && (
+            <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
+              {RULEPNB_RULES.map((rule) => (
                 <li key={rule}>{rule}</li>
               ))}
             </ul>

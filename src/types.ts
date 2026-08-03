@@ -238,6 +238,35 @@ export interface DeepproScanResult {
   signals: DeepproSignal[];
 }
 
+/** RulePNB scenario keys from PNB favourable profit-range study. */
+export type RulePnbScenarioKey =
+  | "buy_quality"
+  | "sell_quality"
+  | "buy_extended";
+
+export interface RulePnbSignal {
+  side: "BUY" | "SELL";
+  rule: "rulePnb";
+  dateKey: string;
+  timeIst: string;
+  scenarioKey: RulePnbScenarioKey;
+  /** Candle mid (high+low)/2 */
+  price: number;
+  smi: number;
+  rsi: number;
+  bbUpperProximity: DeepproBbProximity;
+  bbLowerProximity: DeepproBbProximity;
+  reasons: string[];
+}
+
+export interface RulePnbScanResult {
+  dateKey: string;
+  rule: "rulePnb";
+  sessionStart: string;
+  sessionEnd: string;
+  signals: RulePnbSignal[];
+}
+
 export interface ParameterCheckCandleRef {
   timeIst: string;
   intervalLabel: string;

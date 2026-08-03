@@ -204,6 +204,7 @@ export interface DashboardPayload {
   deepakDecision: DeepakDecisionResult | null;
   deepak2Decision: DeepakDecisionResult | null;
   deepproDecision: DeepakDecisionResult | null;
+  rulePnbDecision: DeepakDecisionResult | null;
   analysisDate: string | null;
   mode: "live" | "historical" | "simulation";
   simulation?: SimulationMeta;
