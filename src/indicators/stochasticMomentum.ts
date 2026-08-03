@@ -19,8 +19,8 @@ function ema(values: number[], period: number): number[] {
 }
 
 /**
- * William Blau Stochastic Momentum Index (SMI), matching Kite "Stch Mtm (K, D, EMA)".
- * Defaults match chart params: (10, 3, 3).
+ * William Blau Stochastic Momentum Index (SMI), matching Kite "Stch Mtm".
+ * Defaults: K=10, D=3 (double EMA), signal EMA=10 (Kite %D).
  */
 export function computeStochasticMomentum(
   highs: number[],
@@ -28,7 +28,7 @@ export function computeStochasticMomentum(
   closes: number[],
   lengthK = 10,
   lengthD = 3,
-  lengthEma = 3,
+  lengthEma = 10,
 ): StochasticMomentumValues[] {
   const length = closes.length;
   const relativeClose: number[] = [];

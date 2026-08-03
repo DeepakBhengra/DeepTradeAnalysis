@@ -7,7 +7,7 @@ describe("computeStochasticMomentum", () => {
     const highs = closes.map((close, i) => close + 1 + (i % 3) * 0.2);
     const lows = closes.map((close, i) => close - 1 - (i % 2) * 0.2);
 
-    const values = computeStochasticMomentum(highs, lows, closes, 10, 3, 3);
+    const values = computeStochasticMomentum(highs, lows, closes, 10, 3, 10);
 
     expect(values).toHaveLength(40);
     expect(Number.isNaN(values[0].smi)).toBe(true);
@@ -24,7 +24,7 @@ describe("computeStochasticMomentum", () => {
     ];
     const highs = closes.map((close) => close + 1);
     const lows = closes.map((close) => close - 1);
-    const values = computeStochasticMomentum(highs, lows, closes, 10, 3, 3);
+    const values = computeStochasticMomentum(highs, lows, closes, 10, 3, 10);
 
     const peakIdx = 20;
     const lateIdx = values.length - 1;

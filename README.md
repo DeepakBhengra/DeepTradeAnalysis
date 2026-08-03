@@ -476,7 +476,9 @@ Tests: `tests/rules/deepak3Decision.test.ts`, `tests/api/buildDeepak3DayScanPayl
 
 ## Deeppro (Stch Mtm exhaustion — pink-circle pattern)
 
-**Deeppro** detects Stochastic Momentum (`Stch Mtm 10,3,3`) exhaustion reversals — the chart “pink circle” setup — and emits **BUY** / **SELL** entries for Day Scan, Day Scan Post-Mortem, and backtests. Data path is **Kite historical 15m only** (no Yahoo).
+**Deeppro** detects Stochastic Momentum (`Stch Mtm` on Kite — `%K=10`, double-smooth `3/3`, signal `%D EMA=10`) exhaustion reversals — the chart “pink circle” setup — and emits **BUY** / **SELL** entries for Day Scan, Day Scan Post-Mortem, and backtests. Data path is **Kite historical 15m only** (no Yahoo).
+
+Signals fire only on a **literal SMI↔signal cross or touch** (black vs red on Stch Mtm): SMI must be strictly on one side of the signal, then move to at-or-across the other side. No stall / SMI-exit / MACD remaps when `signalOnSmiCrossOnly` is on.
 
 Implementation: `src/rules/deepproDecision.ts`. Indicators: `src/indicators/stochasticMomentum.ts`. Config: `config.deeppro` in `src/config.ts`.
 
@@ -570,7 +572,7 @@ From `config.deeppro` in `src/config.ts`:
 deeppro: {
   sessionStart: "09:15",
   sessionEnd: "15:30",
-  smi: { lengthK: 10, lengthD: 3, lengthEma: 3 },
+  smi: { lengthK: 10, lengthD: 3, lengthEma: 10 },
   overboughtLevel: 40,
   minPeakSmi: 65,
   oversoldLevel: -40,
