@@ -478,9 +478,7 @@ Tests: `tests/rules/deepak3Decision.test.ts`, `tests/api/buildDeepak3DayScanPayl
 
 **Deeppro** detects Stochastic Momentum (`Stch Mtm` on Kite — `%K=10`, double-smooth `3/3`, signal `%D EMA=10`) exhaustion reversals — the chart “pink circle” setup — and emits **BUY** / **SELL** entries for Day Scan, Day Scan Post-Mortem, and backtests. Data path is **Kite historical 15m only** (no Yahoo).
 
-Signals fire only on a **literal SMI↔signal cross or touch** (black vs red on Stch Mtm): SMI must be strictly on one side of the signal, then move to at-or-across the other side. No stall / SMI-exit / MACD remaps when `signalOnSmiCrossOnly` is on.
-
-**Cross angle gate** (normalized SMI space): **SELL** and **BUY** both need black-line slope ≥ **20°** into the red-line cross (down for SELL, up for BUY). Shallow ~15° approaches are rejected.
+Signals fire only on a **literal SMI↔signal cross or touch** (black vs red on Stch Mtm): SMI must be strictly on one side of the signal, then move to at-or-across the other side. No stall / SMI-exit / MACD remaps when `signalOnSmiCrossOnly` is on. There is **no** black-line slope / angle gate on BUY or SELL.
 
 Implementation: `src/rules/deepproDecision.ts`. Indicators: `src/indicators/stochasticMomentum.ts`. Config: `config.deeppro` in `src/config.ts`.
 
@@ -506,7 +504,6 @@ With `signalOnSmiCrossOnly: true` (default), BUY/SELL publish **only** on the St
 | Step | Rule |
 |------|------|
 | 1 | Stch Mtm **bearish cross/touch** while in/from overbought (`SMI ≥ 40`) |
-| 1b | Black-line slope **≥ 20°** into downward red-line cross (reject shallow ~15°) |
 | 2 | Deep peak in lookback: peak SMI **≥ 65** |
 | 3 | Upper Bollinger Band tagged in the same lookback |
 | 4 | MACD histogram **declining** on the cross candle |
@@ -518,7 +515,6 @@ With `signalOnSmiCrossOnly: true` (default), BUY/SELL publish **only** on the St
 | Step | Rule |
 |------|------|
 | 1 | Stch Mtm **bullish cross/touch** while in/from oversold (`SMI ≤ -40`) |
-| 1b | Black-line slope **≥ 20°** into upward red-line cross (reject shallow ~15°) |
 | 2 | Deep trough in lookback: trough SMI **≤ -65** |
 | 3 | Lower Bollinger Band tagged in the same lookback |
 | 4 | MACD histogram **rising** on the cross candle |
@@ -583,9 +579,6 @@ deeppro: {
   maxTroughSmi: -65,
   lookbackBars: 16,
   signalOnSmiCrossOnly: true,
-  smiAngleScalePerBar: 22,
-  minSellSmiAngleDeg: 20,
-  minBuySmiAngleDeg: 20,
   stallBodyRatioMax: 0.35,
   entryDeadlineIst: "14:00",
   minMacdHistDeltaPct: 0.01,
