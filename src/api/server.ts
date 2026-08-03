@@ -68,6 +68,12 @@ import { buildRulePnbBacktestPayload } from "./buildRulePnbBacktestPayload.js";
 import { buildRulePnbDayScanPayload } from "./buildRulePnbDayScanPayload.js";
 import { buildRuleSunpharmaBacktestPayload } from "./buildRuleSunpharmaBacktestPayload.js";
 import { buildRuleSunpharmaDayScanPayload } from "./buildRuleSunpharmaDayScanPayload.js";
+import { buildFavourableSymbolBacktestPayload } from "./buildFavourableSymbolBacktestPayload.js";
+import { buildFavourableSymbolDayScanPayload } from "./buildFavourableSymbolDayScanPayload.js";
+import {
+  getFavourableSymbolRuleConfig,
+  isFavourableSymbolRuleId,
+} from "../rules/favourableSymbolRule.js";
 import {
   buildDayScanSimulationPayload,
 } from "./buildDayScanSimulationPayload.js";
@@ -658,6 +664,82 @@ app.get("/api/backtest/rule-sunpharma", async (req, res) => {
     res.status(status).json({ error: message });
   }
 });
+
+
+app.get("/api/backtest/symbol-rule/:ruleId/day-scan", disableSocketTimeout, async (req, res) => {
+  try {
+    const ruleIdRaw = typeof req.params.ruleId === "string" ? req.params.ruleId : "";
+    const ruleId = ruleIdRaw.startsWith("rule")
+      ? ruleIdRaw
+      : `rule${ruleIdRaw.charAt(0).toUpperCase()}${ruleIdRaw.slice(1)}`;
+    // Accept ruleLtm or ltm
+    const normalized =
+      ruleIdRaw === "ltm" ? "ruleLtm"
+      : ruleIdRaw === "icicigi" ? "ruleIcicigi"
+      : ruleIdRaw === "techm" ? "ruleTechm"
+      : ruleIdRaw === "tvsmotor" ? "ruleTvsmotor"
+      : ruleIdRaw === "policybzr" ? "rulePolicybzr"
+      : ruleIdRaw;
+    if (!isFavourableSymbolRuleId(normalized)) {
+      res.status(400).json({ error: "Unknown symbol rule. Use ltm, icicigi, techm, tvsmotor, or policybzr." });
+      return;
+    }
+    const dateParam = typeof req.query.date === "string" ? req.query.date : undefined;
+    if (!dateParam) {
+      res.status(400).json({ error: "Missing date. Use YYYY-MM-DD." });
+      return;
+    }
+    const payload = await buildFavourableSymbolDayScanPayload({ ruleId: normalized, date: dateParam });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status = message.includes("date") || message.includes("Invalid") ? 400 : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
+app.get("/api/backtest/symbol-rule/:ruleId", async (req, res) => {
+  try {
+    const ruleIdRaw = typeof req.params.ruleId === "string" ? req.params.ruleId : "";
+    const normalized =
+      ruleIdRaw === "ltm" ? "ruleLtm"
+      : ruleIdRaw === "icicigi" ? "ruleIcicigi"
+      : ruleIdRaw === "techm" ? "ruleTechm"
+      : ruleIdRaw === "tvsmotor" ? "ruleTvsmotor"
+      : ruleIdRaw === "policybzr" ? "rulePolicybzr"
+      : ruleIdRaw;
+    if (!isFavourableSymbolRuleId(normalized)) {
+      res.status(400).json({ error: "Unknown symbol rule. Use ltm, icicigi, techm, tvsmotor, or policybzr." });
+      return;
+    }
+    const rule = getFavourableSymbolRuleConfig(normalized);
+    const symbolParam = typeof req.query.symbol === "string" ? req.query.symbol : undefined;
+    const fromParam = typeof req.query.from === "string" ? req.query.from : undefined;
+    const toParam = typeof req.query.to === "string" ? req.query.to : undefined;
+    if (!fromParam || !toParam) {
+      res.status(400).json({ error: "Missing from or to date. Use YYYY-MM-DD." });
+      return;
+    }
+    const payload = await buildFavourableSymbolBacktestPayload({
+      ruleId: normalized,
+      symbol: symbolParam ?? rule.tradingSymbol,
+      fromDate: fromParam,
+      toDate: toParam,
+    });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("date") ||
+      message.includes("Invalid") ||
+      message.includes("symbol") ||
+      message.includes("-only")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
 
 app.get("/api/backtest/deeppro", async (req, res) => {
   try {

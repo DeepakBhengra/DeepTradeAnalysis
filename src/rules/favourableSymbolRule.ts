@@ -1,0 +1,484 @@
+import { config } from "../config.js";
+import { computeStochasticMomentum } from "../indicators/stochasticMomentum.js";
+import type {
+  DeepakBbMatchType,
+  DeepakDecisionResult,
+  DeepakTradeSignal,
+  DeepproBbProximity,
+  FavourableSymbolRuleId,
+  FavourableSymbolScanResult,
+  FavourableSymbolScenarioKey,
+  FavourableSymbolSignal,
+  IndicatorSnapshot,
+} from "../types.js";
+
+export type { FavourableSymbolRuleId };
+import {
+  formatIstTime,
+  getIstTimeParts,
+  isWithinIstSessionWindow,
+  parseHmToMinutes,
+} from "../utils/marketTime.js";
+import {
+  bbMatchGapPct,
+  classifyBbBottomMatch,
+  classifyBbTopMatch,
+  pctDistance,
+} from "./bollingerUtils.js";
+
+export type FavourableSymbolRuleConfig = {
+  tradingSymbol: string;
+  displayName: string;
+  sector: string;
+  sessionStart: string;
+  sessionEnd: string;
+  entryDeadlineIst: string;
+  smi: { lengthK: number; lengthD: number; lengthEma: number };
+  buyQuality: {
+    minRsi: number;
+    maxRsi: number;
+    maxSmi: number;
+    maxBbLowerGapPct: number;
+  };
+  buyExtended: {
+    requireNegativeSmi: boolean;
+    maxSmi: number;
+    maxBbLowerGapPct: number;
+  };
+  sellQuality: {
+    minRsi: number;
+    maxRsi: number;
+    minSmi: number;
+    maxBbUpperGapPct: number;
+  };
+};
+
+export const FAVOURABLE_SYMBOL_RULE_IDS = [
+  "ruleLtm",
+  "ruleIcicigi",
+  "ruleTechm",
+  "ruleTvsmotor",
+  "rulePolicybzr",
+] as const satisfies readonly FavourableSymbolRuleId[];
+
+export function isFavourableSymbolRuleId(
+  value: string | null | undefined,
+): value is FavourableSymbolRuleId {
+  return (
+    value === "ruleLtm" ||
+    value === "ruleIcicigi" ||
+    value === "ruleTechm" ||
+    value === "ruleTvsmotor" ||
+    value === "rulePolicybzr"
+  );
+}
+
+export function getFavourableSymbolRuleConfig(
+  ruleId: FavourableSymbolRuleId,
+): FavourableSymbolRuleConfig {
+  return config.favourableSymbolRules[ruleId];
+}
+
+/** Resolve which favourable symbol rule owns a trading symbol, if any. */
+export function favourableSymbolRuleIdForTradingSymbol(
+  symbol: string | null | undefined,
+): FavourableSymbolRuleId | null {
+  if (!symbol) {
+    return null;
+  }
+  const normalized = normalizeFavourableTradingSymbol(symbol);
+  for (const ruleId of FAVOURABLE_SYMBOL_RULE_IDS) {
+    if (getFavourableSymbolRuleConfig(ruleId).tradingSymbol === normalized) {
+      return ruleId;
+    }
+  }
+  return null;
+}
+
+export function normalizeFavourableTradingSymbol(symbol: string): string {
+  return symbol.trim().toUpperCase().replace(/^NSE:/, "");
+}
+
+export function isFavourableSymbolRuleSymbol(
+  ruleId: FavourableSymbolRuleId,
+  symbol: string | null | undefined,
+): boolean {
+  if (!symbol) {
+    return false;
+  }
+  return (
+    normalizeFavourableTradingSymbol(symbol) ===
+    getFavourableSymbolRuleConfig(ruleId).tradingSymbol
+  );
+}
+
+export function assertFavourableSymbolRuleSymbol(
+  ruleId: FavourableSymbolRuleId,
+  symbol: string,
+): void {
+  const rule = getFavourableSymbolRuleConfig(ruleId);
+  if (!isFavourableSymbolRuleSymbol(ruleId, symbol)) {
+    throw new Error(
+      `${rule.displayName} is ${rule.tradingSymbol}-only and cannot run on ${normalizeFavourableTradingSymbol(symbol) || "(empty)"}. Use trading symbol ${rule.tradingSymbol}.`,
+    );
+  }
+}
+
+const SCENARIO_NUMBER: Record<FavourableSymbolScenarioKey, number> = {
+  buy_quality: 1,
+  sell_quality: 1,
+  buy_extended: 2,
+};
+
+function scenarioLabel(
+  ruleId: FavourableSymbolRuleId,
+  key: FavourableSymbolScenarioKey,
+): string {
+  return `${ruleId} ${key.replace(/_/g, " ")}`;
+}
+
+function buildBbUpperProximity(snapshot: IndicatorSnapshot): DeepproBbProximity {
+  const matchType = classifyBbTopMatch(
+    snapshot.bollinger.upper,
+    snapshot.high,
+    snapshot.close,
+  );
+  const gapPct = matchType
+    ? bbMatchGapPct(
+        matchType,
+        "top",
+        snapshot.bollinger.upper,
+        snapshot.high,
+        snapshot.close,
+      )
+    : pctDistance(snapshot.bollinger.upper, snapshot.high, snapshot.close);
+  const signedGapPct =
+    ((snapshot.high - snapshot.bollinger.upper) / snapshot.close) * 100;
+
+  return {
+    gapPct,
+    signedGapPct,
+    matchType,
+    price: snapshot.high,
+    bbLevel: snapshot.bollinger.upper,
+  };
+}
+
+function buildBbLowerProximity(snapshot: IndicatorSnapshot): DeepproBbProximity {
+  const matchType = classifyBbBottomMatch(
+    snapshot.bollinger.lower,
+    snapshot.low,
+    snapshot.close,
+  );
+  const gapPct = matchType
+    ? bbMatchGapPct(
+        matchType,
+        "bottom",
+        snapshot.bollinger.lower,
+        snapshot.low,
+        snapshot.close,
+      )
+    : pctDistance(snapshot.bollinger.lower, snapshot.low, snapshot.close);
+  const signedGapPct =
+    ((snapshot.bollinger.lower - snapshot.low) / snapshot.close) * 100;
+
+  return {
+    gapPct,
+    signedGapPct,
+    matchType,
+    price: snapshot.low,
+    bbLevel: snapshot.bollinger.lower,
+  };
+}
+
+function isUsableSnapshot(snapshot: IndicatorSnapshot): boolean {
+  return (
+    Number.isFinite(snapshot.bollinger.upper) &&
+    Number.isFinite(snapshot.bollinger.lower) &&
+    Number.isFinite(snapshot.rsi)
+  );
+}
+
+function isBeforeEntryDeadline(timeIst: string, deadlineIst: string): boolean {
+  return parseHmToMinutes(timeIst) < parseHmToMinutes(deadlineIst);
+}
+
+function nearLowerBand(
+  proximity: DeepproBbProximity,
+  maxGapPct: number,
+): boolean {
+  return proximity.matchType != null || proximity.gapPct <= maxGapPct;
+}
+
+function nearUpperBand(
+  proximity: DeepproBbProximity,
+  maxGapPct: number,
+): boolean {
+  return proximity.matchType != null || proximity.gapPct <= maxGapPct;
+}
+
+function entryMid(snapshot: IndicatorSnapshot): number {
+  return (snapshot.high + snapshot.low) / 2;
+}
+
+function matchesBuyQuality(
+  rule: FavourableSymbolRuleConfig,
+  rsi: number,
+  smi: number,
+  bbLower: DeepproBbProximity,
+): boolean {
+  const { buyQuality } = rule;
+  if (rsi < buyQuality.minRsi || rsi > buyQuality.maxRsi) {
+    return false;
+  }
+  if (smi > buyQuality.maxSmi) {
+    return false;
+  }
+  return nearLowerBand(bbLower, buyQuality.maxBbLowerGapPct);
+}
+
+function matchesSellQuality(
+  rule: FavourableSymbolRuleConfig,
+  rsi: number,
+  smi: number,
+  bbUpper: DeepproBbProximity,
+): boolean {
+  const { sellQuality } = rule;
+  if (rsi < sellQuality.minRsi || rsi > sellQuality.maxRsi) {
+    return false;
+  }
+  if (smi < sellQuality.minSmi) {
+    return false;
+  }
+  return nearUpperBand(bbUpper, sellQuality.maxBbUpperGapPct);
+}
+
+function matchesBuyExtended(
+  rule: FavourableSymbolRuleConfig,
+  smi: number,
+  bbLower: DeepproBbProximity,
+): boolean {
+  const { buyExtended } = rule;
+  if (buyExtended.requireNegativeSmi && !(smi < 0)) {
+    return false;
+  }
+  if (smi > buyExtended.maxSmi) {
+    return false;
+  }
+  return nearLowerBand(bbLower, buyExtended.maxBbLowerGapPct);
+}
+
+/**
+ * Per-symbol favourable profit-range gates (60d study).
+ * Each ruleId is locked to exactly one trading symbol.
+ */
+export function evaluateFavourableSymbolDay(
+  ruleId: FavourableSymbolRuleId,
+  snapshots: IndicatorSnapshot[],
+  dateKey: string,
+): FavourableSymbolScanResult {
+  const rule = getFavourableSymbolRuleConfig(ruleId);
+  const {
+    sessionStart,
+    sessionEnd,
+    entryDeadlineIst,
+    smi: smiConfig,
+    displayName,
+  } = rule;
+
+  const dayIndexes: number[] = [];
+  for (let i = 0; i < snapshots.length; i++) {
+    const snapshot = snapshots[i];
+    if (!isUsableSnapshot(snapshot)) {
+      continue;
+    }
+    if (!isWithinIstSessionWindow(snapshot.timestamp, sessionStart, sessionEnd)) {
+      continue;
+    }
+    const parts = getIstTimeParts(snapshot.timestamp);
+    if (parts.dateKey !== dateKey) {
+      continue;
+    }
+    dayIndexes.push(i);
+  }
+
+  const highs = snapshots.map((snapshot) => snapshot.high);
+  const lows = snapshots.map((snapshot) => snapshot.low);
+  const closes = snapshots.map((snapshot) => snapshot.close);
+  const smiSeries = computeStochasticMomentum(
+    highs,
+    lows,
+    closes,
+    smiConfig.lengthK,
+    smiConfig.lengthD,
+    smiConfig.lengthEma,
+  );
+
+  let buyQuality: FavourableSymbolSignal | null = null;
+  let buyExtended: FavourableSymbolSignal | null = null;
+  let sellSignal: FavourableSymbolSignal | null = null;
+
+  for (const index of dayIndexes) {
+    const snapshot = snapshots[index];
+    const smiPoint = smiSeries[index];
+    if (!smiPoint || !Number.isFinite(smiPoint.smi)) {
+      continue;
+    }
+
+    const timeIst = formatIstTime(snapshot.timestamp);
+    if (!isBeforeEntryDeadline(timeIst, entryDeadlineIst)) {
+      continue;
+    }
+
+    const smi = smiPoint.smi;
+    const rsi = snapshot.rsi;
+    const bbUpper = buildBbUpperProximity(snapshot);
+    const bbLower = buildBbLowerProximity(snapshot);
+    const price = entryMid(snapshot);
+
+    if (!buyQuality && matchesBuyQuality(rule, rsi, smi, bbLower)) {
+      buyQuality = {
+        side: "BUY",
+        rule: ruleId,
+        dateKey,
+        timeIst,
+        scenarioKey: "buy_quality",
+        price,
+        smi,
+        rsi,
+        bbUpperProximity: bbUpper,
+        bbLowerProximity: bbLower,
+        reasons: [
+          `${displayName} BUY quality: RSI ${rsi.toFixed(1)} in ${rule.buyQuality.minRsi}–${rule.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${rule.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
+        ],
+      };
+    } else if (
+      !buyQuality &&
+      !buyExtended &&
+      matchesBuyExtended(rule, smi, bbLower)
+    ) {
+      buyExtended = {
+        side: "BUY",
+        rule: ruleId,
+        dateKey,
+        timeIst,
+        scenarioKey: "buy_extended",
+        price,
+        smi,
+        rsi,
+        bbUpperProximity: bbUpper,
+        bbLowerProximity: bbLower,
+        reasons: [
+          `${displayName} BUY extended (biggest-mover style): SMI ${smi.toFixed(1)} ≤ ${rule.buyExtended.maxSmi}${rule.buyExtended.requireNegativeSmi ? " (negative preferred)" : " (mid-zone OK)"}, BB lower gap ${bbLower.gapPct.toFixed(2)}% (≤ ${rule.buyExtended.maxBbLowerGapPct}%), RSI ${rsi.toFixed(1)}`,
+        ],
+      };
+    }
+
+    if (!sellSignal && matchesSellQuality(rule, rsi, smi, bbUpper)) {
+      sellSignal = {
+        side: "SELL",
+        rule: ruleId,
+        dateKey,
+        timeIst,
+        scenarioKey: "sell_quality",
+        price,
+        smi,
+        rsi,
+        bbUpperProximity: bbUpper,
+        bbLowerProximity: bbLower,
+        reasons: [
+          `${displayName} SELL quality: RSI ${rsi.toFixed(1)} in ${rule.sellQuality.minRsi}–${rule.sellQuality.maxRsi}, SMI ${smi.toFixed(1)} ≥ ${rule.sellQuality.minSmi}, BB upper gap ${bbUpper.gapPct.toFixed(2)}%${bbUpper.matchType ? ` (${bbUpper.matchType})` : ""}`,
+        ],
+      };
+    }
+
+    if (buyQuality && sellSignal) {
+      break;
+    }
+  }
+
+  const buySignal = buyQuality ?? buyExtended;
+  const signals = [buySignal, sellSignal]
+    .filter((signal): signal is FavourableSymbolSignal => signal != null)
+    .sort((left, right) => left.timeIst.localeCompare(right.timeIst));
+
+  return {
+    dateKey,
+    rule: ruleId,
+    sessionStart,
+    sessionEnd,
+    signals,
+  };
+}
+
+export function favourableSymbolSignalToTradeSignal(
+  ruleId: FavourableSymbolRuleId,
+  signal: FavourableSymbolSignal,
+): DeepakTradeSignal {
+  const proximity =
+    signal.side === "SELL" ? signal.bbUpperProximity : signal.bbLowerProximity;
+  const bbMatchType: DeepakBbMatchType = proximity.matchType ?? "close";
+
+  return {
+    side: signal.side,
+    scenarioKey: scenarioLabel(ruleId, signal.scenarioKey),
+    scenarioNumber: SCENARIO_NUMBER[signal.scenarioKey],
+    timeIst: signal.timeIst,
+    price: signal.price,
+    bbMatchType,
+    profitTarget: 0,
+    exit: null,
+  };
+}
+
+export function evaluateFavourableSymbolDecision(
+  ruleId: FavourableSymbolRuleId,
+  snapshots: IndicatorSnapshot[],
+  dateKey: string,
+): DeepakDecisionResult | null {
+  const day = evaluateFavourableSymbolDay(ruleId, snapshots, dateKey);
+  if (day.signals.length === 0) {
+    return null;
+  }
+
+  const tradeSignals = day.signals.map((signal) =>
+    favourableSymbolSignalToTradeSignal(ruleId, signal),
+  );
+  const lastSignal = tradeSignals[tradeSignals.length - 1];
+  const lastSnapshot =
+    snapshots.find((snapshot) => {
+      const parts = getIstTimeParts(snapshot.timestamp);
+      return parts.dateKey === dateKey && formatIstTime(snapshot.timestamp) === lastSignal.timeIst;
+    }) ??
+    [...snapshots].reverse().find((snapshot) => {
+      const parts = getIstTimeParts(snapshot.timestamp);
+      return parts.dateKey === dateKey;
+    });
+
+  if (!lastSnapshot) {
+    return null;
+  }
+
+  return {
+    dateKey,
+    decision: lastSignal.side,
+    activeScenario: lastSignal.scenarioKey,
+    scenarioTrail: tradeSignals.map((signal) => ({
+      scenarioKey: signal.scenarioKey,
+      timeIst: signal.timeIst,
+      bbMatchType: signal.bbMatchType,
+    })),
+    signals: tradeSignals,
+    reasons: day.signals.flatMap((signal) => signal.reasons),
+    snapshot: lastSnapshot,
+  };
+}
+
+export const __favourableSymbolRuleTestables = {
+  matchesBuyQuality,
+  matchesSellQuality,
+  matchesBuyExtended,
+  nearLowerBand,
+  nearUpperBand,
+  entryMid,
+};
