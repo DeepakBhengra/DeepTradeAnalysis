@@ -29,33 +29,33 @@ describe("SMI↔signal cross or touch helpers", () => {
   });
 });
 
-describe("SMI black-slope angle gate (≥35° into the cross)", () => {
+describe("SMI black-slope angle gate (≥20° into the cross)", () => {
   const scale = 22;
 
-  it("maps shallow vs steep ΔSMI into ~15–20° vs ≥35° bands", () => {
-    // |ΔSMI|=8 → ~20°; |ΔSMI|=16 → ~36°
-    expect(smiBlackSlopeAngleDeg(60, 52, scale)).toBeGreaterThan(19);
-    expect(smiBlackSlopeAngleDeg(60, 52, scale)).toBeLessThan(22);
-    expect(smiBlackSlopeAngleDeg(60, 44, scale)).toBeGreaterThanOrEqual(35);
+  it("maps shallow vs keep bands (~15° vs ≥20°)", () => {
+    // |ΔSMI|≈5.9 → ~15°; |ΔSMI|=8 → ~20°
+    expect(smiBlackSlopeAngleDeg(60, 54.1, scale)).toBeGreaterThan(14);
+    expect(smiBlackSlopeAngleDeg(60, 54.1, scale)).toBeLessThan(16);
+    expect(smiBlackSlopeAngleDeg(60, 52, scale)).toBeGreaterThanOrEqual(20);
   });
 
-  it("rejects shallow SELL approaches (~15–20°) and keeps steep (≥35°) downward slopes", () => {
-    const shallow = passesSellSmiAngle(70, 62, scale, 35);
+  it("rejects shallow SELL approaches (~15°) and keeps ≥20° downward slopes", () => {
+    const shallow = passesSellSmiAngle(70, 64.1, scale, 20);
     expect(shallow.ok).toBe(false);
-    expect(shallow.angleDeg).toBeLessThan(25);
+    expect(shallow.angleDeg).toBeLessThan(16);
 
-    const steep = passesSellSmiAngle(90, 74, scale, 35);
-    expect(steep.ok).toBe(true);
-    expect(steep.angleDeg).toBeGreaterThanOrEqual(35);
+    const keep = passesSellSmiAngle(70, 62, scale, 20);
+    expect(keep.ok).toBe(true);
+    expect(keep.angleDeg).toBeGreaterThanOrEqual(20);
   });
 
-  it("rejects shallow BUY approaches and keeps steep (≥35°) upward slopes", () => {
-    const weak = passesBuySmiAngle(-70, -62, scale, 35);
+  it("rejects shallow BUY approaches (~15°) and keeps ≥20° upward slopes", () => {
+    const weak = passesBuySmiAngle(-70, -64.1, scale, 20);
     expect(weak.ok).toBe(false);
 
-    const strong = passesBuySmiAngle(-70, -54, scale, 35);
+    const strong = passesBuySmiAngle(-70, -62, scale, 20);
     expect(strong.ok).toBe(true);
-    expect(strong.angleDeg).toBeGreaterThanOrEqual(35);
+    expect(strong.angleDeg).toBeGreaterThanOrEqual(20);
   });
 });
 
