@@ -3,13 +3,19 @@ import { dirname, join, resolve } from "node:path";
 
 const STORE_ROOT = resolve(process.cwd(), "data/post-mortem");
 
-export type PostMortemVariantId = "deepak" | "deepak2" | "deeppro";
+export type PostMortemVariantId = "deepak" | "deepak2" | "deeppro" | "rulePnb";
 
 /**
  * Bump when deeppro detection thresholds change so Post-Mortem recomputes
  * signal-day indexes instead of serving a stale cache.
  */
 export const DEEPPRO_SIGNAL_DAYS_RULES_REVISION = 10;
+
+/**
+ * Bump when RulePNB detection thresholds change so Post-Mortem recomputes
+ * signal-day indexes instead of serving a stale cache.
+ */
+export const RULEPNB_SIGNAL_DAYS_RULES_REVISION = 1;
 
 export interface StoredSignalDay {
   date: string;
@@ -54,10 +60,15 @@ function sanitizeSymbol(symbol: string): string {
 }
 
 function assertVariant(variant: string): PostMortemVariantId {
-  if (variant === "deepak" || variant === "deepak2" || variant === "deeppro") {
+  if (
+    variant === "deepak" ||
+    variant === "deepak2" ||
+    variant === "deeppro" ||
+    variant === "rulePnb"
+  ) {
     return variant;
   }
-  throw new Error("Invalid variant. Use deepak, deepak2, or deeppro.");
+  throw new Error("Invalid variant. Use deepak, deepak2, deeppro, or rulePnb.");
 }
 
 function assertDateKey(date: string): string {
@@ -129,6 +140,12 @@ export function loadSignalDaysIndex(
   ) {
     return null;
   }
+  if (
+    variantId === "rulePnb" &&
+    stored.rulesRevision !== RULEPNB_SIGNAL_DAYS_RULES_REVISION
+  ) {
+    return null;
+  }
   return stored;
 }
 
@@ -154,7 +171,9 @@ export function saveSignalDaysIndex(input: {
     variant: variantId,
     ...(variantId === "deeppro"
       ? { rulesRevision: DEEPPRO_SIGNAL_DAYS_RULES_REVISION }
-      : {}),
+      : variantId === "rulePnb"
+        ? { rulesRevision: RULEPNB_SIGNAL_DAYS_RULES_REVISION }
+        : {}),
     days: input.days,
     tradingDaysScanned: input.tradingDaysScanned,
     totalSignals: input.totalSignals,

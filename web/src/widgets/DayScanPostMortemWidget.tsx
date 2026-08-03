@@ -32,6 +32,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deepak3: "dayscan-postmortem-deepak-3",
   watchParty: "dayscan-postmortem-watch-party",
   deeppro: "dayscan-postmortem-deeppro",
+  rulePnb: "dayscan-postmortem-rule-pnb",
 };
 
 interface SymbolOption {

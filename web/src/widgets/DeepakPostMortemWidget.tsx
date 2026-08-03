@@ -7,6 +7,7 @@ import {
   fetchDeepak2Backtest,
   fetchDeepakBacktest,
   fetchDeepproBacktest,
+  fetchRulePnbBacktest,
   savePostMortemReport,
   savePostMortemSignalDays,
 } from "../api/client";
@@ -37,11 +38,12 @@ const VARIANT_LABEL: Record<PostMortemVariant, string> = {
   deepak: "Deepak",
   deepak2: "Deepak-2",
   deeppro: "Deeppro",
+  rulePnb: "RulePNB",
 };
 
 function readStoredVariant(): PostMortemVariant {
   const stored = readLocalStorage(VARIANT_STORAGE_KEY);
-  if (stored === "deepak2" || stored === "deeppro") {
+  if (stored === "deepak2" || stored === "deeppro" || stored === "rulePnb") {
     return stored;
   }
   return "deepak";
@@ -168,6 +170,8 @@ export function DeepakPostMortemWidget({
             ? await fetchDeepak2Backtest(normalized, fromDate, toDate)
             : variant === "deeppro"
               ? await fetchDeepproBacktest(normalized, fromDate, toDate)
+              : variant === "rulePnb"
+                ? await fetchRulePnbBacktest(normalized, fromDate, toDate)
               : await fetchDeepakBacktest(normalized, fromDate, toDate);
 
         const days = signalDaysFromTrades(payload.trades);
@@ -276,6 +280,8 @@ export function DeepakPostMortemWidget({
             ? payload.deepak2Decision
             : variant === "deeppro"
               ? payload.deepproDecision
+              : variant === "rulePnb"
+                ? payload.rulePnbDecision
               : payload.deepakDecision;
         const graded = buildDeepakPostMortemReport(decision, payload.series, variant);
         if (!graded) {
@@ -385,6 +391,7 @@ export function DeepakPostMortemWidget({
               <option value="deepak">Deepak</option>
               <option value="deepak2">Deepak-2</option>
               <option value="deeppro">Deeppro</option>
+              <option value="rulePnb">RulePNB</option>
             </select>
           </div>
 

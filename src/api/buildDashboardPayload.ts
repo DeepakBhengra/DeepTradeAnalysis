@@ -12,6 +12,7 @@ import { buildVolumeSnapshots } from "../indicators/volume.js";
 import { computeConfidenceScore } from "../rules/confidenceScore.js";
 import { evaluateDeepakDecision, evaluateDeepak2Decision } from "../rules/deepakDecision.js";
 import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
+import { evaluateRulePnbDecision } from "../rules/rulePnbDecision.js";
 import { evaluateDepthAnalysis } from "../rules/depthAnalysis.js";
 import {
   buildSidewaysDebug,
@@ -74,6 +75,7 @@ export interface DashboardPayload {
   deepakDecision: DeepakDecisionResult | null;
   deepak2Decision: DeepakDecisionResult | null;
   deepproDecision: DeepakDecisionResult | null;
+  rulePnbDecision: DeepakDecisionResult | null;
   analysisDate: string | null;
   mode: "live" | "historical" | "simulation";
   series: DashboardSeriesPoint[];
@@ -169,6 +171,7 @@ function emptyPayload(
     deepakDecision: null,
     deepak2Decision: null,
     deepproDecision: null,
+    rulePnbDecision: null,
     analysisDate,
     mode,
     series: [],
@@ -203,6 +206,8 @@ function buildPayloadFromCandles(input: {
       : null;
   const deepproDecision =
     targetDateKey != null ? evaluateDeepproDecision(snapshots, targetDateKey) : null;
+  const rulePnbDecision =
+    targetDateKey != null ? evaluateRulePnbDecision(snapshots, targetDateKey) : null;
   const volumeAnalysis = evaluateVolumeAnalysis(candles);
   const sidewaysTrend = evaluateSidewaysTrend(snapshots, { targetDateKey });
   const sidewaysDebug = buildSidewaysDebug(snapshots, { targetDateKey });
@@ -245,6 +250,8 @@ function buildPayloadFromCandles(input: {
     deepak2Decision?.reasons.map((reason) => `[Deepak-2] ${reason}`) ?? [];
   const deepproReasons =
     deepproDecision?.reasons.map((reason) => `[Deeppro] ${reason}`) ?? [];
+  const rulePnbReasons =
+    rulePnbDecision?.reasons.map((reason) => `[RulePNB] ${reason}`) ?? [];
 
   const referenceCandle =
     analysisDate && series.length > 0
@@ -267,6 +274,7 @@ function buildPayloadFromCandles(input: {
       ...deepakReasons,
       ...deepak2Reasons,
       ...deepproReasons,
+      ...rulePnbReasons,
       ...volumeReasons,
       ...depthReasons,
       ...confidenceReasons,
@@ -283,6 +291,7 @@ function buildPayloadFromCandles(input: {
     deepakDecision,
     deepak2Decision,
     deepproDecision,
+    rulePnbDecision,
     analysisDate: analysisDate ?? null,
     mode,
     series,

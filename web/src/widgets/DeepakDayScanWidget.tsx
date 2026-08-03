@@ -25,6 +25,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deepak3: "deepak-3-day-scan",
   watchParty: "deepak-watch-party-day-scan",
   deeppro: "deeppro-day-scan",
+  rulePnb: "rule-pnb-day-scan",
 };
 
 function readStoredVariant(): DayScanRuleVariant {
@@ -45,6 +46,8 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
       return `Scans ${universe} for Deepak entries at 10:15 IST with Deepak-2 watch-party stop-loss exits. May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deeppro":
       return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
+    case "rulePnb":
+      return `Scans ${universe} for ${label} RSI/SMI/BB proximity setups from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deepak":
     default:
       return `Scans ${universe} using ${label} rules. May take several minutes depending on Kite response time.${liveRefresh}`;
@@ -53,8 +56,13 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
 
 function rulesPanelVariant(
   variant: DayScanRuleVariant,
-): "deepak" | "deepak2" | "deepak3" | "deeppro" {
-  if (variant === "deepak2" || variant === "deepak3" || variant === "deeppro") {
+): "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb" {
+  if (
+    variant === "deepak2" ||
+    variant === "deepak3" ||
+    variant === "deeppro" ||
+    variant === "rulePnb"
+  ) {
     return variant;
   }
   return "deepak";
