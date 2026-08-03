@@ -7,6 +7,41 @@ export const NSE_SESSION = {
   timezone: IST_TIMEZONE,
 } as const;
 
+/** Live Day Scan auto-refresh stops at this IST clock time (inclusive window end). */
+export const DAY_SCAN_LIVE_REFRESH_UNTIL_IST = "15:15";
+
+export function todayIstDateKey(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: IST_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+/** Current IST clock as HH:mm (24h). */
+export function currentIstHm(now: Date = new Date()): string {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: IST_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(now);
+}
+
+/** True while IST clock is strictly before `untilHm` (HH:mm). */
+export function isIstBeforeHm(untilHm: string, now: Date = new Date()): boolean {
+  return currentIstHm(now) < untilHm;
+}
+
+export function shouldLiveRefreshDayScan(
+  selectedDate: string,
+  now: Date = new Date(),
+  untilHm: string = DAY_SCAN_LIVE_REFRESH_UNTIL_IST,
+): boolean {
+  return selectedDate === todayIstDateKey(now) && isIstBeforeHm(untilHm, now);
+}
+
 function timeToDate(time: Time): Date | null {
   if (typeof time === "number") {
     return new Date(time * 1000);

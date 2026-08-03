@@ -6,12 +6,14 @@ import { DeepakRulesPanel } from "../components/DeepakRulesPanel";
 import { SectorBacktestResultsTable } from "../components/SectorBacktestResultsTable";
 import { SectorWatchlistPreview } from "../components/SectorWatchlistPreview";
 import { SECTOR_WATCHLIST_SIZE } from "../data/sectorWatchlist";
+import { useDayScanLiveRefresh } from "../hooks/useDayScanLiveRefresh";
 import {
   DAY_SCAN_RULE_VARIANT_LABEL,
   isDayScanRuleVariant,
   useVariantDayScan,
   type DayScanRuleVariant,
 } from "../hooks/useVariantDayScan";
+import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST } from "../utils/istTime";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
 const DEFAULT_DATE = "2026-05-11";
@@ -32,18 +34,20 @@ function readStoredVariant(): DayScanRuleVariant {
 
 function descriptionForVariant(variant: DayScanRuleVariant): string {
   const label = DAY_SCAN_RULE_VARIANT_LABEL[variant];
+  const universe = `${SECTOR_WATCHLIST_SIZE} liquid NSE stocks (Bank, IT, Metal, Insurance, Automobile, Health, Energy, FMCG, Finance, Infra, Consumer, Telecom, Defence)`;
+  const liveRefresh = ` If the selected date is today, the scan auto-refreshes every 15 minutes until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
   switch (variant) {
     case "deepak2":
-      return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks across Bank, IT, Metal, Insurance, Automobile, and Health using ${label} rules (session starts 10:15 IST). May take 2–15 minutes depending on Kite response time.`;
+      return `Scans ${universe} using ${label} rules (session starts 10:15 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deepak3":
-      return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks across Bank, IT, Metal, Insurance, Automobile, and Health using ${label} sure-shot filters (session 09:15 IST). May take 2–15 minutes depending on Kite response time.`;
+      return `Scans ${universe} using ${label} sure-shot filters (session 09:15 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "watchParty":
-      return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks for Deepak entries at 10:15 IST with Deepak-2 watch-party stop-loss exits. May take 2–15 minutes depending on Kite response time.`;
+      return `Scans ${universe} for Deepak entries at 10:15 IST with Deepak-2 watch-party stop-loss exits. May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deeppro":
-      return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take 2–15 minutes depending on Kite response time.`;
+      return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deepak":
     default:
-      return `Scans ${SECTOR_WATCHLIST_SIZE} large-cap stocks across Bank, IT, Metal, Insurance, Automobile, and Health using ${label} rules. May take 2–15 minutes depending on Kite response time.`;
+      return `Scans ${universe} using ${label} rules. May take several minutes depending on Kite response time.${liveRefresh}`;
   }
 }
 
@@ -68,6 +72,7 @@ export function DeepakDayScanWidget({
   const [date, setDate] = useState(DEFAULT_DATE);
   const [variant, setVariant] = useState<DayScanRuleVariant>(readStoredVariant);
   const [watchlistExpanded, setWatchlistExpanded] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
   const { data, loading, loadingElapsedSec, error, info, run, stop, reset } =
     useVariantDayScan(variant);
   const hasRunRef = useRef(false);
@@ -81,11 +86,13 @@ export function DeepakDayScanWidget({
     setVariant(next);
     writeLocalStorage(VARIANT_STORAGE_KEY, next);
     hasRunRef.current = false;
+    setHasStarted(false);
     reset();
   };
 
   const handleRun = () => {
     hasRunRef.current = true;
+    setHasStarted(true);
     void run(date);
   };
 
@@ -95,12 +102,25 @@ export function DeepakDayScanWidget({
     }
   }, [refreshTrigger, isActive, run, date]);
 
+  useDayScanLiveRefresh({
+    date,
+    hasStarted,
+    loading,
+    isActive,
+    run,
+  });
+
   return (
     <div hidden={!isActive}>
       <main className="mx-auto flex max-w-6xl flex-col gap-3 p-3">
         <DayScanRunControls
           date={date}
-          onDateChange={setDate}
+          onDateChange={(next) => {
+            setDate(next);
+            hasRunRef.current = false;
+            setHasStarted(false);
+            reset();
+          }}
           loading={loading}
           onRun={handleRun}
           onStop={stop}
