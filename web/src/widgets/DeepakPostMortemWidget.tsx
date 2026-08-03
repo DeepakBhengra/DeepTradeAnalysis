@@ -49,6 +49,13 @@ function readStoredVariant(): PostMortemVariant {
   return "deepak";
 }
 
+function initialSymbolForVariant(variant: PostMortemVariant): string {
+  if (variant === "rulePnb") {
+    return "PNB";
+  }
+  return readStoredSymbol();
+}
+
 interface LoadedReport {
   symbol: string;
   mode: string;
@@ -67,11 +74,15 @@ export function DeepakPostMortemWidget({
   isActive,
   refreshTrigger = 0,
 }: DeepakPostMortemWidgetProps) {
-  const [symbolInput, setSymbolInput] = useState(readStoredSymbol);
-  const [activeSymbol, setActiveSymbol] = useState(readStoredSymbol);
+  const [variant, setVariant] = useState<PostMortemVariant>(readStoredVariant);
+  const [symbolInput, setSymbolInput] = useState(() =>
+    initialSymbolForVariant(readStoredVariant()),
+  );
+  const [activeSymbol, setActiveSymbol] = useState(() =>
+    initialSymbolForVariant(readStoredVariant()),
+  );
   const [fromDate, setFromDate] = useState(DEFAULT_FROM_DATE);
   const [toDate, setToDate] = useState(DEFAULT_TO_DATE);
-  const [variant, setVariant] = useState<PostMortemVariant>(readStoredVariant);
 
   const [signalDays, setSignalDays] = useState<SignalDayOption[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
