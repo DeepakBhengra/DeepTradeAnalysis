@@ -9,7 +9,7 @@ export type PostMortemVariantId = "deepak" | "deepak2" | "deeppro";
  * Bump when deeppro detection thresholds change so Post-Mortem recomputes
  * signal-day indexes instead of serving a stale cache.
  */
-export const DEEPPRO_SIGNAL_DAYS_RULES_REVISION = 9;
+export const DEEPPRO_SIGNAL_DAYS_RULES_REVISION = 10;
 
 export interface StoredSignalDay {
   date: string;

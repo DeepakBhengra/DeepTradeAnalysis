@@ -432,16 +432,6 @@ export const config = {
      */
     signalOnSmiCrossOnly: true,
     /**
-     * SMI black-line slope angle into the cross (normalized SMI space, not pixels).
-     * angleDeg = |atan(ΔSMI / smiAngleScalePerBar)| * 180/π on the cross bar (prev→cur).
-     * Calibrated so ~15° = shallow chop (reject) and ≥20° = keep.
-     */
-    smiAngleScalePerBar: 22,
-    /** SELL: min black-line slope angle before crossing red downward; reject ~15°. */
-    minSellSmiAngleDeg: 20,
-    /** BUY: min black-line slope angle before crossing red upward; reject ~15°. */
-    minBuySmiAngleDeg: 20,
-    /**
      * Max body/range to treat a post-cross candle as stall/doji.
      * Unused while `signalOnSmiCrossOnly` is true (kept for optional chart annotation).
      */
