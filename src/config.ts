@@ -419,7 +419,15 @@ export const config = {
      * even when the SMI cross prints a few bars later.
      */
     lookbackBars: 16,
-    /** Max body/range to treat a post-cross candle as stall/doji */
+    /**
+     * When true, publish BUY/SELL only at the Stch Mtm SMI↔signal cross candle.
+     * Disables look-ahead remapping to stall / SMI-exit / MACD-cross events.
+     */
+    signalOnSmiCrossOnly: true,
+    /**
+     * Max body/range to treat a post-cross candle as stall/doji.
+     * Unused while `signalOnSmiCrossOnly` is true (kept for optional chart annotation).
+     */
     stallBodyRatioMax: 0.35,
     /**
      * Exclusive IST deadline for the deeppro event candle (hard cap).
@@ -445,17 +453,12 @@ export const config = {
         /** Inclusive event window — winners clustered 10:45–12:30. */
         eventFromIst: "10:45",
         eventToIst: "12:30",
-        /** Ideal exhaustion RSI; DIVISLAB-like exits use the low-RSI exception. */
+        /** Ideal exhaustion RSI at the SMI cross candle. */
         minEventRsi: 67,
         /** Tight upper-band proximity (keeps DRREDDY ~1.67 / CIPLA ~1.59). */
         maxBbUpperGapPct: 1.75,
-        /**
-         * Rare SELL exception: SMI exit from overbought with low RSI but price
-         * still pressed near the lower-band context of a failed pop (DIVISLAB).
-         */
-        allowLowRsiSmiExit: true,
-        lowRsiExitMaxEventRsi: 45,
-        lowRsiExitMaxBbLowerGapPct: 0.3,
+        /** Only SMI↔signal line crosses (no stall / exit remaps). */
+        allowedEventKinds: ["smi_cross"],
       },
       buy: {
         /** Hard cap; practical entries are further limited by paths below. */
@@ -464,9 +467,9 @@ export const config = {
         maxEventRsi: 50,
         /** Outer BB lower proximity cap (matched path / extreme exception). */
         maxBbLowerGapPct: 1.0,
-        /** Prefer stall / OS-exit over plain SMI/MACD crosses. */
-        allowedEventKinds: ["stall_at_lows", "smi_exit_oversold"],
-        /** If BB lower is close/crossed, allow slightly higher RSI (GICRE 12:30). */
+        /** Only SMI↔signal line crosses (no stall / exit remaps). */
+        allowedEventKinds: ["smi_cross"],
+        /** If BB lower is close/crossed, allow slightly higher RSI. */
         matchedBbMaxEventRsi: 60,
         /**
          * Path B — unmatched proximity BUYs only in the morning.
@@ -476,15 +479,14 @@ export const config = {
         unmatchedMaxBbLowerGapPct: 0.65,
         /**
          * Path A — after this IST time, BB-matched BUY needs RSI recovering
-         * (≥40). Mid-morning waterfall touches (PNB/TMPV 1 Jun) stay out;
-         * afternoon recovery stalls (INFY/GICRE 29 Jun) stay in.
+         * (≥40). Mid-morning waterfall touches stay out; afternoon recovery stays in.
          */
         matchedRecoveryAfterIst: "11:00",
         matchedRecoveryMinEventRsi: 40,
-        /** Reject chop when price tags both Bollinger bands on the event candle. */
+        /** Reject chop when price tags both Bollinger bands on the cross candle. */
         rejectBothBandsMatched: true,
         /**
-         * Path C — rare late extreme stall (EICHERMOT 29 Jun): RSI≤12 with
+         * Path C — rare extreme late cross (EICHERMOT-style): RSI≤12 with
          * deeply negative MACD hist, still near the lower band.
          */
         allowExtremeStallException: true,

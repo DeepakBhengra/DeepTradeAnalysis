@@ -495,6 +495,8 @@ Day Scan / Post-Mortem scan the full **100-stock** liquid NSE universe in `SECTO
 
 Session: **09:15–15:30 IST**. Event candle must be **before 14:00 IST**. Lookback for peak/trough SMI + BB tag: **16** bars (~4h on 15m).
 
+With `signalOnSmiCrossOnly: true` (default), BUY/SELL publish **only** on the Stch Mtm **SMI↔signal cross** candle — no look-ahead remap to stall / SMI-exit / MACD-cross.
+
 #### SELL (overbought exhaustion)
 
 | Step | Rule |
@@ -504,7 +506,7 @@ Session: **09:15–15:30 IST**. Event candle must be **before 14:00 IST**. Lookb
 | 3 | Upper Bollinger Band tagged in the same lookback |
 | 4 | MACD histogram **declining** on the cross candle |
 | 5 | MACD hist Δ vs price ≥ `minMacdHistDeltaPct` (default **0.01%**) |
-| 6 | Map a nearby chart event (stall at highs / SMI exit overbought / MACD cross / plain SMI cross) |
+| 6 | Event = SMI cross candle (`eventKind: smi_cross`) |
 
 #### BUY (oversold exhaustion — mirror)
 
@@ -515,39 +517,39 @@ Session: **09:15–15:30 IST**. Event candle must be **before 14:00 IST**. Lookb
 | 3 | Lower Bollinger Band tagged in the same lookback |
 | 4 | MACD histogram **rising** on the cross candle |
 | 5 | MACD hist Δ vs price ≥ `minMacdHistDeltaPct` |
-| 6 | Map a nearby chart event (stall at lows / SMI exit oversold / MACD bull cross / plain SMI cross) |
+| 6 | Event = SMI cross candle (`eventKind: smi_cross`) |
 
 **Times shown in Day Scan:**
 
 | Field | Meaning |
 |-------|---------|
 | **Entry IST** | SMI cross candle (`timeIst`) |
-| **Scenario / event** | Nearby stall or SMI-exit candle (`eventTimeIst` / `eventKind`) when present |
+| **Scenario / event** | Same cross candle (`eventTimeIst` / `eventKind: smi_cross`) |
 
 Day Scan Deeppro rows are **entries only** (`profitTarget: 0`, exit columns empty). Same-day square-off P&amp;L is a **study / post-mortem** metric, not a live fill guarantee.
 
 ### Quality gates (enhanced — default on)
 
-After raw detect, signals must pass `passesDeepproSellQuality` / `passesDeepproBuyQuality`. Tuned on Kite 15m watchlist studies to favor same-day best square-off **≥ ~0.75%**. Intentionally does **not** over-trust extreme peak/trough SMI alone, ultra-low BUY RSI (≤30), or SELL BB-upper match tags.
+After raw detect, signals must pass `passesDeepproSellQuality` / `passesDeepproBuyQuality`. Tuned on Kite 15m watchlist studies to favor same-day best square-off **≥ ~0.75%**. Intentionally does **not** over-trust extreme peak/trough SMI alone, ultra-low BUY RSI (≤30), or SELL BB-upper match tags. Only **`smi_cross`** event kinds are allowed.
 
 #### SELL quality
 
 | Gate | Rule |
 |------|------|
+| Event kind | **`smi_cross` only** |
 | Event window | Inclusive **10:45–12:30** IST |
-| RSI | Event RSI **≥ 67**, **or** low-RSI SMI-exit exception |
+| RSI | Event RSI **≥ 67** (measured on the cross candle) |
 | BB upper | Gap to upper band **≤ 1.75%** |
-| Low-RSI exception | `smi_exit_overbought` with RSI **≤ 45** and BB lower gap **≤ 0.3%** (DIVISLAB-style failed pop) |
 
 #### BUY quality
 
-Outer caps: allowed kinds **`stall_at_lows` | `smi_exit_oversold`**, event **≤ 13:15**, RSI **≤ 50** (≤ **60** if BB lower matched), BB lower gap **≤ 1.0%**. Then one of:
+Outer caps: allowed kind **`smi_cross`**, event **≤ 13:15**, RSI **≤ 50** (≤ **60** if BB lower matched), BB lower gap **≤ 1.0%**. Then one of:
 
 | Path | Rule |
 |------|------|
 | **A — BB-lower matched** | Lower band **close/crossed**; reject dual-band squeeze (both bands matched); after **11:00** require RSI **≥ 40** (recovery, not waterfall) |
 | **B — Morning unmatched** | No BB-lower match; event **≤ 10:30**; BB lower gap **≤ 0.65%** |
-| **C — Extreme stall** | `stall_at_lows`, RSI **≤ 12**, BB lower gap **≤ 0.9%**, MACD hist **≤ -5**, event **≤ 12:30** (EICHERMOT-style) |
+| **C — Extreme cross** | RSI **≤ 12**, BB lower gap **≤ 0.9%**, MACD hist **≤ -5**, event **≤ 12:30** (EICHERMOT-style) |
 
 These gates apply everywhere Deeppro is evaluated (Day Scan, Post-Mortem, backtest, study scripts) via `evaluateDeepproDay`.
 
@@ -555,9 +557,10 @@ These gates apply everywhere Deeppro is evaluated (Day Scan, Post-Mortem, backte
 
 | Event kind | Sc# | Typical side |
 |------------|-----|--------------|
-| `smi_cross` / `macd_*_cross` | 1 | either |
-| `stall_at_highs` / `stall_at_lows` | 2 | SELL / BUY |
-| `smi_exit_overbought` / `smi_exit_oversold` | 3 | SELL / BUY |
+| `smi_cross` | 1 | either (default published kind) |
+| `stall_at_highs` / `stall_at_lows` | 2 | legacy only (`signalOnSmiCrossOnly: false`) |
+| `smi_exit_overbought` / `smi_exit_oversold` | 3 | legacy only |
+| `macd_bear_cross` / `macd_bull_cross` | 4 | legacy only |
 
 ### Configuration
 
@@ -573,6 +576,7 @@ deeppro: {
   oversoldLevel: -40,
   maxTroughSmi: -65,
   lookbackBars: 16,
+  signalOnSmiCrossOnly: true,
   stallBodyRatioMax: 0.35,
   entryDeadlineIst: "14:00",
   minMacdHistDeltaPct: 0.01,
@@ -583,15 +587,13 @@ deeppro: {
       eventToIst: "12:30",
       minEventRsi: 67,
       maxBbUpperGapPct: 1.75,
-      allowLowRsiSmiExit: true,
-      lowRsiExitMaxEventRsi: 45,
-      lowRsiExitMaxBbLowerGapPct: 0.3,
+      allowedEventKinds: ["smi_cross"],
     },
     buy: {
       eventToIst: "13:15",
       maxEventRsi: 50,
       maxBbLowerGapPct: 1.0,
-      allowedEventKinds: ["stall_at_lows", "smi_exit_oversold"],
+      allowedEventKinds: ["smi_cross"],
       matchedBbMaxEventRsi: 60,
       unmatchedEventToIst: "10:30",
       unmatchedMaxBbLowerGapPct: 0.65,

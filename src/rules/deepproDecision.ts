@@ -184,7 +184,7 @@ function isInInclusiveHmWindow(
 
 /**
  * SELL quality gate — favors same-day square-off ≥ ~0.75%:
- * event 10:45–12:30, RSI ≥ 67 (or low-RSI SMI-exit exception), BB upper gap capped.
+ * SMI cross only, event 10:45–12:30, RSI ≥ 67, BB upper gap capped.
  */
 export function passesDeepproSellQuality(signal: DeepproSignal): boolean {
   const quality = config.deeppro.qualityFilter;
@@ -192,6 +192,9 @@ export function passesDeepproSellQuality(signal: DeepproSignal): boolean {
     return true;
   }
   const sell = quality.sell;
+  if (!(sell.allowedEventKinds as string[]).includes(signal.eventKind)) {
+    return false;
+  }
   if (
     !isInInclusiveHmWindow(
       signal.eventTimeIst,
@@ -205,22 +208,15 @@ export function passesDeepproSellQuality(signal: DeepproSignal): boolean {
     return false;
   }
 
-  const rsiOk = signal.eventRsi >= sell.minEventRsi;
-  const lowRsiExitOk =
-    sell.allowLowRsiSmiExit &&
-    signal.eventKind === "smi_exit_overbought" &&
-    signal.eventRsi <= sell.lowRsiExitMaxEventRsi &&
-    signal.bbLowerProximity.gapPct <= sell.lowRsiExitMaxBbLowerGapPct;
-
-  return rsiOk || Boolean(lowRsiExitOk);
+  return signal.eventRsi >= sell.minEventRsi;
 }
 
 /**
  * BUY quality gate — favors same-day square-off ≥ ~0.75%:
- * stall/OS-exit + one of:
+ * SMI cross only + one of:
  *   A) BB lower matched (not both-band squeeze; after 11:00 needs RSI≥40)
  *   B) unmatched morning proximity (event≤10:30, BB lower gap≤0.65)
- *   C) rare extreme late stall (RSI≤12, MACD hist≤-5, event≤12:30)
+ *   C) rare extreme late cross (RSI≤12, MACD hist≤-5, event≤12:30)
  * Soft RSI caps still apply (≤50, or ≤60 when BB lower matched).
  */
 export function passesDeepproBuyQuality(signal: DeepproSignal): boolean {
@@ -271,10 +267,9 @@ export function passesDeepproBuyQuality(signal: DeepproSignal): boolean {
     return true;
   }
 
-  // Path C — rare extreme late stall
+  // Path C — rare extreme late cross
   if (
     buy.allowExtremeStallException &&
-    signal.eventKind === "stall_at_lows" &&
     signal.eventRsi <= buy.extremeStallMaxEventRsi &&
     signal.bbLowerProximity.gapPct <= buy.extremeStallMaxBbLowerGapPct &&
     signal.macdHistogram <= buy.extremeStallMaxMacdHist &&
@@ -292,7 +287,7 @@ function withSellQualityReasons(signal: DeepproSignal): DeepproSignal {
     ...signal,
     reasons: [
       ...signal.reasons,
-      `Quality SELL: event ${sell.eventFromIst}–${sell.eventToIst}, RSI≥${sell.minEventRsi} (or low-RSI SMI-exit), BB upper gap≤${sell.maxBbUpperGapPct}%`,
+      `Quality SELL: SMI cross only, event ${sell.eventFromIst}–${sell.eventToIst}, RSI≥${sell.minEventRsi}, BB upper gap≤${sell.maxBbUpperGapPct}%`,
     ],
   };
 }
@@ -303,7 +298,7 @@ function withBuyQualityReasons(signal: DeepproSignal): DeepproSignal {
     ...signal,
     reasons: [
       ...signal.reasons,
-      `Quality BUY: ${buy.allowedEventKinds.join("|")}; BB-lower match (no dual-band squeeze; after ${buy.matchedRecoveryAfterIst} RSI≥${buy.matchedRecoveryMinEventRsi}) or unmatched≤${buy.unmatchedEventToIst} gap≤${buy.unmatchedMaxBbLowerGapPct}% or extreme stall RSI≤${buy.extremeStallMaxEventRsi}`,
+      `Quality BUY: SMI cross only; BB-lower match (no dual-band squeeze; after ${buy.matchedRecoveryAfterIst} RSI≥${buy.matchedRecoveryMinEventRsi}) or unmatched≤${buy.unmatchedEventToIst} gap≤${buy.unmatchedMaxBbLowerGapPct}% or extreme RSI≤${buy.extremeStallMaxEventRsi}`,
     ],
   };
 }
@@ -339,11 +334,11 @@ function dedupeDeepproSignals(signals: DeepproSignal[]): DeepproSignal[] {
  * 4. MACD histogram declining on the cross candle (momentum fade)
  * 5. Meaningful MACD hist fade vs price (drops weak 0.08–0.25% setups)
  * 6. Event candle before entry deadline (default before 14:00 IST)
- * 7. Quality gate (default on): event 10:45–12:30, RSI≥67 (or low-RSI SMI-exit),
+ * 7. Quality gate (default on): SMI cross only, event 10:45–12:30, RSI≥67,
  *    BB upper gap≤1.75% — tuned for same-day square-off ≥ ~0.75%
  *
- * Signal time = SMI bearish-cross candle (IST). Event time may also surface a
- * nearby stall/doji at highs or SMI exit from overbought (chart annotation).
+ * Signal time = event time = SMI bearish-cross candle (IST) when
+ * `signalOnSmiCrossOnly` is enabled (default).
  */
 export function evaluateDeepproSignals(
   snapshots: IndicatorSnapshot[],
@@ -358,6 +353,7 @@ export function evaluateDeepproSignals(
     stallBodyRatioMax,
     entryDeadlineIst,
     minMacdHistDeltaPct,
+    signalOnSmiCrossOnly,
   } = config.deeppro;
 
   const resolvedDateKey =
@@ -452,69 +448,71 @@ export function evaluateDeepproSignals(
 
     let eventIndex = index;
     let eventKind: DeepproSignal["eventKind"] = "smi_cross";
-    let bestStallRatio = Number.POSITIVE_INFINITY;
-    let bestStallIndex: number | null = null;
-    let swingHigh = Number.NEGATIVE_INFINITY;
-    for (let i = lookbackFrom; i <= index; i++) {
-      swingHigh = Math.max(swingHigh, snapshots[i].high);
-    }
 
-    for (let j = 1; j <= 3 && index + j < snapshots.length; j++) {
-      const laterIndex = index + j;
-      const later = snapshots[laterIndex];
-      const laterSmi = smiSeries[laterIndex];
-      const earlierSmi = smiSeries[laterIndex - 1];
-      if (!later || !laterSmi || !earlierSmi) {
-        break;
-      }
-      if (getIstTimeParts(later.timestamp).dateKey !== resolvedDateKey) {
-        break;
-      }
-      if (!isWithinIstSessionWindow(later.timestamp, sessionStart, sessionEnd)) {
-        break;
+    if (!signalOnSmiCrossOnly) {
+      let bestStallRatio = Number.POSITIVE_INFINITY;
+      let bestStallIndex: number | null = null;
+      let swingHigh = Number.NEGATIVE_INFINITY;
+      for (let i = lookbackFrom; i <= index; i++) {
+        swingHigh = Math.max(swingHigh, snapshots[i].high);
       }
 
-      const ratio = bodyToRangeRatio(later);
-      const nearSwing =
-        (Math.abs(later.high - swingHigh) / later.close) * 100 <= 0.5;
-      const stall =
-        ratio <= stallBodyRatioMax &&
-        Boolean(
-          classifyBbTopMatch(later.bollinger.upper, later.high, later.close) ||
-            later.high >= later.bollinger.upper * 0.998 ||
-            nearSwing,
-        );
-      if (stall && ratio <= bestStallRatio) {
-        bestStallRatio = ratio;
-        bestStallIndex = laterIndex;
-        eventIndex = laterIndex;
+      for (let j = 1; j <= 3 && index + j < snapshots.length; j++) {
+        const laterIndex = index + j;
+        const later = snapshots[laterIndex];
+        const laterSmi = smiSeries[laterIndex];
+        const earlierSmi = smiSeries[laterIndex - 1];
+        if (!later || !laterSmi || !earlierSmi) {
+          break;
+        }
+        if (getIstTimeParts(later.timestamp).dateKey !== resolvedDateKey) {
+          break;
+        }
+        if (!isWithinIstSessionWindow(later.timestamp, sessionStart, sessionEnd)) {
+          break;
+        }
+
+        const ratio = bodyToRangeRatio(later);
+        const nearSwing =
+          (Math.abs(later.high - swingHigh) / later.close) * 100 <= 0.5;
+        const stall =
+          ratio <= stallBodyRatioMax &&
+          Boolean(
+            classifyBbTopMatch(later.bollinger.upper, later.high, later.close) ||
+              later.high >= later.bollinger.upper * 0.998 ||
+              nearSwing,
+          );
+        if (stall && ratio <= bestStallRatio) {
+          bestStallRatio = ratio;
+          bestStallIndex = laterIndex;
+          eventIndex = laterIndex;
+          eventKind = "stall_at_highs";
+        }
+
+        if (eventKind === "smi_cross") {
+          const exitOb =
+            earlierSmi.smi >= overboughtLevel && laterSmi.smi < overboughtLevel;
+          if (exitOb && laterSmi.smi < laterSmi.signal) {
+            eventIndex = laterIndex;
+            eventKind = "smi_exit_overbought";
+            continue;
+          }
+
+          const macdCross =
+            snapshots[laterIndex - 1].macd.macdLine >=
+              snapshots[laterIndex - 1].macd.signalLine &&
+            later.macd.macdLine < later.macd.signalLine;
+          if (macdCross) {
+            eventIndex = laterIndex;
+            eventKind = "macd_bear_cross";
+          }
+        }
+      }
+
+      if (bestStallIndex !== null) {
+        eventIndex = bestStallIndex;
         eventKind = "stall_at_highs";
       }
-
-      if (eventKind === "smi_cross") {
-        const exitOb =
-          earlierSmi.smi >= overboughtLevel && laterSmi.smi < overboughtLevel;
-        if (exitOb && laterSmi.smi < laterSmi.signal) {
-          eventIndex = laterIndex;
-          eventKind = "smi_exit_overbought";
-          continue;
-        }
-
-        const macdCross =
-          snapshots[laterIndex - 1].macd.macdLine >=
-            snapshots[laterIndex - 1].macd.signalLine &&
-          later.macd.macdLine < later.macd.signalLine;
-        if (macdCross) {
-          eventIndex = laterIndex;
-          eventKind = "macd_bear_cross";
-        }
-      }
-    }
-
-    // Prefer most doji-like stall near highs when present (chart pink annotation).
-    if (bestStallIndex !== null) {
-      eventIndex = bestStallIndex;
-      eventKind = "stall_at_highs";
     }
 
     const eventSnapshot = snapshots[eventIndex];
@@ -578,11 +576,11 @@ export function evaluateDeepproSignals(
  * 4. MACD histogram rising on the cross candle (momentum recovery)
  * 5. Meaningful MACD hist rise vs price (drops weak 0.08–0.25% setups)
  * 6. Event candle before entry deadline (default before 14:00 IST)
- * 7. Quality gate (default on): stall_at_lows / smi_exit_oversold, event≤13:15,
- *    BB lower gap≤1.0%, RSI≤50 (≤60 if BB matched) — tuned for ≥ ~0.75% SQ
+ * 7. Quality gate (default on): SMI cross only + BB-lower paths A/B/C,
+ *    event≤13:15 — tuned for same-day square-off ≥ ~0.75%
  *
- * Signal time = SMI bullish-cross candle (IST). Event time may also surface a
- * nearby stall/doji at lows or SMI exit from oversold.
+ * Signal time = event time = SMI bullish-cross candle (IST) when
+ * `signalOnSmiCrossOnly` is enabled (default).
  */
 export function evaluateDeepproBuySignals(
   snapshots: IndicatorSnapshot[],
@@ -597,6 +595,7 @@ export function evaluateDeepproBuySignals(
     stallBodyRatioMax,
     entryDeadlineIst,
     minMacdHistDeltaPct,
+    signalOnSmiCrossOnly,
   } = config.deeppro;
 
   const resolvedDateKey =
@@ -690,68 +689,71 @@ export function evaluateDeepproBuySignals(
 
     let eventIndex = index;
     let eventKind: DeepproSignal["eventKind"] = "smi_cross";
-    let bestStallRatio = Number.POSITIVE_INFINITY;
-    let bestStallIndex: number | null = null;
-    let swingLow = Number.POSITIVE_INFINITY;
-    for (let i = lookbackFrom; i <= index; i++) {
-      swingLow = Math.min(swingLow, snapshots[i].low);
-    }
 
-    for (let j = 1; j <= 3 && index + j < snapshots.length; j++) {
-      const laterIndex = index + j;
-      const later = snapshots[laterIndex];
-      const laterSmi = smiSeries[laterIndex];
-      const earlierSmi = smiSeries[laterIndex - 1];
-      if (!later || !laterSmi || !earlierSmi) {
-        break;
-      }
-      if (getIstTimeParts(later.timestamp).dateKey !== resolvedDateKey) {
-        break;
-      }
-      if (!isWithinIstSessionWindow(later.timestamp, sessionStart, sessionEnd)) {
-        break;
+    if (!signalOnSmiCrossOnly) {
+      let bestStallRatio = Number.POSITIVE_INFINITY;
+      let bestStallIndex: number | null = null;
+      let swingLow = Number.POSITIVE_INFINITY;
+      for (let i = lookbackFrom; i <= index; i++) {
+        swingLow = Math.min(swingLow, snapshots[i].low);
       }
 
-      const ratio = bodyToRangeRatio(later);
-      const nearSwing =
-        (Math.abs(later.low - swingLow) / later.close) * 100 <= 0.5;
-      const stall =
-        ratio <= stallBodyRatioMax &&
-        Boolean(
-          classifyBbBottomMatch(later.bollinger.lower, later.low, later.close) ||
-            later.low <= later.bollinger.lower * 1.002 ||
-            nearSwing,
-        );
-      if (stall && ratio <= bestStallRatio) {
-        bestStallRatio = ratio;
-        bestStallIndex = laterIndex;
-        eventIndex = laterIndex;
+      for (let j = 1; j <= 3 && index + j < snapshots.length; j++) {
+        const laterIndex = index + j;
+        const later = snapshots[laterIndex];
+        const laterSmi = smiSeries[laterIndex];
+        const earlierSmi = smiSeries[laterIndex - 1];
+        if (!later || !laterSmi || !earlierSmi) {
+          break;
+        }
+        if (getIstTimeParts(later.timestamp).dateKey !== resolvedDateKey) {
+          break;
+        }
+        if (!isWithinIstSessionWindow(later.timestamp, sessionStart, sessionEnd)) {
+          break;
+        }
+
+        const ratio = bodyToRangeRatio(later);
+        const nearSwing =
+          (Math.abs(later.low - swingLow) / later.close) * 100 <= 0.5;
+        const stall =
+          ratio <= stallBodyRatioMax &&
+          Boolean(
+            classifyBbBottomMatch(later.bollinger.lower, later.low, later.close) ||
+              later.low <= later.bollinger.lower * 1.002 ||
+              nearSwing,
+          );
+        if (stall && ratio <= bestStallRatio) {
+          bestStallRatio = ratio;
+          bestStallIndex = laterIndex;
+          eventIndex = laterIndex;
+          eventKind = "stall_at_lows";
+        }
+
+        if (eventKind === "smi_cross") {
+          const exitOs =
+            earlierSmi.smi <= oversoldLevel && laterSmi.smi > oversoldLevel;
+          if (exitOs && laterSmi.smi > laterSmi.signal) {
+            eventIndex = laterIndex;
+            eventKind = "smi_exit_oversold";
+            continue;
+          }
+
+          const macdCross =
+            snapshots[laterIndex - 1].macd.macdLine <=
+              snapshots[laterIndex - 1].macd.signalLine &&
+            later.macd.macdLine > later.macd.signalLine;
+          if (macdCross) {
+            eventIndex = laterIndex;
+            eventKind = "macd_bull_cross";
+          }
+        }
+      }
+
+      if (bestStallIndex !== null) {
+        eventIndex = bestStallIndex;
         eventKind = "stall_at_lows";
       }
-
-      if (eventKind === "smi_cross") {
-        const exitOs =
-          earlierSmi.smi <= oversoldLevel && laterSmi.smi > oversoldLevel;
-        if (exitOs && laterSmi.smi > laterSmi.signal) {
-          eventIndex = laterIndex;
-          eventKind = "smi_exit_oversold";
-          continue;
-        }
-
-        const macdCross =
-          snapshots[laterIndex - 1].macd.macdLine <=
-            snapshots[laterIndex - 1].macd.signalLine &&
-          later.macd.macdLine > later.macd.signalLine;
-        if (macdCross) {
-          eventIndex = laterIndex;
-          eventKind = "macd_bull_cross";
-        }
-      }
-    }
-
-    if (bestStallIndex !== null) {
-      eventIndex = bestStallIndex;
-      eventKind = "stall_at_lows";
     }
 
     const eventSnapshot = snapshots[eventIndex];
