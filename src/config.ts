@@ -396,10 +396,17 @@ export const config = {
   deeppro: {
     sessionStart: "09:15",
     sessionEnd: "15:30",
+    /**
+     * Matches Zerodha Kite Stch Mtm:
+     * %K=10, %K smooth=3, %K double-smooth=3, %D (signal EMA)=10.
+     * Chart study label often shows "(10, 3, 3)" for the K/smooth group;
+     * the signal line is Kite's separate %D default of 10.
+     */
     smi: {
       lengthK: 10,
       lengthD: 3,
-      lengthEma: 3,
+      /** Signal line = EMA(SMI, lengthEma). Must be 10 to match Kite %D. */
+      lengthEma: 10,
     },
     /** SMI overbought threshold (Kite shaded zone ~40) — SELL path */
     overboughtLevel: 40,

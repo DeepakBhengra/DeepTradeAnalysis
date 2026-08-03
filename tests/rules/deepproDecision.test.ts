@@ -3,10 +3,28 @@ import { buildIndicatorSnapshots } from "../../src/indicators/compute.js";
 import {
   evaluateDeepproBuySignals,
   evaluateDeepproSignals,
+  isSmiBearishCrossOrTouch,
+  isSmiBullishCrossOrTouch,
   passesDeepproBuyQuality,
   passesDeepproSellQuality,
 } from "../../src/rules/deepproDecision.js";
 import type { Candle, DeepproSignal } from "../../src/types.js";
+
+describe("SMI↔signal cross or touch helpers", () => {
+  it("fires bearish only when SMI was above signal then crosses/touches to at-or-below", () => {
+    expect(isSmiBearishCrossOrTouch(70, 60, 55, 58)).toBe(true); // cross below
+    expect(isSmiBearishCrossOrTouch(70, 60, 60, 60)).toBe(true); // touch
+    expect(isSmiBearishCrossOrTouch(70, 60, 65, 62)).toBe(false); // still above
+    expect(isSmiBearishCrossOrTouch(55, 58, 50, 56)).toBe(false); // already below
+  });
+
+  it("fires bullish only when SMI was below signal then crosses/touches to at-or-above", () => {
+    expect(isSmiBullishCrossOrTouch(-70, -60, -55, -58)).toBe(true); // cross above
+    expect(isSmiBullishCrossOrTouch(-70, -60, -60, -60)).toBe(true); // touch
+    expect(isSmiBullishCrossOrTouch(-70, -60, -65, -62)).toBe(false); // still below
+    expect(isSmiBullishCrossOrTouch(-55, -58, -50, -56)).toBe(false); // already above
+  });
+});
 
 function stubSignal(
   overrides: Partial<DeepproSignal> &
@@ -92,44 +110,38 @@ function buildRisingThenDumpDay(dateKey: string): Candle[] {
   let peakHigh = 0;
   for (let i = 0; i < times.length; i++) {
     const [hour, minute] = times[i];
-    // Compress exhaustion into the quality SELL window (10:45–12:30).
-    if (i <= 8) {
-      // push higher into overbought / upper BB through ~11:15
+    // Build a deep overbought run, then dump hard enough that SMI crosses the
+    // slower Kite signal EMA(10) inside the quality SELL window (10:45–12:30).
+    if (i <= 7) {
       const open = price;
-      const close = price + 3.5;
-      const high = close + 1.5;
+      const close = price + 4.2;
+      const high = close + 1.8;
       peakHigh = Math.max(peakHigh, high);
       candles.push(
         istCandle(dateKey, hour, minute, open, high, open - 0.5, close),
       );
       price = close;
-    } else if (i === 9) {
-      // cross / rollover bar ~11:30
+    } else if (i === 8) {
+      // first rollover ~11:15 — still near highs for BB tag / RSI
       const open = price;
-      const close = price - 1;
+      const close = price - 2;
       candles.push(
-        istCandle(dateKey, hour, minute, open, open + 1, close - 0.5, close),
+        istCandle(dateKey, hour, minute, open, peakHigh + 2, close - 1, close),
       );
       price = close;
-    } else if (i === 10) {
-      // stall / doji near highs ~11:45 — extend high so BB upper gap clears quality max
-      candles.push(
-        istCandle(
-          dateKey,
-          hour,
-          minute,
-          price,
-          peakHigh + 5,
-          price - 1.2,
-          price + 0.05,
-        ),
-      );
-    } else {
-      // dump — late bars must not look like stall/doji
+    } else if (i <= 11) {
+      // aggressive dump through ~12:00 so SMI pierces signal EMA(10)
       const open = price;
-      const close = price - 18;
+      const close = price - 28;
       candles.push(
-        istCandle(dateKey, hour, minute, open, open + 1, close - 5, close),
+        istCandle(dateKey, hour, minute, open, open + 1, close - 6, close),
+      );
+      price = close;
+    } else {
+      const open = price;
+      const close = price - 12;
+      candles.push(
+        istCandle(dateKey, hour, minute, open, open + 1, close - 4, close),
       );
       price = close;
     }

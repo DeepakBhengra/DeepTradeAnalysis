@@ -183,6 +183,32 @@ function isInInclusiveHmWindow(
 }
 
 /**
+ * True SMI↔signal bearish event: SMI was strictly above signal, then crosses
+ * to at-or-below (includes a literal touch of the signal line).
+ */
+export function isSmiBearishCrossOrTouch(
+  prevSmi: number,
+  prevSignal: number,
+  curSmi: number,
+  curSignal: number,
+): boolean {
+  return prevSmi > prevSignal && curSmi <= curSignal;
+}
+
+/**
+ * True SMI↔signal bullish event: SMI was strictly below signal, then crosses
+ * to at-or-above (includes a literal touch of the signal line).
+ */
+export function isSmiBullishCrossOrTouch(
+  prevSmi: number,
+  prevSignal: number,
+  curSmi: number,
+  curSignal: number,
+): boolean {
+  return prevSmi < prevSignal && curSmi >= curSignal;
+}
+
+/**
  * SELL quality gate — favors same-day square-off ≥ ~0.75%:
  * SMI cross only, event 10:45–12:30, RSI ≥ 67, BB upper gap capped.
  */
@@ -328,7 +354,8 @@ function dedupeDeepproSignals(signals: DeepproSignal[]): DeepproSignal[] {
 /**
  * deeppro — pink-circle pattern from Stch Mtm exhaustion reversals:
  *
- * 1. Stochastic Momentum (10,3,3) bearish cross while in/from overbought (SMI >= 40)
+ * 1. Stochastic Momentum (Kite Stch Mtm K=10,D=3,signalEMA=10) bearish
+ *    cross/touch while in/from overbought (SMI >= 40)
  * 2. Deep overbought peak in lookback (default peak SMI >= 65)
  * 3. Upper Bollinger Band tagged in the same lookback
  * 4. MACD histogram declining on the cross candle (momentum fade)
@@ -408,7 +435,12 @@ export function evaluateDeepproSignals(
       continue;
     }
 
-    const bearishCross = prev.smi >= prev.signal && cur.smi < cur.signal;
+    const bearishCross = isSmiBearishCrossOrTouch(
+      prev.smi,
+      prev.signal,
+      cur.smi,
+      cur.signal,
+    );
     if (!bearishCross) {
       continue;
     }
@@ -570,7 +602,8 @@ export function evaluateDeepproSignals(
 /**
  * deeppro BUY — mirror of the short exhaustion pattern:
  *
- * 1. Stochastic Momentum (10,3,3) bullish cross while in/from oversold (SMI <= -40)
+ * 1. Stochastic Momentum (Kite Stch Mtm K=10,D=3,signalEMA=10) bullish
+ *    cross/touch while in/from oversold (SMI <= -40)
  * 2. Deep oversold trough in lookback (default trough SMI <= -65)
  * 3. Lower Bollinger Band tagged in the same lookback
  * 4. MACD histogram rising on the cross candle (momentum recovery)
@@ -650,7 +683,12 @@ export function evaluateDeepproBuySignals(
       continue;
     }
 
-    const bullishCross = prev.smi <= prev.signal && cur.smi > cur.signal;
+    const bullishCross = isSmiBullishCrossOrTouch(
+      prev.smi,
+      prev.signal,
+      cur.smi,
+      cur.signal,
+    );
     if (!bullishCross) {
       continue;
     }
