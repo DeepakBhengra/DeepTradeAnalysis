@@ -44,7 +44,7 @@ const DEEPAK_RSI_EXTREME_RULES = [
 ];
 
 const DEEPPRO_RULES = [
-  "Stch Mtm cross/touch + black slope ≥35° into the red-line cross (BUY up / SELL down)",
+  "Stch Mtm cross/touch + black slope ≥20° into the red-line cross (BUY up / SELL down)",
   "Require peak SMI ≥ 70 (SELL) or trough SMI ≤ -70 (BUY) in lookback",
   "Tag matching Bollinger Band in the same lookback window",
   "MACD histogram must fade on the cross candle (price-normalized Δ)",
