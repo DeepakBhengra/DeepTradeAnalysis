@@ -61,7 +61,7 @@ function readStoredDate(): string {
 
 function descriptionForVariant(variant: DayScanRuleVariant): string {
   const label = DAY_SCAN_RULE_VARIANT_LABEL[variant];
-  return `Scan ${SECTOR_WATCHLIST_SIZE} sector large-caps with ${label} for one session date, then open a path-graded post-mortem for any signal stock.`;
+  return `Scan ${SECTOR_WATCHLIST_SIZE} liquid NSE stocks with ${label} for one session date, then open a path-graded post-mortem for any signal stock.`;
 }
 
 function symbolOptionsFromTrades(trades: DeepakDayScanTrade[]): SymbolOption[] {

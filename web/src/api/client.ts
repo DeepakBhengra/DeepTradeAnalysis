@@ -19,8 +19,8 @@ import { formatNetworkFetchError, readApiErrorBody } from "../utils/formatError"
 
 export type DashboardId = "pnb" | "niftyBank";
 
-/** Day scans fetch ~50 symbols sequentially in batches; allow up to 15 minutes. */
-const DAY_SCAN_REQUEST_TIMEOUT_MS = 900_000;
+/** Day scans fetch ~100 symbols in batches; allow up to 25 minutes under Kite rate limits. */
+const DAY_SCAN_REQUEST_TIMEOUT_MS = 1_500_000;
 const API_HEALTH_TIMEOUT_MS = 8_000;
 
 export class ScanStoppedError extends Error {
