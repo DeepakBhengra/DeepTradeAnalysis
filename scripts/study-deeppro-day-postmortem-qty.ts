@@ -470,6 +470,13 @@ async function main(): Promise<void> {
     lossTrades,
   };
 
+  const bestCaseTrades = [...trades].sort(
+    (a, b) => (b.bestProfitInr ?? Number.NEGATIVE_INFINITY) - (a.bestProfitInr ?? Number.NEGATIVE_INFINITY),
+  );
+  const bestLossTrades = trades
+    .filter((t) => (t.bestProfitInr ?? 0) < 0)
+    .sort((a, b) => (a.bestProfitInr ?? 0) - (b.bestProfitInr ?? 0));
+
   const lines = [
     `# Deeppro Day Scan Post-Mortem — ${dayLabel} (qty ${quantity}, profit & loss · detailed)`,
     "",
@@ -490,6 +497,56 @@ async function main(): Promise<void> {
     `- **Fetch errors:** ${errors.length}`,
     `- **Generated (UTC):** ${generatedAtUtc}`,
     "",
+    "## Profit report (best square-off)",
+    "",
+    "| Stock | Signal | Buy/Sell price | Square-off price | Profit ₹ |",
+    "|-------|--------|----------------|------------------|----------|",
+  ];
+
+  if (bestCaseTrades.length === 0) {
+    lines.push("| — | — | — | — | *none* |");
+  } else {
+    for (const t of bestCaseTrades) {
+      const signalLabel = `${t.signal} @ ${t.signalTimeIst}`;
+      const profitCell =
+        !t.hasExitWindow || t.bestProfitInr == null
+          ? "no exit"
+          : String(Math.round(t.bestProfitInr));
+      lines.push(
+        `| ${t.stock} | ${signalLabel} | ${t.entryPrice.toFixed(2)} | ${t.bestExitPrice?.toFixed(2) ?? "—"} | ${profitCell} |`,
+      );
+    }
+  }
+
+  lines.push(
+    "",
+    `**Best-case total:** ₹${totalBestProfitInr.toFixed(2)}`,
+    "",
+    "## Loss report (worst square-off)",
+    "",
+    "| Stock | Signal | Buy/Sell price | Square-off price | Profit ₹ |",
+    "|-------|--------|----------------|------------------|----------|",
+  );
+
+  if (lossTrades.length === 0) {
+    lines.push("| — | — | — | — | *none* |");
+  } else {
+    for (const t of lossTrades) {
+      const signalLabel = `${t.signal} @ ${t.signalTimeIst}`;
+      const profitCell =
+        !t.hasExitWindow || t.worstProfitInr == null
+          ? "no exit"
+          : String(Math.round(t.worstProfitInr));
+      lines.push(
+        `| ${t.stock} | ${signalLabel} | ${t.entryPrice.toFixed(2)} | ${t.worstExitPrice?.toFixed(2) ?? "—"} | ${profitCell} |`,
+      );
+    }
+  }
+
+  lines.push(
+    "",
+    `**Worst-case total:** ₹${totalWorstProfitInr.toFixed(2)}`,
+    "",
     "## Summary",
     "",
     `| Metric | Value |`,
@@ -498,61 +555,25 @@ async function main(): Promise<void> {
     `| Best-case total P&L | **₹${totalBestProfitInr.toFixed(2)}** |`,
     `| Worst-case total P&L | **₹${totalWorstProfitInr.toFixed(2)}** |`,
     `| Profit trades (best > 0) | ${profitTrades.length} · ₹${profitSideTotal.toFixed(2)} |`,
+    `| Best-SQ losses (best < 0) | ${bestLossTrades.length} |`,
     `| Loss trades (worst < 0) | ${lossTrades.length} · ₹${lossSideTotal.toFixed(2)} |`,
     `| SELL best-case | ₹${round(sells.reduce((s, t) => s + (t.bestProfitInr ?? 0), 0)).toFixed(2)} |`,
     `| BUY best-case | ₹${round(buys.reduce((s, t) => s + (t.bestProfitInr ?? 0), 0)).toFixed(2)} |`,
     `| SELL worst-case | ₹${round(sells.reduce((s, t) => s + (t.worstProfitInr ?? 0), 0)).toFixed(2)} |`,
     `| BUY worst-case | ₹${round(buys.reduce((s, t) => s + (t.worstProfitInr ?? 0), 0)).toFixed(2)} |`,
     "",
-    "## Overview table (best vs worst)",
+    "## Overview with indicators",
     "",
-    "| Stock | Sector | Signal | Time | Kind | Entry | SMI | Peak/Trough | Event RSI | BB upper % | BB lower % | Best ₹ | Best % | Worst ₹ | Worst % |",
-    "|-------|--------|--------|------|------|-------|-----|-------------|-----------|------------|------------|--------|--------|---------|---------|",
-  ];
+    "| Stock | Sector | Signal | Time | Kind | Entry | SMI | Peak/Trough | Event RSI | BB upper % | BB lower % | Best ₹ | Worst ₹ |",
+    "|-------|--------|--------|------|------|-------|-----|-------------|-----------|------------|------------|--------|---------|",
+  );
 
   if (trades.length === 0) {
-    lines.push(
-      "| — | — | — | — | — | — | — | — | — | — | — | *none* | — | — | — |",
-    );
+    lines.push("| — | — | — | — | — | — | — | — | — | — | — | *none* | — |");
   } else {
-    for (const t of trades) {
-      const peak = t.peakOrTroughSmi.toFixed(1);
+    for (const t of bestCaseTrades) {
       lines.push(
-        `| ${t.stock} | ${t.sector} | ${t.signal} | ${t.signalTimeIst} | ${t.eventKind} | ${t.entryPrice.toFixed(2)} | ${t.smi.toFixed(1)} | ${peak} | ${t.eventRsi.toFixed(2)} | ${t.bbUpperGapPct.toFixed(3)} | ${t.bbLowerGapPct.toFixed(3)} | ${formatInr(t.bestProfitInr, t.hasExitWindow)} | ${formatPct(t.bestProfitPct, t.hasExitWindow)} | ${formatInr(t.worstProfitInr, t.hasExitWindow)} | ${formatPct(t.worstProfitPct, t.hasExitWindow)} |`,
-      );
-    }
-  }
-
-  lines.push(
-    "",
-    "## Profit trades (best square-off > 0)",
-    "",
-    "| Stock | Sector | Signal | Time | Entry | Best SQ time | Best SQ | Best ₹ | Best % | Event RSI | Peak/Trough |",
-    "|-------|--------|--------|------|-------|--------------|---------|--------|--------|-----------|-------------|",
-  );
-  if (profitTrades.length === 0) {
-    lines.push("| — | — | — | — | — | — | — | *none* | — | — | — |");
-  } else {
-    for (const t of profitTrades) {
-      lines.push(
-        `| ${t.stock} | ${t.sector} | ${t.signal} | ${t.signalTimeIst} | ${t.entryPrice.toFixed(2)} | ${t.bestTimeIst ?? "—"} | ${t.bestExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.bestProfitInr, t.hasExitWindow)} | ${formatPct(t.bestProfitPct, t.hasExitWindow)} | ${t.eventRsi.toFixed(2)} | ${t.peakOrTroughSmi.toFixed(1)} |`,
-      );
-    }
-  }
-
-  lines.push(
-    "",
-    "## Loss trades (worst square-off < 0)",
-    "",
-    "| Stock | Sector | Signal | Time | Entry | Worst SQ time | Worst SQ | Worst ₹ | Worst % | Event RSI | Peak/Trough |",
-    "|-------|--------|--------|------|-------|---------------|----------|---------|---------|-----------|-------------|",
-  );
-  if (lossTrades.length === 0) {
-    lines.push("| — | — | — | — | — | — | — | *none* | — | — | — |");
-  } else {
-    for (const t of lossTrades) {
-      lines.push(
-        `| ${t.stock} | ${t.sector} | ${t.signal} | ${t.signalTimeIst} | ${t.entryPrice.toFixed(2)} | ${t.worstTimeIst ?? "—"} | ${t.worstExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.worstProfitInr, t.hasExitWindow)} | ${formatPct(t.worstProfitPct, t.hasExitWindow)} | ${t.eventRsi.toFixed(2)} | ${t.peakOrTroughSmi.toFixed(1)} |`,
+        `| ${t.stock} | ${t.sector} | ${t.signal} | ${t.signalTimeIst} | ${t.eventKind} | ${t.entryPrice.toFixed(2)} | ${t.smi.toFixed(1)} | ${t.peakOrTroughSmi.toFixed(1)} | ${t.eventRsi.toFixed(2)} | ${t.bbUpperGapPct.toFixed(3)} | ${t.bbLowerGapPct.toFixed(3)} | ${formatInr(t.bestProfitInr, t.hasExitWindow)} | ${formatInr(t.worstProfitInr, t.hasExitWindow)} |`,
       );
     }
   }
@@ -561,7 +582,7 @@ async function main(): Promise<void> {
   if (trades.length === 0) {
     lines.push("*None*", "");
   } else {
-    trades.forEach((t, i) => appendTradeDetail(lines, t, i + 1));
+    bestCaseTrades.forEach((t, i) => appendTradeDetail(lines, t, i + 1));
   }
 
   if (errors.length > 0) {
