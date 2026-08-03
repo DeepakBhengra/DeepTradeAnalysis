@@ -33,10 +33,10 @@ describe("SMI black-slope angle gate (≥20° into the cross)", () => {
   const scale = 22;
 
   it("maps shallow vs keep bands (~15° vs ≥20°)", () => {
-    // |ΔSMI|≈5.9 → ~15°; |ΔSMI|=8 → ~20°
+    // |ΔSMI|≈5.9 → ~15°; |ΔSMI|≈8.1 → ~20.2°
     expect(smiBlackSlopeAngleDeg(60, 54.1, scale)).toBeGreaterThan(14);
     expect(smiBlackSlopeAngleDeg(60, 54.1, scale)).toBeLessThan(16);
-    expect(smiBlackSlopeAngleDeg(60, 52, scale)).toBeGreaterThanOrEqual(20);
+    expect(smiBlackSlopeAngleDeg(60, 51.9, scale)).toBeGreaterThanOrEqual(20);
   });
 
   it("rejects shallow SELL approaches (~15°) and keeps ≥20° downward slopes", () => {
@@ -44,7 +44,7 @@ describe("SMI black-slope angle gate (≥20° into the cross)", () => {
     expect(shallow.ok).toBe(false);
     expect(shallow.angleDeg).toBeLessThan(16);
 
-    const keep = passesSellSmiAngle(70, 62, scale, 20);
+    const keep = passesSellSmiAngle(70, 61.9, scale, 20);
     expect(keep.ok).toBe(true);
     expect(keep.angleDeg).toBeGreaterThanOrEqual(20);
   });
@@ -53,7 +53,7 @@ describe("SMI black-slope angle gate (≥20° into the cross)", () => {
     const weak = passesBuySmiAngle(-70, -64.1, scale, 20);
     expect(weak.ok).toBe(false);
 
-    const strong = passesBuySmiAngle(-70, -62, scale, 20);
+    const strong = passesBuySmiAngle(-70, -61.9, scale, 20);
     expect(strong.ok).toBe(true);
     expect(strong.angleDeg).toBeGreaterThanOrEqual(20);
   });
