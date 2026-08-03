@@ -171,9 +171,22 @@ interface TradeRow {
   sector: string;
   signal: "BUY" | "SELL";
   signalTimeIst: string;
+  crossTimeIst: string;
   eventKind: string;
   entryPrice: number;
+  signalClose: number;
   quantity: number;
+  smi: number;
+  smiSignal: number;
+  peakOrTroughSmi: number;
+  crossRsi: number;
+  eventRsi: number;
+  bbUpperGapPct: number;
+  bbUpperMatchType: string | null;
+  bbLowerGapPct: number;
+  bbLowerMatchType: string | null;
+  macdHistogram: number;
+  reasons: string[];
   hasExitWindow: boolean;
   bestTimeIst: string | null;
   bestExitPrice: number | null;
@@ -214,9 +227,22 @@ function toTradeRow(
     sector: entry.sector,
     signal: signal.side,
     signalTimeIst: signal.eventTimeIst,
+    crossTimeIst: signal.timeIst,
     eventKind: signal.eventKind,
     entryPrice,
+    signalClose: round(signal.price),
     quantity,
+    smi: round(signal.smi, 1),
+    smiSignal: round(signal.smiSignal, 1),
+    peakOrTroughSmi: round(signal.peakSmi, 1),
+    crossRsi: round(signal.rsi),
+    eventRsi: round(signal.eventRsi),
+    bbUpperGapPct: round(signal.bbUpperProximity.gapPct, 3),
+    bbUpperMatchType: signal.bbUpperProximity.matchType,
+    bbLowerGapPct: round(signal.bbLowerProximity.gapPct, 3),
+    bbLowerMatchType: signal.bbLowerProximity.matchType,
+    macdHistogram: round(signal.macdHistogram, 4),
+    reasons: [...signal.reasons],
     hasExitWindow: sq.hasExitWindow,
     bestTimeIst: sq.bestTimeIst,
     bestExitPrice: sq.bestExitPrice,
@@ -243,6 +269,47 @@ function formatInr(value: number | null, hasExit: boolean): string {
 function formatPct(value: number | null, hasExit: boolean): string {
   if (!hasExit || value == null) return "—";
   return `${value.toFixed(2)}%`;
+}
+
+function formatBb(gapPct: number, matchType: string | null): string {
+  return matchType ? `${gapPct.toFixed(3)}% (${matchType})` : `${gapPct.toFixed(3)}%`;
+}
+
+function appendTradeDetail(lines: string[], t: TradeRow, index: number): void {
+  const peakLabel = t.signal === "SELL" ? "Peak SMI" : "Trough SMI";
+  lines.push(
+    `### ${index}. ${t.stock} · ${t.signal} @ ${t.signalTimeIst}`,
+    "",
+    `| Field | Value |`,
+    `|-------|-------|`,
+    `| Sector | ${t.sector} |`,
+    `| Event kind | \`${t.eventKind}\` |`,
+    `| Cross time (IST) | ${t.crossTimeIst} |`,
+    `| Event / entry time (IST) | ${t.signalTimeIst} |`,
+    `| Entry mid | ${t.entryPrice.toFixed(2)} |`,
+    `| Signal close | ${t.signalClose.toFixed(2)} |`,
+    `| Qty | ${t.quantity} |`,
+    `| SMI / signal | ${t.smi.toFixed(1)} / ${t.smiSignal.toFixed(1)} |`,
+    `| ${peakLabel} | ${t.peakOrTroughSmi.toFixed(1)} |`,
+    `| Cross RSI | ${t.crossRsi.toFixed(2)} |`,
+    `| Event RSI | ${t.eventRsi.toFixed(2)} |`,
+    `| BB upper gap | ${formatBb(t.bbUpperGapPct, t.bbUpperMatchType)} |`,
+    `| BB lower gap | ${formatBb(t.bbLowerGapPct, t.bbLowerMatchType)} |`,
+    `| MACD histogram | ${t.macdHistogram} |`,
+    `| Best SQ | ${t.bestTimeIst ?? "—"} @ ${t.bestExitPrice?.toFixed(2) ?? "—"} → ${formatInr(t.bestProfitInr, t.hasExitWindow)} (${formatPct(t.bestProfitPct, t.hasExitWindow)}) |`,
+    `| Worst SQ | ${t.worstTimeIst ?? "—"} @ ${t.worstExitPrice?.toFixed(2) ?? "—"} → ${formatInr(t.worstProfitInr, t.hasExitWindow)} (${formatPct(t.worstProfitPct, t.hasExitWindow)}) |`,
+    "",
+    "**Reasons**",
+    "",
+  );
+  if (t.reasons.length === 0) {
+    lines.push("- —", "");
+  } else {
+    for (const reason of t.reasons) {
+      lines.push(`- ${reason}`);
+    }
+    lines.push("");
+  }
 }
 
 async function mapPool<T, R>(
@@ -364,13 +431,13 @@ async function main(): Promise<void> {
   const dayLabel = formatDayLabel(date);
 
   mkdirSync(REPORTS_DIR, { recursive: true });
-  const base = `deeppro-postmortem-${date}-qty${quantity}-pnl`;
+  const base = `deeppro-postmortem-${date}-qty${quantity}-pnl-detail`;
   const jsonPath = resolve(REPORTS_DIR, `${base}.json`);
   const mdPath = resolve(REPORTS_DIR, `${base}.md`);
 
   const payload = {
     rule: "deeppro",
-    mode: "day-scan-post-mortem-pnl",
+    mode: "day-scan-post-mortem-pnl-detail",
     date,
     quantity,
     watchlistSize: watchlist.length,
@@ -404,7 +471,7 @@ async function main(): Promise<void> {
   };
 
   const lines = [
-    `# Deeppro Day Scan Post-Mortem — ${dayLabel} (qty ${quantity}, profit & loss)`,
+    `# Deeppro Day Scan Post-Mortem — ${dayLabel} (qty ${quantity}, profit & loss · detailed)`,
     "",
     `- **Date:** ${date}`,
     `- **Universe:** ${watchlist.length} Day Scan stocks (\`SECTOR_WATCHLIST\`)`,
@@ -423,58 +490,6 @@ async function main(): Promise<void> {
     `- **Fetch errors:** ${errors.length}`,
     `- **Generated (UTC):** ${generatedAtUtc}`,
     "",
-    "## All trades (best vs worst)",
-    "",
-    "| Stock | Signal | Signal time | Entry | Best SQ time | Best SQ | Best ₹ | Worst SQ time | Worst SQ | Worst ₹ |",
-    "|-------|--------|-------------|-------|--------------|---------|--------|---------------|----------|---------|",
-  ];
-
-  if (trades.length === 0) {
-    lines.push("| — | — | — | — | — | — | *none* | — | — | — |");
-  } else {
-    for (const t of trades) {
-      lines.push(
-        `| ${t.stock} | ${t.signal} | ${t.signalTimeIst} | ${t.entryPrice.toFixed(2)} | ${t.bestTimeIst ?? "—"} | ${t.bestExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.bestProfitInr, t.hasExitWindow)} | ${t.worstTimeIst ?? "—"} | ${t.worstExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.worstProfitInr, t.hasExitWindow)} |`,
-      );
-    }
-  }
-
-  lines.push(
-    "",
-    "## Profit trades (best square-off > 0)",
-    "",
-    "| Stock | Signal | Signal time | Entry | Best SQ time | Best SQ | Best ₹ | Best % |",
-    "|-------|--------|-------------|-------|--------------|---------|--------|--------|",
-  );
-  if (profitTrades.length === 0) {
-    lines.push("| — | — | — | — | — | — | *none* | — |");
-  } else {
-    for (const t of profitTrades) {
-      lines.push(
-        `| ${t.stock} | ${t.signal} | ${t.signalTimeIst} | ${t.entryPrice.toFixed(2)} | ${t.bestTimeIst ?? "—"} | ${t.bestExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.bestProfitInr, t.hasExitWindow)} | ${formatPct(t.bestProfitPct, t.hasExitWindow)} |`,
-      );
-    }
-  }
-
-  lines.push(
-    "",
-    "## Loss trades (worst square-off < 0)",
-    "",
-    "| Stock | Signal | Signal time | Entry | Worst SQ time | Worst SQ | Worst ₹ | Worst % |",
-    "|-------|--------|-------------|-------|---------------|----------|---------|---------|",
-  );
-  if (lossTrades.length === 0) {
-    lines.push("| — | — | — | — | — | — | *none* | — |");
-  } else {
-    for (const t of lossTrades) {
-      lines.push(
-        `| ${t.stock} | ${t.signal} | ${t.signalTimeIst} | ${t.entryPrice.toFixed(2)} | ${t.worstTimeIst ?? "—"} | ${t.worstExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.worstProfitInr, t.hasExitWindow)} | ${formatPct(t.worstProfitPct, t.hasExitWindow)} |`,
-      );
-    }
-  }
-
-  lines.push(
-    "",
     "## Summary",
     "",
     `| Metric | Value |`,
@@ -489,7 +504,65 @@ async function main(): Promise<void> {
     `| SELL worst-case | ₹${round(sells.reduce((s, t) => s + (t.worstProfitInr ?? 0), 0)).toFixed(2)} |`,
     `| BUY worst-case | ₹${round(buys.reduce((s, t) => s + (t.worstProfitInr ?? 0), 0)).toFixed(2)} |`,
     "",
+    "## Overview table (best vs worst)",
+    "",
+    "| Stock | Sector | Signal | Time | Kind | Entry | SMI | Peak/Trough | Event RSI | BB upper % | BB lower % | Best ₹ | Best % | Worst ₹ | Worst % |",
+    "|-------|--------|--------|------|------|-------|-----|-------------|-----------|------------|------------|--------|--------|---------|---------|",
+  ];
+
+  if (trades.length === 0) {
+    lines.push(
+      "| — | — | — | — | — | — | — | — | — | — | — | *none* | — | — | — |",
+    );
+  } else {
+    for (const t of trades) {
+      const peak = t.peakOrTroughSmi.toFixed(1);
+      lines.push(
+        `| ${t.stock} | ${t.sector} | ${t.signal} | ${t.signalTimeIst} | ${t.eventKind} | ${t.entryPrice.toFixed(2)} | ${t.smi.toFixed(1)} | ${peak} | ${t.eventRsi.toFixed(2)} | ${t.bbUpperGapPct.toFixed(3)} | ${t.bbLowerGapPct.toFixed(3)} | ${formatInr(t.bestProfitInr, t.hasExitWindow)} | ${formatPct(t.bestProfitPct, t.hasExitWindow)} | ${formatInr(t.worstProfitInr, t.hasExitWindow)} | ${formatPct(t.worstProfitPct, t.hasExitWindow)} |`,
+      );
+    }
+  }
+
+  lines.push(
+    "",
+    "## Profit trades (best square-off > 0)",
+    "",
+    "| Stock | Sector | Signal | Time | Entry | Best SQ time | Best SQ | Best ₹ | Best % | Event RSI | Peak/Trough |",
+    "|-------|--------|--------|------|-------|--------------|---------|--------|--------|-----------|-------------|",
   );
+  if (profitTrades.length === 0) {
+    lines.push("| — | — | — | — | — | — | — | *none* | — | — | — |");
+  } else {
+    for (const t of profitTrades) {
+      lines.push(
+        `| ${t.stock} | ${t.sector} | ${t.signal} | ${t.signalTimeIst} | ${t.entryPrice.toFixed(2)} | ${t.bestTimeIst ?? "—"} | ${t.bestExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.bestProfitInr, t.hasExitWindow)} | ${formatPct(t.bestProfitPct, t.hasExitWindow)} | ${t.eventRsi.toFixed(2)} | ${t.peakOrTroughSmi.toFixed(1)} |`,
+      );
+    }
+  }
+
+  lines.push(
+    "",
+    "## Loss trades (worst square-off < 0)",
+    "",
+    "| Stock | Sector | Signal | Time | Entry | Worst SQ time | Worst SQ | Worst ₹ | Worst % | Event RSI | Peak/Trough |",
+    "|-------|--------|--------|------|-------|---------------|----------|---------|---------|-----------|-------------|",
+  );
+  if (lossTrades.length === 0) {
+    lines.push("| — | — | — | — | — | — | — | *none* | — | — | — |");
+  } else {
+    for (const t of lossTrades) {
+      lines.push(
+        `| ${t.stock} | ${t.sector} | ${t.signal} | ${t.signalTimeIst} | ${t.entryPrice.toFixed(2)} | ${t.worstTimeIst ?? "—"} | ${t.worstExitPrice?.toFixed(2) ?? "—"} | ${formatInr(t.worstProfitInr, t.hasExitWindow)} | ${formatPct(t.worstProfitPct, t.hasExitWindow)} | ${t.eventRsi.toFixed(2)} | ${t.peakOrTroughSmi.toFixed(1)} |`,
+      );
+    }
+  }
+
+  lines.push("", "## Trade-by-trade details", "");
+  if (trades.length === 0) {
+    lines.push("*None*", "");
+  } else {
+    trades.forEach((t, i) => appendTradeDetail(lines, t, i + 1));
+  }
 
   if (errors.length > 0) {
     lines.push("## Fetch errors", "");
@@ -505,6 +578,7 @@ async function main(): Promise<void> {
     "- Post-mortem uses the same Deeppro engine as Day Scan / Post-Mortem UI.",
     "- No black-line slope / angle gate on BUY or SELL (cross/touch + quality gates only).",
     "- **Best** = most favorable same-day mid after entry; **Worst** = least favorable same-day mid after entry (both before 15:15).",
+    "- Detail blocks include sector, event kind, SMI/signal, peak/trough, RSI, BB gaps, MACD hist, best/worst SQ, and engine reasons.",
     "- Not a live fill guarantee — shows the P&L envelope if squared off on any later 15m mid.",
     "- Kite Connect historical 15m only.",
     "",
