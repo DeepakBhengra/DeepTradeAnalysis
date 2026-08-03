@@ -1,12 +1,14 @@
 # PNB 15m Signal Engine
 
-PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail), the **Deeppro** Stch Mtm exhaustion rules, and **RulePNB** (PNB favourable profit-range RSI/SMI/BB gates) — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
+PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail), the **Deeppro** Stch Mtm exhaustion rules, **RulePNB** (PNB favourable profit-range RSI/SMI/BB gates), and **RuleSUNPHARMA** (SUNPHARMA-only favourable profit-range gates) — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
 
 Implementation (Deepak): `src/rules/deepakDecision.ts`, `src/rules/deepakCore.ts`, `src/rules/deepakTarget.ts`, `src/rules/bollingerUtils.ts`.
 
 Implementation (Deeppro): `src/rules/deepproDecision.ts`, `src/indicators/stochasticMomentum.ts`, `config.deeppro` in `src/config.ts`.
 
 Implementation (RulePNB): `src/rules/rulePnbDecision.ts`, `config.rulePnb` in `src/config.ts`.
+
+Implementation (RuleSUNPHARMA): `src/rules/ruleSunpharmaDecision.ts`, `config.ruleSunpharma` in `src/config.ts`.
 
 
 ---
@@ -663,3 +665,34 @@ Entry price = candle mid `(high+low)/2`. Event candle must be before **14:00 IST
 
 - `tests/rules/rulePnbDecision.test.ts` — quality matchers + quiet day  
 - `tests/api/buildRulePnbDayScanPayload.test.ts` — Day Scan payload wiring
+
+## RuleSUNPHARMA (SUNPHARMA-only favourable profit-range gates)
+
+**RuleSUNPHARMA** encodes the practical takeaway from the SUNPHARMA 60-day rule-free best BUY/SELL study: favourable RSI / Stch Mtm (SMI) / Bollinger proximity bands by profit range.
+
+It is a **totally separate rule for SUNPHARMA only**:
+- Does **not** scan the 100-stock sector watchlist
+- Does **not** share Deepak / Deepak-2 / Deeppro / RulePNB scenario logic
+- Does **not** mix RuleSUNPHARMA reasons into the main dashboard decision/reasons list
+- Backtest / Post-Mortem reject any symbol other than **SUNPHARMA**
+
+| Surface | Detail |
+|--------|--------|
+| **Widget tab** | **Day Scan** → rule variant **RuleSUNPHARMA** (SUNPHARMA only); also **Day Scan Post-Mortem** and symbol **Post-Mortem** (symbol locked to SUNPHARMA) |
+| **API** | `GET /api/backtest/rule-sunpharma/day-scan?date=YYYY-MM-DD` · `GET /api/backtest/rule-sunpharma?symbol=SUNPHARMA&from=&to=` |
+| **Payload builder** | `buildRuleSunpharmaDayScanPayload()` in `src/api/buildRuleSunpharmaDayScanPayload.ts` |
+| **Decision engine** | `evaluateRuleSunpharmaDay` / `evaluateRuleSunpharmaDecision` in `src/rules/ruleSunpharmaDecision.ts` |
+| **Config** | `config.ruleSunpharma` (`tradingSymbol: "SUNPHARMA"`) in `src/config.ts` |
+
+### Scenarios
+
+1. **BUY quality** (`ruleSunpharma buy quality`) — best 1.7%–0.9% band: RSI 33–56, SMI ≤ −40, near BB lower (gap ≤ 0.5% or crossed/close).
+2. **SELL quality** (`ruleSunpharma sell quality`) — mid/low SELL bands: RSI 56–72, SMI ≥ 40, tight BB upper (gap ≤ 0.3% or crossed/close).
+3. **BUY extended** (`ruleSunpharma buy extended`) — biggest-mover 3%–1.8% style: less oversold than mid bucket; mid-zone SMI OK (≤ 40); still near BB lower (gap ≤ 0.5%). Used only when no BUY quality fires that day.
+
+Entry price = candle mid `(high+low)/2`. Event candle must be before **14:00 IST**. One earliest BUY and one earliest SELL per session date.
+
+### Tests
+
+- `tests/rules/ruleSunpharmaDecision.test.ts` — quality matchers + quiet day  
+- `tests/api/buildRuleSunpharmaDayScanPayload.test.ts` — Day Scan payload wiring

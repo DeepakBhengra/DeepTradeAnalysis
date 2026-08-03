@@ -16,6 +16,10 @@ import {
   evaluateRulePnbDecision,
   isRulePnbSymbol,
 } from "../rules/rulePnbDecision.js";
+import {
+  evaluateRuleSunpharmaDecision,
+  isRuleSunpharmaSymbol,
+} from "../rules/ruleSunpharmaDecision.js";
 import { evaluateDepthAnalysis } from "../rules/depthAnalysis.js";
 import {
   buildSidewaysDebug,
@@ -79,6 +83,7 @@ export interface DashboardPayload {
   deepak2Decision: DeepakDecisionResult | null;
   deepproDecision: DeepakDecisionResult | null;
   rulePnbDecision: DeepakDecisionResult | null;
+  ruleSunpharmaDecision: DeepakDecisionResult | null;
   analysisDate: string | null;
   mode: "live" | "historical" | "simulation";
   series: DashboardSeriesPoint[];
@@ -175,6 +180,7 @@ function emptyPayload(
     deepak2Decision: null,
     deepproDecision: null,
     rulePnbDecision: null,
+    ruleSunpharmaDecision: null,
     analysisDate,
     mode,
     series: [],
@@ -213,6 +219,11 @@ function buildPayloadFromCandles(input: {
   const rulePnbDecision =
     targetDateKey != null && isRulePnbSymbol(dashboardSymbol.tradingSymbol)
       ? evaluateRulePnbDecision(snapshots, targetDateKey)
+      : null;
+  // RuleSUNPHARMA is SUNPHARMA-only and never mixes into shared reasons/decision.
+  const ruleSunpharmaDecision =
+    targetDateKey != null && isRuleSunpharmaSymbol(dashboardSymbol.tradingSymbol)
+      ? evaluateRuleSunpharmaDecision(snapshots, targetDateKey)
       : null;
   const volumeAnalysis = evaluateVolumeAnalysis(candles);
   const sidewaysTrend = evaluateSidewaysTrend(snapshots, { targetDateKey });
@@ -295,6 +306,7 @@ function buildPayloadFromCandles(input: {
     deepak2Decision,
     deepproDecision,
     rulePnbDecision,
+    ruleSunpharmaDecision,
     analysisDate: analysisDate ?? null,
     mode,
     series,

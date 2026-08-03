@@ -9,6 +9,7 @@ const fetchDeepak3DayScan = vi.fn();
 const fetchDeepakWatchPartyDayScan = vi.fn();
 const fetchDeepproDayScan = vi.fn();
 const fetchRulePnbDayScan = vi.fn();
+const fetchRuleSunpharmaDayScan = vi.fn();
 
 vi.mock("../api/client", () => ({
   ScanStoppedError: class ScanStoppedError extends Error {
@@ -24,6 +25,8 @@ vi.mock("../api/client", () => ({
     fetchDeepakWatchPartyDayScan(...args),
   fetchDeepproDayScan: (...args: unknown[]) => fetchDeepproDayScan(...args),
   fetchRulePnbDayScan: (...args: unknown[]) => fetchRulePnbDayScan(...args),
+  fetchRuleSunpharmaDayScan: (...args: unknown[]) =>
+    fetchRuleSunpharmaDayScan(...args),
 }));
 
 const payload = {
@@ -59,6 +62,10 @@ describe("useVariantDayScan", () => {
     fetchRulePnbDayScan.mockResolvedValue({
       ...payload,
       label: "rulePnb",
+    });
+    fetchRuleSunpharmaDayScan.mockResolvedValue({
+      ...payload,
+      label: "ruleSunpharma",
     });
   });
 
@@ -105,6 +112,15 @@ describe("useVariantDayScan", () => {
       await result.current.run("2026-05-11");
     });
     expect(fetchRulePnbDayScan).toHaveBeenCalledWith(
+      "2026-05-11",
+      expect.any(AbortSignal),
+    );
+
+    rerender({ variant: "ruleSunpharma" });
+    await act(async () => {
+      await result.current.run("2026-05-11");
+    });
+    expect(fetchRuleSunpharmaDayScan).toHaveBeenCalledWith(
       "2026-05-11",
       expect.any(AbortSignal),
     );
