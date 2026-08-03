@@ -3,7 +3,12 @@ import { dirname, join, resolve } from "node:path";
 
 const STORE_ROOT = resolve(process.cwd(), "data/post-mortem");
 
-export type PostMortemVariantId = "deepak" | "deepak2" | "deeppro" | "rulePnb";
+export type PostMortemVariantId =
+  | "deepak"
+  | "deepak2"
+  | "deeppro"
+  | "rulePnb"
+  | "ruleSunpharma";
 
 /**
  * Bump when deeppro detection thresholds change so Post-Mortem recomputes
@@ -16,6 +21,12 @@ export const DEEPPRO_SIGNAL_DAYS_RULES_REVISION = 10;
  * signal-day indexes instead of serving a stale cache.
  */
 export const RULEPNB_SIGNAL_DAYS_RULES_REVISION = 1;
+
+/**
+ * Bump when RuleSUNPHARMA detection thresholds change so Post-Mortem recomputes
+ * signal-day indexes instead of serving a stale cache.
+ */
+export const RULESUNPHARMA_SIGNAL_DAYS_RULES_REVISION = 1;
 
 export interface StoredSignalDay {
   date: string;
@@ -64,11 +75,14 @@ function assertVariant(variant: string): PostMortemVariantId {
     variant === "deepak" ||
     variant === "deepak2" ||
     variant === "deeppro" ||
-    variant === "rulePnb"
+    variant === "rulePnb" ||
+    variant === "ruleSunpharma"
   ) {
     return variant;
   }
-  throw new Error("Invalid variant. Use deepak, deepak2, deeppro, or rulePnb.");
+  throw new Error(
+    "Invalid variant. Use deepak, deepak2, deeppro, rulePnb, or ruleSunpharma.",
+  );
 }
 
 function assertDateKey(date: string): string {
@@ -146,6 +160,12 @@ export function loadSignalDaysIndex(
   ) {
     return null;
   }
+  if (
+    variantId === "ruleSunpharma" &&
+    stored.rulesRevision !== RULESUNPHARMA_SIGNAL_DAYS_RULES_REVISION
+  ) {
+    return null;
+  }
   return stored;
 }
 
@@ -173,7 +193,9 @@ export function saveSignalDaysIndex(input: {
       ? { rulesRevision: DEEPPRO_SIGNAL_DAYS_RULES_REVISION }
       : variantId === "rulePnb"
         ? { rulesRevision: RULEPNB_SIGNAL_DAYS_RULES_REVISION }
-        : {}),
+        : variantId === "ruleSunpharma"
+          ? { rulesRevision: RULESUNPHARMA_SIGNAL_DAYS_RULES_REVISION }
+          : {}),
     days: input.days,
     tradingDaysScanned: input.tradingDaysScanned,
     totalSignals: input.totalSignals,

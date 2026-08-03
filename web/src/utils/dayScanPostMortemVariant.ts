@@ -16,6 +16,8 @@ export function postMortemVariantForDayScan(
       return "deeppro";
     case "rulePnb":
       return "rulePnb";
+    case "ruleSunpharma":
+      return "ruleSunpharma";
     case "watchParty":
       return "deepak";
     case "deepak3":
@@ -38,6 +40,9 @@ export function decisionForDayScanVariant(
   }
   if (postMortemVariant === "rulePnb") {
     return payload.rulePnbDecision;
+  }
+  if (postMortemVariant === "ruleSunpharma") {
+    return payload.ruleSunpharmaDecision;
   }
   return payload.deepakDecision;
 }

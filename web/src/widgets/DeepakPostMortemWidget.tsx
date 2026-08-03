@@ -8,6 +8,7 @@ import {
   fetchDeepakBacktest,
   fetchDeepproBacktest,
   fetchRulePnbBacktest,
+  fetchRuleSunpharmaBacktest,
   savePostMortemReport,
   savePostMortemSignalDays,
 } from "../api/client";
@@ -39,11 +40,17 @@ const VARIANT_LABEL: Record<PostMortemVariant, string> = {
   deepak2: "Deepak-2",
   deeppro: "Deeppro",
   rulePnb: "RulePNB",
+  ruleSunpharma: "RuleSUNPHARMA",
 };
 
 function readStoredVariant(): PostMortemVariant {
   const stored = readLocalStorage(VARIANT_STORAGE_KEY);
-  if (stored === "deepak2" || stored === "deeppro" || stored === "rulePnb") {
+  if (
+    stored === "deepak2" ||
+    stored === "deeppro" ||
+    stored === "rulePnb" ||
+    stored === "ruleSunpharma"
+  ) {
     return stored;
   }
   return "deepak";
@@ -53,7 +60,20 @@ function initialSymbolForVariant(variant: PostMortemVariant): string {
   if (variant === "rulePnb") {
     return "PNB";
   }
+  if (variant === "ruleSunpharma") {
+    return "SUNPHARMA";
+  }
   return readStoredSymbol();
+}
+
+function lockedSymbolForVariant(variant: PostMortemVariant): string | null {
+  if (variant === "rulePnb") {
+    return "PNB";
+  }
+  if (variant === "ruleSunpharma") {
+    return "SUNPHARMA";
+  }
+  return null;
 }
 
 interface LoadedReport {
@@ -121,24 +141,27 @@ export function DeepakPostMortemWidget({
   const handleVariantChange = (next: PostMortemVariant) => {
     setVariant(next);
     writeLocalStorage(VARIANT_STORAGE_KEY, next);
-    // RulePNB is PNB-only — lock the symbol so it cannot mix with other stocks.
-    if (next === "rulePnb") {
-      setSymbolInput("PNB");
-      setActiveSymbol("PNB");
-      writeLocalStorage(SYMBOL_STORAGE_KEY, "PNB");
+    // Symbol-locked rules — never mix with other stocks.
+    const locked = lockedSymbolForVariant(next);
+    if (locked) {
+      setSymbolInput(locked);
+      setActiveSymbol(locked);
+      writeLocalStorage(SYMBOL_STORAGE_KEY, locked);
     }
     clearResults();
     setScanInfo(
       next === "rulePnb"
         ? "RulePNB is PNB-only — symbol locked to PNB. Scan the date range again."
-        : "Variant changed — scan the date range again.",
+        : next === "ruleSunpharma"
+          ? "RuleSUNPHARMA is SUNPHARMA-only — symbol locked to SUNPHARMA. Scan the date range again."
+          : "Variant changed — scan the date range again.",
     );
   };
 
   const runRangeScan = useCallback(
     async (force = false) => {
       const normalized =
-        variant === "rulePnb" ? "PNB" : activeSymbol.trim().toUpperCase();
+        lockedSymbolForVariant(variant) ?? activeSymbol.trim().toUpperCase();
       if (!normalized) {
         setScanError("Enter a valid symbol and click Load.");
         return;
@@ -194,6 +217,8 @@ export function DeepakPostMortemWidget({
               ? await fetchDeepproBacktest(normalized, fromDate, toDate)
               : variant === "rulePnb"
                 ? await fetchRulePnbBacktest(normalized, fromDate, toDate)
+                : variant === "ruleSunpharma"
+                  ? await fetchRuleSunpharmaBacktest(normalized, fromDate, toDate)
               : await fetchDeepakBacktest(normalized, fromDate, toDate);
 
         const days = signalDaysFromTrades(payload.trades);
@@ -304,6 +329,8 @@ export function DeepakPostMortemWidget({
               ? payload.deepproDecision
               : variant === "rulePnb"
                 ? payload.rulePnbDecision
+                : variant === "ruleSunpharma"
+                  ? payload.ruleSunpharmaDecision
               : payload.deepakDecision;
         const graded = buildDeepakPostMortemReport(decision, payload.series, variant);
         if (!graded) {
@@ -366,13 +393,15 @@ export function DeepakPostMortemWidget({
   return (
     <div hidden={!isActive}>
       <StockSymbolInput
-        value={variant === "rulePnb" ? "PNB" : symbolInput}
+        value={lockedSymbolForVariant(variant) ?? symbolInput}
         onChange={setSymbolInput}
         onLoad={handleLoadSymbol}
         loading={busy}
         lockedReason={
           variant === "rulePnb"
             ? "RulePNB is a separate PNB-only rule — symbol is locked to PNB and is not mixed with Deepak/Deeppro."
+            : variant === "ruleSunpharma"
+              ? "RuleSUNPHARMA is a separate SUNPHARMA-only rule — symbol is locked to SUNPHARMA and is not mixed with Deepak/Deeppro/RulePNB."
             : null
         }
       />
@@ -390,13 +419,18 @@ export function DeepakPostMortemWidget({
         }}
         onRun={() => void runRangeScan(false)}
         loading={scanLoading}
-        runDisabled={variant !== "rulePnb" && activeSymbol.trim().length === 0}
+        runDisabled={
+          lockedSymbolForVariant(variant) == null &&
+          activeSymbol.trim().length === 0
+        }
         runLabel="Scan signal days"
         loadingLabel="Scanning..."
         idPrefix="postmortem"
         description={
           variant === "rulePnb"
             ? "RulePNB scans PNB only (separate from Deepak/Deeppro). Max 90 calendar days. Results are cached on the server."
+            : variant === "ruleSunpharma"
+              ? "RuleSUNPHARMA scans SUNPHARMA only (separate from Deepak/Deeppro/RulePNB). Max 90 calendar days. Results are cached on the server."
             : "Scan BUY/SELL days for the selected rule variant (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
         }
       />
@@ -423,6 +457,7 @@ export function DeepakPostMortemWidget({
               <option value="deepak2">Deepak-2</option>
               <option value="deeppro">Deeppro</option>
               <option value="rulePnb">RulePNB</option>
+              <option value="ruleSunpharma">RuleSUNPHARMA</option>
             </select>
           </div>
 

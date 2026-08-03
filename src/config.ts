@@ -551,6 +551,53 @@ export const config = {
     },
   },
 
+  /**
+   * RuleSUNPHARMA — SUNPHARMA-only favourable profit-range indicator gates (60d study).
+   * Completely separate from Deepak / Deepak-2 / Deeppro / RulePNB.
+   * Applies only to SUNPHARMA. Tuned from rule-free best BUY/SELL buckets:
+   * 1.7%–0.9% BUY quality · mid/low SELL · 3%–1.8% biggest-mover BUY.
+   */
+  ruleSunpharma: {
+    /** Exclusive symbol — RuleSUNPHARMA never evaluates other stocks. */
+    tradingSymbol: "SUNPHARMA",
+    sessionStart: "09:15",
+    sessionEnd: "15:30",
+    /** Exclusive IST deadline for the entry candle (hard cap). */
+    entryDeadlineIst: "14:00",
+    /**
+     * Matches Zerodha Kite Stch Mtm (same as deeppro / RulePNB):
+     * %K=10, %K smooth=3, %D (signal EMA)=10.
+     */
+    smi: {
+      lengthK: 10,
+      lengthD: 3,
+      lengthEma: 10,
+    },
+    /** Best BUY quality (1.7%–0.9% band): RSI ~33–56, SMI ≤ −40, near BB lower. */
+    buyQuality: {
+      minRsi: 33,
+      maxRsi: 56,
+      maxSmi: -40,
+      maxBbLowerGapPct: 0.5,
+    },
+    /**
+     * Biggest-mover BUY (3%–1.8%): less oversold than mid bucket;
+     * mid-zone SMI OK (not overbought); still near BB lower (tight gap).
+     */
+    buyExtended: {
+      requireNegativeSmi: false,
+      maxSmi: 40,
+      maxBbLowerGapPct: 0.5,
+    },
+    /** Best SELL quality (0.8%–0.4% / mid): RSI ~56–72, SMI ≥ 40, tight BB upper. */
+    sellQuality: {
+      minRsi: 56,
+      maxRsi: 72,
+      minSmi: 40,
+      maxBbUpperGapPct: 0.3,
+    },
+  },
+
   volume: {
     smaPeriod: 20,
     spikeThreshold: 1.5,

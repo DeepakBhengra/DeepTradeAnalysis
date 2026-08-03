@@ -33,6 +33,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   watchParty: "dayscan-postmortem-watch-party",
   deeppro: "dayscan-postmortem-deeppro",
   rulePnb: "dayscan-postmortem-rule-pnb",
+  ruleSunpharma: "dayscan-postmortem-rule-sunpharma",
 };
 
 interface SymbolOption {
@@ -64,6 +65,9 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
   const label = DAY_SCAN_RULE_VARIANT_LABEL[variant];
   if (variant === "rulePnb") {
     return `Scan PNB only with ${label} for one session date, then open a path-graded post-mortem. RulePNB is separate from Deepak/Deeppro and does not apply to other stocks.`;
+  }
+  if (variant === "ruleSunpharma") {
+    return `Scan SUNPHARMA only with ${label} for one session date, then open a path-graded post-mortem. RuleSUNPHARMA is separate from Deepak/Deeppro/RulePNB and does not apply to other stocks.`;
   }
   return `Scan ${SECTOR_WATCHLIST_SIZE} liquid NSE stocks with ${label} for one session date, then open a path-graded post-mortem for any signal stock.`;
 }

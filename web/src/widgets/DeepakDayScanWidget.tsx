@@ -26,6 +26,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   watchParty: "deepak-watch-party-day-scan",
   deeppro: "deeppro-day-scan",
   rulePnb: "rule-pnb-day-scan",
+  ruleSunpharma: "rule-sunpharma-day-scan",
 };
 
 function readStoredVariant(): DayScanRuleVariant {
@@ -48,6 +49,8 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
       return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "rulePnb":
       return `Scans PNB only with ${label} — a separate RSI/SMI/BB proximity rule from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak or Deeppro and not applied to other stocks.${liveRefresh}`;
+    case "ruleSunpharma":
+      return `Scans SUNPHARMA only with ${label} — a separate RSI/SMI/BB proximity rule from the SUNPHARMA favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak, Deeppro, or RulePNB and not applied to other stocks.${liveRefresh}`;
     case "deepak":
     default:
       return `Scans ${universe} using ${label} rules. May take several minutes depending on Kite response time.${liveRefresh}`;
@@ -56,12 +59,13 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
 
 function rulesPanelVariant(
   variant: DayScanRuleVariant,
-): "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb" {
+): "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb" | "ruleSunpharma" {
   if (
     variant === "deepak2" ||
     variant === "deepak3" ||
     variant === "deeppro" ||
-    variant === "rulePnb"
+    variant === "rulePnb" ||
+    variant === "ruleSunpharma"
   ) {
     return variant;
   }
@@ -137,7 +141,7 @@ export function DeepakDayScanWidget({
           description={descriptionForVariant(variant)}
         />
 
-        {variant !== "rulePnb" && (
+        {variant !== "rulePnb" && variant !== "ruleSunpharma" && (
           <SectorWatchlistPreview
             expanded={watchlistExpanded}
             onToggle={() => setWatchlistExpanded((value) => !value)}

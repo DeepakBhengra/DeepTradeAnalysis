@@ -73,10 +73,25 @@ const RULEPNB_SCENARIOS = [
   { label: "buy extended", side: "BUY" as const, number: 2 },
 ];
 
+const RULESUNPHARMA_RULES = [
+  "SUNPHARMA stock only — never evaluates other symbols; separate from Deepak / Deeppro / RulePNB",
+  "BUY quality (1.7%–0.9%): RSI 33–56, SMI ≤ −40, near BB lower (gap ≤ 0.5% or crossed/close)",
+  "SELL quality (0.8%–0.4% / mid): RSI 56–72, SMI ≥ 40, tight BB upper (gap ≤ 0.3% or crossed/close)",
+  "BUY extended (3%–1.8% movers): less oversold than mid bucket; mid-zone SMI OK (≤ 40); still near BB lower (gap ≤ 0.5%)",
+  "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
+  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+];
+
+const RULESUNPHARMA_SCENARIOS = [
+  { label: "buy quality", side: "BUY" as const, number: 1 },
+  { label: "sell quality", side: "SELL" as const, number: 1 },
+  { label: "buy extended", side: "BUY" as const, number: 2 },
+];
+
 export function DeepakRulesPanel({
   variant = "deepak",
 }: {
-  variant?: "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb";
+  variant?: "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb" | "ruleSunpharma";
 }) {
   const [expanded, setExpanded] = useState(false);
   const sessionLabel =
@@ -92,6 +107,8 @@ export function DeepakRulesPanel({
           ? "Deeppro Buy / Sell Rules"
           : variant === "rulePnb"
             ? "RulePNB Buy / Sell Rules"
+            : variant === "ruleSunpharma"
+              ? "RuleSUNPHARMA Buy / Sell Rules"
             : "Deepak Buy / Sell Rules";
   const scenarios =
     variant === "deepak3"
@@ -100,6 +117,8 @@ export function DeepakRulesPanel({
         ? DEEPPRO_SCENARIOS
         : variant === "rulePnb"
           ? RULEPNB_SCENARIOS
+          : variant === "ruleSunpharma"
+            ? RULESUNPHARMA_SCENARIOS
           : TRADE_SCENARIOS;
 
   return (
@@ -122,6 +141,8 @@ export function DeepakRulesPanel({
               ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
               : variant === "rulePnb"
                 ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
+                : variant === "ruleSunpharma"
+                  ? `${sessionLabel} · SUNPHARMA-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak, Deeppro, or RulePNB · day scan evaluates SUNPHARMA only.`
               : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
           </p>
           {variant === "deeppro" && (
@@ -134,6 +155,13 @@ export function DeepakRulesPanel({
           {variant === "rulePnb" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {RULEPNB_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          )}
+          {variant === "ruleSunpharma" && (
+            <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
+              {RULESUNPHARMA_RULES.map((rule) => (
                 <li key={rule}>{rule}</li>
               ))}
             </ul>

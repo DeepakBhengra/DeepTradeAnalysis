@@ -5,7 +5,8 @@ export function formatScenarioLabel(scenarioKey: string): string {
     .replace(/^deepak-2 /, "")
     .replace(/^deepak /, "")
     .replace(/^deeppro /, "")
-    .replace(/^rulePnb /, "");
+    .replace(/^rulePnb /, "")
+    .replace(/^ruleSunpharma /, "");
 }
 
 export function formatMetric(value: number | null, digits = 2): string {

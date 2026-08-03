@@ -267,6 +267,35 @@ export interface RulePnbScanResult {
   signals: RulePnbSignal[];
 }
 
+/** RuleSUNPHARMA scenario keys from SUNPHARMA favourable profit-range study. */
+export type RuleSunpharmaScenarioKey =
+  | "buy_quality"
+  | "sell_quality"
+  | "buy_extended";
+
+export interface RuleSunpharmaSignal {
+  side: "BUY" | "SELL";
+  rule: "ruleSunpharma";
+  dateKey: string;
+  timeIst: string;
+  scenarioKey: RuleSunpharmaScenarioKey;
+  /** Candle mid (high+low)/2 */
+  price: number;
+  smi: number;
+  rsi: number;
+  bbUpperProximity: DeepproBbProximity;
+  bbLowerProximity: DeepproBbProximity;
+  reasons: string[];
+}
+
+export interface RuleSunpharmaScanResult {
+  dateKey: string;
+  rule: "ruleSunpharma";
+  sessionStart: string;
+  sessionEnd: string;
+  signals: RuleSunpharmaSignal[];
+}
+
 export interface ParameterCheckCandleRef {
   timeIst: string;
   intervalLabel: string;
