@@ -15,6 +15,8 @@ function stubPayload(
       | "deepproDecision"
       | "rulePnbDecision"
       | "ruleSunpharmaDecision"
+      | "favourableSymbolDecision"
+      | "favourableSymbolRuleId"
     >
   >,
 ): DashboardPayload {
@@ -30,6 +32,8 @@ function stubPayload(
     deepproDecision: null,
     rulePnbDecision: null,
     ruleSunpharmaDecision: null,
+    favourableSymbolDecision: null,
+    favourableSymbolRuleId: null,
     series: [],
     reasons: [],
     ...overrides,
@@ -45,6 +49,11 @@ describe("dayScanPostMortemVariant", () => {
     expect(postMortemVariantForDayScan("deeppro")).toBe("deeppro");
     expect(postMortemVariantForDayScan("rulePnb")).toBe("rulePnb");
     expect(postMortemVariantForDayScan("ruleSunpharma")).toBe("ruleSunpharma");
+    expect(postMortemVariantForDayScan("ruleLtm")).toBe("ruleLtm");
+    expect(postMortemVariantForDayScan("ruleIcicigi")).toBe("ruleIcicigi");
+    expect(postMortemVariantForDayScan("ruleTechm")).toBe("ruleTechm");
+    expect(postMortemVariantForDayScan("ruleTvsmotor")).toBe("ruleTvsmotor");
+    expect(postMortemVariantForDayScan("rulePolicybzr")).toBe("rulePolicybzr");
   });
 
   it("picks the matching dashboard decision", () => {
@@ -53,12 +62,15 @@ describe("dayScanPostMortemVariant", () => {
     const deeppro = { dateKey: "2026-06-29", decision: "SELL" as const };
     const rulePnb = { dateKey: "2026-06-29", decision: "BUY" as const };
     const ruleSunpharma = { dateKey: "2026-06-29", decision: "SELL" as const };
+    const favourable = { dateKey: "2026-06-29", decision: "BUY" as const };
     const payload = stubPayload({
       deepakDecision: deepak as never,
       deepak2Decision: deepak2 as never,
       deepproDecision: deeppro as never,
       rulePnbDecision: rulePnb as never,
       ruleSunpharmaDecision: ruleSunpharma as never,
+      favourableSymbolDecision: favourable as never,
+      favourableSymbolRuleId: "ruleLtm",
     });
 
     expect(decisionForDayScanVariant(payload, "deepak")?.decision).toBe("BUY");
@@ -69,6 +81,10 @@ describe("dayScanPostMortemVariant", () => {
     expect(decisionForDayScanVariant(payload, "rulePnb")?.decision).toBe("BUY");
     expect(decisionForDayScanVariant(payload, "ruleSunpharma")?.decision).toBe(
       "SELL",
+    );
+    expect(decisionForDayScanVariant(payload, "ruleLtm")?.decision).toBe("BUY");
+    expect(decisionForDayScanVariant(payload, "rulePolicybzr")?.decision).toBe(
+      "BUY",
     );
   });
 });

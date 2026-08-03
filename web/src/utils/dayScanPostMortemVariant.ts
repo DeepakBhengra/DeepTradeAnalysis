@@ -1,6 +1,7 @@
 import type { DashboardPayload } from "../types/dashboard";
 import type { PostMortemVariant } from "../types/postMortem";
 import type { DayScanRuleVariant } from "../hooks/useVariantDayScan";
+import { isFavourableSymbolRuleVariant } from "./favourableSymbolRule";
 
 /**
  * Map Day Scan rule variants onto the dashboard decision / post-mortem grader.
@@ -18,6 +19,12 @@ export function postMortemVariantForDayScan(
       return "rulePnb";
     case "ruleSunpharma":
       return "ruleSunpharma";
+    case "ruleLtm":
+    case "ruleIcicigi":
+    case "ruleTechm":
+    case "ruleTvsmotor":
+    case "rulePolicybzr":
+      return variant;
     case "watchParty":
       return "deepak";
     case "deepak3":
@@ -43,6 +50,9 @@ export function decisionForDayScanVariant(
   }
   if (postMortemVariant === "ruleSunpharma") {
     return payload.ruleSunpharmaDecision;
+  }
+  if (isFavourableSymbolRuleVariant(postMortemVariant)) {
+    return payload.favourableSymbolDecision;
   }
   return payload.deepakDecision;
 }

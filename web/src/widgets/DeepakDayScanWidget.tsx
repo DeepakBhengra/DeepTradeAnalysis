@@ -13,6 +13,11 @@ import {
   useVariantDayScan,
   type DayScanRuleVariant,
 } from "../hooks/useVariantDayScan";
+import {
+  FAVOURABLE_RULE_LABEL,
+  FAVOURABLE_RULE_SYMBOL,
+  isFavourableSymbolRuleVariant,
+} from "../utils/favourableSymbolRule";
 import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST } from "../utils/istTime";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
@@ -27,11 +32,24 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deeppro: "deeppro-day-scan",
   rulePnb: "rule-pnb-day-scan",
   ruleSunpharma: "rule-sunpharma-day-scan",
+  ruleLtm: "rule-ltm-day-scan",
+  ruleIcicigi: "rule-icicigi-day-scan",
+  ruleTechm: "rule-techm-day-scan",
+  ruleTvsmotor: "rule-tvsmotor-day-scan",
+  rulePolicybzr: "rule-policybzr-day-scan",
 };
 
 function readStoredVariant(): DayScanRuleVariant {
   const stored = readLocalStorage(VARIANT_STORAGE_KEY);
   return isDayScanRuleVariant(stored) ? stored : "deepak";
+}
+
+function isSingleSymbolDayScanVariant(variant: DayScanRuleVariant): boolean {
+  return (
+    variant === "rulePnb" ||
+    variant === "ruleSunpharma" ||
+    isFavourableSymbolRuleVariant(variant)
+  );
 }
 
 function descriptionForVariant(variant: DayScanRuleVariant): string {
@@ -51,6 +69,15 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
       return `Scans PNB only with ${label} — a separate RSI/SMI/BB proximity rule from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak or Deeppro and not applied to other stocks.${liveRefresh}`;
     case "ruleSunpharma":
       return `Scans SUNPHARMA only with ${label} — a separate RSI/SMI/BB proximity rule from the SUNPHARMA favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak, Deeppro, or RulePNB and not applied to other stocks.${liveRefresh}`;
+    case "ruleLtm":
+    case "ruleIcicigi":
+    case "ruleTechm":
+    case "ruleTvsmotor":
+    case "rulePolicybzr": {
+      const symbol = FAVOURABLE_RULE_SYMBOL[variant];
+      const ruleLabel = FAVOURABLE_RULE_LABEL[variant];
+      return `Scans ${symbol} only with ${ruleLabel} — a separate RSI/SMI/BB proximity rule from the ${symbol} favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak/Deeppro and not applied to other stocks.${liveRefresh}`;
+    }
     case "deepak":
     default:
       return `Scans ${universe} using ${label} rules. May take several minutes depending on Kite response time.${liveRefresh}`;
@@ -59,13 +86,25 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
 
 function rulesPanelVariant(
   variant: DayScanRuleVariant,
-): "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb" | "ruleSunpharma" {
+):
+  | "deepak"
+  | "deepak2"
+  | "deepak3"
+  | "deeppro"
+  | "rulePnb"
+  | "ruleSunpharma"
+  | "ruleLtm"
+  | "ruleIcicigi"
+  | "ruleTechm"
+  | "ruleTvsmotor"
+  | "rulePolicybzr" {
   if (
     variant === "deepak2" ||
     variant === "deepak3" ||
     variant === "deeppro" ||
     variant === "rulePnb" ||
-    variant === "ruleSunpharma"
+    variant === "ruleSunpharma" ||
+    isFavourableSymbolRuleVariant(variant)
   ) {
     return variant;
   }
@@ -141,7 +180,7 @@ export function DeepakDayScanWidget({
           description={descriptionForVariant(variant)}
         />
 
-        {variant !== "rulePnb" && variant !== "ruleSunpharma" && (
+        {!isSingleSymbolDayScanVariant(variant) && (
           <SectorWatchlistPreview
             expanded={watchlistExpanded}
             onToggle={() => setWatchlistExpanded((value) => !value)}

@@ -16,6 +16,15 @@ import type { DeepakPostMortemReport, PostMortemVariant } from "../types/postMor
 import type { DashboardSeriesPoint } from "../types/dashboard";
 import type { SignalDayOption } from "../utils/signalDaysFromTrades";
 import { formatNetworkFetchError, readApiErrorBody } from "../utils/formatError";
+import { FAVOURABLE_RULE_LABEL, FAVOURABLE_RULE_SLUG } from "../utils/favourableSymbolRule";
+
+export {
+  FAVOURABLE_RULE_LABEL,
+  FAVOURABLE_RULE_SLUG,
+  FAVOURABLE_RULE_SYMBOL,
+  isFavourableSymbolRuleVariant,
+  type FavourableSymbolRuleVariant,
+} from "../utils/favourableSymbolRule";
 
 export type DashboardId = "pnb" | "niftyBank";
 
@@ -341,6 +350,54 @@ export async function fetchRuleSunpharmaBacktest(
   }
 }
 
+export async function fetchFavourableSymbolBacktest(
+  ruleSlug: string,
+  symbol: string,
+  fromDate: string,
+  toDate: string,
+): Promise<DeepakBacktestPayload> {
+  const params = new URLSearchParams({
+    symbol,
+    from: fromDate,
+    to: toDate,
+  });
+
+  const url = `/api/backtest/symbol-rule/${encodeURIComponent(ruleSlug)}?${params.toString()}`;
+  const variantKey = (
+    Object.entries(FAVOURABLE_RULE_SLUG) as Array<
+      [keyof typeof FAVOURABLE_RULE_SLUG, string]
+    >
+  ).find(([, slug]) => slug === ruleSlug)?.[0];
+  const label = variantKey ? FAVOURABLE_RULE_LABEL[variantKey] : ruleSlug;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 120_000);
+
+  try {
+    const response = await fetch(url, { signal: controller.signal });
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+      const message = readApiErrorBody(body, `Backtest request failed: ${response.status}`);
+      if (message.includes("API route not found")) {
+        throw new Error(
+          `${label} backtest API not available. Stop any old server on port 3001 and restart with: npm run dev:dashboard`,
+        );
+      }
+      throw new Error(message);
+    }
+    return response.json() as Promise<DeepakBacktestPayload>;
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(
+        `${label} backtest request timed out after 120s. Check Kite credentials and API server.`,
+      );
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function assertApiReachable(): Promise<void> {
   await fetchJsonWithTimeout<{ ok: boolean }>(
     "/api/health",
@@ -450,6 +507,16 @@ export async function fetchRuleSunpharmaDayScan(
 ): Promise<DeepakDayScanPayload> {
   const params = new URLSearchParams({ date });
   const url = `/api/backtest/rule-sunpharma/day-scan?${params.toString()}`;
+  return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
+}
+
+export async function fetchFavourableSymbolDayScan(
+  ruleSlug: string,
+  date: string,
+  signal?: AbortSignal,
+): Promise<DeepakDayScanPayload> {
+  const params = new URLSearchParams({ date });
+  const url = `/api/backtest/symbol-rule/${encodeURIComponent(ruleSlug)}/day-scan?${params.toString()}`;
   return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
 }
 

@@ -206,6 +206,14 @@ export interface DashboardPayload {
   deepproDecision: DeepakDecisionResult | null;
   rulePnbDecision: DeepakDecisionResult | null;
   ruleSunpharmaDecision: DeepakDecisionResult | null;
+  favourableSymbolDecision: DeepakDecisionResult | null;
+  favourableSymbolRuleId:
+    | "ruleLtm"
+    | "ruleIcicigi"
+    | "ruleTechm"
+    | "ruleTvsmotor"
+    | "rulePolicybzr"
+    | null;
   analysisDate: string | null;
   mode: "live" | "historical" | "simulation";
   simulation?: SimulationMeta;

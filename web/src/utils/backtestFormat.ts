@@ -6,7 +6,12 @@ export function formatScenarioLabel(scenarioKey: string): string {
     .replace(/^deepak /, "")
     .replace(/^deeppro /, "")
     .replace(/^rulePnb /, "")
-    .replace(/^ruleSunpharma /, "");
+    .replace(/^ruleSunpharma /, "")
+    .replace(/^ruleLtm /, "")
+    .replace(/^ruleIcicigi /, "")
+    .replace(/^ruleTechm /, "")
+    .replace(/^ruleTvsmotor /, "")
+    .replace(/^rulePolicybzr /, "");
 }
 
 export function formatMetric(value: number | null, digits = 2): string {

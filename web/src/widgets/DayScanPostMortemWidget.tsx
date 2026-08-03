@@ -20,6 +20,11 @@ import {
   decisionForDayScanVariant,
   postMortemVariantForDayScan,
 } from "../utils/dayScanPostMortemVariant";
+import {
+  FAVOURABLE_RULE_LABEL,
+  FAVOURABLE_RULE_SYMBOL,
+  isFavourableSymbolRuleVariant,
+} from "../utils/favourableSymbolRule";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
 const DEFAULT_DATE = "2026-06-29";
@@ -34,6 +39,11 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deeppro: "dayscan-postmortem-deeppro",
   rulePnb: "dayscan-postmortem-rule-pnb",
   ruleSunpharma: "dayscan-postmortem-rule-sunpharma",
+  ruleLtm: "dayscan-postmortem-rule-ltm",
+  ruleIcicigi: "dayscan-postmortem-rule-icicigi",
+  ruleTechm: "dayscan-postmortem-rule-techm",
+  ruleTvsmotor: "dayscan-postmortem-rule-tvsmotor",
+  rulePolicybzr: "dayscan-postmortem-rule-policybzr",
 };
 
 interface SymbolOption {
@@ -68,6 +78,11 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
   }
   if (variant === "ruleSunpharma") {
     return `Scan SUNPHARMA only with ${label} for one session date, then open a path-graded post-mortem. RuleSUNPHARMA is separate from Deepak/Deeppro/RulePNB and does not apply to other stocks.`;
+  }
+  if (isFavourableSymbolRuleVariant(variant)) {
+    const symbol = FAVOURABLE_RULE_SYMBOL[variant];
+    const ruleLabel = FAVOURABLE_RULE_LABEL[variant];
+    return `Scan ${symbol} only with ${ruleLabel} for one session date, then open a path-graded post-mortem. ${ruleLabel} is separate from Deepak/Deeppro and does not apply to other stocks.`;
   }
   return `Scan ${SECTOR_WATCHLIST_SIZE} liquid NSE stocks with ${label} for one session date, then open a path-graded post-mortem for any signal stock.`;
 }
