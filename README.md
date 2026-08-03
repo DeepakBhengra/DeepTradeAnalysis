@@ -633,17 +633,23 @@ Example reports under `reports/` (e.g. `deeppro-universe100-2026-01-01_to_2026-0
 - `tests/api/buildDeepproDayScanPayload.test.ts` — Day Scan payload wiring  
 - `tests/indicators/stochasticMomentum.test.ts` — SMI math
 
-## RulePNB (PNB favourable profit-range gates)
+## RulePNB (PNB-only favourable profit-range gates)
 
-**RulePNB** encodes the practical takeaway from the PNB 60-day rule-free best BUY/SELL study: favourable RSI / Stch Mtm (SMI) / Bollinger proximity bands by profit range. It is separate from Deepak scenario trails and from Deeppro SMI↔signal crosses.
+**RulePNB** encodes the practical takeaway from the PNB 60-day rule-free best BUY/SELL study: favourable RSI / Stch Mtm (SMI) / Bollinger proximity bands by profit range.
+
+It is a **totally separate rule for PNB only**:
+- Does **not** scan the 100-stock sector watchlist
+- Does **not** share Deepak / Deepak-2 / Deeppro scenario logic
+- Does **not** mix RulePNB reasons into the main dashboard decision/reasons list
+- Backtest / Post-Mortem reject any symbol other than **PNB**
 
 | Surface | Detail |
 |--------|--------|
-| **Widget tab** | **Day Scan** → rule variant **RulePNB**; also **Day Scan Post-Mortem** and symbol **Post-Mortem** |
-| **API** | `GET /api/backtest/rule-pnb/day-scan?date=YYYY-MM-DD` · `GET /api/backtest/rule-pnb?symbol=&from=&to=` |
+| **Widget tab** | **Day Scan** → rule variant **RulePNB** (PNB only); also **Day Scan Post-Mortem** and symbol **Post-Mortem** (symbol locked to PNB) |
+| **API** | `GET /api/backtest/rule-pnb/day-scan?date=YYYY-MM-DD` · `GET /api/backtest/rule-pnb?symbol=PNB&from=&to=` |
 | **Payload builder** | `buildRulePnbDayScanPayload()` in `src/api/buildRulePnbDayScanPayload.ts` |
 | **Decision engine** | `evaluateRulePnbDay` / `evaluateRulePnbDecision` in `src/rules/rulePnbDecision.ts` |
-| **Config** | `config.rulePnb` in `src/config.ts` |
+| **Config** | `config.rulePnb` (`tradingSymbol: "PNB"`) in `src/config.ts` |
 
 ### Scenarios
 

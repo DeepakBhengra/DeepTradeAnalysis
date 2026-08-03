@@ -47,7 +47,7 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
     case "deeppro":
       return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "rulePnb":
-      return `Scans ${universe} for ${label} RSI/SMI/BB proximity setups from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
+      return `Scans PNB only with ${label} — a separate RSI/SMI/BB proximity rule from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak or Deeppro and not applied to other stocks.${liveRefresh}`;
     case "deepak":
     default:
       return `Scans ${universe} using ${label} rules. May take several minutes depending on Kite response time.${liveRefresh}`;
@@ -137,10 +137,12 @@ export function DeepakDayScanWidget({
           description={descriptionForVariant(variant)}
         />
 
-        <SectorWatchlistPreview
-          expanded={watchlistExpanded}
-          onToggle={() => setWatchlistExpanded((value) => !value)}
-        />
+        {variant !== "rulePnb" && (
+          <SectorWatchlistPreview
+            expanded={watchlistExpanded}
+            onToggle={() => setWatchlistExpanded((value) => !value)}
+          />
+        )}
         <DeepakRulesPanel variant={rulesPanelVariant(variant)} />
 
         {loading && <DayScanProgressBanner date={date} elapsedSeconds={loadingElapsedSec} />}

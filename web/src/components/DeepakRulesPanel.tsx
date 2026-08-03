@@ -59,6 +59,7 @@ const DEEPPRO_SCENARIOS = [
 ];
 
 const RULEPNB_RULES = [
+  "PNB stock only — never evaluates other symbols; separate from Deepak / Deeppro",
   "BUY quality (1.7%–0.9%): RSI 25–50, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
   "SELL quality (1.7%–0.9% / 0.8%–0.4%): RSI 50–70, SMI ≥ 40, near BB upper (gap ≤ 0.8% or crossed/close)",
   "BUY extended (3%–1.8% movers): prefer negative SMI; RSI mixed; BB lower gaps can be wider (≤ 1.4%)",
@@ -120,7 +121,7 @@ export function DeepakRulesPanel({
             {variant === "deeppro"
               ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
               : variant === "rulePnb"
-                ? `${sessionLabel} · PNB favourable profit-range RSI / Stch Mtm / BB proximity gates · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
+                ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
               : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
           </p>
           {variant === "deeppro" && (

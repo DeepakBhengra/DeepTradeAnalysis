@@ -2,13 +2,29 @@ import { describe, expect, it } from "vitest";
 import { buildIndicatorSnapshots } from "../../src/indicators/compute.js";
 import {
   __rulePnbTestables,
+  assertRulePnbSymbol,
   evaluateRulePnbDay,
+  isRulePnbSymbol,
   rulePnbSignalToTradeSignal,
 } from "../../src/rules/rulePnbDecision.js";
 import type { Candle } from "../../src/types.js";
 
 const { matchesBuyQuality, matchesSellQuality, matchesBuyExtended } =
   __rulePnbTestables;
+
+describe("RulePNB PNB-only symbol guard", () => {
+  it("accepts only PNB", () => {
+    expect(isRulePnbSymbol("PNB")).toBe(true);
+    expect(isRulePnbSymbol("NSE:PNB")).toBe(true);
+    expect(isRulePnbSymbol("pnb")).toBe(true);
+    expect(isRulePnbSymbol("TCS")).toBe(false);
+    expect(isRulePnbSymbol("SBIN")).toBe(false);
+  });
+
+  it("rejects non-PNB symbols with a clear error", () => {
+    expect(() => assertRulePnbSymbol("TCS")).toThrow(/PNB-only/);
+  });
+});
 
 function istCandle(
   dateKey: string,

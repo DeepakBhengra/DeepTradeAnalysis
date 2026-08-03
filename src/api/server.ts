@@ -41,6 +41,7 @@ import { getIstTimeParts } from "../utils/marketTime.js";
 import { startSamcoTradingPoll } from "./samcoPoll.js";
 import {
   assertKiteCredentials,
+  config,
   defaultDashboardSymbolId,
   resolveDashboardSymbol,
 } from "../config.js";
@@ -582,8 +583,9 @@ app.get("/api/backtest/rule-pnb", async (req, res) => {
       return;
     }
 
+    // RulePNB is PNB-only — never accept/mix other symbols.
     const payload = await buildRulePnbBacktestPayload({
-      symbol: symbolParam ?? defaultDashboardSymbolId,
+      symbol: symbolParam ?? config.rulePnb.tradingSymbol,
       fromDate: fromParam,
       toDate: toParam,
     });
@@ -593,7 +595,8 @@ app.get("/api/backtest/rule-pnb", async (req, res) => {
     const status =
       message.includes("date") ||
       message.includes("Invalid") ||
-      message.includes("symbol")
+      message.includes("symbol") ||
+      message.includes("PNB-only")
         ? 400
         : 500;
     res.status(status).json({ error: message });

@@ -110,13 +110,24 @@ export function DeepakPostMortemWidget({
   const handleVariantChange = (next: PostMortemVariant) => {
     setVariant(next);
     writeLocalStorage(VARIANT_STORAGE_KEY, next);
+    // RulePNB is PNB-only — lock the symbol so it cannot mix with other stocks.
+    if (next === "rulePnb") {
+      setSymbolInput("PNB");
+      setActiveSymbol("PNB");
+      writeLocalStorage(SYMBOL_STORAGE_KEY, "PNB");
+    }
     clearResults();
-    setScanInfo("Variant changed — scan the date range again.");
+    setScanInfo(
+      next === "rulePnb"
+        ? "RulePNB is PNB-only — symbol locked to PNB. Scan the date range again."
+        : "Variant changed — scan the date range again.",
+    );
   };
 
   const runRangeScan = useCallback(
     async (force = false) => {
-      const normalized = activeSymbol.trim().toUpperCase();
+      const normalized =
+        variant === "rulePnb" ? "PNB" : activeSymbol.trim().toUpperCase();
       if (!normalized) {
         setScanError("Enter a valid symbol and click Load.");
         return;
@@ -344,10 +355,15 @@ export function DeepakPostMortemWidget({
   return (
     <div hidden={!isActive}>
       <StockSymbolInput
-        value={symbolInput}
+        value={variant === "rulePnb" ? "PNB" : symbolInput}
         onChange={setSymbolInput}
         onLoad={handleLoadSymbol}
         loading={busy}
+        lockedReason={
+          variant === "rulePnb"
+            ? "RulePNB is a separate PNB-only rule — symbol is locked to PNB and is not mixed with Deepak/Deeppro."
+            : null
+        }
       />
 
       <DateRangePicker
@@ -363,11 +379,15 @@ export function DeepakPostMortemWidget({
         }}
         onRun={() => void runRangeScan(false)}
         loading={scanLoading}
-        runDisabled={activeSymbol.trim().length === 0}
+        runDisabled={variant !== "rulePnb" && activeSymbol.trim().length === 0}
         runLabel="Scan signal days"
         loadingLabel="Scanning..."
         idPrefix="postmortem"
-        description="Scan BUY/SELL days for the selected rule variant (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
+        description={
+          variant === "rulePnb"
+            ? "RulePNB scans PNB only (separate from Deepak/Deeppro). Max 90 calendar days. Results are cached on the server."
+            : "Scan BUY/SELL days for the selected rule variant (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
+        }
       />
 
       <section className="flex flex-wrap items-end justify-between gap-3 border-b border-kite-border bg-kite-surface px-3 py-2">

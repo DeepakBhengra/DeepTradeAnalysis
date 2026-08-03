@@ -506,11 +506,14 @@ export const config = {
   },
 
   /**
-   * RulePNB — PNB favourable profit-range indicator gates (60d study).
+   * RulePNB — PNB-only favourable profit-range indicator gates (60d study).
+   * Completely separate from Deepak / Deepak-2 / Deeppro. Applies only to PNB.
    * Tuned from rule-free best BUY/SELL buckets: 1.7%–0.9% quality +
    * 3%–1.8% biggest-mover BUY / mid-low SELL bands.
    */
   rulePnb: {
+    /** Exclusive symbol — RulePNB never evaluates other stocks. */
+    tradingSymbol: "PNB",
     sessionStart: "09:15",
     sessionEnd: "15:30",
     /** Exclusive IST deadline for the entry candle (hard cap). */

@@ -5,12 +5,6 @@ import {
   evaluateRulePnbDay,
   rulePnbSignalToTradeSignal,
 } from "../rules/rulePnbDecision.js";
-import {
-  getSectorRank,
-  SECTOR_WATCHLIST,
-  type SectorName,
-  type SectorWatchlistEntry,
-} from "../symbols/sectorWatchlist.js";
 import type {
   DeepakDayScanError,
   DeepakDayScanPayload,
@@ -19,7 +13,13 @@ import type {
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
-import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
+import { withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
+
+/** RulePNB is PNB-only — never mixed with the sector watchlist. */
+const RULE_PNB_ENTRY = {
+  tradingSymbol: config.rulePnb.tradingSymbol,
+  sector: "Bank",
+} as const;
 
 function buildSummary(
   trades: DeepakDayScanTrade[],
@@ -41,27 +41,11 @@ function buildSummary(
   };
 }
 
-function sortTrades(trades: DeepakDayScanTrade[]): DeepakDayScanTrade[] {
-  return [...trades].sort((left, right) => {
-    const sectorDiff =
-      getSectorRank(left.sector as SectorName) - getSectorRank(right.sector as SectorName);
-    if (sectorDiff !== 0) {
-      return sectorDiff;
-    }
-    const symbolDiff = left.tradingSymbol.localeCompare(right.tradingSymbol);
-    if (symbolDiff !== 0) {
-      return symbolDiff;
-    }
-    return left.entryTimeIst.localeCompare(right.entryTimeIst);
-  });
-}
-
-async function scanSymbol(
-  entry: SectorWatchlistEntry,
+async function scanPnb(
   date: string,
 ): Promise<{ trades: DeepakDayScanTrade[]; error: DeepakDayScanError | null }> {
   try {
-    const dashboardSymbol = resolveDashboardSymbol(entry.tradingSymbol);
+    const dashboardSymbol = resolveDashboardSymbol(RULE_PNB_ENTRY.tradingSymbol);
     const candles = await withDayScanSymbolTimeout(
       fetchPnbCandles({
         symbol: dashboardSymbol.tradingSymbol,
@@ -71,7 +55,7 @@ async function scanSymbol(
         toDate: date,
         kiteRetries: config.dayScanKiteRetries,
       }),
-      entry.tradingSymbol,
+      RULE_PNB_ENTRY.tradingSymbol,
     );
     const snapshots = buildIndicatorSnapshots(candles);
     const day = evaluateRulePnbDay(snapshots, date);
@@ -94,7 +78,7 @@ async function scanSymbol(
           bbMatchType: tradeSignal.bbMatchType,
           symbol: dashboardSymbol.symbol,
           tradingSymbol: dashboardSymbol.tradingSymbol,
-          sector: entry.sector,
+          sector: RULE_PNB_ENTRY.sector,
         };
       }),
       error: null,
@@ -103,14 +87,18 @@ async function scanSymbol(
     return {
       trades: [],
       error: {
-        tradingSymbol: entry.tradingSymbol,
-        sector: entry.sector,
+        tradingSymbol: RULE_PNB_ENTRY.tradingSymbol,
+        sector: RULE_PNB_ENTRY.sector,
         error: formatUnknownError(error),
       },
     };
   }
 }
 
+/**
+ * Day Scan for RulePNB — evaluates **PNB only**.
+ * Does not scan the sector watchlist and does not share Deepak/Deeppro logic.
+ */
 export async function buildRulePnbDayScanPayload(input: {
   date: string;
 }): Promise<DeepakDayScanPayload> {
@@ -119,40 +107,14 @@ export async function buildRulePnbDayScanPayload(input: {
     throw new Error(dateError);
   }
 
-  const trades: DeepakDayScanTrade[] = [];
-  const errors: DeepakDayScanError[] = [];
-
-  const { results, skippedEntries, abortReason } = await runBatchedSectorScan({
-    entries: SECTOR_WATCHLIST,
-    label: "rule-pnb-day-scan",
-    scan: (entry) => scanSymbol(entry, input.date),
-    resolveError: (result) => result.error?.error ?? null,
-  });
-
-  for (const result of results) {
-    trades.push(...result.trades);
-    if (result.error) {
-      errors.push(result.error);
-    }
-  }
-
-  if (skippedEntries.length > 0 && abortReason) {
-    for (const entry of skippedEntries) {
-      errors.push({
-        tradingSymbol: entry.tradingSymbol,
-        sector: entry.sector,
-        error: `${abortReason} (scan stopped early)`,
-      });
-    }
-  }
-
-  const sortedTrades = sortTrades(trades);
+  const { trades, error } = await scanPnb(input.date);
+  const errors: DeepakDayScanError[] = error ? [error] : [];
 
   return {
     date: input.date,
-    trades: sortedTrades,
+    trades,
     errors,
-    summary: buildSummary(sortedTrades, errors, SECTOR_WATCHLIST.length),
+    summary: buildSummary(trades, errors, 1),
     runAt: new Date().toISOString(),
   };
 }

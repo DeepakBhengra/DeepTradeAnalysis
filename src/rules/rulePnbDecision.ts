@@ -23,6 +23,28 @@ import {
   pctDistance,
 } from "./bollingerUtils.js";
 
+/** Normalize NSE:PNB / pnb → PNB for the exclusive-symbol guard. */
+export function normalizeRulePnbTradingSymbol(symbol: string): string {
+  return symbol.trim().toUpperCase().replace(/^NSE:/, "");
+}
+
+/** True only for the exclusive RulePNB symbol (PNB). */
+export function isRulePnbSymbol(symbol: string | null | undefined): boolean {
+  if (!symbol) {
+    return false;
+  }
+  return normalizeRulePnbTradingSymbol(symbol) === config.rulePnb.tradingSymbol;
+}
+
+/** Throws when a caller tries to run RulePNB on a non-PNB symbol. */
+export function assertRulePnbSymbol(symbol: string): void {
+  if (!isRulePnbSymbol(symbol)) {
+    throw new Error(
+      `RulePNB is PNB-only and cannot run on ${normalizeRulePnbTradingSymbol(symbol) || "(empty)"}. Use trading symbol PNB.`,
+    );
+  }
+}
+
 const SCENARIO_NUMBER: Record<RulePnbScenarioKey, number> = {
   buy_quality: 1,
   sell_quality: 1,
@@ -161,7 +183,10 @@ function matchesBuyExtended(
 }
 
 /**
- * RulePNB — PNB favourable profit-range indicator gates (60d study):
+ * RulePNB — PNB-only favourable profit-range indicator gates (60d study).
+ * Completely separate from Deepak / Deepak-2 / Deeppro — call sites must
+ * guard with `isRulePnbSymbol` / `assertRulePnbSymbol` so other stocks never
+ * enter this path.
  *
  * 1. BUY quality (1.7%–0.9% band): RSI ~25–50, SMI ≤ −40, near BB lower
  *    (gap often &lt; 0.7%, frequently crossed)

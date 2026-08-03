@@ -1,11 +1,16 @@
 import type { DashboardSymbolConfig } from "../config.js";
-import { resolveDashboardSymbol } from "../config.js";
+import { config, resolveDashboardSymbol } from "../config.js";
 import { runRulePnbBacktest } from "../backtest/runRulePnbBacktest.js";
 import { fetchPnbCandles } from "../data/pnbFeed.js";
 import { buildIndicatorSnapshots } from "../indicators/compute.js";
+import { assertRulePnbSymbol } from "../rules/rulePnbDecision.js";
 import type { DeepakBacktestPayload } from "../types.js";
 import { validateDeepakBacktestDates } from "./buildDeepakBacktestPayload.js";
 
+/**
+ * RulePNB backtest — PNB only. Rejects any other symbol so it cannot
+ * be mixed with Deepak / Deeppro multi-symbol workflows.
+ */
 export async function buildRulePnbBacktestPayload(input: {
   symbol: string;
   fromDate: string;
@@ -16,7 +21,11 @@ export async function buildRulePnbBacktestPayload(input: {
     throw new Error(dateError);
   }
 
-  const dashboardSymbol: DashboardSymbolConfig = resolveDashboardSymbol(input.symbol);
+  assertRulePnbSymbol(input.symbol);
+
+  const dashboardSymbol: DashboardSymbolConfig = resolveDashboardSymbol(
+    config.rulePnb.tradingSymbol,
+  );
 
   const candles = await fetchPnbCandles({
     symbol: dashboardSymbol.tradingSymbol,

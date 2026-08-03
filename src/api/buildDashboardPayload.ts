@@ -12,7 +12,10 @@ import { buildVolumeSnapshots } from "../indicators/volume.js";
 import { computeConfidenceScore } from "../rules/confidenceScore.js";
 import { evaluateDeepakDecision, evaluateDeepak2Decision } from "../rules/deepakDecision.js";
 import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
-import { evaluateRulePnbDecision } from "../rules/rulePnbDecision.js";
+import {
+  evaluateRulePnbDecision,
+  isRulePnbSymbol,
+} from "../rules/rulePnbDecision.js";
 import { evaluateDepthAnalysis } from "../rules/depthAnalysis.js";
 import {
   buildSidewaysDebug,
@@ -206,8 +209,11 @@ function buildPayloadFromCandles(input: {
       : null;
   const deepproDecision =
     targetDateKey != null ? evaluateDeepproDecision(snapshots, targetDateKey) : null;
+  // RulePNB is PNB-only and never mixes into Deepak/Deeppro reasons or decision.
   const rulePnbDecision =
-    targetDateKey != null ? evaluateRulePnbDecision(snapshots, targetDateKey) : null;
+    targetDateKey != null && isRulePnbSymbol(dashboardSymbol.tradingSymbol)
+      ? evaluateRulePnbDecision(snapshots, targetDateKey)
+      : null;
   const volumeAnalysis = evaluateVolumeAnalysis(candles);
   const sidewaysTrend = evaluateSidewaysTrend(snapshots, { targetDateKey });
   const sidewaysDebug = buildSidewaysDebug(snapshots, { targetDateKey });
@@ -250,8 +256,6 @@ function buildPayloadFromCandles(input: {
     deepak2Decision?.reasons.map((reason) => `[Deepak-2] ${reason}`) ?? [];
   const deepproReasons =
     deepproDecision?.reasons.map((reason) => `[Deeppro] ${reason}`) ?? [];
-  const rulePnbReasons =
-    rulePnbDecision?.reasons.map((reason) => `[RulePNB] ${reason}`) ?? [];
 
   const referenceCandle =
     analysisDate && series.length > 0
@@ -274,7 +278,6 @@ function buildPayloadFromCandles(input: {
       ...deepakReasons,
       ...deepak2Reasons,
       ...deepproReasons,
-      ...rulePnbReasons,
       ...volumeReasons,
       ...depthReasons,
       ...confidenceReasons,

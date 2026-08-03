@@ -62,6 +62,9 @@ function readStoredDate(): string {
 
 function descriptionForVariant(variant: DayScanRuleVariant): string {
   const label = DAY_SCAN_RULE_VARIANT_LABEL[variant];
+  if (variant === "rulePnb") {
+    return `Scan PNB only with ${label} for one session date, then open a path-graded post-mortem. RulePNB is separate from Deepak/Deeppro and does not apply to other stocks.`;
+  }
   return `Scan ${SECTOR_WATCHLIST_SIZE} liquid NSE stocks with ${label} for one session date, then open a path-graded post-mortem for any signal stock.`;
 }
 

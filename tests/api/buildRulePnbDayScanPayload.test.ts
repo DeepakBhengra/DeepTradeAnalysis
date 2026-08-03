@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { buildRulePnbDayScanPayload } from "../../src/api/buildRulePnbDayScanPayload.js";
-import { SECTOR_WATCHLIST } from "../../src/symbols/sectorWatchlist.js";
 import type { Candle } from "../../src/types.js";
 
 const { fetchPnbCandlesMock, warmKiteExchangeInstrumentsMock } = vi.hoisted(() => ({
@@ -39,7 +38,7 @@ describe("buildRulePnbDayScanPayload", () => {
     warmKiteExchangeInstrumentsMock.mockResolvedValue(undefined);
   });
 
-  it("returns a standard day-scan payload shape without throwing", async () => {
+  it("returns a PNB-only day-scan payload shape without throwing", async () => {
     fetchPnbCandlesMock.mockImplementation(async () =>
       makeCandles(
         "2026-05-11",
@@ -49,24 +48,27 @@ describe("buildRulePnbDayScanPayload", () => {
 
     const payload = await buildRulePnbDayScanPayload({ date: "2026-05-11" });
 
-    expect(warmKiteExchangeInstrumentsMock).toHaveBeenCalled();
     expect(payload.date).toBe("2026-05-11");
-    expect(payload.summary.stocksScanned).toBe(SECTOR_WATCHLIST.length);
+    expect(payload.summary.stocksScanned).toBe(1);
     expect(payload.summary.errorCount).toBe(0);
     expect(Array.isArray(payload.trades)).toBe(true);
     expect(payload.runAt).toBeTypeOf("string");
+    expect(fetchPnbCandlesMock).toHaveBeenCalledTimes(1);
+    expect(fetchPnbCandlesMock.mock.calls[0]?.[0]?.symbol).toBe("PNB");
+    expect(
+      payload.trades.every((trade) => trade.tradingSymbol === "PNB"),
+    ).toBe(true);
   });
 
-  it("captures per-symbol fetch errors instead of failing the whole scan", async () => {
-    fetchPnbCandlesMock.mockImplementation(async (options: { symbol: string }) => {
-      if (options.symbol === "TCS") {
-        throw new Error("TCS feed failed");
-      }
-      return makeCandles("2026-05-11", [100, 101, 102, 103, 104]);
+  it("captures a PNB fetch error without scanning other symbols", async () => {
+    fetchPnbCandlesMock.mockImplementation(async () => {
+      throw new Error("PNB feed failed");
     });
 
     const payload = await buildRulePnbDayScanPayload({ date: "2026-05-11" });
-    expect(payload.summary.errorCount).toBeGreaterThan(0);
-    expect(payload.errors.some((entry) => entry.tradingSymbol === "TCS")).toBe(true);
+    expect(payload.summary.stocksScanned).toBe(1);
+    expect(payload.summary.errorCount).toBe(1);
+    expect(payload.errors.some((entry) => entry.tradingSymbol === "PNB")).toBe(true);
+    expect(fetchPnbCandlesMock).toHaveBeenCalledTimes(1);
   });
 });
