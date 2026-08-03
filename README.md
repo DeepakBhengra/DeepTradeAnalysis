@@ -1,8 +1,11 @@
 # PNB 15m Signal Engine
 
-PNB NSE 15-minute signal engine using Bollinger Bands, RSI, and MACD. This document describes the **Deepak decision rules** — how buy/sell signals are generated, how entries and exits are priced, and when a profit target counts as hit.
+PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail) and the **Deeppro** Stch Mtm exhaustion rules — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
 
-Implementation: `src/rules/deepakDecision.ts`, `src/rules/deepakCore.ts`, `src/rules/deepakTarget.ts`, `src/rules/bollingerUtils.ts`.
+Implementation (Deepak): `src/rules/deepakDecision.ts`, `src/rules/deepakCore.ts`, `src/rules/deepakTarget.ts`, `src/rules/bollingerUtils.ts`.
+
+Implementation (Deeppro): `src/rules/deepproDecision.ts`, `src/indicators/stochasticMomentum.ts`, `config.deeppro` in `src/config.ts`.
+
 
 ---
 
@@ -468,3 +471,158 @@ deepakDecision3: {
 ```
 
 Tests: `tests/rules/deepak3Decision.test.ts`, `tests/api/buildDeepak3DayScanPayload.test.ts`.
+
+---
+
+## Deeppro (Stch Mtm exhaustion — pink-circle pattern)
+
+**Deeppro** detects Stochastic Momentum (`Stch Mtm 10,3,3`) exhaustion reversals — the chart “pink circle” setup — and emits **BUY** / **SELL** entries for Day Scan, Day Scan Post-Mortem, and backtests. Data path is **Kite historical 15m only** (no Yahoo).
+
+Implementation: `src/rules/deepproDecision.ts`. Indicators: `src/indicators/stochasticMomentum.ts`. Config: `config.deeppro` in `src/config.ts`.
+
+### Dashboard and API
+
+| Surface | Location |
+|---------|----------|
+| **Widget tab** | **Day Scan** → rule variant **Deeppro**; also **Day Scan Post-Mortem** |
+| **API route** | `GET /api/backtest/deeppro/day-scan?date=YYYY-MM-DD` |
+| **Payload builder** | `buildDeepproDayScanPayload()` in `src/api/buildDeepproDayScanPayload.ts` |
+| **Backtest** | `runDeepproBacktest()` / `GET /api/backtest/deeppro` |
+
+Day Scan / Post-Mortem scan the full **100-stock** liquid NSE universe in `SECTOR_WATCHLIST` (`src/symbols/sectorWatchlist.ts`). When the selected Day Scan date is **today (IST)**, after the first run the UI **auto-refreshes every 15 minutes until 15:15 IST**.
+
+### Raw detection (before quality gates)
+
+Session: **09:15–15:30 IST**. Event candle must be **before 14:00 IST**. Lookback for peak/trough SMI + BB tag: **16** bars (~4h on 15m).
+
+#### SELL (overbought exhaustion)
+
+| Step | Rule |
+|------|------|
+| 1 | Stch Mtm **bearish cross** while in/from overbought (`SMI ≥ 40`) |
+| 2 | Deep peak in lookback: peak SMI **≥ 65** |
+| 3 | Upper Bollinger Band tagged in the same lookback |
+| 4 | MACD histogram **declining** on the cross candle |
+| 5 | MACD hist Δ vs price ≥ `minMacdHistDeltaPct` (default **0.01%**) |
+| 6 | Map a nearby chart event (stall at highs / SMI exit overbought / MACD cross / plain SMI cross) |
+
+#### BUY (oversold exhaustion — mirror)
+
+| Step | Rule |
+|------|------|
+| 1 | Stch Mtm **bullish cross** while in/from oversold (`SMI ≤ -40`) |
+| 2 | Deep trough in lookback: trough SMI **≤ -65** |
+| 3 | Lower Bollinger Band tagged in the same lookback |
+| 4 | MACD histogram **rising** on the cross candle |
+| 5 | MACD hist Δ vs price ≥ `minMacdHistDeltaPct` |
+| 6 | Map a nearby chart event (stall at lows / SMI exit oversold / MACD bull cross / plain SMI cross) |
+
+**Times shown in Day Scan:**
+
+| Field | Meaning |
+|-------|---------|
+| **Entry IST** | SMI cross candle (`timeIst`) |
+| **Scenario / event** | Nearby stall or SMI-exit candle (`eventTimeIst` / `eventKind`) when present |
+
+Day Scan Deeppro rows are **entries only** (`profitTarget: 0`, exit columns empty). Same-day square-off P&amp;L is a **study / post-mortem** metric, not a live fill guarantee.
+
+### Quality gates (enhanced — default on)
+
+After raw detect, signals must pass `passesDeepproSellQuality` / `passesDeepproBuyQuality`. Tuned on Kite 15m watchlist studies to favor same-day best square-off **≥ ~0.75%**. Intentionally does **not** over-trust extreme peak/trough SMI alone, ultra-low BUY RSI (≤30), or SELL BB-upper match tags.
+
+#### SELL quality
+
+| Gate | Rule |
+|------|------|
+| Event window | Inclusive **10:45–12:30** IST |
+| RSI | Event RSI **≥ 67**, **or** low-RSI SMI-exit exception |
+| BB upper | Gap to upper band **≤ 1.75%** |
+| Low-RSI exception | `smi_exit_overbought` with RSI **≤ 45** and BB lower gap **≤ 0.3%** (DIVISLAB-style failed pop) |
+
+#### BUY quality
+
+Outer caps: allowed kinds **`stall_at_lows` | `smi_exit_oversold`**, event **≤ 13:15**, RSI **≤ 50** (≤ **60** if BB lower matched), BB lower gap **≤ 1.0%**. Then one of:
+
+| Path | Rule |
+|------|------|
+| **A — BB-lower matched** | Lower band **close/crossed**; reject dual-band squeeze (both bands matched); after **11:00** require RSI **≥ 40** (recovery, not waterfall) |
+| **B — Morning unmatched** | No BB-lower match; event **≤ 10:30**; BB lower gap **≤ 0.65%** |
+| **C — Extreme stall** | `stall_at_lows`, RSI **≤ 12**, BB lower gap **≤ 0.9%**, MACD hist **≤ -5**, event **≤ 12:30** (EICHERMOT-style) |
+
+These gates apply everywhere Deeppro is evaluated (Day Scan, Post-Mortem, backtest, study scripts) via `evaluateDeepproDay`.
+
+### Scenario numbers (Day Scan table)
+
+| Event kind | Sc# | Typical side |
+|------------|-----|--------------|
+| `smi_cross` / `macd_*_cross` | 1 | either |
+| `stall_at_highs` / `stall_at_lows` | 2 | SELL / BUY |
+| `smi_exit_overbought` / `smi_exit_oversold` | 3 | SELL / BUY |
+
+### Configuration
+
+From `config.deeppro` in `src/config.ts`:
+
+```ts
+deeppro: {
+  sessionStart: "09:15",
+  sessionEnd: "15:30",
+  smi: { lengthK: 10, lengthD: 3, lengthEma: 3 },
+  overboughtLevel: 40,
+  minPeakSmi: 65,
+  oversoldLevel: -40,
+  maxTroughSmi: -65,
+  lookbackBars: 16,
+  stallBodyRatioMax: 0.35,
+  entryDeadlineIst: "14:00",
+  minMacdHistDeltaPct: 0.01,
+  qualityFilter: {
+    enabled: true,
+    sell: {
+      eventFromIst: "10:45",
+      eventToIst: "12:30",
+      minEventRsi: 67,
+      maxBbUpperGapPct: 1.75,
+      allowLowRsiSmiExit: true,
+      lowRsiExitMaxEventRsi: 45,
+      lowRsiExitMaxBbLowerGapPct: 0.3,
+    },
+    buy: {
+      eventToIst: "13:15",
+      maxEventRsi: 50,
+      maxBbLowerGapPct: 1.0,
+      allowedEventKinds: ["stall_at_lows", "smi_exit_oversold"],
+      matchedBbMaxEventRsi: 60,
+      unmatchedEventToIst: "10:30",
+      unmatchedMaxBbLowerGapPct: 0.65,
+      matchedRecoveryAfterIst: "11:00",
+      matchedRecoveryMinEventRsi: 40,
+      rejectBothBandsMatched: true,
+      allowExtremeStallException: true,
+      extremeStallMaxEventRsi: 12,
+      extremeStallMaxBbLowerGapPct: 0.9,
+      extremeStallMaxMacdHist: -5,
+      extremeStallEventToIst: "12:30",
+    },
+  },
+}
+```
+
+Post-Mortem Deeppro signal-day cache is invalidated via `DEEPPRO_SIGNAL_DAYS_RULES_REVISION` in `src/postMortem/store.ts` when detection/quality rules change.
+
+### Study scripts (same-day square-off ≥ 0.75%)
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/study-deeppro-day-multisymbol.ts` | One session date × watchlist |
+| `scripts/study-deeppro-date-range.ts` | Date range × 50 or 100-stock universe |
+| `scripts/study-deeppro-squareoff.ts` | Single-symbol multi-day study |
+| `scripts/scan-deeppro.ts` | Single-symbol signal scan |
+
+Example reports under `reports/` (e.g. `deeppro-universe100-2026-01-01_to_2026-03-31-gte0.75.md`).
+
+### Tests
+
+- `tests/rules/deepproDecision.test.ts` — detection + SELL/BUY quality paths  
+- `tests/api/buildDeepproDayScanPayload.test.ts` — Day Scan payload wiring  
+- `tests/indicators/stochasticMomentum.test.ts` — SMI math
