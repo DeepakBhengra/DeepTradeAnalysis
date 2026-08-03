@@ -432,14 +432,14 @@ export const config = {
      */
     signalOnSmiCrossOnly: true,
     /**
-     * SMI line "chart angle" gate (normalized SMI space, not screen pixels).
-     * angleDeg = |atan(ΔSMI / smiAngleScalePerBar)| * 180/π over the cross bar.
-     * Calibrated so ~15–20° = shallow chop (reject) and ~30–40° = sharp cut (keep).
+     * SMI black-line slope angle into the cross (normalized SMI space, not pixels).
+     * angleDeg = |atan(ΔSMI / smiAngleScalePerBar)| * 180/π on the cross bar (prev→cur).
+     * Calibrated so ~15–20° = shallow chop (reject) and ≥35° = steep approach (keep).
      */
     smiAngleScalePerBar: 22,
-    /** SELL: min angle between SMI (black) and signal (red); reject shallower ~15–20° cuts. */
-    minSellSmiAngleDeg: 30,
-    /** BUY: min absolute SMI (black) slope angle from horizontal. */
+    /** SELL: min black-line slope angle before crossing red downward; reject ~15–20°. */
+    minSellSmiAngleDeg: 35,
+    /** BUY: min black-line slope angle before crossing red upward. */
     minBuySmiAngleDeg: 35,
     /**
      * Max body/range to treat a post-cross candle as stall/doji.

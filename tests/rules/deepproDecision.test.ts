@@ -10,7 +10,6 @@ import {
   passesDeepproSellQuality,
   passesSellSmiAngle,
   smiBlackSlopeAngleDeg,
-  smiVsSignalAngleDeg,
 } from "../../src/rules/deepproDecision.js";
 import type { Candle, DeepproSignal } from "../../src/types.js";
 
@@ -30,43 +29,33 @@ describe("SMI↔signal cross or touch helpers", () => {
   });
 });
 
-describe("SMI cross angle gate", () => {
+describe("SMI black-slope angle gate (≥35° into the cross)", () => {
   const scale = 22;
 
-  it("maps shallow vs steep ΔSMI into ~15–20° vs ~30–40° bands", () => {
-    // |ΔSMI|=8 → ~20°; |ΔSMI|=15 → ~34°
+  it("maps shallow vs steep ΔSMI into ~15–20° vs ≥35° bands", () => {
+    // |ΔSMI|=8 → ~20°; |ΔSMI|=16 → ~36°
     expect(smiBlackSlopeAngleDeg(60, 52, scale)).toBeGreaterThan(19);
     expect(smiBlackSlopeAngleDeg(60, 52, scale)).toBeLessThan(22);
-    expect(smiBlackSlopeAngleDeg(60, 45, scale)).toBeGreaterThan(33);
-    expect(smiBlackSlopeAngleDeg(60, 45, scale)).toBeLessThan(36);
+    expect(smiBlackSlopeAngleDeg(60, 44, scale)).toBeGreaterThanOrEqual(35);
   });
 
-  it("rejects shallow SELL cuts (~15–20°) and keeps sharp cuts (≥30°)", () => {
-    // Shallow: black drops ~8, red nearly flat
-    const shallow = passesSellSmiAngle(70, 62, 60, 59.5, scale, 30);
+  it("rejects shallow SELL approaches (~15–20°) and keeps steep (≥35°) downward slopes", () => {
+    const shallow = passesSellSmiAngle(70, 62, scale, 35);
     expect(shallow.ok).toBe(false);
     expect(shallow.angleDeg).toBeLessThan(25);
 
-    // Sharp: black plunges ~16, red flat
-    const sharp = passesSellSmiAngle(90, 74, 85, 84.5, scale, 30);
-    expect(sharp.ok).toBe(true);
-    expect(sharp.angleDeg).toBeGreaterThanOrEqual(30);
+    const steep = passesSellSmiAngle(90, 74, scale, 35);
+    expect(steep.ok).toBe(true);
+    expect(steep.angleDeg).toBeGreaterThanOrEqual(35);
   });
 
-  it("requires BUY black slope ≥ 35°", () => {
+  it("rejects shallow BUY approaches and keeps steep (≥35°) upward slopes", () => {
     const weak = passesBuySmiAngle(-70, -62, scale, 35);
     expect(weak.ok).toBe(false);
 
     const strong = passesBuySmiAngle(-70, -54, scale, 35);
     expect(strong.ok).toBe(true);
     expect(strong.angleDeg).toBeGreaterThanOrEqual(35);
-  });
-
-  it("measures angle between black and red when red also moves", () => {
-    // Same black drop, rising red → larger cut angle than flat red
-    const vsFlat = smiVsSignalAngleDeg(80, 65, 70, 69.5, scale);
-    const vsRising = smiVsSignalAngleDeg(80, 65, 70, 74, scale);
-    expect(vsRising).toBeGreaterThan(vsFlat);
   });
 });
 

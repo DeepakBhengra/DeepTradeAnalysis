@@ -211,6 +211,7 @@ export function isSmiBullishCrossOrTouch(
 /**
  * Absolute slope angle (degrees) of the SMI (black) line over one bar,
  * in normalized SMI units where `scalePerBar` SMI-points ≈ 45° visual pitch.
+ * Used for the approach into the red-line cross (prev→cur on the cross bar).
  */
 export function smiBlackSlopeAngleDeg(
   prevSmi: number,
@@ -224,53 +225,24 @@ export function smiBlackSlopeAngleDeg(
 }
 
 /**
- * Absolute angle (degrees) between SMI (black) and signal (red) over the
- * cross bar — matches the pink-box “how sharp is the cut” read on Kite.
+ * SELL: black must be falling into the red-line cross with slope ≥ min
+ * (default 35°; reject shallow ~15–20°).
  */
-export function smiVsSignalAngleDeg(
-  prevSmi: number,
-  curSmi: number,
-  prevSignal: number,
-  curSignal: number,
-  scalePerBar: number,
-): number {
-  if (
-    !Number.isFinite(prevSmi) ||
-    !Number.isFinite(curSmi) ||
-    !Number.isFinite(prevSignal) ||
-    !Number.isFinite(curSignal) ||
-    !(scalePerBar > 0)
-  ) {
-    return 0;
-  }
-  const blackAngle =
-    Math.atan((curSmi - prevSmi) / scalePerBar) * (180 / Math.PI);
-  const redAngle =
-    Math.atan((curSignal - prevSignal) / scalePerBar) * (180 / Math.PI);
-  return Math.abs(blackAngle - redAngle);
-}
-
-/** SELL: black must be falling and cut the red line at ≥ min angle (reject shallow 15–20°). */
 export function passesSellSmiAngle(
   prevSmi: number,
   curSmi: number,
-  prevSignal: number,
-  curSignal: number,
   scalePerBar: number,
   minAngleDeg: number,
 ): { ok: boolean; angleDeg: number } {
-  const angleDeg = smiVsSignalAngleDeg(
-    prevSmi,
-    curSmi,
-    prevSignal,
-    curSignal,
-    scalePerBar,
-  );
+  const angleDeg = smiBlackSlopeAngleDeg(prevSmi, curSmi, scalePerBar);
   const falling = curSmi < prevSmi;
   return { ok: falling && angleDeg >= minAngleDeg, angleDeg };
 }
 
-/** BUY: black must be rising with absolute slope angle ≥ min (default 35°). */
+/**
+ * BUY: black must be rising into the red-line cross with slope ≥ min
+ * (default 35°; reject shallow ~15–20°).
+ */
 export function passesBuySmiAngle(
   prevSmi: number,
   curSmi: number,
@@ -430,7 +402,7 @@ function dedupeDeepproSignals(signals: DeepproSignal[]): DeepproSignal[] {
  *
  * 1. Stochastic Momentum (Kite Stch Mtm K=10,D=3,signalEMA=10) bearish
  *    cross/touch while in/from overbought (SMI >= 40)
- * 1b. SMI↔signal cut angle ≥ minSellSmiAngleDeg (default 30°; reject shallow ~15–20°)
+ * 1b. Black-line slope ≥ minSellSmiAngleDeg (default 35°) into the downward red-line cross
  * 2. Deep overbought peak in lookback (default peak SMI >= 65)
  * 3. Upper Bollinger Band tagged in the same lookback
  * 4. MACD histogram declining on the cross candle (momentum fade)
@@ -525,8 +497,6 @@ export function evaluateDeepproSignals(
     const sellAngle = passesSellSmiAngle(
       prev.smi,
       cur.smi,
-      prev.signal,
-      cur.signal,
       smiAngleScalePerBar,
       minSellSmiAngleDeg,
     );
@@ -663,7 +633,7 @@ export function evaluateDeepproSignals(
       macdHistogram: snapshot.macd.histogram,
       reasons: [
         `Stch Mtm(${config.deeppro.smi.lengthK},${config.deeppro.smi.lengthD},${config.deeppro.smi.lengthEma}) bearish cross from overbought`,
-        `SMI↔signal cut angle ${sellAngle.angleDeg.toFixed(1)}° >= ${minSellSmiAngleDeg}° (reject shallow ~15–20°)`,
+        `SMI black slope ${sellAngle.angleDeg.toFixed(1)}° >= ${minSellSmiAngleDeg}° into downward cross (reject shallow ~15–20°)`,
         `Peak SMI ${peak.toFixed(1)} >= ${minPeakSmi}`,
         "Upper Bollinger Band tagged in lookback",
         "MACD histogram declining",
@@ -694,7 +664,7 @@ export function evaluateDeepproSignals(
  *
  * 1. Stochastic Momentum (Kite Stch Mtm K=10,D=3,signalEMA=10) bullish
  *    cross/touch while in/from oversold (SMI <= -40)
- * 1b. SMI black slope angle ≥ minBuySmiAngleDeg (default 35°)
+ * 1b. Black-line slope ≥ minBuySmiAngleDeg (default 35°) into the upward red-line cross
  * 2. Deep oversold trough in lookback (default trough SMI <= -65)
  * 3. Lower Bollinger Band tagged in the same lookback
  * 4. MACD histogram rising on the cross candle (momentum recovery)
@@ -924,7 +894,7 @@ export function evaluateDeepproBuySignals(
       macdHistogram: snapshot.macd.histogram,
       reasons: [
         `Stch Mtm(${config.deeppro.smi.lengthK},${config.deeppro.smi.lengthD},${config.deeppro.smi.lengthEma}) bullish cross from oversold`,
-        `SMI black slope angle ${buyAngle.angleDeg.toFixed(1)}° >= ${minBuySmiAngleDeg}°`,
+        `SMI black slope ${buyAngle.angleDeg.toFixed(1)}° >= ${minBuySmiAngleDeg}° into upward cross (reject shallow ~15–20°)`,
         `Trough SMI ${trough.toFixed(1)} <= ${maxTroughSmi}`,
         "Lower Bollinger Band tagged in lookback",
         "MACD histogram rising",
