@@ -148,6 +148,8 @@ describe("evaluateDeepproSignals", () => {
     expect(result.rule).toBe("deeppro");
     expect(result.signals.length).toBeGreaterThanOrEqual(1);
     expect(result.signals[0].side).toBe("SELL");
+    expect(result.signals[0].eventKind).toBe("smi_cross");
+    expect(result.signals[0].timeIst).toBe(result.signals[0].eventTimeIst);
     expect(result.signals[0].peakSmi).toBeGreaterThanOrEqual(65);
     expect(result.signals[0].timeIst).toMatch(/^\d{2}:\d{2}$/);
     expect(Number.isFinite(result.signals[0].eventRsi)).toBe(true);
@@ -219,6 +221,8 @@ describe("evaluateDeepproSignals", () => {
     expect(result.signals.length).toBeGreaterThanOrEqual(0);
     if (result.signals.length > 0) {
       expect(result.signals[0].side).toBe("BUY");
+      expect(result.signals[0].eventKind).toBe("smi_cross");
+      expect(result.signals[0].timeIst).toBe(result.signals[0].eventTimeIst);
       expect(result.signals[0].peakSmi).toBeLessThanOrEqual(-40);
       expect(Number.isFinite(result.signals[0].eventRsi)).toBe(true);
       expect(Number.isFinite(result.signals[0].bbLowerProximity.gapPct)).toBe(true);
@@ -303,7 +307,7 @@ describe("evaluateDeepproSignals", () => {
         stubSignal({
           side: "SELL",
           eventTimeIst: "11:30",
-          eventKind: "stall_at_highs",
+          eventKind: "smi_cross",
           eventRsi: 68,
           bbUpperProximity: {
             gapPct: 0.7,
@@ -322,13 +326,31 @@ describe("evaluateDeepproSignals", () => {
         stubSignal({
           side: "SELL",
           eventTimeIst: "13:00",
-          eventKind: "stall_at_highs",
+          eventKind: "smi_cross",
           eventRsi: 70,
         }),
       ),
     ).toBe(false);
 
-    // Low-RSI SMI-exit exception (DIVISLAB-style)
+    // Non-cross kinds rejected (stall / SMI-exit remaps disabled)
+    expect(
+      passesDeepproSellQuality(
+        stubSignal({
+          side: "SELL",
+          eventTimeIst: "11:30",
+          eventKind: "stall_at_highs",
+          eventRsi: 70,
+          bbUpperProximity: {
+            gapPct: 0.7,
+            signedGapPct: -0.7,
+            matchType: null,
+            price: 100,
+            bbLevel: 100.7,
+          },
+        }),
+      ),
+    ).toBe(false);
+
     expect(
       passesDeepproSellQuality(
         stubSignal({
@@ -352,11 +374,30 @@ describe("evaluateDeepproSignals", () => {
           },
         }),
       ),
-    ).toBe(true);
+    ).toBe(false);
   });
 
   it("applies BUY quality gate for ≥0.75% favoring setups", () => {
-    // Path B — early unmatched proximity (INDUSINDBK 29 Jun)
+    // Path B — early unmatched proximity on SMI cross
+    expect(
+      passesDeepproBuyQuality(
+        stubSignal({
+          side: "BUY",
+          eventTimeIst: "10:30",
+          eventKind: "smi_cross",
+          eventRsi: 33,
+          bbLowerProximity: {
+            gapPct: 0.37,
+            signedGapPct: 0.37,
+            matchType: null,
+            price: 100,
+            bbLevel: 99.6,
+          },
+        }),
+      ),
+    ).toBe(true);
+
+    // Non-cross kinds rejected even with path-B geometry
     expect(
       passesDeepproBuyQuality(
         stubSignal({
@@ -373,34 +414,15 @@ describe("evaluateDeepproSignals", () => {
           },
         }),
       ),
-    ).toBe(true);
-
-    // Plain SMI cross is not enough
-    expect(
-      passesDeepproBuyQuality(
-        stubSignal({
-          side: "BUY",
-          eventTimeIst: "10:30",
-          eventKind: "smi_cross",
-          eventRsi: 25,
-          bbLowerProximity: {
-            gapPct: 0.2,
-            signedGapPct: 0.2,
-            matchType: "close",
-            price: 100,
-            bbLevel: 99.8,
-          },
-        }),
-      ),
     ).toBe(false);
 
-    // Path A — matched BB lower with recovering RSI (GICRE 29 Jun 12:30)
+    // Path A — matched BB lower with recovering RSI on SMI cross
     expect(
       passesDeepproBuyQuality(
         stubSignal({
           side: "BUY",
           eventTimeIst: "12:30",
-          eventKind: "stall_at_lows",
+          eventKind: "smi_cross",
           eventRsi: 56,
           bbLowerProximity: {
             gapPct: 0.17,
@@ -413,13 +435,13 @@ describe("evaluateDeepproSignals", () => {
       ),
     ).toBe(true);
 
-    // Late unmatched stall rejected (1 Jun bank/metal noise)
+    // Late unmatched cross rejected (1 Jun bank/metal noise)
     expect(
       passesDeepproBuyQuality(
         stubSignal({
           side: "BUY",
           eventTimeIst: "11:30",
-          eventKind: "stall_at_lows",
+          eventKind: "smi_cross",
           eventRsi: 30,
           bbLowerProximity: {
             gapPct: 0.36,
@@ -432,13 +454,13 @@ describe("evaluateDeepproSignals", () => {
       ),
     ).toBe(false);
 
-    // Mid-morning BB-touch waterfall (PNB 1 Jun) — matched but RSI still weak
+    // Mid-morning BB-touch waterfall — matched but RSI still weak
     expect(
       passesDeepproBuyQuality(
         stubSignal({
           side: "BUY",
           eventTimeIst: "11:30",
-          eventKind: "stall_at_lows",
+          eventKind: "smi_cross",
           eventRsi: 30,
           bbLowerProximity: {
             gapPct: 0.2,
@@ -451,13 +473,13 @@ describe("evaluateDeepproSignals", () => {
       ),
     ).toBe(false);
 
-    // Dual-band squeeze rejected (SBIN 1 Jun)
+    // Dual-band squeeze rejected
     expect(
       passesDeepproBuyQuality(
         stubSignal({
           side: "BUY",
           eventTimeIst: "11:30",
-          eventKind: "stall_at_lows",
+          eventKind: "smi_cross",
           eventRsi: 43,
           bbUpperProximity: {
             gapPct: 0.21,
@@ -477,13 +499,13 @@ describe("evaluateDeepproSignals", () => {
       ),
     ).toBe(false);
 
-    // Path C — extreme late stall exception (EICHERMOT 29 Jun)
+    // Path C — extreme late cross exception
     expect(
       passesDeepproBuyQuality(
         stubSignal({
           side: "BUY",
           eventTimeIst: "12:30",
-          eventKind: "stall_at_lows",
+          eventKind: "smi_cross",
           eventRsi: 10,
           macdHistogram: -15,
           bbLowerProximity: {

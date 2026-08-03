@@ -311,15 +311,15 @@ async function main(): Promise<void> {
         `Peak SMI >= ${config.deeppro.minPeakSmi} in lookback`,
         "Upper Bollinger Band tagged in lookback",
         "MACD histogram declining on cross candle",
-        "Quality SELL gate: event 10:45–12:30, RSI≥67 (or low-RSI SMI-exit), BB upper gap≤1.75%",
-        "Quality BUY gate: stall_at_lows|smi_exit_oversold, event≤13:15, BB lower gap≤1.0%, RSI≤50 (≤60 if BB matched)",
+        "Quality SELL gate: SMI cross only, event 10:45–12:30, RSI≥67, BB upper gap≤1.75%",
+        "Quality BUY gate: SMI cross only, event≤13:15, BB lower paths A/B/C, RSI≤50 (≤60 if BB matched)",
       ],
     },
     chartPinkCircle: {
       date: "2026-07-31",
       annotatedTimeIst: "14:00",
       description:
-        "Pink-circle Stch Mtm exhaustion: SMI bearish cross from deep overbought at 13:30, stall/doji at highs at 14:00, then dump with SMI exiting overbought and MACD bearish cross at 14:15.",
+        "Pink-circle Stch Mtm exhaustion: SMI↔signal bearish cross from deep overbought (signalOnSmiCrossOnly publishes on the cross candle only).",
     },
     matches,
     matchCount: matches.length,
