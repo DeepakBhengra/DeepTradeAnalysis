@@ -653,6 +653,31 @@ export const config = {
   },
 
   /**
+   * RuleSUNPHARMA1 — SUNPHARMA-only SMI cross + fixed % square-off.
+   * Totally separate from RuleSUNPHARMA / Deepak / Deeppro / RulePNB / favourable rules.
+   * Not wired to any Day Scan / Post-Mortem widget.
+   *
+   * SELL: SMI (black) crosses below signal (red) → square-off when drop % ≥ squareOffPct
+   * BUY:  SMI (black) crosses above signal (red) → square-off when rise % ≥ squareOffPct
+   */
+  ruleSunpharma1: {
+    tradingSymbol: "SUNPHARMA",
+    sessionStart: "09:15",
+    sessionEnd: "15:30",
+    /**
+     * Chart-aligned Stch Mtm (matches SMI down-cross study):
+     * %K=10, double-smooth=3, signal EMA=3.
+     */
+    smi: {
+      lengthK: 10,
+      lengthD: 3,
+      lengthEma: 3,
+    },
+    /** Same-day square-off when favourable mid move reaches this % from entry mid. */
+    squareOffPct: 0.45,
+  },
+
+  /**
    * Per-symbol favourable profit-range rules (separate from Deepak/Deeppro/RulePNB/RuleSUNPHARMA).
    * Each entry is locked to one trading symbol. Thresholds from 60d rule-free IQR studies.
    */

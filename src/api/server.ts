@@ -68,6 +68,8 @@ import { buildRulePnbBacktestPayload } from "./buildRulePnbBacktestPayload.js";
 import { buildRulePnbDayScanPayload } from "./buildRulePnbDayScanPayload.js";
 import { buildRuleSunpharmaBacktestPayload } from "./buildRuleSunpharmaBacktestPayload.js";
 import { buildRuleSunpharmaDayScanPayload } from "./buildRuleSunpharmaDayScanPayload.js";
+import { buildRuleSunpharma1BacktestPayload } from "./buildRuleSunpharma1BacktestPayload.js";
+import { buildRuleSunpharma1DayScanPayload } from "./buildRuleSunpharma1DayScanPayload.js";
 import { buildFavourableSymbolBacktestPayload } from "./buildFavourableSymbolBacktestPayload.js";
 import { buildFavourableSymbolDayScanPayload } from "./buildFavourableSymbolDayScanPayload.js";
 import {
@@ -648,6 +650,60 @@ app.get("/api/backtest/rule-sunpharma", async (req, res) => {
     // RuleSUNPHARMA is SUNPHARMA-only — never accept/mix other symbols.
     const payload = await buildRuleSunpharmaBacktestPayload({
       symbol: symbolParam ?? config.ruleSunpharma.tradingSymbol,
+      fromDate: fromParam,
+      toDate: toParam,
+    });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("date") ||
+      message.includes("Invalid") ||
+      message.includes("symbol") ||
+      message.includes("SUNPHARMA-only")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
+/** RuleSUNPHARMA1 — API only; not wired to Day Scan / Post-Mortem widgets. */
+app.get("/api/backtest/rule-sunpharma1/day-scan", disableSocketTimeout, async (req, res) => {
+  try {
+    const dateParam = typeof req.query.date === "string" ? req.query.date : undefined;
+
+    if (!dateParam) {
+      res.status(400).json({ error: "Missing date. Use YYYY-MM-DD." });
+      return;
+    }
+
+    const payload = await buildRuleSunpharma1DayScanPayload({ date: dateParam });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("date") ||
+      message.includes("Invalid")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
+app.get("/api/backtest/rule-sunpharma1", async (req, res) => {
+  try {
+    const symbolParam =
+      typeof req.query.symbol === "string" ? req.query.symbol : undefined;
+    const fromParam = typeof req.query.from === "string" ? req.query.from : undefined;
+    const toParam = typeof req.query.to === "string" ? req.query.to : undefined;
+
+    if (!fromParam || !toParam) {
+      res.status(400).json({ error: "Missing from or to date. Use YYYY-MM-DD." });
+      return;
+    }
+
+    const payload = await buildRuleSunpharma1BacktestPayload({
+      symbol: symbolParam ?? config.ruleSunpharma1.tradingSymbol,
       fromDate: fromParam,
       toDate: toParam,
     });
