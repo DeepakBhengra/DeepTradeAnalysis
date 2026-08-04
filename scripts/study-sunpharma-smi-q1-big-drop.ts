@@ -98,11 +98,6 @@ function addDays(dateKey: string, days: number): string {
   return getIstTimeParts(d).dateKey;
 }
 
-function hmToMinutes(hm: string): number {
-  const [h, m] = hm.split(":").map(Number);
-  return h * 60 + m;
-}
-
 function minutesToHm(total: number): string {
   const h = Math.floor(total / 60);
   const m = total % 60;
