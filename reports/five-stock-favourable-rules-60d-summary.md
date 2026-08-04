@@ -39,10 +39,11 @@ Detail reports: `reports/{symbol}-range-indicator-analysis-60d.md`.
 | **RuleICICIGI** | ICICIGI | RSI 30–50, SMI ≤ −40, BB lower ≤ 0.7% | RSI 45–75, SMI ≥ 20, BB upper ≤ 1.0% | negative SMI, BB ≤ 1.0% |
 | **RuleTECHM** | TECHM | RSI 20–45, SMI ≤ −40, BB lower ≤ 0.7% | RSI 50–80, SMI ≥ 40, BB upper ≤ 1.0% | mid SMI ≤ 40, BB ≤ 2.2% |
 | **RuleTVSMOTOR** | TVSMOTOR | RSI 30–55, SMI ≤ −30, BB lower ≤ 0.6% | RSI 55–75, SMI ≥ 40, BB upper ≤ 0.7% | mid SMI ≤ 40, BB ≤ 1.4% |
-| **RulePOLICYBZR** | POLICYBZR | RSI 25–55, SMI ≤ −25, BB lower ≤ 1.0% | RSI 55–75, SMI ≥ 40, BB upper ≤ 0.5% | negative SMI, BB ≤ 1.3% |
+| **RulePOLICYBZR** | POLICYBZR | RSI 25–55, SMI ≤ −25, BB lower ≤ 1.0% | RSI 55–85, SMI ≥ 60, BB upper ≤ 0.7% *(Q4 2025 tuned)* | mid SMI ≤ 40, BB ≤ 1.6% *(Q4 2025 tuned)* |
 
 Each rule is **symbol-locked** (Day Scan / Post-Mortem / backtest), separate from Deepak / Deeppro / RulePNB / RuleSUNPHARMA.
 
 - Config: `config.favourableSymbolRules` in `src/config.ts`
 - Engine: `src/rules/favourableSymbolRule.ts`
 - API: `GET /api/backtest/symbol-rule/{ltm|icicigi|techm|tvsmotor|policybzr}/day-scan` · backtest sibling
+- Q4 2025 validation / improvisation: `reports/five-stock-favourable-rules-q4-2025-summary.md`

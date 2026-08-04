@@ -725,16 +725,18 @@ export const config = {
         maxSmi: -25,
         maxBbLowerGapPct: 1.0,
       },
+      /** Q4 2025: mid-SMI extended BUYs improved positive-% vs negative-only. */
       buyExtended: {
-        requireNegativeSmi: true,
-        maxSmi: 0,
-        maxBbLowerGapPct: 1.3,
+        requireNegativeSmi: false,
+        maxSmi: 40,
+        maxBbLowerGapPct: 1.6,
       },
+      /** Q4 2025: raise SMI floor (40→60); weak SMI≥40 sells were only ~60% positive. */
       sellQuality: {
         minRsi: 55,
-        maxRsi: 75,
-        minSmi: 40,
-        maxBbUpperGapPct: 0.5,
+        maxRsi: 85,
+        minSmi: 60,
+        maxBbUpperGapPct: 0.7,
       },
     },
   },

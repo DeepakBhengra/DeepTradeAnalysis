@@ -92,8 +92,18 @@ describe("RuleTECHM / RulePOLICYBZR distinctive gates", () => {
     ).toBe(false);
   });
 
-  it("RulePOLICYBZR SELL quality wants tight BB upper", () => {
+  it("RulePOLICYBZR SELL quality wants strong SMI (≥60) near BB upper", () => {
     const rule = getFavourableSymbolRuleConfig("rulePolicybzr");
+    expect(
+      matchesSellQuality(rule, 68, 65, {
+        gapPct: 0.3,
+        signedGapPct: -0.3,
+        matchType: null,
+        price: 1700,
+        bbLevel: 1705,
+      }),
+    ).toBe(true);
+    // SMI 55 is below the Q4-tuned floor of 60
     expect(
       matchesSellQuality(rule, 68, 55, {
         gapPct: 0.3,
@@ -102,11 +112,11 @@ describe("RuleTECHM / RulePOLICYBZR distinctive gates", () => {
         price: 1700,
         bbLevel: 1705,
       }),
-    ).toBe(true);
+    ).toBe(false);
     expect(
-      matchesSellQuality(rule, 68, 55, {
-        gapPct: 0.8,
-        signedGapPct: -0.8,
+      matchesSellQuality(rule, 68, 65, {
+        gapPct: 0.9,
+        signedGapPct: -0.9,
         matchType: null,
         price: 1700,
         bbLevel: 1714,

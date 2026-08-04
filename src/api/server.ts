@@ -669,10 +669,7 @@ app.get("/api/backtest/rule-sunpharma", async (req, res) => {
 app.get("/api/backtest/symbol-rule/:ruleId/day-scan", disableSocketTimeout, async (req, res) => {
   try {
     const ruleIdRaw = typeof req.params.ruleId === "string" ? req.params.ruleId : "";
-    const ruleId = ruleIdRaw.startsWith("rule")
-      ? ruleIdRaw
-      : `rule${ruleIdRaw.charAt(0).toUpperCase()}${ruleIdRaw.slice(1)}`;
-    // Accept ruleLtm or ltm
+    // Accept slug (ltm) or camel id (ruleLtm)
     const normalized =
       ruleIdRaw === "ltm" ? "ruleLtm"
       : ruleIdRaw === "icicigi" ? "ruleIcicigi"
