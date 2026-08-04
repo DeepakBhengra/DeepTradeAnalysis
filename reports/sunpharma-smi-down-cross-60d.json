@@ -13,7 +13,9 @@
   "daysWithCross": 57,
   "wentLowerCount": 103,
   "wentLowerPct": 87.29,
-  "sort": "dropFromCrossPct descending (nulls last)",
+  "noLowerCount": 15,
+  "adverseRoseCount": 9,
+  "sort": "dropFromCrossPct descending; adverse no-lower by rise descending",
   "crosses": [
     {
       "dateKey": "2026-07-31",
@@ -33,7 +35,13 @@
       "lowerPrice": 2042.1,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1989,
-      "dropFromCrossPct": 2.69
+      "dropFromCrossPct": 2.69,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 2.69
     },
     {
       "dateKey": "2026-05-29",
@@ -53,7 +61,13 @@
       "lowerPrice": 1839.85,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1797.85,
-      "dropFromCrossPct": 2.4
+      "dropFromCrossPct": 2.4,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1842.05,
+      "highestTimeIst": "12:15",
+      "highestPrice": 1843,
+      "riseFromCrossPct": 0.05,
+      "signedDropPct": 2.4
     },
     {
       "dateKey": "2026-05-29",
@@ -73,7 +87,13 @@
       "lowerPrice": 1835.85,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1797.85,
-      "dropFromCrossPct": 2.3
+      "dropFromCrossPct": 2.3,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 2.3
     },
     {
       "dateKey": "2026-07-08",
@@ -93,7 +113,13 @@
       "lowerPrice": 1906.65,
       "lowestTimeIst": "14:15",
       "lowestPrice": 1879.25,
-      "dropFromCrossPct": 1.65
+      "dropFromCrossPct": 1.65,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 1.65
     },
     {
       "dateKey": "2026-07-08",
@@ -113,7 +139,13 @@
       "lowerPrice": 1906.65,
       "lowestTimeIst": "14:15",
       "lowestPrice": 1879.25,
-      "dropFromCrossPct": 1.47
+      "dropFromCrossPct": 1.47,
+      "higherTimeIst": "10:00",
+      "higherPrice": 1909.2,
+      "highestTimeIst": "10:30",
+      "highestPrice": 1913.35,
+      "riseFromCrossPct": 0.31,
+      "signedDropPct": 1.47
     },
     {
       "dateKey": "2026-06-23",
@@ -133,7 +165,13 @@
       "lowerPrice": 1891.2,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1866.25,
-      "dropFromCrossPct": 1.45
+      "dropFromCrossPct": 1.45,
+      "higherTimeIst": "11:15",
+      "higherPrice": 1894.1,
+      "highestTimeIst": "11:15",
+      "highestPrice": 1894.1,
+      "riseFromCrossPct": 0.02,
+      "signedDropPct": 1.45
     },
     {
       "dateKey": "2026-06-23",
@@ -153,7 +191,13 @@
       "lowerPrice": 1891.2,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1866.25,
-      "dropFromCrossPct": 1.36
+      "dropFromCrossPct": 1.36,
+      "higherTimeIst": "09:45",
+      "higherPrice": 1893.9,
+      "highestTimeIst": "11:15",
+      "highestPrice": 1894.1,
+      "riseFromCrossPct": 0.11,
+      "signedDropPct": 1.36
     },
     {
       "dateKey": "2026-06-09",
@@ -173,7 +217,13 @@
       "lowerPrice": 1787.45,
       "lowestTimeIst": "13:00",
       "lowestPrice": 1768.4,
-      "dropFromCrossPct": 1.25
+      "dropFromCrossPct": 1.25,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 1.25
     },
     {
       "dateKey": "2026-05-22",
@@ -193,7 +243,13 @@
       "lowerPrice": 1862,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1844.35,
-      "dropFromCrossPct": 1.14
+      "dropFromCrossPct": 1.14,
+      "higherTimeIst": "13:30",
+      "higherPrice": 1871.9,
+      "highestTimeIst": "13:30",
+      "highestPrice": 1871.9,
+      "riseFromCrossPct": 0.34,
+      "signedDropPct": 1.14
     },
     {
       "dateKey": "2026-06-29",
@@ -213,7 +269,13 @@
       "lowerPrice": 1888.95,
       "lowestTimeIst": "14:30",
       "lowestPrice": 1871.4,
-      "dropFromCrossPct": 0.96
+      "dropFromCrossPct": 0.96,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.96
     },
     {
       "dateKey": "2026-06-30",
@@ -233,7 +295,13 @@
       "lowerPrice": 1879.45,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1864.3,
-      "dropFromCrossPct": 0.95
+      "dropFromCrossPct": 0.95,
+      "higherTimeIst": "11:15",
+      "higherPrice": 1882.65,
+      "highestTimeIst": "11:15",
+      "highestPrice": 1882.65,
+      "riseFromCrossPct": 0.03,
+      "signedDropPct": 0.95
     },
     {
       "dateKey": "2026-06-29",
@@ -253,7 +321,13 @@
       "lowerPrice": 1886.5,
       "lowestTimeIst": "14:30",
       "lowestPrice": 1871.4,
-      "dropFromCrossPct": 0.93
+      "dropFromCrossPct": 0.93,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.93
     },
     {
       "dateKey": "2026-08-03",
@@ -273,7 +347,13 @@
       "lowerPrice": 1957,
       "lowestTimeIst": "15:00",
       "lowestPrice": 1940.8,
-      "dropFromCrossPct": 0.88
+      "dropFromCrossPct": 0.88,
+      "higherTimeIst": "13:00",
+      "higherPrice": 1960.45,
+      "highestTimeIst": "13:00",
+      "highestPrice": 1960.45,
+      "riseFromCrossPct": 0.13,
+      "signedDropPct": 0.88
     },
     {
       "dateKey": "2026-05-27",
@@ -293,7 +373,13 @@
       "lowerPrice": 1843.35,
       "lowestTimeIst": "11:00",
       "lowestPrice": 1833.6,
-      "dropFromCrossPct": 0.87
+      "dropFromCrossPct": 0.87,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.87
     },
     {
       "dateKey": "2026-05-22",
@@ -313,7 +399,13 @@
       "lowerPrice": 1852,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1844.35,
-      "dropFromCrossPct": 0.85
+      "dropFromCrossPct": 0.85,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.85
     },
     {
       "dateKey": "2026-07-24",
@@ -333,7 +425,13 @@
       "lowerPrice": 1950.35,
       "lowestTimeIst": "12:45",
       "lowestPrice": 1936.6,
-      "dropFromCrossPct": 0.84
+      "dropFromCrossPct": 0.84,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.84
     },
     {
       "dateKey": "2026-06-05",
@@ -353,7 +451,13 @@
       "lowerPrice": 1794.85,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1783.65,
-      "dropFromCrossPct": 0.81
+      "dropFromCrossPct": 0.81,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.81
     },
     {
       "dateKey": "2026-06-25",
@@ -373,7 +477,13 @@
       "lowerPrice": 1878.15,
       "lowestTimeIst": "13:45",
       "lowestPrice": 1863.2,
-      "dropFromCrossPct": 0.8
+      "dropFromCrossPct": 0.8,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.8
     },
     {
       "dateKey": "2026-07-17",
@@ -393,7 +503,13 @@
       "lowerPrice": 1942.55,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1929,
-      "dropFromCrossPct": 0.75
+      "dropFromCrossPct": 0.75,
+      "higherTimeIst": "09:45",
+      "higherPrice": 1944.15,
+      "highestTimeIst": "10:15",
+      "highestPrice": 1949.05,
+      "riseFromCrossPct": 0.29,
+      "signedDropPct": 0.75
     },
     {
       "dateKey": "2026-06-05",
@@ -413,7 +529,13 @@
       "lowerPrice": 1794.85,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1783.65,
-      "dropFromCrossPct": 0.74
+      "dropFromCrossPct": 0.74,
+      "higherTimeIst": "12:45",
+      "higherPrice": 1797.95,
+      "highestTimeIst": "13:00",
+      "highestPrice": 1798.3,
+      "riseFromCrossPct": 0.07,
+      "signedDropPct": 0.74
     },
     {
       "dateKey": "2026-07-03",
@@ -433,7 +555,13 @@
       "lowerPrice": 1908.3,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1902.2,
-      "dropFromCrossPct": 0.71
+      "dropFromCrossPct": 0.71,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.71
     },
     {
       "dateKey": "2026-05-26",
@@ -453,7 +581,13 @@
       "lowerPrice": 1829.4,
       "lowestTimeIst": "10:30",
       "lowestPrice": 1819.25,
-      "dropFromCrossPct": 0.69
+      "dropFromCrossPct": 0.69,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1832.1,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1841.55,
+      "riseFromCrossPct": 0.53,
+      "signedDropPct": 0.69
     },
     {
       "dateKey": "2026-07-17",
@@ -473,7 +607,13 @@
       "lowerPrice": 1942.05,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1929,
-      "dropFromCrossPct": 0.68
+      "dropFromCrossPct": 0.68,
+      "higherTimeIst": "12:30",
+      "higherPrice": 1942.5,
+      "highestTimeIst": "13:00",
+      "highestPrice": 1942.6,
+      "riseFromCrossPct": 0.02,
+      "signedDropPct": 0.68
     },
     {
       "dateKey": "2026-07-07",
@@ -493,7 +633,13 @@
       "lowerPrice": 1909.05,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1901.75,
-      "dropFromCrossPct": 0.68
+      "dropFromCrossPct": 0.68,
+      "higherTimeIst": "11:30",
+      "higherPrice": 1915.8,
+      "highestTimeIst": "11:30",
+      "highestPrice": 1915.8,
+      "riseFromCrossPct": 0.05,
+      "signedDropPct": 0.68
     },
     {
       "dateKey": "2026-06-18",
@@ -513,7 +659,13 @@
       "lowerPrice": 1821.8,
       "lowestTimeIst": "11:45",
       "lowestPrice": 1814.55,
-      "dropFromCrossPct": 0.67
+      "dropFromCrossPct": 0.67,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.67
     },
     {
       "dateKey": "2026-07-01",
@@ -533,7 +685,13 @@
       "lowerPrice": 1873.15,
       "lowestTimeIst": "11:45",
       "lowestPrice": 1862.2,
-      "dropFromCrossPct": 0.65
+      "dropFromCrossPct": 0.65,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.65
     },
     {
       "dateKey": "2026-06-10",
@@ -553,7 +711,13 @@
       "lowerPrice": 1793.05,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1784.15,
-      "dropFromCrossPct": 0.61
+      "dropFromCrossPct": 0.61,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.61
     },
     {
       "dateKey": "2026-07-13",
@@ -573,7 +737,13 @@
       "lowerPrice": 1920.3,
       "lowestTimeIst": "10:45",
       "lowestPrice": 1913.05,
-      "dropFromCrossPct": 0.6
+      "dropFromCrossPct": 0.6,
+      "higherTimeIst": "11:45",
+      "higherPrice": 1925.25,
+      "highestTimeIst": "13:45",
+      "highestPrice": 1930.2,
+      "riseFromCrossPct": 0.29,
+      "signedDropPct": 0.6
     },
     {
       "dateKey": "2026-07-10",
@@ -593,7 +763,13 @@
       "lowerPrice": 1939.75,
       "lowestTimeIst": "14:00",
       "lowestPrice": 1929.05,
-      "dropFromCrossPct": 0.6
+      "dropFromCrossPct": 0.6,
+      "higherTimeIst": "11:15",
+      "higherPrice": 1941.75,
+      "highestTimeIst": "11:15",
+      "highestPrice": 1941.75,
+      "riseFromCrossPct": 0.05,
+      "signedDropPct": 0.6
     },
     {
       "dateKey": "2026-07-09",
@@ -613,7 +789,13 @@
       "lowerPrice": 1927.25,
       "lowestTimeIst": "11:00",
       "lowestPrice": 1927.25,
-      "dropFromCrossPct": 0.59
+      "dropFromCrossPct": 0.59,
+      "higherTimeIst": "14:30",
+      "higherPrice": 1940.95,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1941.05,
+      "riseFromCrossPct": 0.12,
+      "signedDropPct": 0.59
     },
     {
       "dateKey": "2026-06-16",
@@ -633,7 +815,13 @@
       "lowerPrice": 1801.55,
       "lowestTimeIst": "11:30",
       "lowestPrice": 1794.45,
-      "dropFromCrossPct": 0.55
+      "dropFromCrossPct": 0.55,
+      "higherTimeIst": "14:15",
+      "higherPrice": 1804.35,
+      "highestTimeIst": "14:30",
+      "highestPrice": 1807.95,
+      "riseFromCrossPct": 0.2,
+      "signedDropPct": 0.55
     },
     {
       "dateKey": "2026-07-07",
@@ -653,7 +841,13 @@
       "lowerPrice": 1907.7,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1901.75,
-      "dropFromCrossPct": 0.5
+      "dropFromCrossPct": 0.5,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.5
     },
     {
       "dateKey": "2026-07-30",
@@ -673,7 +867,13 @@
       "lowerPrice": 2008.3,
       "lowestTimeIst": "14:15",
       "lowestPrice": 2001.65,
-      "dropFromCrossPct": 0.49
+      "dropFromCrossPct": 0.49,
+      "higherTimeIst": "13:00",
+      "higherPrice": 2011.7,
+      "highestTimeIst": "13:45",
+      "highestPrice": 2015.85,
+      "riseFromCrossPct": 0.21,
+      "signedDropPct": 0.49
     },
     {
       "dateKey": "2026-06-17",
@@ -693,7 +893,13 @@
       "lowerPrice": 1810.8,
       "lowestTimeIst": "11:15",
       "lowestPrice": 1806.1,
-      "dropFromCrossPct": 0.49
+      "dropFromCrossPct": 0.49,
+      "higherTimeIst": "10:45",
+      "higherPrice": 1815.6,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1821.25,
+      "riseFromCrossPct": 0.34,
+      "signedDropPct": 0.49
     },
     {
       "dateKey": "2026-05-20",
@@ -713,7 +919,13 @@
       "lowerPrice": 1881.1,
       "lowestTimeIst": "13:15",
       "lowestPrice": 1874.5,
-      "dropFromCrossPct": 0.49
+      "dropFromCrossPct": 0.49,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.49
     },
     {
       "dateKey": "2026-07-29",
@@ -733,7 +945,13 @@
       "lowerPrice": 1968.75,
       "lowestTimeIst": "10:00",
       "lowestPrice": 1968.75,
-      "dropFromCrossPct": 0.48
+      "dropFromCrossPct": 0.48,
+      "higherTimeIst": "13:00",
+      "higherPrice": 1981.8,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1987.7,
+      "riseFromCrossPct": 0.48,
+      "signedDropPct": 0.48
     },
     {
       "dateKey": "2026-07-28",
@@ -753,7 +971,13 @@
       "lowerPrice": 1980.5,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1978.35,
-      "dropFromCrossPct": 0.48
+      "dropFromCrossPct": 0.48,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.48
     },
     {
       "dateKey": "2026-05-19",
@@ -773,7 +997,13 @@
       "lowerPrice": 1890.35,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1882.5,
-      "dropFromCrossPct": 0.45
+      "dropFromCrossPct": 0.45,
+      "higherTimeIst": "13:30",
+      "higherPrice": 1891.65,
+      "highestTimeIst": "13:30",
+      "highestPrice": 1891.65,
+      "riseFromCrossPct": 0.03,
+      "signedDropPct": 0.45
     },
     {
       "dateKey": "2026-05-13",
@@ -793,7 +1023,13 @@
       "lowerPrice": 1829.4,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1822.5,
-      "dropFromCrossPct": 0.45
+      "dropFromCrossPct": 0.45,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.45
     },
     {
       "dateKey": "2026-06-08",
@@ -813,7 +1049,13 @@
       "lowerPrice": 1796.05,
       "lowestTimeIst": "15:00",
       "lowestPrice": 1788.75,
-      "dropFromCrossPct": 0.44
+      "dropFromCrossPct": 0.44,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.44
     },
     {
       "dateKey": "2026-05-25",
@@ -833,7 +1075,13 @@
       "lowerPrice": 1836.55,
       "lowestTimeIst": "13:15",
       "lowestPrice": 1830.8,
-      "dropFromCrossPct": 0.44
+      "dropFromCrossPct": 0.44,
+      "higherTimeIst": "14:15",
+      "higherPrice": 1839.8,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1842.65,
+      "riseFromCrossPct": 0.21,
+      "signedDropPct": 0.44
     },
     {
       "dateKey": "2026-07-15",
@@ -853,7 +1101,13 @@
       "lowerPrice": 1956.95,
       "lowestTimeIst": "13:15",
       "lowestPrice": 1950.95,
-      "dropFromCrossPct": 0.43
+      "dropFromCrossPct": 0.43,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.43
     },
     {
       "dateKey": "2026-07-02",
@@ -873,7 +1127,13 @@
       "lowerPrice": 1876.7,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1870.5,
-      "dropFromCrossPct": 0.43
+      "dropFromCrossPct": 0.43,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.43
     },
     {
       "dateKey": "2026-06-11",
@@ -893,7 +1153,13 @@
       "lowerPrice": 1797.5,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1791.2,
-      "dropFromCrossPct": 0.43
+      "dropFromCrossPct": 0.43,
+      "higherTimeIst": "12:30",
+      "higherPrice": 1801.15,
+      "highestTimeIst": "13:00",
+      "highestPrice": 1802.65,
+      "riseFromCrossPct": 0.2,
+      "signedDropPct": 0.43
     },
     {
       "dateKey": "2026-07-17",
@@ -913,7 +1179,13 @@
       "lowerPrice": 1929.1,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1929,
-      "dropFromCrossPct": 0.41
+      "dropFromCrossPct": 0.41,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.41
     },
     {
       "dateKey": "2026-06-19",
@@ -933,7 +1205,13 @@
       "lowerPrice": 1830.1,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1824,
-      "dropFromCrossPct": 0.4
+      "dropFromCrossPct": 0.4,
+      "higherTimeIst": "11:30",
+      "higherPrice": 1832.2,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1840.5,
+      "riseFromCrossPct": 0.5,
+      "signedDropPct": 0.4
     },
     {
       "dateKey": "2026-05-19",
@@ -953,7 +1231,13 @@
       "lowerPrice": 1887.2,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1882.5,
-      "dropFromCrossPct": 0.38
+      "dropFromCrossPct": 0.38,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.38
     },
     {
       "dateKey": "2026-08-04",
@@ -973,7 +1257,13 @@
       "lowerPrice": 1960.8,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1953.9,
-      "dropFromCrossPct": 0.37
+      "dropFromCrossPct": 0.37,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.37
     },
     {
       "dateKey": "2026-07-13",
@@ -993,7 +1283,13 @@
       "lowerPrice": 1927.2,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1921.35,
-      "dropFromCrossPct": 0.37
+      "dropFromCrossPct": 0.37,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.37
     },
     {
       "dateKey": "2026-06-05",
@@ -1013,7 +1309,13 @@
       "lowerPrice": 1786.6,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1783.65,
-      "dropFromCrossPct": 0.37
+      "dropFromCrossPct": 0.37,
+      "higherTimeIst": "11:30",
+      "higherPrice": 1791.5,
+      "highestTimeIst": "12:15",
+      "highestPrice": 1799.35,
+      "riseFromCrossPct": 0.51,
+      "signedDropPct": 0.37
     },
     {
       "dateKey": "2026-06-04",
@@ -1033,7 +1335,13 @@
       "lowerPrice": 1772.05,
       "lowestTimeIst": "11:00",
       "lowestPrice": 1772.05,
-      "dropFromCrossPct": 0.36
+      "dropFromCrossPct": 0.36,
+      "higherTimeIst": "09:30",
+      "higherPrice": 1780.6,
+      "highestTimeIst": "10:00",
+      "highestPrice": 1789.55,
+      "riseFromCrossPct": 0.63,
+      "signedDropPct": 0.36
     },
     {
       "dateKey": "2026-05-21",
@@ -1053,7 +1361,13 @@
       "lowerPrice": 1878.4,
       "lowestTimeIst": "10:45",
       "lowestPrice": 1873.55,
-      "dropFromCrossPct": 0.36
+      "dropFromCrossPct": 0.36,
+      "higherTimeIst": "09:45",
+      "higherPrice": 1880.8,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1895.15,
+      "riseFromCrossPct": 0.79,
+      "signedDropPct": 0.36
     },
     {
       "dateKey": "2026-07-30",
@@ -1073,7 +1387,13 @@
       "lowerPrice": 2001.65,
       "lowestTimeIst": "14:15",
       "lowestPrice": 2001.65,
-      "dropFromCrossPct": 0.33
+      "dropFromCrossPct": 0.33,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.33
     },
     {
       "dateKey": "2026-07-23",
@@ -1093,7 +1413,13 @@
       "lowerPrice": 1933.5,
       "lowestTimeIst": "09:45",
       "lowestPrice": 1929.5,
-      "dropFromCrossPct": 0.33
+      "dropFromCrossPct": 0.33,
+      "higherTimeIst": "10:30",
+      "higherPrice": 1941.4,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1953.5,
+      "riseFromCrossPct": 0.91,
+      "signedDropPct": 0.33
     },
     {
       "dateKey": "2026-06-19",
@@ -1113,7 +1439,13 @@
       "lowerPrice": 1827.4,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1824,
-      "dropFromCrossPct": 0.33
+      "dropFromCrossPct": 0.33,
+      "higherTimeIst": "15:00",
+      "higherPrice": 1831.85,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1840.5,
+      "riseFromCrossPct": 0.57,
+      "signedDropPct": 0.33
     },
     {
       "dateKey": "2026-06-15",
@@ -1133,7 +1465,13 @@
       "lowerPrice": 1803.3,
       "lowestTimeIst": "10:00",
       "lowestPrice": 1801.05,
-      "dropFromCrossPct": 0.31
+      "dropFromCrossPct": 0.31,
+      "higherTimeIst": "11:15",
+      "higherPrice": 1807,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1807.05,
+      "riseFromCrossPct": 0.02,
+      "signedDropPct": 0.31
     },
     {
       "dateKey": "2026-05-15",
@@ -1153,7 +1491,13 @@
       "lowerPrice": 1881,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1876.05,
-      "dropFromCrossPct": 0.31
+      "dropFromCrossPct": 0.31,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.31
     },
     {
       "dateKey": "2026-07-07",
@@ -1173,7 +1517,13 @@
       "lowerPrice": 1904.5,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1901.75,
-      "dropFromCrossPct": 0.3
+      "dropFromCrossPct": 0.3,
+      "higherTimeIst": "09:30",
+      "higherPrice": 1912.7,
+      "highestTimeIst": "09:45",
+      "highestPrice": 1919.15,
+      "riseFromCrossPct": 0.61,
+      "signedDropPct": 0.3
     },
     {
       "dateKey": "2026-05-14",
@@ -1193,7 +1543,13 @@
       "lowerPrice": 1860.15,
       "lowestTimeIst": "14:00",
       "lowestPrice": 1855.85,
-      "dropFromCrossPct": 0.3
+      "dropFromCrossPct": 0.3,
+      "higherTimeIst": "15:00",
+      "higherPrice": 1861.9,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1861.9,
+      "riseFromCrossPct": 0.03,
+      "signedDropPct": 0.3
     },
     {
       "dateKey": "2026-06-01",
@@ -1213,7 +1569,13 @@
       "lowerPrice": 1793.5,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1793.5,
-      "dropFromCrossPct": 0.28
+      "dropFromCrossPct": 0.28,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.28
     },
     {
       "dateKey": "2026-07-06",
@@ -1233,7 +1595,13 @@
       "lowerPrice": 1906.7,
       "lowestTimeIst": "11:30",
       "lowestPrice": 1903.5,
-      "dropFromCrossPct": 0.27
+      "dropFromCrossPct": 0.27,
+      "higherTimeIst": "13:30",
+      "higherPrice": 1910,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1913.9,
+      "riseFromCrossPct": 0.27,
+      "signedDropPct": 0.27
     },
     {
       "dateKey": "2026-07-28",
@@ -1253,7 +1621,13 @@
       "lowerPrice": 1979.15,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1978.35,
-      "dropFromCrossPct": 0.25
+      "dropFromCrossPct": 0.25,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.25
     },
     {
       "dateKey": "2026-06-24",
@@ -1273,7 +1647,13 @@
       "lowerPrice": 1875.95,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1873.35,
-      "dropFromCrossPct": 0.24
+      "dropFromCrossPct": 0.24,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.24
     },
     {
       "dateKey": "2026-07-21",
@@ -1293,7 +1673,13 @@
       "lowerPrice": 1961.25,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1957.45,
-      "dropFromCrossPct": 0.22
+      "dropFromCrossPct": 0.22,
+      "higherTimeIst": "13:30",
+      "higherPrice": 1962,
+      "highestTimeIst": "13:30",
+      "highestPrice": 1962,
+      "riseFromCrossPct": 0.02,
+      "signedDropPct": 0.22
     },
     {
       "dateKey": "2026-07-07",
@@ -1313,7 +1699,13 @@
       "lowerPrice": 1904.1,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1901.75,
-      "dropFromCrossPct": 0.22
+      "dropFromCrossPct": 0.22,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.22
     },
     {
       "dateKey": "2026-05-18",
@@ -1333,7 +1725,13 @@
       "lowerPrice": 1869.65,
       "lowestTimeIst": "09:45",
       "lowestPrice": 1869.65,
-      "dropFromCrossPct": 0.21
+      "dropFromCrossPct": 0.21,
+      "higherTimeIst": "10:00",
+      "higherPrice": 1876.9,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1906.95,
+      "riseFromCrossPct": 1.79,
+      "signedDropPct": 0.21
     },
     {
       "dateKey": "2026-06-16",
@@ -1353,7 +1751,13 @@
       "lowerPrice": 1801.05,
       "lowestTimeIst": "15:00",
       "lowestPrice": 1801.05,
-      "dropFromCrossPct": 0.2
+      "dropFromCrossPct": 0.2,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.2
     },
     {
       "dateKey": "2026-07-27",
@@ -1373,7 +1777,13 @@
       "lowerPrice": 1970.3,
       "lowestTimeIst": "13:45",
       "lowestPrice": 1969.4,
-      "dropFromCrossPct": 0.19
+      "dropFromCrossPct": 0.19,
+      "higherTimeIst": "15:00",
+      "higherPrice": 1973.35,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1974.15,
+      "riseFromCrossPct": 0.05,
+      "signedDropPct": 0.19
     },
     {
       "dateKey": "2026-07-23",
@@ -1393,7 +1803,13 @@
       "lowerPrice": 1935.7,
       "lowestTimeIst": "12:30",
       "lowestPrice": 1932.6,
-      "dropFromCrossPct": 0.18
+      "dropFromCrossPct": 0.18,
+      "higherTimeIst": "13:00",
+      "higherPrice": 1936.15,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1953.5,
+      "riseFromCrossPct": 0.9,
+      "signedDropPct": 0.18
     },
     {
       "dateKey": "2026-06-22",
@@ -1413,7 +1829,13 @@
       "lowerPrice": 1859.65,
       "lowestTimeIst": "13:45",
       "lowestPrice": 1857.05,
-      "dropFromCrossPct": 0.18
+      "dropFromCrossPct": 0.18,
+      "higherTimeIst": "14:45",
+      "higherPrice": 1861.4,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1863.55,
+      "riseFromCrossPct": 0.17,
+      "signedDropPct": 0.18
     },
     {
       "dateKey": "2026-06-08",
@@ -1433,7 +1855,13 @@
       "lowerPrice": 1787.25,
       "lowestTimeIst": "10:45",
       "lowestPrice": 1787.25,
-      "dropFromCrossPct": 0.18
+      "dropFromCrossPct": 0.18,
+      "higherTimeIst": "11:15",
+      "higherPrice": 1795.65,
+      "highestTimeIst": "11:45",
+      "highestPrice": 1798.8,
+      "riseFromCrossPct": 0.46,
+      "signedDropPct": 0.18
     },
     {
       "dateKey": "2026-05-27",
@@ -1453,7 +1881,13 @@
       "lowerPrice": 1844.9,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1843,
-      "dropFromCrossPct": 0.18
+      "dropFromCrossPct": 0.18,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.18
     },
     {
       "dateKey": "2026-07-14",
@@ -1473,7 +1907,13 @@
       "lowerPrice": 1943.85,
       "lowestTimeIst": "15:00",
       "lowestPrice": 1942,
-      "dropFromCrossPct": 0.17
+      "dropFromCrossPct": 0.17,
+      "higherTimeIst": "14:15",
+      "higherPrice": 1946.4,
+      "highestTimeIst": "14:30",
+      "highestPrice": 1948.05,
+      "riseFromCrossPct": 0.14,
+      "signedDropPct": 0.17
     },
     {
       "dateKey": "2026-06-04",
@@ -1493,7 +1933,13 @@
       "lowerPrice": 1776.25,
       "lowestTimeIst": "12:45",
       "lowestPrice": 1775.55,
-      "dropFromCrossPct": 0.16
+      "dropFromCrossPct": 0.16,
+      "higherTimeIst": "12:15",
+      "higherPrice": 1778.8,
+      "highestTimeIst": "14:30",
+      "highestPrice": 1783.95,
+      "riseFromCrossPct": 0.31,
+      "signedDropPct": 0.16
     },
     {
       "dateKey": "2026-07-29",
@@ -1513,7 +1959,13 @@
       "lowerPrice": 1978.5,
       "lowestTimeIst": "14:15",
       "lowestPrice": 1977.9,
-      "dropFromCrossPct": 0.15
+      "dropFromCrossPct": 0.15,
+      "higherTimeIst": "14:45",
+      "higherPrice": 1981.25,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1987.7,
+      "riseFromCrossPct": 0.35,
+      "signedDropPct": 0.15
     },
     {
       "dateKey": "2026-07-22",
@@ -1533,7 +1985,13 @@
       "lowerPrice": 1937.2,
       "lowestTimeIst": "12:30",
       "lowestPrice": 1935.9,
-      "dropFromCrossPct": 0.15
+      "dropFromCrossPct": 0.15,
+      "higherTimeIst": "13:30",
+      "higherPrice": 1939.6,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1942.55,
+      "riseFromCrossPct": 0.2,
+      "signedDropPct": 0.15
     },
     {
       "dateKey": "2026-07-30",
@@ -1553,7 +2011,13 @@
       "lowerPrice": 2003.8,
       "lowestTimeIst": "14:15",
       "lowestPrice": 2001.65,
-      "dropFromCrossPct": 0.13
+      "dropFromCrossPct": 0.13,
+      "higherTimeIst": "11:15",
+      "higherPrice": 2006.65,
+      "highestTimeIst": "13:45",
+      "highestPrice": 2015.85,
+      "riseFromCrossPct": 0.57,
+      "signedDropPct": 0.13
     },
     {
       "dateKey": "2026-06-02",
@@ -1573,7 +2037,13 @@
       "lowerPrice": 1786.3,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1786.3,
-      "dropFromCrossPct": 0.13
+      "dropFromCrossPct": 0.13,
+      "higherTimeIst": "15:00",
+      "higherPrice": 1790.35,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1791.9,
+      "riseFromCrossPct": 0.18,
+      "signedDropPct": 0.13
     },
     {
       "dateKey": "2026-05-19",
@@ -1593,7 +2063,13 @@
       "lowerPrice": 1882.8,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1882.5,
-      "dropFromCrossPct": 0.13
+      "dropFromCrossPct": 0.13,
+      "higherTimeIst": "14:45",
+      "higherPrice": 1886.4,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1886.4,
+      "riseFromCrossPct": 0.08,
+      "signedDropPct": 0.13
     },
     {
       "dateKey": "2026-07-29",
@@ -1613,7 +2089,13 @@
       "lowerPrice": 1972,
       "lowestTimeIst": "12:15",
       "lowestPrice": 1971.85,
-      "dropFromCrossPct": 0.11
+      "dropFromCrossPct": 0.11,
+      "higherTimeIst": "12:30",
+      "higherPrice": 1975.85,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1987.7,
+      "riseFromCrossPct": 0.69,
+      "signedDropPct": 0.11
     },
     {
       "dateKey": "2026-07-27",
@@ -1633,7 +2115,13 @@
       "lowerPrice": 1947.6,
       "lowestTimeIst": "11:00",
       "lowestPrice": 1947.6,
-      "dropFromCrossPct": 0.11
+      "dropFromCrossPct": 0.11,
+      "higherTimeIst": "10:45",
+      "higherPrice": 1951.7,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1974.15,
+      "riseFromCrossPct": 1.25,
+      "signedDropPct": 0.11
     },
     {
       "dateKey": "2026-07-03",
@@ -1653,7 +2141,13 @@
       "lowerPrice": 1902.2,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1902.2,
-      "dropFromCrossPct": 0.11
+      "dropFromCrossPct": 0.11,
+      "higherTimeIst": "15:15",
+      "higherPrice": 1905.2,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1905.2,
+      "riseFromCrossPct": 0.04,
+      "signedDropPct": 0.11
     },
     {
       "dateKey": "2026-05-18",
@@ -1673,7 +2167,13 @@
       "lowerPrice": 1896.8,
       "lowestTimeIst": "14:00",
       "lowestPrice": 1895.5,
-      "dropFromCrossPct": 0.11
+      "dropFromCrossPct": 0.11,
+      "higherTimeIst": "14:30",
+      "higherPrice": 1899.55,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1906.95,
+      "riseFromCrossPct": 0.49,
+      "signedDropPct": 0.11
     },
     {
       "dateKey": "2026-07-20",
@@ -1693,7 +2193,13 @@
       "lowerPrice": 1943.8,
       "lowestTimeIst": "11:45",
       "lowestPrice": 1943.8,
-      "dropFromCrossPct": 0.1
+      "dropFromCrossPct": 0.1,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1946.95,
+      "highestTimeIst": "13:15",
+      "highestPrice": 1956.6,
+      "riseFromCrossPct": 0.56,
+      "signedDropPct": 0.1
     },
     {
       "dateKey": "2026-07-16",
@@ -1713,7 +2219,13 @@
       "lowerPrice": 1948.15,
       "lowestTimeIst": "10:45",
       "lowestPrice": 1946.25,
-      "dropFromCrossPct": 0.1
+      "dropFromCrossPct": 0.1,
+      "higherTimeIst": "10:30",
+      "higherPrice": 1949.35,
+      "highestTimeIst": "11:30",
+      "highestPrice": 1955.95,
+      "riseFromCrossPct": 0.4,
+      "signedDropPct": 0.1
     },
     {
       "dateKey": "2026-07-16",
@@ -1733,7 +2245,13 @@
       "lowerPrice": 1950.5,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1949.55,
-      "dropFromCrossPct": 0.09
+      "dropFromCrossPct": 0.09,
+      "higherTimeIst": "14:30",
+      "higherPrice": 1951.5,
+      "highestTimeIst": "14:30",
+      "highestPrice": 1951.5,
+      "riseFromCrossPct": 0.01,
+      "signedDropPct": 0.09
     },
     {
       "dateKey": "2026-06-24",
@@ -1753,7 +2271,13 @@
       "lowerPrice": 1867.25,
       "lowestTimeIst": "11:00",
       "lowestPrice": 1867.25,
-      "dropFromCrossPct": 0.09
+      "dropFromCrossPct": 0.09,
+      "higherTimeIst": "10:15",
+      "higherPrice": 1871.5,
+      "highestTimeIst": "13:30",
+      "highestPrice": 1881.05,
+      "riseFromCrossPct": 0.64,
+      "signedDropPct": 0.09
     },
     {
       "dateKey": "2026-07-06",
@@ -1773,7 +2297,13 @@
       "lowerPrice": 1903.65,
       "lowestTimeIst": "13:00",
       "lowestPrice": 1903.65,
-      "dropFromCrossPct": 0.08
+      "dropFromCrossPct": 0.08,
+      "higherTimeIst": "13:15",
+      "higherPrice": 1905.9,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1913.9,
+      "riseFromCrossPct": 0.46,
+      "signedDropPct": 0.08
     },
     {
       "dateKey": "2026-07-22",
@@ -1793,7 +2323,13 @@
       "lowerPrice": 1935.55,
       "lowestTimeIst": "10:00",
       "lowestPrice": 1935.55,
-      "dropFromCrossPct": 0.07
+      "dropFromCrossPct": 0.07,
+      "higherTimeIst": "09:30",
+      "higherPrice": 1938.4,
+      "highestTimeIst": "11:15",
+      "highestPrice": 1949.4,
+      "riseFromCrossPct": 0.64,
+      "signedDropPct": 0.07
     },
     {
       "dateKey": "2026-05-21",
@@ -1813,7 +2349,13 @@
       "lowerPrice": 1886.55,
       "lowestTimeIst": "14:00",
       "lowestPrice": 1886.55,
-      "dropFromCrossPct": 0.07
+      "dropFromCrossPct": 0.07,
+      "higherTimeIst": "14:15",
+      "higherPrice": 1889.4,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1895.15,
+      "riseFromCrossPct": 0.39,
+      "signedDropPct": 0.07
     },
     {
       "dateKey": "2026-07-09",
@@ -1833,7 +2375,13 @@
       "lowerPrice": 1937.9,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1937.9,
-      "dropFromCrossPct": 0.06
+      "dropFromCrossPct": 0.06,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.06
     },
     {
       "dateKey": "2026-05-26",
@@ -1853,7 +2401,13 @@
       "lowerPrice": 1830.55,
       "lowestTimeIst": "13:45",
       "lowestPrice": 1830.55,
-      "dropFromCrossPct": 0.06
+      "dropFromCrossPct": 0.06,
+      "higherTimeIst": "13:30",
+      "higherPrice": 1832.4,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1841.55,
+      "riseFromCrossPct": 0.54,
+      "signedDropPct": 0.06
     },
     {
       "dateKey": "2026-06-18",
@@ -1873,7 +2427,13 @@
       "lowerPrice": 1825.25,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1825.25,
-      "dropFromCrossPct": 0.05
+      "dropFromCrossPct": 0.05,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.05
     },
     {
       "dateKey": "2026-06-12",
@@ -1893,7 +2453,13 @@
       "lowerPrice": 1806.65,
       "lowestTimeIst": "14:45",
       "lowestPrice": 1806.45,
-      "dropFromCrossPct": 0.05
+      "dropFromCrossPct": 0.05,
+      "higherTimeIst": "12:15",
+      "higherPrice": 1809,
+      "highestTimeIst": "13:45",
+      "highestPrice": 1809.05,
+      "riseFromCrossPct": 0.1,
+      "signedDropPct": 0.05
     },
     {
       "dateKey": "2026-06-01",
@@ -1913,7 +2479,13 @@
       "lowerPrice": 1792.1,
       "lowestTimeIst": "13:15",
       "lowestPrice": 1791.35,
-      "dropFromCrossPct": 0.05
+      "dropFromCrossPct": 0.05,
+      "higherTimeIst": "12:15",
+      "higherPrice": 1793.25,
+      "highestTimeIst": "14:15",
+      "highestPrice": 1806.05,
+      "riseFromCrossPct": 0.77,
+      "signedDropPct": 0.05
     },
     {
       "dateKey": "2026-06-22",
@@ -1933,7 +2505,13 @@
       "lowerPrice": 1846.3,
       "lowestTimeIst": "11:15",
       "lowestPrice": 1846.3,
-      "dropFromCrossPct": 0.04
+      "dropFromCrossPct": 0.04,
+      "higherTimeIst": "11:30",
+      "higherPrice": 1849.3,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1863.55,
+      "riseFromCrossPct": 0.89,
+      "signedDropPct": 0.04
     },
     {
       "dateKey": "2026-06-15",
@@ -1953,7 +2531,13 @@
       "lowerPrice": 1803,
       "lowestTimeIst": "13:45",
       "lowestPrice": 1803,
-      "dropFromCrossPct": 0.04
+      "dropFromCrossPct": 0.04,
+      "higherTimeIst": "13:15",
+      "higherPrice": 1804.45,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1807.05,
+      "riseFromCrossPct": 0.18,
+      "signedDropPct": 0.04
     },
     {
       "dateKey": "2026-06-30",
@@ -1973,7 +2557,13 @@
       "lowerPrice": 1864.3,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1864.3,
-      "dropFromCrossPct": 0.03
+      "dropFromCrossPct": 0.03,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.03
     },
     {
       "dateKey": "2026-06-10",
@@ -1993,7 +2583,13 @@
       "lowerPrice": 1777.1,
       "lowestTimeIst": "09:45",
       "lowestPrice": 1777.1,
-      "dropFromCrossPct": 0.03
+      "dropFromCrossPct": 0.03,
+      "higherTimeIst": "10:00",
+      "higherPrice": 1779.85,
+      "highestTimeIst": "13:00",
+      "highestPrice": 1795.15,
+      "riseFromCrossPct": 0.99,
+      "signedDropPct": 0.03
     },
     {
       "dateKey": "2026-07-08",
@@ -2013,7 +2609,13 @@
       "lowerPrice": 1879.25,
       "lowestTimeIst": "14:15",
       "lowestPrice": 1879.25,
-      "dropFromCrossPct": 0.02
+      "dropFromCrossPct": 0.02,
+      "higherTimeIst": "14:45",
+      "higherPrice": 1881.5,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1888.35,
+      "riseFromCrossPct": 0.47,
+      "signedDropPct": 0.02
     },
     {
       "dateKey": "2026-07-01",
@@ -2033,7 +2635,13 @@
       "lowerPrice": 1867.35,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1867.35,
-      "dropFromCrossPct": 0.02
+      "dropFromCrossPct": 0.02,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.02
     },
     {
       "dateKey": "2026-05-19",
@@ -2053,7 +2661,13 @@
       "lowerPrice": 1882.5,
       "lowestTimeIst": "15:15",
       "lowestPrice": 1882.5,
-      "dropFromCrossPct": 0.02
+      "dropFromCrossPct": 0.02,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": 0.02
     },
     {
       "dateKey": "2026-07-29",
@@ -2073,207 +2687,13 @@
       "lowerPrice": 1971.85,
       "lowestTimeIst": "12:15",
       "lowestPrice": 1971.85,
-      "dropFromCrossPct": 0.01
-    },
-    {
-      "dateKey": "2026-07-24",
-      "dayLabel": "Fri 24 Jul",
-      "timeIst": "15:15",
-      "midPrice": 1940.4,
-      "closePrice": 1936.6,
-      "openPrice": 1942.4,
-      "highPrice": 1944.2,
-      "lowPrice": 1936.6,
-      "smi": 1.33,
-      "signal": 8.51,
-      "prevSmi": 22.74,
-      "prevSignal": 15.7,
-      "rsi": 43.8,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-07-21",
-      "dayLabel": "Tue 21 Jul",
-      "timeIst": "09:15",
-      "midPrice": 1944.3,
-      "closePrice": 1943.9,
-      "openPrice": 1945.4,
-      "highPrice": 1949.5,
-      "lowPrice": 1939.1,
-      "smi": 15.99,
-      "signal": 35.06,
-      "prevSmi": 55.88,
-      "prevSignal": 54.14,
-      "rsi": 45.9,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-07-20",
-      "dayLabel": "Mon 20 Jul",
-      "timeIst": "14:15",
-      "midPrice": 1954.2,
-      "closePrice": 1955.3,
-      "openPrice": 1955.3,
-      "highPrice": 1956.3,
-      "lowPrice": 1952.1,
-      "smi": 61.8,
-      "signal": 61.84,
-      "prevSmi": 62.97,
-      "prevSignal": 61.88,
-      "rsi": 68.6,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-07-20",
-      "dayLabel": "Mon 20 Jul",
-      "timeIst": "13:30",
-      "midPrice": 1953.7,
-      "closePrice": 1952.2,
-      "openPrice": 1955.6,
-      "highPrice": 1955.9,
-      "lowPrice": 1951.5,
-      "smi": 57.09,
-      "signal": 59.1,
-      "prevSmi": 68.63,
-      "prevSignal": 61.1,
-      "rsi": 64.2,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-07-06",
-      "dayLabel": "Mon 6 Jul",
-      "timeIst": "14:00",
-      "midPrice": 1907.9,
-      "closePrice": 1906.3,
-      "openPrice": 1909.6,
-      "highPrice": 1909.8,
-      "lowPrice": 1906,
-      "smi": 23.23,
-      "signal": 27.39,
-      "prevSmi": 40.86,
-      "prevSignal": 31.55,
-      "rsi": 49.4,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-06-24",
-      "dayLabel": "Wed 24 Jun",
-      "timeIst": "11:00",
-      "midPrice": 1867.25,
-      "closePrice": 1865.2,
-      "openPrice": 1869,
-      "highPrice": 1869.3,
-      "lowPrice": 1865.2,
-      "smi": -33.8,
-      "signal": -28.78,
-      "prevSmi": -23.61,
-      "prevSignal": -23.77,
-      "rsi": 40.6,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-06-23",
-      "dayLabel": "Tue 23 Jun",
-      "timeIst": "15:15",
-      "midPrice": 1866.25,
-      "closePrice": 1864,
-      "openPrice": 1868.7,
-      "highPrice": 1870.2,
-      "lowPrice": 1862.3,
-      "smi": -38.53,
-      "signal": -32.4,
-      "prevSmi": -20.84,
-      "prevSignal": -26.28,
-      "rsi": 27.2,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-06-15",
-      "dayLabel": "Mon 15 Jun",
-      "timeIst": "15:15",
-      "midPrice": 1805.25,
-      "closePrice": 1804.1,
-      "openPrice": 1806,
-      "highPrice": 1807.5,
-      "lowPrice": 1803,
-      "smi": -1.59,
-      "signal": 0.34,
-      "prevSmi": 8.4,
-      "prevSignal": 2.26,
-      "rsi": 51.4,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-06-04",
-      "dayLabel": "Thu 4 Jun",
-      "timeIst": "15:00",
-      "midPrice": 1779.95,
-      "closePrice": 1779.3,
-      "openPrice": 1782,
-      "highPrice": 1782.7,
-      "lowPrice": 1777.2,
-      "smi": 22.53,
-      "signal": 26.47,
-      "prevSmi": 34.68,
-      "prevSignal": 30.4,
-      "rsi": 47.1,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-05-21",
-      "dayLabel": "Thu 21 May",
-      "timeIst": "15:15",
-      "midPrice": 1888.9,
-      "closePrice": 1891.3,
-      "openPrice": 1889.6,
-      "highPrice": 1892,
-      "lowPrice": 1885.8,
-      "smi": 31.63,
-      "signal": 36.78,
-      "prevSmi": 42.04,
-      "prevSignal": 41.92,
-      "rsi": 66.7,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
+      "dropFromCrossPct": 0.01,
+      "higherTimeIst": "12:30",
+      "higherPrice": 1975.85,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1987.7,
+      "riseFromCrossPct": 0.8,
+      "signedDropPct": 0.01
     },
     {
       "dateKey": "2026-05-21",
@@ -2293,7 +2713,13 @@
       "lowerPrice": null,
       "lowestTimeIst": null,
       "lowestPrice": null,
-      "dropFromCrossPct": null
+      "dropFromCrossPct": null,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1874.55,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1895.15,
+      "riseFromCrossPct": 1.14,
+      "signedDropPct": -1.14
     },
     {
       "dateKey": "2026-05-18",
@@ -2313,47 +2739,39 @@
       "lowerPrice": null,
       "lowestTimeIst": null,
       "lowestPrice": null,
-      "dropFromCrossPct": null
+      "dropFromCrossPct": null,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1889.45,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1906.95,
+      "riseFromCrossPct": 1.13,
+      "signedDropPct": -1.13
     },
     {
-      "dateKey": "2026-05-15",
-      "dayLabel": "Fri 15 May",
-      "timeIst": "15:15",
-      "midPrice": 1876.05,
-      "closePrice": 1877.7,
-      "openPrice": 1878.4,
-      "highPrice": 1878.4,
-      "lowPrice": 1873.7,
-      "smi": -1.8,
-      "signal": -0.22,
-      "prevSmi": 4.13,
-      "prevSignal": 1.36,
-      "rsi": 54.3,
+      "dateKey": "2026-07-21",
+      "dayLabel": "Tue 21 Jul",
+      "timeIst": "09:15",
+      "midPrice": 1944.3,
+      "closePrice": 1943.9,
+      "openPrice": 1945.4,
+      "highPrice": 1949.5,
+      "lowPrice": 1939.1,
+      "smi": 15.99,
+      "signal": 35.06,
+      "prevSmi": 55.88,
+      "prevSignal": 54.14,
+      "rsi": 45.9,
       "lowerTimeIst": null,
       "lowerPrice": null,
       "lowestTimeIst": null,
       "lowestPrice": null,
-      "dropFromCrossPct": null
-    },
-    {
-      "dateKey": "2026-05-14",
-      "dayLabel": "Thu 14 May",
-      "timeIst": "15:15",
-      "midPrice": 1861.5,
-      "closePrice": 1857.9,
-      "openPrice": 1863.8,
-      "highPrice": 1865.1,
-      "lowPrice": 1857.9,
-      "smi": -4.96,
-      "signal": -2.74,
-      "prevSmi": 1.71,
-      "prevSignal": -0.53,
-      "rsi": 51.7,
-      "lowerTimeIst": null,
-      "lowerPrice": null,
-      "lowestTimeIst": null,
-      "lowestPrice": null,
-      "dropFromCrossPct": null
+      "dropFromCrossPct": null,
+      "higherTimeIst": "09:30",
+      "higherPrice": 1946.75,
+      "highestTimeIst": "12:45",
+      "highestPrice": 1964,
+      "riseFromCrossPct": 1.01,
+      "signedDropPct": -1.01
     },
     {
       "dateKey": "2026-05-14",
@@ -2373,9 +2791,693 @@
       "lowerPrice": null,
       "lowestTimeIst": null,
       "lowestPrice": null,
-      "dropFromCrossPct": null
+      "dropFromCrossPct": null,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1855.45,
+      "highestTimeIst": "12:45",
+      "highestPrice": 1865,
+      "riseFromCrossPct": 0.77,
+      "signedDropPct": -0.77
+    },
+    {
+      "dateKey": "2026-06-24",
+      "dayLabel": "Wed 24 Jun",
+      "timeIst": "11:00",
+      "midPrice": 1867.25,
+      "closePrice": 1865.2,
+      "openPrice": 1869,
+      "highPrice": 1869.3,
+      "lowPrice": 1865.2,
+      "smi": -33.8,
+      "signal": -28.78,
+      "prevSmi": -23.61,
+      "prevSignal": -23.77,
+      "rsi": 40.6,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "11:15",
+      "higherPrice": 1868.65,
+      "highestTimeIst": "13:30",
+      "highestPrice": 1881.05,
+      "riseFromCrossPct": 0.74,
+      "signedDropPct": -0.74
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "Mon 6 Jul",
+      "timeIst": "14:00",
+      "midPrice": 1907.9,
+      "closePrice": 1906.3,
+      "openPrice": 1909.6,
+      "highPrice": 1909.8,
+      "lowPrice": 1906,
+      "smi": 23.23,
+      "signal": 27.39,
+      "prevSmi": 40.86,
+      "prevSignal": 31.55,
+      "rsi": 49.4,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "14:15",
+      "higherPrice": 1908.6,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1913.9,
+      "riseFromCrossPct": 0.31,
+      "signedDropPct": -0.31
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "Mon 20 Jul",
+      "timeIst": "13:30",
+      "midPrice": 1953.7,
+      "closePrice": 1952.2,
+      "openPrice": 1955.6,
+      "highPrice": 1955.9,
+      "lowPrice": 1951.5,
+      "smi": 57.09,
+      "signal": 59.1,
+      "prevSmi": 68.63,
+      "prevSignal": 61.1,
+      "rsi": 64.2,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "13:45",
+      "higherPrice": 1954.5,
+      "highestTimeIst": "14:00",
+      "highestPrice": 1956.45,
+      "riseFromCrossPct": 0.14,
+      "signedDropPct": -0.14
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "Mon 20 Jul",
+      "timeIst": "14:15",
+      "midPrice": 1954.2,
+      "closePrice": 1955.3,
+      "openPrice": 1955.3,
+      "highPrice": 1956.3,
+      "lowPrice": 1952.1,
+      "smi": 61.8,
+      "signal": 61.84,
+      "prevSmi": 62.97,
+      "prevSignal": 61.88,
+      "rsi": 68.6,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "14:30",
+      "higherPrice": 1955,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1956.2,
+      "riseFromCrossPct": 0.1,
+      "signedDropPct": -0.1
+    },
+    {
+      "dateKey": "2026-06-04",
+      "dayLabel": "Thu 4 Jun",
+      "timeIst": "15:00",
+      "midPrice": 1779.95,
+      "closePrice": 1779.3,
+      "openPrice": 1782,
+      "highPrice": 1782.7,
+      "lowPrice": 1777.2,
+      "smi": 22.53,
+      "signal": 26.47,
+      "prevSmi": 34.68,
+      "prevSignal": 30.4,
+      "rsi": 47.1,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "15:15",
+      "higherPrice": 1781.6,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1781.6,
+      "riseFromCrossPct": 0.09,
+      "signedDropPct": -0.09
+    },
+    {
+      "dateKey": "2026-07-24",
+      "dayLabel": "Fri 24 Jul",
+      "timeIst": "15:15",
+      "midPrice": 1940.4,
+      "closePrice": 1936.6,
+      "openPrice": 1942.4,
+      "highPrice": 1944.2,
+      "lowPrice": 1936.6,
+      "smi": 1.33,
+      "signal": 8.51,
+      "prevSmi": 22.74,
+      "prevSignal": 15.7,
+      "rsi": 43.8,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-06-23",
+      "dayLabel": "Tue 23 Jun",
+      "timeIst": "15:15",
+      "midPrice": 1866.25,
+      "closePrice": 1864,
+      "openPrice": 1868.7,
+      "highPrice": 1870.2,
+      "lowPrice": 1862.3,
+      "smi": -38.53,
+      "signal": -32.4,
+      "prevSmi": -20.84,
+      "prevSignal": -26.28,
+      "rsi": 27.2,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-06-15",
+      "dayLabel": "Mon 15 Jun",
+      "timeIst": "15:15",
+      "midPrice": 1805.25,
+      "closePrice": 1804.1,
+      "openPrice": 1806,
+      "highPrice": 1807.5,
+      "lowPrice": 1803,
+      "smi": -1.59,
+      "signal": 0.34,
+      "prevSmi": 8.4,
+      "prevSignal": 2.26,
+      "rsi": 51.4,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-05-21",
+      "dayLabel": "Thu 21 May",
+      "timeIst": "15:15",
+      "midPrice": 1888.9,
+      "closePrice": 1891.3,
+      "openPrice": 1889.6,
+      "highPrice": 1892,
+      "lowPrice": 1885.8,
+      "smi": 31.63,
+      "signal": 36.78,
+      "prevSmi": 42.04,
+      "prevSignal": 41.92,
+      "rsi": 66.7,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-05-15",
+      "dayLabel": "Fri 15 May",
+      "timeIst": "15:15",
+      "midPrice": 1876.05,
+      "closePrice": 1877.7,
+      "openPrice": 1878.4,
+      "highPrice": 1878.4,
+      "lowPrice": 1873.7,
+      "smi": -1.8,
+      "signal": -0.22,
+      "prevSmi": 4.13,
+      "prevSignal": 1.36,
+      "rsi": 54.3,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu 14 May",
+      "timeIst": "15:15",
+      "midPrice": 1861.5,
+      "closePrice": 1857.9,
+      "openPrice": 1863.8,
+      "highPrice": 1865.1,
+      "lowPrice": 1857.9,
+      "smi": -4.96,
+      "signal": -2.74,
+      "prevSmi": 1.71,
+      "prevSignal": -0.53,
+      "rsi": 51.7,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    }
+  ],
+  "adverseNoLower": [
+    {
+      "dateKey": "2026-05-21",
+      "dayLabel": "Thu 21 May",
+      "timeIst": "11:45",
+      "midPrice": 1873.75,
+      "closePrice": 1873.2,
+      "openPrice": 1875,
+      "highPrice": 1875.6,
+      "lowPrice": 1871.9,
+      "smi": -38.49,
+      "signal": -36.73,
+      "prevSmi": -34.61,
+      "prevSignal": -34.96,
+      "rsi": 40.1,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1874.55,
+      "highestTimeIst": "14:45",
+      "highestPrice": 1895.15,
+      "riseFromCrossPct": 1.14,
+      "signedDropPct": -1.14
+    },
+    {
+      "dateKey": "2026-05-18",
+      "dayLabel": "Mon 18 May",
+      "timeIst": "11:45",
+      "midPrice": 1885.65,
+      "closePrice": 1884.1,
+      "openPrice": 1885.8,
+      "highPrice": 1887.7,
+      "lowPrice": 1883.6,
+      "smi": 58.51,
+      "signal": 59.78,
+      "prevSmi": 63.87,
+      "prevSignal": 61.04,
+      "rsi": 56.9,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1889.45,
+      "highestTimeIst": "15:00",
+      "highestPrice": 1906.95,
+      "riseFromCrossPct": 1.13,
+      "signedDropPct": -1.13
+    },
+    {
+      "dateKey": "2026-07-21",
+      "dayLabel": "Tue 21 Jul",
+      "timeIst": "09:15",
+      "midPrice": 1944.3,
+      "closePrice": 1943.9,
+      "openPrice": 1945.4,
+      "highPrice": 1949.5,
+      "lowPrice": 1939.1,
+      "smi": 15.99,
+      "signal": 35.06,
+      "prevSmi": 55.88,
+      "prevSignal": 54.14,
+      "rsi": 45.9,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "09:30",
+      "higherPrice": 1946.75,
+      "highestTimeIst": "12:45",
+      "highestPrice": 1964,
+      "riseFromCrossPct": 1.01,
+      "signedDropPct": -1.01
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu 14 May",
+      "timeIst": "11:45",
+      "midPrice": 1850.75,
+      "closePrice": 1852.1,
+      "openPrice": 1851,
+      "highPrice": 1852.2,
+      "lowPrice": 1849.3,
+      "smi": 65.67,
+      "signal": 66.61,
+      "prevSmi": 69.47,
+      "prevSignal": 67.55,
+      "rsi": 69.2,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "12:00",
+      "higherPrice": 1855.45,
+      "highestTimeIst": "12:45",
+      "highestPrice": 1865,
+      "riseFromCrossPct": 0.77,
+      "signedDropPct": -0.77
+    },
+    {
+      "dateKey": "2026-06-24",
+      "dayLabel": "Wed 24 Jun",
+      "timeIst": "11:00",
+      "midPrice": 1867.25,
+      "closePrice": 1865.2,
+      "openPrice": 1869,
+      "highPrice": 1869.3,
+      "lowPrice": 1865.2,
+      "smi": -33.8,
+      "signal": -28.78,
+      "prevSmi": -23.61,
+      "prevSignal": -23.77,
+      "rsi": 40.6,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "11:15",
+      "higherPrice": 1868.65,
+      "highestTimeIst": "13:30",
+      "highestPrice": 1881.05,
+      "riseFromCrossPct": 0.74,
+      "signedDropPct": -0.74
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "Mon 6 Jul",
+      "timeIst": "14:00",
+      "midPrice": 1907.9,
+      "closePrice": 1906.3,
+      "openPrice": 1909.6,
+      "highPrice": 1909.8,
+      "lowPrice": 1906,
+      "smi": 23.23,
+      "signal": 27.39,
+      "prevSmi": 40.86,
+      "prevSignal": 31.55,
+      "rsi": 49.4,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "14:15",
+      "higherPrice": 1908.6,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1913.9,
+      "riseFromCrossPct": 0.31,
+      "signedDropPct": -0.31
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "Mon 20 Jul",
+      "timeIst": "13:30",
+      "midPrice": 1953.7,
+      "closePrice": 1952.2,
+      "openPrice": 1955.6,
+      "highPrice": 1955.9,
+      "lowPrice": 1951.5,
+      "smi": 57.09,
+      "signal": 59.1,
+      "prevSmi": 68.63,
+      "prevSignal": 61.1,
+      "rsi": 64.2,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "13:45",
+      "higherPrice": 1954.5,
+      "highestTimeIst": "14:00",
+      "highestPrice": 1956.45,
+      "riseFromCrossPct": 0.14,
+      "signedDropPct": -0.14
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "Mon 20 Jul",
+      "timeIst": "14:15",
+      "midPrice": 1954.2,
+      "closePrice": 1955.3,
+      "openPrice": 1955.3,
+      "highPrice": 1956.3,
+      "lowPrice": 1952.1,
+      "smi": 61.8,
+      "signal": 61.84,
+      "prevSmi": 62.97,
+      "prevSignal": 61.88,
+      "rsi": 68.6,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "14:30",
+      "higherPrice": 1955,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1956.2,
+      "riseFromCrossPct": 0.1,
+      "signedDropPct": -0.1
+    },
+    {
+      "dateKey": "2026-06-04",
+      "dayLabel": "Thu 4 Jun",
+      "timeIst": "15:00",
+      "midPrice": 1779.95,
+      "closePrice": 1779.3,
+      "openPrice": 1782,
+      "highPrice": 1782.7,
+      "lowPrice": 1777.2,
+      "smi": 22.53,
+      "signal": 26.47,
+      "prevSmi": 34.68,
+      "prevSignal": 30.4,
+      "rsi": 47.1,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": "15:15",
+      "higherPrice": 1781.6,
+      "highestTimeIst": "15:15",
+      "highestPrice": 1781.6,
+      "riseFromCrossPct": 0.09,
+      "signedDropPct": -0.09
+    },
+    {
+      "dateKey": "2026-07-24",
+      "dayLabel": "Fri 24 Jul",
+      "timeIst": "15:15",
+      "midPrice": 1940.4,
+      "closePrice": 1936.6,
+      "openPrice": 1942.4,
+      "highPrice": 1944.2,
+      "lowPrice": 1936.6,
+      "smi": 1.33,
+      "signal": 8.51,
+      "prevSmi": 22.74,
+      "prevSignal": 15.7,
+      "rsi": 43.8,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-06-23",
+      "dayLabel": "Tue 23 Jun",
+      "timeIst": "15:15",
+      "midPrice": 1866.25,
+      "closePrice": 1864,
+      "openPrice": 1868.7,
+      "highPrice": 1870.2,
+      "lowPrice": 1862.3,
+      "smi": -38.53,
+      "signal": -32.4,
+      "prevSmi": -20.84,
+      "prevSignal": -26.28,
+      "rsi": 27.2,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-06-15",
+      "dayLabel": "Mon 15 Jun",
+      "timeIst": "15:15",
+      "midPrice": 1805.25,
+      "closePrice": 1804.1,
+      "openPrice": 1806,
+      "highPrice": 1807.5,
+      "lowPrice": 1803,
+      "smi": -1.59,
+      "signal": 0.34,
+      "prevSmi": 8.4,
+      "prevSignal": 2.26,
+      "rsi": 51.4,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-05-21",
+      "dayLabel": "Thu 21 May",
+      "timeIst": "15:15",
+      "midPrice": 1888.9,
+      "closePrice": 1891.3,
+      "openPrice": 1889.6,
+      "highPrice": 1892,
+      "lowPrice": 1885.8,
+      "smi": 31.63,
+      "signal": 36.78,
+      "prevSmi": 42.04,
+      "prevSignal": 41.92,
+      "rsi": 66.7,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-05-15",
+      "dayLabel": "Fri 15 May",
+      "timeIst": "15:15",
+      "midPrice": 1876.05,
+      "closePrice": 1877.7,
+      "openPrice": 1878.4,
+      "highPrice": 1878.4,
+      "lowPrice": 1873.7,
+      "smi": -1.8,
+      "signal": -0.22,
+      "prevSmi": 4.13,
+      "prevSignal": 1.36,
+      "rsi": 54.3,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu 14 May",
+      "timeIst": "15:15",
+      "midPrice": 1861.5,
+      "closePrice": 1857.9,
+      "openPrice": 1863.8,
+      "highPrice": 1865.1,
+      "lowPrice": 1857.9,
+      "smi": -4.96,
+      "signal": -2.74,
+      "prevSmi": 1.71,
+      "prevSignal": -0.53,
+      "rsi": 51.7,
+      "lowerTimeIst": null,
+      "lowerPrice": null,
+      "lowestTimeIst": null,
+      "lowestPrice": null,
+      "dropFromCrossPct": null,
+      "higherTimeIst": null,
+      "higherPrice": null,
+      "highestTimeIst": null,
+      "highestPrice": null,
+      "riseFromCrossPct": null,
+      "signedDropPct": null
     }
   ],
   "source": "Yahoo 15m SUNPHARMA.NS",
-  "generatedAt": "2026-08-04T19:47:19.665Z"
+  "generatedAt": "2026-08-04T19:52:21.204Z"
 }
