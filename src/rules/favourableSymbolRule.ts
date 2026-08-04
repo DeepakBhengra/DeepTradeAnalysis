@@ -26,25 +26,39 @@ import {
   pctDistance,
 } from "./bollingerUtils.js";
 import {
+  DEFAULT_OVERBOUGHT_BUY_CASCADE,
+  DEFAULT_OVERBOUGHT_SELL_GUARDS,
   DEFAULT_OVERSOLD_BUY_GUARDS,
   DEFAULT_OVERSOLD_SELL_CASCADE,
+  evaluateOverboughtBuyCascade,
+  evaluateOverboughtSellGuards,
   evaluateOversoldBuyGuards,
   evaluateOversoldSellCascade,
   findNextSameDayIndex,
   type CascadeGuardResult,
   type CascadeMomentumContext,
+  type OverboughtBuyCascade,
+  type OverboughtSellGuards,
   type OversoldBuyGuards,
   type OversoldSellCascade,
 } from "./oversoldCascade.js";
 
 export type FavourableSymbolBuyGuards = OversoldBuyGuards;
 export type FavourableSymbolSellCascade = OversoldSellCascade;
+export type FavourableSymbolSellGuards = OverboughtSellGuards;
+export type FavourableSymbolBuyCascade = OverboughtBuyCascade;
 export type BuyGuardContext = CascadeMomentumContext;
 export type BuyGuardResult = CascadeGuardResult;
 export type SellCascadeContext = CascadeMomentumContext;
 export type SellCascadeResult = CascadeGuardResult;
+export type SellGuardContext = CascadeMomentumContext;
+export type SellGuardResult = CascadeGuardResult;
+export type BuyCascadeContext = CascadeMomentumContext;
+export type BuyCascadeResult = CascadeGuardResult;
 
 export {
+  DEFAULT_OVERBOUGHT_BUY_CASCADE,
+  DEFAULT_OVERBOUGHT_SELL_GUARDS,
   DEFAULT_OVERSOLD_BUY_GUARDS,
   DEFAULT_OVERSOLD_SELL_CASCADE,
 };
@@ -70,6 +84,8 @@ export type FavourableSymbolRuleConfig = {
   };
   buyGuards?: FavourableSymbolBuyGuards;
   sellCascade?: FavourableSymbolSellCascade;
+  sellGuards?: FavourableSymbolSellGuards;
+  buyCascade?: FavourableSymbolBuyCascade;
   sellQuality: {
     minRsi: number;
     maxRsi: number;
@@ -154,6 +170,7 @@ const SCENARIO_NUMBER: Record<FavourableSymbolScenarioKey, number> = {
   sell_quality: 1,
   buy_extended: 2,
   sell_cascade: 2,
+  buy_cascade: 3,
 };
 
 function scenarioLabel(
@@ -310,6 +327,22 @@ export function matchesSellCascadeLevels(
   return matchesBuyQuality(rule, rsi, smi, bbLower);
 }
 
+/**
+ * Rising-knife BUY: same overbought level band as SELL quality, but momentum
+ * still cascading up (SMI/MACD rising) with next mid higher.
+ */
+export function matchesBuyCascadeLevels(
+  rule: FavourableSymbolRuleConfig,
+  rsi: number,
+  smi: number,
+  bbUpper: DeepproBbProximity,
+): boolean {
+  if (!rule.buyCascade?.enabled) {
+    return false;
+  }
+  return matchesSellQuality(rule, rsi, smi, bbUpper);
+}
+
 /** Optional BUY guards: momentum turn + confirmation + open drawdown. */
 export function evaluateBuyGuards(
   rule: FavourableSymbolRuleConfig,
@@ -324,6 +357,22 @@ export function evaluateSellCascade(
   ctx: SellCascadeContext,
 ): SellCascadeResult {
   return evaluateOversoldSellCascade(rule.sellCascade, ctx);
+}
+
+/** Optional SELL guards: momentum turn-down + confirmation + open rally. */
+export function evaluateSellGuards(
+  rule: FavourableSymbolRuleConfig,
+  ctx: SellGuardContext,
+): SellGuardResult {
+  return evaluateOverboughtSellGuards(rule.sellGuards, ctx);
+}
+
+/** Optional BUY cascade guards for rising-knife longs. */
+export function evaluateBuyCascade(
+  rule: FavourableSymbolRuleConfig,
+  ctx: BuyCascadeContext,
+): BuyCascadeResult {
+  return evaluateOverboughtBuyCascade(rule.buyCascade, ctx);
 }
 
 /**
@@ -377,6 +426,7 @@ export function evaluateFavourableSymbolDay(
 
   let buyQuality: FavourableSymbolSignal | null = null;
   let buyExtended: FavourableSymbolSignal | null = null;
+  let buyCascade: FavourableSymbolSignal | null = null;
   let sellSignal: FavourableSymbolSignal | null = null;
 
   for (const index of dayIndexes) {
@@ -408,7 +458,7 @@ export function evaluateFavourableSymbolDay(
     const nextMid =
       nextIndex != null ? entryMid(snapshots[nextIndex]) : null;
 
-    const guardResult = evaluateBuyGuards(rule, {
+    const cascadeCtx = {
       smi,
       prevSmi: prevSmi != null && Number.isFinite(prevSmi) ? prevSmi : null,
       macdHist: snapshot.macd.histogram,
@@ -419,136 +469,133 @@ export function evaluateFavourableSymbolDay(
       setupMid: price,
       dayOpenMid,
       nextMid,
-    });
+    };
+    const buyGuardResult = evaluateBuyGuards(rule, cascadeCtx);
+    const sellGuardResult = evaluateSellGuards(rule, cascadeCtx);
 
-    const emitBuy = (
+    const emitFromConfirm = (
+      side: "BUY" | "SELL",
       scenarioKey: FavourableSymbolScenarioKey,
       baseReasons: string[],
+      confirmResult: CascadeGuardResult,
+      notePrefix: "guards" | "cascade",
     ): FavourableSymbolSignal => {
       const useConfirm =
-        guardResult.confirmedOnNextBar && nextIndex != null;
+        confirmResult.confirmedOnNextBar && nextIndex != null;
       const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
       const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
       const emitSmi =
         emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
           ? emitSmiPoint.smi
           : smi;
-      const emitTimeIst = formatIstTime(emitSnapshot.timestamp);
-      const emitPrice = entryMid(emitSnapshot);
-      const emitBbUpper = buildBbUpperProximity(emitSnapshot);
-      const emitBbLower = buildBbLowerProximity(emitSnapshot);
-      const guardNotes =
-        guardResult.reasons.length > 0
-          ? ` | guards: ${guardResult.reasons.join("; ")}`
+      const notes =
+        confirmResult.reasons.length > 0
+          ? ` | ${notePrefix}: ${confirmResult.reasons.join("; ")}`
           : "";
       const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
-
       return {
-        side: "BUY",
+        side,
         rule: ruleId,
         dateKey,
-        timeIst: emitTimeIst,
+        timeIst: formatIstTime(emitSnapshot.timestamp),
         scenarioKey,
-        price: emitPrice,
+        price: entryMid(emitSnapshot),
         smi: emitSmi,
         rsi: emitSnapshot.rsi,
-        bbUpperProximity: emitBbUpper,
-        bbLowerProximity: emitBbLower,
-        reasons: baseReasons.map((reason) => `${reason}${setupNote}${guardNotes}`),
+        bbUpperProximity: buildBbUpperProximity(emitSnapshot),
+        bbLowerProximity: buildBbLowerProximity(emitSnapshot),
+        reasons: baseReasons.map((reason) => `${reason}${setupNote}${notes}`),
       };
     };
 
     if (
       !buyQuality &&
       matchesBuyQuality(rule, rsi, smi, bbLower) &&
-      guardResult.ok
+      buyGuardResult.ok
     ) {
-      buyQuality = emitBuy("buy_quality", [
-        `${displayName} BUY quality: RSI ${rsi.toFixed(1)} in ${rule.buyQuality.minRsi}–${rule.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${rule.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
-      ]);
+      buyQuality = emitFromConfirm(
+        "BUY",
+        "buy_quality",
+        [
+          `${displayName} BUY quality: RSI ${rsi.toFixed(1)} in ${rule.buyQuality.minRsi}–${rule.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${rule.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
+        ],
+        buyGuardResult,
+        "guards",
+      );
     } else if (
       !buyQuality &&
       !buyExtended &&
       matchesBuyExtended(rule, smi, bbLower) &&
-      guardResult.ok
+      buyGuardResult.ok
     ) {
-      buyExtended = emitBuy("buy_extended", [
-        `${displayName} BUY extended (biggest-mover style): SMI ${smi.toFixed(1)} ≤ ${rule.buyExtended.maxSmi}${rule.buyExtended.requireNegativeSmi ? " (negative preferred)" : " (mid-zone OK)"}, BB lower gap ${bbLower.gapPct.toFixed(2)}% (≤ ${rule.buyExtended.maxBbLowerGapPct}%), RSI ${rsi.toFixed(1)}`,
-      ]);
+      buyExtended = emitFromConfirm(
+        "BUY",
+        "buy_extended",
+        [
+          `${displayName} BUY extended (biggest-mover style): SMI ${smi.toFixed(1)} ≤ ${rule.buyExtended.maxSmi}${rule.buyExtended.requireNegativeSmi ? " (negative preferred)" : " (mid-zone OK)"}, BB lower gap ${bbLower.gapPct.toFixed(2)}% (≤ ${rule.buyExtended.maxBbLowerGapPct}%), RSI ${rsi.toFixed(1)}`,
+        ],
+        buyGuardResult,
+        "guards",
+      );
+    } else if (
+      !buyQuality &&
+      !buyExtended &&
+      !buyCascade &&
+      matchesBuyCascadeLevels(rule, rsi, smi, bbUpper)
+    ) {
+      const cascadeResult = evaluateBuyCascade(rule, cascadeCtx);
+      if (cascadeResult.ok) {
+        buyCascade = emitFromConfirm(
+          "BUY",
+          "buy_cascade",
+          [
+            `${displayName} BUY cascade (rising-knife): overbought levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB upper, momentum still rising — long on confirm`,
+          ],
+          cascadeResult,
+          "cascade",
+        );
+      }
     }
 
-    if (!sellSignal && matchesSellQuality(rule, rsi, smi, bbUpper)) {
-      sellSignal = {
-        side: "SELL",
-        rule: ruleId,
-        dateKey,
-        timeIst,
-        scenarioKey: "sell_quality",
-        price,
-        smi,
-        rsi,
-        bbUpperProximity: bbUpper,
-        bbLowerProximity: bbLower,
-        reasons: [
+    if (
+      !sellSignal &&
+      matchesSellQuality(rule, rsi, smi, bbUpper) &&
+      sellGuardResult.ok
+    ) {
+      sellSignal = emitFromConfirm(
+        "SELL",
+        "sell_quality",
+        [
           `${displayName} SELL quality: RSI ${rsi.toFixed(1)} in ${rule.sellQuality.minRsi}–${rule.sellQuality.maxRsi}, SMI ${smi.toFixed(1)} ≥ ${rule.sellQuality.minSmi}, BB upper gap ${bbUpper.gapPct.toFixed(2)}%${bbUpper.matchType ? ` (${bbUpper.matchType})` : ""}`,
         ],
-      };
+        sellGuardResult,
+        "guards",
+      );
     } else if (
       !sellSignal &&
       matchesSellCascadeLevels(rule, rsi, smi, bbLower)
     ) {
-      const cascadeResult = evaluateSellCascade(rule, {
-        smi,
-        prevSmi: prevSmi != null && Number.isFinite(prevSmi) ? prevSmi : null,
-        macdHist: snapshot.macd.histogram,
-        prevMacdHist:
-          prevMacdHist != null && Number.isFinite(prevMacdHist)
-            ? prevMacdHist
-            : null,
-        setupMid: price,
-        dayOpenMid,
-        nextMid,
-      });
+      const cascadeResult = evaluateSellCascade(rule, cascadeCtx);
       if (cascadeResult.ok) {
-        const useConfirm =
-          cascadeResult.confirmedOnNextBar && nextIndex != null;
-        const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
-        const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
-        const emitSmi =
-          emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
-            ? emitSmiPoint.smi
-            : smi;
-        const emitTimeIst = formatIstTime(emitSnapshot.timestamp);
-        const emitPrice = entryMid(emitSnapshot);
-        const cascadeNotes =
-          cascadeResult.reasons.length > 0
-            ? ` | cascade: ${cascadeResult.reasons.join("; ")}`
-            : "";
-        const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
-        sellSignal = {
-          side: "SELL",
-          rule: ruleId,
-          dateKey,
-          timeIst: emitTimeIst,
-          scenarioKey: "sell_cascade",
-          price: emitPrice,
-          smi: emitSmi,
-          rsi: emitSnapshot.rsi,
-          bbUpperProximity: buildBbUpperProximity(emitSnapshot),
-          bbLowerProximity: buildBbLowerProximity(emitSnapshot),
-          reasons: [
-            `${displayName} SELL cascade (falling-knife): oversold levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB lower, momentum still falling — short on confirm${setupNote}${cascadeNotes}`,
+        sellSignal = emitFromConfirm(
+          "SELL",
+          "sell_cascade",
+          [
+            `${displayName} SELL cascade (falling-knife): oversold levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB lower, momentum still falling — short on confirm`,
           ],
-        };
+          cascadeResult,
+          "cascade",
+        );
       }
     }
 
-    if (buyQuality && sellSignal) {
+    const buyFound = buyQuality != null || buyExtended != null || buyCascade != null;
+    if (buyFound && sellSignal) {
       break;
     }
   }
 
-  const buySignal = buyQuality ?? buyExtended;
+  const buySignal = buyQuality ?? buyExtended ?? buyCascade;
   const signals = [buySignal, sellSignal]
     .filter((signal): signal is FavourableSymbolSignal => signal != null)
     .sort((left, right) => left.timeIst.localeCompare(right.timeIst));
@@ -630,8 +677,11 @@ export const __favourableSymbolRuleTestables = {
   matchesSellQuality,
   matchesBuyExtended,
   matchesSellCascadeLevels,
+  matchesBuyCascadeLevels,
   evaluateBuyGuards,
   evaluateSellCascade,
+  evaluateSellGuards,
+  evaluateBuyCascade,
   nearLowerBand,
   nearUpperBand,
   entryMid,

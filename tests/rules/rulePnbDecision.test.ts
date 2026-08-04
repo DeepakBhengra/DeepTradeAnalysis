@@ -40,6 +40,19 @@ describe("RulePNB PNB-only symbol guard", () => {
       requireNextBarLower: true,
       minOpenDrawdownPct: null,
     });
+    expect(config.rulePnb.sellGuards).toEqual({
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarConfirmation: true,
+      maxOpenRallyPct: 0.8,
+    });
+    expect(config.rulePnb.buyCascade).toEqual({
+      enabled: true,
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarHigher: true,
+      minOpenRallyPct: null,
+    });
   });
 });
 

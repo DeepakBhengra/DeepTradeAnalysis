@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   __favourableSymbolRuleTestables,
   assertFavourableSymbolRuleSymbol,
+  evaluateBuyCascade,
   evaluateBuyGuards,
   evaluateSellCascade,
+  evaluateSellGuards,
   favourableSymbolRuleIdForTradingSymbol,
   getFavourableSymbolRuleConfig,
   isFavourableSymbolRuleSymbol,
@@ -15,6 +17,7 @@ const {
   matchesSellQuality,
   matchesBuyExtended,
   matchesSellCascadeLevels,
+  matchesBuyCascadeLevels,
 } = __favourableSymbolRuleTestables;
 
 describe("favourable symbol rule registry", () => {
@@ -35,19 +38,32 @@ describe("favourable symbol rule registry", () => {
     );
   });
 
-  it("enables buyGuards + sellCascade on every favourable symbol rule", () => {
-    const expectedGuards = {
+  it("enables buyGuards + sellCascade + sellGuards + buyCascade on every favourable symbol rule", () => {
+    const expectedBuyGuards = {
       requireSmiRising: true,
       requireMacdHistRising: true,
       requireNextBarConfirmation: true,
       maxOpenDrawdownPct: 0.8,
     };
-    const expectedCascade = {
+    const expectedSellCascade = {
       enabled: true,
       requireSmiFalling: true,
       requireMacdHistFalling: true,
       requireNextBarLower: true,
       minOpenDrawdownPct: null,
+    };
+    const expectedSellGuards = {
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarConfirmation: true,
+      maxOpenRallyPct: 0.8,
+    };
+    const expectedBuyCascade = {
+      enabled: true,
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarHigher: true,
+      minOpenRallyPct: null,
     };
     for (const id of [
       "ruleLtm",
@@ -57,8 +73,10 @@ describe("favourable symbol rule registry", () => {
       "rulePolicybzr",
     ] as const) {
       const rule = getFavourableSymbolRuleConfig(id);
-      expect(rule.buyGuards).toEqual(expectedGuards);
-      expect(rule.sellCascade).toEqual(expectedCascade);
+      expect(rule.buyGuards).toEqual(expectedBuyGuards);
+      expect(rule.sellCascade).toEqual(expectedSellCascade);
+      expect(rule.sellGuards).toEqual(expectedSellGuards);
+      expect(rule.buyCascade).toEqual(expectedBuyCascade);
     }
   });
 });
@@ -298,6 +316,59 @@ describe("RuleICICIGI sellCascade", () => {
   it("rejects when next bar is higher", () => {
     expect(
       evaluateSellCascade(rule, { ...cascadeCtx, nextMid: 1680 }).ok,
+    ).toBe(false);
+  });
+});
+
+describe("RuleICICIGI sellGuards + buyCascade (rising knife)", () => {
+  const rule = getFavourableSymbolRuleConfig("ruleIcicigi");
+
+  const risingCtx = {
+    smi: 54,
+    prevSmi: 34,
+    macdHist: 1.33,
+    prevMacdHist: 0.75,
+    setupMid: 1708.3,
+    dayOpenMid: 1691.75,
+    nextMid: 1710.7,
+  };
+
+  it("accepts overbought levels that match SELL quality band", () => {
+    expect(
+      matchesBuyCascadeLevels(rule, 60, 54, {
+        gapPct: 0.4,
+        signedGapPct: 0.4,
+        matchType: null,
+        price: 1710,
+        bbLevel: 1705,
+      }),
+    ).toBe(true);
+  });
+
+  it("blocks rising-knife SELL quality via sellGuards", () => {
+    expect(evaluateSellGuards(rule, risingCtx).ok).toBe(false);
+  });
+
+  it("flips rising knife into BUY cascade", () => {
+    const result = evaluateBuyCascade(rule, risingCtx);
+    expect(result.ok).toBe(true);
+    expect(result.confirmedOnNextBar).toBe(true);
+    expect(result.reasons.some((r) => r.includes("SMI rising"))).toBe(true);
+    expect(result.reasons.some((r) => r.includes("MACD hist rising"))).toBe(
+      true,
+    );
+    expect(result.reasons.some((r) => r.includes("next-bar cascade"))).toBe(
+      true,
+    );
+  });
+
+  it("rejects BUY cascade when SMI is falling (would be a SELL turn)", () => {
+    expect(
+      evaluateBuyCascade(rule, {
+        ...risingCtx,
+        smi: 40,
+        prevSmi: 50,
+      }).ok,
     ).toBe(false);
   });
 });

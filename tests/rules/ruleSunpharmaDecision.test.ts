@@ -40,6 +40,19 @@ describe("RuleSUNPHARMA SUNPHARMA-only symbol guard", () => {
       requireNextBarLower: true,
       minOpenDrawdownPct: null,
     });
+    expect(config.ruleSunpharma.sellGuards).toEqual({
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarConfirmation: true,
+      maxOpenRallyPct: 0.8,
+    });
+    expect(config.ruleSunpharma.buyCascade).toEqual({
+      enabled: true,
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarHigher: true,
+      minOpenRallyPct: null,
+    });
   });
 });
 
