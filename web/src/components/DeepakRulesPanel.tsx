@@ -63,7 +63,8 @@ const DEEPPRO1_RULES = [
   "SELL: SMI black crosses below red signal (Stch Mtm 10,3,3)",
   "BUY: SMI black crosses above red signal",
   "Entry price = candle mid (high+low)/2 at the cross bar",
-  "Same-day square-off when favourable mid move reaches 0.45%",
+  "No new BUY/SELL after 13:30 IST (13:30 candle still allowed)",
+  "Same-day square-off when favourable mid move reaches 0.45% (exits may print after 13:30)",
   "Separate from Deeppro exhaustion (no peak/trough/BB/MACD/RSI gates)",
 ];
 
@@ -282,7 +283,7 @@ export function DeepakRulesPanel({
             {variant === "deeppro"
               ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
               : variant === "deeppro1"
-                ? `${sessionLabel} · Generic all-stock SMI black↔red cross + 0.45% square-off · same logic as RuleSUNPHARMA1 / RulePNB1 · separate from Deeppro exhaustion · day scan evaluates the full watchlist.`
+                ? `${sessionLabel} · Generic all-stock SMI black↔red cross + 0.45% square-off · no new entries after 13:30 IST · same logic as RuleSUNPHARMA1 / RulePNB1 · separate from Deeppro exhaustion · day scan evaluates the full watchlist.`
                 : variant === "rulePnb"
                   ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
                   : variant === "ruleSunpharma"

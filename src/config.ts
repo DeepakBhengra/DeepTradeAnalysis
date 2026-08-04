@@ -687,6 +687,11 @@ export const config = {
     sessionStart: "09:15",
     sessionEnd: "15:30",
     /**
+     * No new BUY/SELL after this IST time (inclusive: 13:30 candle still allowed;
+     * 13:45+ blocked). Same-day square-off may still occur after the deadline.
+     */
+    entryDeadlineIst: "13:30",
+    /**
      * Chart-aligned Stch Mtm (matches RuleSUNPHARMA1 / SMI down-cross study):
      * %K=10, double-smooth=3, signal EMA=3.
      */

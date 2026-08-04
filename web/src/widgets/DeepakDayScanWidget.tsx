@@ -67,7 +67,7 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
     case "deeppro":
       return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deeppro1":
-      return `Scans ${universe} with ${label} — SMI black↔red cross entries (Stch Mtm 10,3,3) and same-day square-off at 0.45% mid move. Generic all-stock rule (same logic as RuleSUNPHARMA1 / RulePNB1, no symbol lock). Separate from Deeppro exhaustion. May take several minutes depending on Kite response time.${liveRefresh}`;
+      return `Scans ${universe} with ${label} — SMI black↔red cross entries (Stch Mtm 10,3,3) until 13:30 IST, then same-day square-off at 0.45% mid move. Generic all-stock rule (same logic as RuleSUNPHARMA1 / RulePNB1, no symbol lock). Separate from Deeppro exhaustion. May take several minutes depending on Kite response time.${liveRefresh}`;
     case "rulePnb":
       return `Scans PNB only with ${label} — a separate RSI/SMI/BB proximity rule from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak or Deeppro and not applied to other stocks.${liveRefresh}`;
     case "ruleSunpharma":
