@@ -678,6 +678,23 @@ export const config = {
   },
 
   /**
+   * RulePNB1 — PNB-only SMI cross + fixed % square-off (same logic as RuleSUNPHARMA1).
+   * Totally separate from RulePNB / RuleSUNPHARMA1 / Deepak / Deeppro.
+   * Not wired to any Day Scan / Post-Mortem widget.
+   */
+  rulePnb1: {
+    tradingSymbol: "PNB",
+    sessionStart: "09:15",
+    sessionEnd: "15:30",
+    smi: {
+      lengthK: 10,
+      lengthD: 3,
+      lengthEma: 3,
+    },
+    squareOffPct: 0.45,
+  },
+
+  /**
    * Per-symbol favourable profit-range rules (separate from Deepak/Deeppro/RulePNB/RuleSUNPHARMA).
    * Each entry is locked to one trading symbol. Thresholds from 60d rule-free IQR studies.
    */
