@@ -41,6 +41,7 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     data,
     status: scanStatus,
     sessionIndex,
+    ruleVariant,
   } = useDayScanSimulationContext();
 
   const [orderDate, setOrderDateLocal] = useState(scanDate);
@@ -79,7 +80,7 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
 
   useEffect(() => {
     resetPortfolio();
-  }, [orderDate, resetPortfolio]);
+  }, [orderDate, ruleVariant, resetPortfolio]);
 
   useEffect(() => {
     if (scanStatus === "idle" && statusRef.current !== "idle") {

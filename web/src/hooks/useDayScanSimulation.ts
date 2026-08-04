@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchDayScanSimulation } from "../api/client";
 import type { DayScanSimulationPayload } from "../types/backtest";
+import type { DayScanSimulationVariant } from "../utils/dayScanSimulationVariant";
 
 export const SIMULATION_INTERVAL_MS = 10_000;
 
@@ -19,7 +20,10 @@ interface UseDayScanSimulationResult {
   stop: () => void;
 }
 
-export function useDayScanSimulation(analysisDate: string): UseDayScanSimulationResult {
+export function useDayScanSimulation(
+  analysisDate: string,
+  variant: DayScanSimulationVariant = "all",
+): UseDayScanSimulationResult {
   const [data, setData] = useState<DayScanSimulationPayload | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +50,7 @@ export function useDayScanSimulation(analysisDate: string): UseDayScanSimulation
       const requestId = ++requestIdRef.current;
 
       try {
-        const payload = await fetchDayScanSimulation(analysisDate, index);
+        const payload = await fetchDayScanSimulation(analysisDate, index, variant);
 
         if (requestId !== requestIdRef.current) {
           return null;
@@ -74,7 +78,7 @@ export function useDayScanSimulation(analysisDate: string): UseDayScanSimulation
         return null;
       }
     },
-    [analysisDate],
+    [analysisDate, variant],
   );
 
   const advance = useCallback(async () => {
@@ -187,7 +191,7 @@ export function useDayScanSimulation(analysisDate: string): UseDayScanSimulation
 
   useEffect(() => {
     reset();
-  }, [analysisDate, reset]);
+  }, [analysisDate, variant, reset]);
 
   useEffect(() => {
     return () => {

@@ -2,6 +2,10 @@ import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
 import { DayOrderPortfolioPanel } from "../components/DayOrderPortfolioPanel";
 import { useDayScanSimulationContext } from "../context/DayScanSimulationContext";
 import { useDayOrderSimulation } from "../hooks/useDayOrderSimulation";
+import {
+  DAY_SCAN_SIMULATION_VARIANT_OPTIONS,
+  type DayScanSimulationVariant,
+} from "../utils/dayScanSimulationVariant";
 
 interface DayOrderSimulatorWidgetProps {
   isActive: boolean;
@@ -29,6 +33,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
     simulatedTimeIst,
     sessionIndex,
     sessionCandleCount,
+    ruleVariant,
+    setRuleVariant,
+    ruleVariantLabel,
   } = useDayScanSimulationContext();
 
   const {
@@ -45,6 +52,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
   } = useDayOrderSimulation();
 
   const isRunning = status === "running";
+  const scanBusy = scanStatus === "playing" || scanStatus === "loading";
 
   return (
     <div hidden={!isActive}>
@@ -60,6 +68,27 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
               }}
               showTodayButton={false}
             />
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayorder-sim-rule-variant"
+            >
+              Rule variant
+              <select
+                id="dayorder-sim-rule-variant"
+                value={ruleVariant}
+                disabled={isRunning || scanBusy}
+                onChange={(event) =>
+                  setRuleVariant(event.target.value as DayScanSimulationVariant)
+                }
+                className="min-w-[220px] rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {DAY_SCAN_SIMULATION_VARIANT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button
               type="button"
               onClick={start}
@@ -90,6 +119,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
               </span>
             </p>
             <p className="m-0">
+              Rule: <span className="text-kite-text">{ruleVariantLabel}</span>
+            </p>
+            <p className="m-0">
               Scan date: <span className="text-kite-text">{scanDate}</span>
             </p>
             <p className="m-0">
@@ -117,8 +149,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
           )}
 
           <p className="m-0 mt-2 text-xs text-kite-muted">
-            Auto paper-trades Day Scan entry/exit signals with ₹3,00,000 capital, 100 qty per
-            stock, max entry price ₹1,900. Start Day Scan Simulator first with the same date.
+            Auto paper-trades Day Scan entry/exit signals for the selected rule variant with
+            ₹3,00,000 capital, 100 qty per stock, max entry price ₹1,900. Start Day Scan Simulator
+            first with the same date and rule variant.
           </p>
         </section>
 

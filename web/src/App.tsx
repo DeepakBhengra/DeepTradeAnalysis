@@ -39,9 +39,9 @@ const subtitles: Record<AppWidget, string> = {
   dayScanPostMortem:
     "Day-scan a session date with any rule variant, then grade signal stocks vs the session path.",
   dayScanSimulator:
-    "Replay Deepak, Deepak-2, and Watch Party sector signals candle-by-candle from 09:15–15:00 IST.",
+    "Replay any Day Scan rule variant (including Deeppro1) candle-by-candle from 09:15–15:00 IST.",
   dayOrderSimulator:
-    "Auto paper-trade Day Scan entry/exit signals with ₹3,00,000 capital (100 qty, max ₹1,900).",
+    "Auto paper-trade Day Scan entry/exit signals for the selected rule variant with ₹3,00,000 capital (100 qty, max ₹1,900).",
   samcoTrading:
     "Samco MIS execution: Deepak + Deepak-2 day scan (50 stocks), entry price range, logs.",
 };

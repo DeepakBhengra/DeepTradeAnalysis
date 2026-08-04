@@ -1,5 +1,6 @@
 import type { DayOrderPortfolio, DayOrderPnLSummary } from "../types/dayOrder";
 import { DAY_ORDER_INITIAL_CASH } from "../types/dayOrder";
+import { formatDayScanStrategy } from "../utils/backtestFormat";
 import { describeDayOrderFill } from "../utils/dayOrderEngine";
 import { formatCurrency, formatPnL } from "../utils/paperTrading";
 
@@ -35,10 +36,6 @@ function MetricRow({
       </span>
     </div>
   );
-}
-
-function formatStrategy(strategy: DayOrderPortfolio["openPositions"][number]["strategy"]): string {
-  return strategy === "deepak" ? "Deepak" : "Deepak-2";
 }
 
 export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPanelProps) {
@@ -81,7 +78,7 @@ export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPane
                 {openPositions.map((position) => (
                   <tr key={position.signalKey} className="border-b border-kite-border">
                     <td className="py-2 pr-2 font-medium">{position.tradingSymbol}</td>
-                    <td className="py-2 pr-2">{formatStrategy(position.strategy)}</td>
+                    <td className="py-2 pr-2">{formatDayScanStrategy(position.strategy)}</td>
                     <td className="py-2 pr-2">{position.side}</td>
                     <td className="py-2 pr-2 tabular-nums">{position.quantity}</td>
                     <td className="py-2 pr-2 tabular-nums">{position.entryPrice.toFixed(2)}</td>

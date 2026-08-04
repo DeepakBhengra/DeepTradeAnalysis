@@ -4,6 +4,7 @@ export function formatScenarioLabel(scenarioKey: string): string {
     .replace(/^deepak-3 /, "")
     .replace(/^deepak-2 /, "")
     .replace(/^deepak /, "")
+    .replace(/^deeppro1 /, "")
     .replace(/^deeppro /, "")
     .replace(/^rulePnb /, "")
     .replace(/^ruleSunpharma /, "")
@@ -19,15 +20,51 @@ export function formatMetric(value: number | null, digits = 2): string {
 }
 
 export function formatDayScanStrategy(
-  strategy: "deepak" | "deepak-2" | "deepak-watch-party",
+  strategy:
+    | "deepak"
+    | "deepak-2"
+    | "deepak-3"
+    | "deepak-watch-party"
+    | "deeppro"
+    | "deeppro1"
+    | "rulePnb"
+    | "ruleSunpharma"
+    | "ruleLtm"
+    | "ruleIcicigi"
+    | "ruleTechm"
+    | "ruleTvsmotor"
+    | "rulePolicybzr",
 ): string {
-  if (strategy === "deepak") {
-    return "Deepak";
+  switch (strategy) {
+    case "deepak":
+      return "Deepak";
+    case "deepak-2":
+      return "Deepak-2";
+    case "deepak-3":
+      return "Deepak-3";
+    case "deepak-watch-party":
+      return "Watch Party";
+    case "deeppro":
+      return "Deeppro";
+    case "deeppro1":
+      return "Deeppro1";
+    case "rulePnb":
+      return "RulePNB";
+    case "ruleSunpharma":
+      return "RuleSUNPHARMA";
+    case "ruleLtm":
+      return "RuleLTM";
+    case "ruleIcicigi":
+      return "RuleICICIGI";
+    case "ruleTechm":
+      return "RuleTECHM";
+    case "ruleTvsmotor":
+      return "RuleTVSMOTOR";
+    case "rulePolicybzr":
+      return "RulePOLICYBZR";
+    default:
+      return strategy;
   }
-  if (strategy === "deepak-2") {
-    return "Deepak-2";
-  }
-  return "Watch Party";
 }
 
 export function formatExitType(input: {

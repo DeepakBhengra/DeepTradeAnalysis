@@ -5,12 +5,26 @@ import {
   type SimulationStatus,
 } from "../hooks/useDayScanSimulation";
 import type { DayScanSimulationPayload } from "../types/backtest";
+import {
+  DAY_SCAN_SIMULATION_VARIANT_LABEL,
+  parseDayScanSimulationVariant,
+  type DayScanSimulationVariant,
+} from "../utils/dayScanSimulationVariant";
+import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
 const DEFAULT_ANALYSIS_DATE = "2026-05-11";
+const VARIANT_STORAGE_KEY = "dayscan-simulation-variant";
+
+function readStoredVariant(): DayScanSimulationVariant {
+  return parseDayScanSimulationVariant(readLocalStorage(VARIANT_STORAGE_KEY));
+}
 
 export interface DayScanSimulationContextValue {
   analysisDate: string;
   setAnalysisDate: (date: string) => void;
+  ruleVariant: DayScanSimulationVariant;
+  setRuleVariant: (variant: DayScanSimulationVariant) => void;
+  ruleVariantLabel: string;
   data: DayScanSimulationPayload | null;
   loading: boolean;
   error: string | null;
@@ -29,11 +43,21 @@ const DayScanSimulationContext = createContext<DayScanSimulationContextValue | n
 
 export function DayScanSimulationProvider({ children }: { children: ReactNode }) {
   const [analysisDate, setAnalysisDate] = useState(DEFAULT_ANALYSIS_DATE);
-  const simulation = useDayScanSimulation(analysisDate);
+  const [ruleVariant, setRuleVariantState] =
+    useState<DayScanSimulationVariant>(readStoredVariant);
+  const simulation = useDayScanSimulation(analysisDate, ruleVariant);
+
+  const setRuleVariant = (variant: DayScanSimulationVariant) => {
+    setRuleVariantState(variant);
+    writeLocalStorage(VARIANT_STORAGE_KEY, variant);
+  };
 
   const value: DayScanSimulationContextValue = {
     analysisDate,
     setAnalysisDate,
+    ruleVariant,
+    setRuleVariant,
+    ruleVariantLabel: DAY_SCAN_SIMULATION_VARIANT_LABEL[ruleVariant],
     ...simulation,
   };
 

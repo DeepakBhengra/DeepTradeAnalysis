@@ -969,6 +969,8 @@ app.get("/api/backtest/day-scan/simulate", disableSocketTimeout, async (req, res
     const dateParam = typeof req.query.date === "string" ? req.query.date : undefined;
     const sessionIndexParam =
       typeof req.query.sessionIndex === "string" ? req.query.sessionIndex : undefined;
+    const variantParam =
+      typeof req.query.variant === "string" ? req.query.variant : undefined;
 
     if (!dateParam || !isValidAnalysisDate(dateParam)) {
       res.status(400).json({ error: "Invalid or missing date. Use YYYY-MM-DD." });
@@ -987,6 +989,7 @@ app.get("/api/backtest/day-scan/simulate", disableSocketTimeout, async (req, res
         date: dateParam,
         sessionIndex,
         cache: dayScanSimulationCache,
+        variant: variantParam,
       });
       res.json(payload);
     } catch (error) {

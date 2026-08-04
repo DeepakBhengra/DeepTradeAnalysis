@@ -4,15 +4,46 @@ import { DayScanExitSignalsTable } from "../components/DayScanExitSignalsTable";
 import { SimulationControls } from "../components/SimulationControls";
 import { useDayScanSimulationContext } from "../context/DayScanSimulationContext";
 import { SECTOR_WATCHLIST_SIZE } from "../data/sectorWatchlist";
+import {
+  DAY_SCAN_SIMULATION_VARIANT_OPTIONS,
+  type DayScanSimulationVariant,
+} from "../utils/dayScanSimulationVariant";
 
 interface DayScanSimulatorWidgetProps {
   isActive: boolean;
+}
+
+function descriptionForVariant(variant: DayScanSimulationVariant): string {
+  const universe = `${SECTOR_WATCHLIST_SIZE} sector stocks`;
+  if (variant === "all") {
+    return `Replay Deepak, Deepak-2, and Watch Party signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
+  }
+  if (
+    variant === "rulePnb" ||
+    variant === "ruleSunpharma" ||
+    variant === "ruleLtm" ||
+    variant === "ruleIcicigi" ||
+    variant === "ruleTechm" ||
+    variant === "ruleTvsmotor" ||
+    variant === "rulePolicybzr"
+  ) {
+    return `Replay ${DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)?.label ?? variant} signals for its locked symbol from 09:15–15:00 IST (10s per 15m candle). First Start loads market data; later candles advance from cache.`;
+  }
+  if (variant === "deeppro1") {
+    return `Replay Deeppro1 SMI black↔red cross signals (+ 0.45% square-off) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
+  }
+  const label =
+    DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)
+      ?.label ?? variant;
+  return `Replay ${label} signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
 }
 
 export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps) {
   const {
     analysisDate,
     setAnalysisDate,
+    ruleVariant,
+    setRuleVariant,
     data,
     loading,
     error,
@@ -28,6 +59,7 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
   const isInitialLoad = loading && status === "loading";
   const isTickUpdate =
     loading && (status === "playing" || status === "paused" || status === "complete");
+  const busy = status === "playing" || status === "loading" || loading;
 
   return (
     <div hidden={!isActive}>
@@ -43,6 +75,27 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
               }}
               showTodayButton={false}
             />
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayscan-sim-rule-variant"
+            >
+              Rule variant
+              <select
+                id="dayscan-sim-rule-variant"
+                value={ruleVariant}
+                disabled={busy}
+                onChange={(event) =>
+                  setRuleVariant(event.target.value as DayScanSimulationVariant)
+                }
+                className="min-w-[220px] rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {DAY_SCAN_SIMULATION_VARIANT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <SimulationControls
               status={status}
               sessionIndex={sessionIndex}
@@ -55,9 +108,7 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
             />
           </div>
           <p className="m-0 mt-2 text-xs text-kite-muted">
-            Replay Deepak, Deepak-2, and Watch Party signals across {SECTOR_WATCHLIST_SIZE} sector
-            stocks from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2
-            min); later candles advance quickly from cache.
+            {descriptionForVariant(ruleVariant)}
           </p>
         </section>
 
