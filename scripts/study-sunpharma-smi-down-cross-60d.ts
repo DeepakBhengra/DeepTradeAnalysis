@@ -59,8 +59,14 @@ type CrossRow = {
   prevSmi: number;
   prevSignal: number;
   rsi: number;
+  /** First later same-day bar mid strictly below cross mid. */
+  lowerTimeIst: string | null;
+  lowerPrice: number | null;
+  /** Lowest same-day mid after the cross (only when below cross mid). */
+  lowestTimeIst: string | null;
+  lowestPrice: number | null;
+  dropFromCrossPct: number | null;
 };
-
 function round(value: number, digits = 2): number {
   const factor = 10 ** digits;
   return Math.round(value * factor) / factor;
@@ -171,6 +177,58 @@ async function main(): Promise<void> {
     `Trade days available: ${allDates.length} · using ${targetDates[0]} → ${targetDates[targetDates.length - 1]} (${targetDates.length} days)`,
   );
 
+  function findLowerAfterCross(
+    crossIndex: number,
+    dateKey: string,
+    crossMid: number,
+  ): {
+    lowerTimeIst: string | null;
+    lowerPrice: number | null;
+    lowestTimeIst: string | null;
+    lowestPrice: number | null;
+    dropFromCrossPct: number | null;
+  } {
+    let lowerTimeIst: string | null = null;
+    let lowerPrice: number | null = null;
+    let lowestTimeIst: string | null = null;
+    let lowestPrice: number | null = null;
+
+    for (let j = crossIndex + 1; j < snapshots.length; j++) {
+      const later = snapshots[j];
+      if (
+        !isWithinIstSessionWindow(later.timestamp, SESSION_START, SESSION_END)
+      ) {
+        continue;
+      }
+      const laterParts = getIstTimeParts(later.timestamp);
+      if (laterParts.dateKey !== dateKey) break;
+
+      const laterMid = mid(later);
+      if (!(laterMid < crossMid)) continue;
+
+      const laterTime = formatIstTime(later.timestamp);
+      if (lowerTimeIst == null) {
+        lowerTimeIst = laterTime;
+        lowerPrice = laterMid;
+      }
+      if (lowestPrice == null || laterMid < lowestPrice) {
+        lowestPrice = laterMid;
+        lowestTimeIst = laterTime;
+      }
+    }
+
+    return {
+      lowerTimeIst,
+      lowerPrice: lowerPrice == null ? null : round(lowerPrice),
+      lowestTimeIst,
+      lowestPrice: lowestPrice == null ? null : round(lowestPrice),
+      dropFromCrossPct:
+        lowestPrice == null
+          ? null
+          : round(((crossMid - lowestPrice) / crossMid) * 100),
+    };
+  }
+
   const crosses: CrossRow[] = [];
   for (let i = 1; i < snapshots.length; i++) {
     const snapshot = snapshots[i];
@@ -196,11 +254,14 @@ async function main(): Promise<void> {
     const downCross = prev.smi >= prev.signal && cur.smi < cur.signal;
     if (!downCross) continue;
 
+    const crossMid = mid(snapshot);
+    const lower = findLowerAfterCross(i, parts.dateKey, crossMid);
+
     crosses.push({
       dateKey: parts.dateKey,
       dayLabel: dayLabel(parts.dateKey),
       timeIst: formatIstTime(snapshot.timestamp),
-      midPrice: round(mid(snapshot)),
+      midPrice: round(crossMid),
       closePrice: round(snapshot.close),
       openPrice: round(snapshot.open),
       highPrice: round(snapshot.high),
@@ -210,10 +271,16 @@ async function main(): Promise<void> {
       prevSmi: round(prev.smi, 2),
       prevSignal: round(prev.signal, 2),
       rsi: round(snapshot.rsi, 1),
+      lowerTimeIst: lower.lowerTimeIst,
+      lowerPrice: lower.lowerPrice,
+      lowestTimeIst: lower.lowestTimeIst,
+      lowestPrice: lower.lowestPrice,
+      dropFromCrossPct: lower.dropFromCrossPct,
     });
   }
 
   const daysWithCross = new Set(crosses.map((c) => c.dateKey)).size;
+  const withLower = crosses.filter((c) => c.lowerPrice != null);
   const md: string[] = [
     `# SUNPHARMA · SMI black ↓ red (signal) crosses · last ${TRADE_DAYS} trade days`,
     "",
@@ -222,36 +289,39 @@ async function main(): Promise<void> {
     `- **Params:** %K=${smiCfg.lengthK}, %K smooth=${smiCfg.lengthD}, signal EMA=${smiCfg.lengthEma}`,
     `- **Downward cross:** previous bar \`SMI ≥ signal\` and current bar \`SMI < signal\``,
     `- **Price at cross:** 15m candle mid \`(high+low)/2\` (also close listed)`,
+    `- **Lower after cross:** first later same-day mid **strictly below** cross mid; also lowest mid after cross`,
     `- **Session:** ${SESSION_START}–${SESSION_END} IST`,
     `- **Window:** ${targetDates[0]} → ${targetDates[targetDates.length - 1]} (${targetDates.length} trade days)`,
     `- **Crosses found:** **${crosses.length}** on **${daysWithCross}** days`,
+    `- **Went lower same day:** **${withLower.length}/${crosses.length}** (${crosses.length ? round((withLower.length / crosses.length) * 100) : 0}%)`,
     `- **Data:** Yahoo Finance 15m (\`${YAHOO}\`)`,
     `- **Generated (UTC):** ${new Date().toISOString()}`,
     "",
     "## Crosses",
     "",
-    "| # | Day | Date | Time (IST) | Mid ₹ | Close ₹ | SMI (black) | Signal (red) | Prev SMI | Prev signal | RSI |",
-    "|--:|-----|------|------------|------:|--------:|------------:|-------------:|---------:|------------:|----:|",
+    "| # | Day | Date | Time (IST) | Mid ₹ | Close ₹ | Lower time | Lower ₹ | Lowest time | Lowest ₹ | Drop % | SMI (black) | Signal (red) | RSI |",
+    "|--:|-----|------|------------|------:|--------:|------------|--------:|-------------|---------:|-------:|------------:|-------------:|----:|",
   ];
 
   crosses.forEach((c, idx) => {
     md.push(
-      `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.closePrice.toFixed(2)} | ${c.smi.toFixed(2)} | ${c.signal.toFixed(2)} | ${c.prevSmi.toFixed(2)} | ${c.prevSignal.toFixed(2)} | ${c.rsi.toFixed(1)} |`,
+      `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.closePrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} | ${c.lowestTimeIst ?? "—"} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${c.dropFromCrossPct == null ? "—" : `${c.dropFromCrossPct.toFixed(2)}%`} | ${c.smi.toFixed(2)} | ${c.signal.toFixed(2)} | ${c.rsi.toFixed(1)} |`,
     );
   });
 
   md.push(
     "",
-    "## Compact (date · time · price)",
+    "## Compact (cross · first lower)",
     "",
-    "| Day | Time | Price ₹ |",
-    "|-----|------|--------:|",
+    "| Day | Cross time | Cross ₹ | Lower time | Lower ₹ |",
+    "|-----|------------|--------:|------------|--------:|",
   );
   for (const c of crosses) {
-    md.push(`| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} |`);
+    md.push(
+      `| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} |`,
+    );
   }
   md.push("");
-
   const mdPath = resolve(REPORTS_DIR, "sunpharma-smi-down-cross-60d.md");
   const jsonPath = resolve(REPORTS_DIR, "sunpharma-smi-down-cross-60d.json");
   writeFileSync(mdPath, md.join("\n"));
@@ -268,6 +338,10 @@ async function main(): Promise<void> {
         to: targetDates[targetDates.length - 1] ?? null,
         crossCount: crosses.length,
         daysWithCross,
+        wentLowerCount: withLower.length,
+        wentLowerPct: crosses.length
+          ? round((withLower.length / crosses.length) * 100)
+          : 0,
         crosses,
         source: `Yahoo 15m ${YAHOO}`,
         generatedAt: new Date().toISOString(),
@@ -277,12 +351,14 @@ async function main(): Promise<void> {
     ),
   );
 
-  console.log(`Crosses: ${crosses.length} on ${daysWithCross} days`);
+  console.log(
+    `Crosses: ${crosses.length} on ${daysWithCross} days · went lower ${withLower.length}/${crosses.length}`,
+  );
   console.log(`Wrote ${mdPath}`);
   console.log(`Wrote ${jsonPath}`);
   for (const c of crosses.slice(0, 8)) {
     console.log(
-      `  ${c.dateKey} ${c.timeIst} mid=${c.midPrice} SMI ${c.prevSmi}→${c.smi} vs sig ${c.prevSignal}→${c.signal}`,
+      `  ${c.dateKey} ${c.timeIst} mid=${c.midPrice} → lower ${c.lowerTimeIst ?? "—"} ${c.lowerPrice ?? "—"} (lowest ${c.lowestTimeIst ?? "—"} ${c.lowestPrice ?? "—"})`,
     );
   }
   if (crosses.length > 8) console.log(`  … +${crosses.length - 8} more`);
