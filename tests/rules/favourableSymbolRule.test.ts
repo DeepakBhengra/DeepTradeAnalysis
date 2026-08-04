@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 import {
   __favourableSymbolRuleTestables,
   assertFavourableSymbolRuleSymbol,
+  evaluateBuyGuards,
   favourableSymbolRuleIdForTradingSymbol,
   getFavourableSymbolRuleConfig,
   isFavourableSymbolRuleSymbol,
+  type FavourableSymbolRuleConfig,
 } from "../../src/rules/favourableSymbolRule.js";
 
 const { matchesBuyQuality, matchesSellQuality, matchesBuyExtended } =
@@ -26,6 +28,16 @@ describe("favourable symbol rule registry", () => {
     expect(() => assertFavourableSymbolRuleSymbol("ruleLtm", "TECHM")).toThrow(
       /LTM-only/,
     );
+  });
+
+  it("enables buyGuards only on RuleICICIGI", () => {
+    expect(getFavourableSymbolRuleConfig("ruleIcicigi").buyGuards).toEqual({
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarConfirmation: true,
+      maxOpenDrawdownPct: 0.8,
+    });
+    expect(getFavourableSymbolRuleConfig("ruleLtm").buyGuards).toBeUndefined();
   });
 });
 
@@ -122,5 +134,93 @@ describe("RuleTECHM / RulePOLICYBZR distinctive gates", () => {
         bbLevel: 1714,
       }),
     ).toBe(false);
+  });
+});
+
+describe("RuleICICIGI buyGuards", () => {
+  const rule = getFavourableSymbolRuleConfig("ruleIcicigi");
+
+  const passingCtx = {
+    smi: -42,
+    prevSmi: -50,
+    macdHist: -1.0,
+    prevMacdHist: -1.5,
+    setupMid: 1680,
+    dayOpenMid: 1690,
+    nextMid: 1685,
+  };
+
+  it("passes when SMI+MACD rising, confirm up, and open drawdown within cap", () => {
+    const result = evaluateBuyGuards(rule, passingCtx);
+    expect(result.ok).toBe(true);
+    expect(result.confirmedOnNextBar).toBe(true);
+    expect(result.reasons.some((r) => r.includes("SMI rising"))).toBe(true);
+    expect(result.reasons.some((r) => r.includes("MACD hist rising"))).toBe(true);
+    expect(result.reasons.some((r) => r.includes("next-bar confirm"))).toBe(true);
+  });
+
+  it("rejects falling SMI (29 Jul style cascade)", () => {
+    expect(
+      evaluateBuyGuards(rule, { ...passingCtx, smi: -47, prevSmi: -25 }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects falling MACD histogram", () => {
+    expect(
+      evaluateBuyGuards(rule, {
+        ...passingCtx,
+        macdHist: -1.7,
+        prevMacdHist: -1.4,
+      }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects next-bar confirmation failure", () => {
+    expect(
+      evaluateBuyGuards(rule, { ...passingCtx, nextMid: 1673 }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects open drawdown beyond 0.8%", () => {
+    // 1691.75 → 1675.70 ≈ -0.95% (29 Jul)
+    expect(
+      evaluateBuyGuards(rule, {
+        ...passingCtx,
+        dayOpenMid: 1691.75,
+        setupMid: 1675.7,
+      }).ok,
+    ).toBe(false);
+  });
+
+  it("allows disabling open-drawdown cap via null", () => {
+    const relaxed: FavourableSymbolRuleConfig = {
+      ...rule,
+      buyGuards: {
+        ...rule.buyGuards!,
+        maxOpenDrawdownPct: null,
+      },
+    };
+    expect(
+      evaluateBuyGuards(relaxed, {
+        ...passingCtx,
+        dayOpenMid: 1691.75,
+        setupMid: 1675.7,
+      }).ok,
+    ).toBe(true);
+  });
+
+  it("no-ops when buyGuards are absent", () => {
+    const bare: FavourableSymbolRuleConfig = { ...rule, buyGuards: undefined };
+    expect(
+      evaluateBuyGuards(bare, {
+        smi: -10,
+        prevSmi: 0,
+        macdHist: -5,
+        prevMacdHist: -1,
+        setupMid: 100,
+        dayOpenMid: 120,
+        nextMid: 90,
+      }),
+    ).toEqual({ ok: true, reasons: [], confirmedOnNextBar: false });
   });
 });

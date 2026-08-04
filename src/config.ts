@@ -651,6 +651,16 @@ export const config = {
         maxSmi: 0,
         maxBbLowerGapPct: 1.0,
       },
+      /**
+       * Falling-knife guards (2026-07-29 loss study): require SMI + MACD hist
+       * turn-up, next-bar mid confirmation, and skip if already down >0.8% from open.
+       */
+      buyGuards: {
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarConfirmation: true,
+        maxOpenDrawdownPct: 0.8,
+      },
       sellQuality: {
         minRsi: 45,
         maxRsi: 75,
