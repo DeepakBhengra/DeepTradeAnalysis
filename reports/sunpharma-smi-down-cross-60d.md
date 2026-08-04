@@ -12,7 +12,7 @@
 - **Crosses found:** **118** on **57** days
 - **Went lower same day:** **103/118** (87.29%)
 - **Data:** Yahoo Finance 15m (`SUNPHARMA.NS`)
-- **Generated (UTC):** 2026-08-04T19:37:33.827Z
+- **Generated (UTC):** 2026-08-04T19:40:39.172Z
 
 ## Crosses
 
