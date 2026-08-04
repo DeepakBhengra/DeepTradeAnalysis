@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useDayScanSimulationContext } from "../context/DayScanSimulationContext";
-import type { DayOrderPortfolio, DayOrderSimStatus } from "../types/dayOrder";
+import type { DayOrderPortfolio, DayOrderRunSettings, DayOrderSimStatus } from "../types/dayOrder";
+import { DEFAULT_DAY_ORDER_RUN_SETTINGS } from "../types/dayOrder";
 import { catchUpDayOrderPortfolio } from "../utils/dayOrderCatchUp";
 import {
   computeDayOrderPnL,
   createInitialDayOrderPortfolio,
   processDayOrderTick,
+  validateDayOrderRunSettings,
 } from "../utils/dayOrderEngine";
 
 interface UseDayOrderSimulationResult {
@@ -19,6 +21,9 @@ interface UseDayOrderSimulationResult {
   startBlockedReason: string | null;
   dateMismatch: boolean;
   catchingUp: boolean;
+  runSettings: DayOrderRunSettings;
+  setRunSettings: (settings: DayOrderRunSettings) => void;
+  settingsError: string | null;
   start: () => void;
   stop: () => void;
 }
@@ -26,9 +31,13 @@ interface UseDayOrderSimulationResult {
 function getStartBlockedReason(
   scanStatus: string,
   dateMismatch: boolean,
+  settingsError: string | null,
 ): string | null {
   if (dateMismatch) {
     return "Order date must match Day Scan Simulator date.";
+  }
+  if (settingsError != null) {
+    return settingsError;
   }
   if (scanStatus === "idle" || scanStatus === "loading") {
     return "Start Day Scan Simulator with the same date first.";
@@ -52,6 +61,9 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
   const [portfolio, setPortfolio] = useState<DayOrderPortfolio>(
     createInitialDayOrderPortfolio,
   );
+  const [runSettings, setRunSettingsState] = useState<DayOrderRunSettings>(
+    DEFAULT_DAY_ORDER_RUN_SETTINGS,
+  );
 
   const processedSessionIndexRef = useRef<number | null>(null);
   const statusRef = useRef(status);
@@ -66,9 +78,16 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
   const ruleVariantRef = useRef(ruleVariant);
   ruleVariantRef.current = ruleVariant;
   const startRequestIdRef = useRef(0);
+  /** Settings locked for the active run (catch-up + live ticks). */
+  const activeSettingsRef = useRef<DayOrderRunSettings>(DEFAULT_DAY_ORDER_RUN_SETTINGS);
 
+  const settingsError = validateDayOrderRunSettings(runSettings);
   const dateMismatch = orderDate !== scanDate;
-  const startBlockedReason = getStartBlockedReason(scanStatus, dateMismatch);
+  const startBlockedReason = getStartBlockedReason(
+    scanStatus,
+    dateMismatch,
+    settingsError,
+  );
   const canStart =
     startBlockedReason == null && status !== "running" && !catchingUp;
 
@@ -79,6 +98,10 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     },
     [setAnalysisDate],
   );
+
+  const setRunSettings = useCallback((settings: DayOrderRunSettings) => {
+    setRunSettingsState(settings);
+  }, []);
 
   useEffect(() => {
     setOrderDateLocal(scanDate);
@@ -95,6 +118,14 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
   useEffect(() => {
     resetPortfolio();
   }, [orderDate, ruleVariant, resetPortfolio]);
+
+  // Changing qty / price range while idle clears the previous paper book.
+  useEffect(() => {
+    if (statusRef.current === "idle") {
+      setPortfolio(createInitialDayOrderPortfolio());
+      processedSessionIndexRef.current = null;
+    }
+  }, [runSettings]);
 
   useEffect(() => {
     if (scanStatus === "idle" && statusRef.current !== "idle") {
@@ -115,6 +146,8 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     const currentData = dataRef.current;
     const date = scanDateRef.current;
     const variant = ruleVariantRef.current;
+    const settings = { ...runSettings };
+    activeSettingsRef.current = settings;
 
     void (async () => {
       setCatchingUp(true);
@@ -127,6 +160,7 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
           variant,
           throughIndex: currentIndex,
           currentPayload: currentData,
+          settings,
         });
         if (requestId !== startRequestIdRef.current) {
           return;
@@ -141,7 +175,7 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
         const initial = createInitialDayOrderPortfolio();
         if (currentData) {
           processedSessionIndexRef.current = currentIndex;
-          setPortfolio(processDayOrderTick(initial, currentData));
+          setPortfolio(processDayOrderTick(initial, currentData, settings));
         } else {
           processedSessionIndexRef.current = null;
           setPortfolio(initial);
@@ -152,7 +186,7 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
         }
       }
     })();
-  }, [startBlockedReason, catchingUp]);
+  }, [startBlockedReason, catchingUp, runSettings]);
 
   const stop = useCallback(() => {
     startRequestIdRef.current += 1;
@@ -197,7 +231,9 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     }
 
     processedSessionIndexRef.current = sessionIndex;
-    setPortfolio((current) => processDayOrderTick(current, data));
+    setPortfolio((current) =>
+      processDayOrderTick(current, data, activeSettingsRef.current),
+    );
   }, [data, sessionIndex, catchingUp]);
 
   useEffect(() => {
@@ -218,6 +254,9 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     startBlockedReason,
     dateMismatch,
     catchingUp,
+    runSettings,
+    setRunSettings,
+    settingsError,
     start,
     stop,
   };

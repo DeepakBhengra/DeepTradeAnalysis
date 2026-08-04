@@ -145,4 +145,45 @@ describe("useDayOrderSimulation", () => {
   it("uses ₹1 crore paper capital", () => {
     expect(DAY_ORDER_INITIAL_CASH).toBe(10_000_000);
   });
+
+  it("uses custom quantity when opening positions", async () => {
+    fetchDayScanSimulationMock.mockImplementation(async (_date, index) =>
+      makePayload(Math.max(index, 1)),
+    );
+
+    const { result } = renderHook(() => useScanAndOrder(), { wrapper });
+
+    act(() => {
+      result.current.order.setRunSettings({
+        quantity: 40,
+        minEntryPrice: 0,
+        maxEntryPrice: 1900,
+      });
+    });
+
+    await act(async () => {
+      result.current.scan.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.order.status).toBe("running");
+      expect(result.current.order.portfolio.openPositions).toHaveLength(1);
+      expect(result.current.order.portfolio.openPositions[0]?.quantity).toBe(40);
+    });
+  });
+
+  it("blocks start when settings are invalid", () => {
+    const { result } = renderHook(() => useDayOrderSimulation(), { wrapper });
+
+    act(() => {
+      result.current.setRunSettings({
+        quantity: 0,
+        minEntryPrice: 0,
+        maxEntryPrice: 1900,
+      });
+    });
+
+    expect(result.current.canStart).toBe(false);
+    expect(result.current.settingsError).toMatch(/Quantity/);
+  });
 });

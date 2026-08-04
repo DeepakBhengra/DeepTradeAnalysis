@@ -1,6 +1,7 @@
 import { fetchDayScanSimulation } from "../api/client";
 import type { DayScanSimulationPayload } from "../types/backtest";
-import type { DayOrderPortfolio } from "../types/dayOrder";
+import type { DayOrderPortfolio, DayOrderRunSettings } from "../types/dayOrder";
+import { DEFAULT_DAY_ORDER_RUN_SETTINGS } from "../types/dayOrder";
 import { createInitialDayOrderPortfolio, processDayOrderTick } from "./dayOrderEngine";
 
 /**
@@ -13,8 +14,10 @@ export async function catchUpDayOrderPortfolio(input: {
   variant: string;
   throughIndex: number;
   currentPayload?: DayScanSimulationPayload | null;
+  settings?: DayOrderRunSettings;
 }): Promise<DayOrderPortfolio> {
   const throughIndex = Math.max(0, input.throughIndex);
+  const settings = input.settings ?? DEFAULT_DAY_ORDER_RUN_SETTINGS;
   let portfolio = createInitialDayOrderPortfolio();
 
   for (let index = 0; index <= throughIndex; index++) {
@@ -22,7 +25,7 @@ export async function catchUpDayOrderPortfolio(input: {
       index === throughIndex && input.currentPayload != null
         ? input.currentPayload
         : await fetchDayScanSimulation(input.date, index, input.variant);
-    portfolio = processDayOrderTick(portfolio, payload);
+    portfolio = processDayOrderTick(portfolio, payload, settings);
   }
 
   return portfolio;

@@ -11,6 +11,7 @@ import {
   entrySignalKey,
   exitSignalKey,
   processDayOrderTick,
+  validateDayOrderRunSettings,
 } from "./dayOrderEngine";
 
 function makeSignal(
@@ -253,6 +254,66 @@ describe("dayOrderEngine", () => {
 
     expect(portfolio.openPositions).toHaveLength(0);
     expect(portfolio.skippedEntryKeys).toContain(entrySignalKey(signal));
+  });
+
+  it("honors a custom quantity for the date run", () => {
+    const signal = makeSignal({ entryPrice: 500, entryTimeIst: "09:30" });
+    const portfolio = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([signal], [], 0, "09:30"),
+      { quantity: 25, minEntryPrice: 0, maxEntryPrice: 1900 },
+    );
+
+    expect(portfolio.openPositions[0]?.quantity).toBe(25);
+    expect(portfolio.cash).toBe(DAY_ORDER_INITIAL_CASH - 500 * 25);
+  });
+
+  it("skips entries below the configured min entry price", () => {
+    const signal = makeSignal({ entryPrice: 400, entryTimeIst: "09:30" });
+    const portfolio = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([signal], [], 0, "09:30"),
+      { quantity: 100, minEntryPrice: 500, maxEntryPrice: 1900 },
+    );
+
+    expect(portfolio.openPositions).toHaveLength(0);
+    expect(portfolio.skippedEntryKeys).toContain(entrySignalKey(signal));
+  });
+
+  it("allows entries up to a raised max entry price", () => {
+    const signal = makeSignal({ entryPrice: 2500, entryTimeIst: "09:30" });
+    const portfolio = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([signal], [], 0, "09:30"),
+      { quantity: 10, minEntryPrice: 0, maxEntryPrice: 3000 },
+    );
+
+    expect(portfolio.openPositions).toHaveLength(1);
+    expect(portfolio.openPositions[0]?.quantity).toBe(10);
+  });
+
+  it("validates run settings", () => {
+    expect(
+      validateDayOrderRunSettings({
+        quantity: 100,
+        minEntryPrice: 0,
+        maxEntryPrice: 1900,
+      }),
+    ).toBeNull();
+    expect(
+      validateDayOrderRunSettings({
+        quantity: 0,
+        minEntryPrice: 0,
+        maxEntryPrice: 1900,
+      }),
+    ).toMatch(/Quantity/);
+    expect(
+      validateDayOrderRunSettings({
+        quantity: 100,
+        minEntryPrice: 2000,
+        maxEntryPrice: 1900,
+      }),
+    ).toMatch(/Min entry price cannot be greater/);
   });
 
   it("squares off at scan exit and realizes P&L", () => {

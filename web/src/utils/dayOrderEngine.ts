@@ -8,11 +8,11 @@ import type {
   DayOrderOpenPosition,
   DayOrderPnLSummary,
   DayOrderPortfolio,
+  DayOrderRunSettings,
 } from "../types/dayOrder";
 import {
   DAY_ORDER_INITIAL_CASH,
-  MAX_ENTRY_PRICE,
-  ORDER_QUANTITY,
+  DEFAULT_DAY_ORDER_RUN_SETTINGS,
 } from "../types/dayOrder";
 import { formatDayScanStrategy } from "./backtestFormat";
 
@@ -45,8 +45,8 @@ function compareTimeIst(a: string, b: string): number {
   return a.localeCompare(b);
 }
 
-function requiredCapital(entryPrice: number): number {
-  return entryPrice * ORDER_QUANTITY;
+function requiredCapital(entryPrice: number, quantity: number): number {
+  return entryPrice * quantity;
 }
 
 function deployedCapital(positions: DayOrderOpenPosition[]): number {
@@ -78,6 +78,7 @@ function createEntryFill(
   signal: DayScanSimulationSignal,
   signalKey: string,
   sessionIndex: number,
+  quantity: number,
 ): DayOrderFill {
   return {
     id: createFillId(),
@@ -87,7 +88,7 @@ function createEntryFill(
     symbol: signal.symbol,
     strategy: signal.strategy,
     side: signal.side,
-    quantity: ORDER_QUANTITY,
+    quantity,
     price: signal.entryPrice,
     timeIst: signal.entryTimeIst,
     sessionIndex,
@@ -111,7 +112,7 @@ function createExitFill(
     symbol: exit.symbol,
     strategy: exit.strategy,
     side: exitSide,
-    quantity: ORDER_QUANTITY,
+    quantity: position.quantity,
     price: exit.exitPrice,
     timeIst: exit.exitTimeIst,
     sessionIndex,
@@ -149,7 +150,7 @@ function processExits(
 
     const position = next.openPositions[positionIndex];
     const pnl = computeRealizedPnL(position, exit.exitPrice);
-    const marginReleased = requiredCapital(position.entryPrice);
+    const marginReleased = requiredCapital(position.entryPrice, position.quantity);
     const exitProceeds =
       position.side === "BUY"
         ? exit.exitPrice * position.quantity
@@ -170,8 +171,21 @@ function processExits(
   return next;
 }
 
-function canOpenEntry(portfolio: DayOrderPortfolio, entryPrice: number): boolean {
-  return portfolio.cash >= requiredCapital(entryPrice);
+function canOpenEntry(
+  portfolio: DayOrderPortfolio,
+  entryPrice: number,
+  quantity: number,
+): boolean {
+  return portfolio.cash >= requiredCapital(entryPrice, quantity);
+}
+
+function isEntryPriceInRange(
+  entryPrice: number,
+  settings: DayOrderRunSettings,
+): boolean {
+  return (
+    entryPrice >= settings.minEntryPrice && entryPrice <= settings.maxEntryPrice
+  );
 }
 
 function processEntries(
@@ -179,6 +193,7 @@ function processEntries(
   entries: DayScanSimulationSignal[],
   sessionIndex: number,
   simulatedTimeIst: string,
+  settings: DayOrderRunSettings,
 ): DayOrderPortfolio {
   let next: DayOrderPortfolio = {
     ...portfolio,
@@ -216,24 +231,24 @@ function processEntries(
       continue;
     }
 
-    if (signal.entryPrice > MAX_ENTRY_PRICE) {
+    if (!isEntryPriceInRange(signal.entryPrice, settings)) {
       skippedKeys.add(signalKey);
       continue;
     }
 
-    if (!canOpenEntry(next, signal.entryPrice)) {
+    if (!canOpenEntry(next, signal.entryPrice, settings.quantity)) {
       skippedKeys.add(signalKey);
       continue;
     }
 
-    const margin = requiredCapital(signal.entryPrice);
+    const margin = requiredCapital(signal.entryPrice, settings.quantity);
     const position: DayOrderOpenPosition = {
       signalKey,
       tradingSymbol: signal.tradingSymbol,
       symbol: signal.symbol,
       strategy: signal.strategy,
       side: signal.side,
-      quantity: ORDER_QUANTITY,
+      quantity: settings.quantity,
       entryPrice: signal.entryPrice,
       entryTimeIst: signal.entryTimeIst,
     };
@@ -241,7 +256,10 @@ function processEntries(
     next = {
       cash: next.cash - margin,
       openPositions: [...next.openPositions, position],
-      fills: [...next.fills, createEntryFill(signal, signalKey, sessionIndex)],
+      fills: [
+        ...next.fills,
+        createEntryFill(signal, signalKey, sessionIndex, settings.quantity),
+      ],
       realizedPnL: next.realizedPnL,
       skippedEntryKeys: [...skippedKeys],
     };
@@ -255,11 +273,18 @@ function processEntries(
 export function processDayOrderTick(
   portfolio: DayOrderPortfolio,
   payload: DayScanSimulationPayload,
+  settings: DayOrderRunSettings = DEFAULT_DAY_ORDER_RUN_SETTINGS,
 ): DayOrderPortfolio {
   const sessionIndex = payload.simulation.sessionIndex;
   const simulatedTimeIst = payload.simulation.simulatedTimeIst;
   const afterExits = processExits(portfolio, payload.exits, sessionIndex);
-  return processEntries(afterExits, payload.entries, sessionIndex, simulatedTimeIst);
+  return processEntries(
+    afterExits,
+    payload.entries,
+    sessionIndex,
+    simulatedTimeIst,
+    settings,
+  );
 }
 
 export function describeDayOrderFill(fill: DayOrderFill): string {
@@ -271,4 +296,21 @@ export function describeDayOrderFill(fill: DayOrderFill): string {
       : "";
 
   return `${action} ${fill.side} ${fill.quantity} ${fill.tradingSymbol} @ ${fill.price.toFixed(2)} (${strategy}, ${fill.timeIst} IST)${pnl}`;
+}
+
+/** Validate UI-editable run settings; returns an error message or null. */
+export function validateDayOrderRunSettings(settings: DayOrderRunSettings): string | null {
+  if (!Number.isInteger(settings.quantity) || settings.quantity < 1) {
+    return "Quantity must be a positive integer.";
+  }
+  if (!Number.isFinite(settings.minEntryPrice) || settings.minEntryPrice < 0) {
+    return "Min entry price must be a number ≥ 0.";
+  }
+  if (!Number.isFinite(settings.maxEntryPrice) || settings.maxEntryPrice < 0) {
+    return "Max entry price must be a number ≥ 0.";
+  }
+  if (settings.minEntryPrice > settings.maxEntryPrice) {
+    return "Min entry price cannot be greater than max entry price.";
+  }
+  return null;
 }

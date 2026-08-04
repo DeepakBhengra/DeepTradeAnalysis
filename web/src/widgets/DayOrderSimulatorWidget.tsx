@@ -1,11 +1,23 @@
+import { useState } from "react";
+
 import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
 import { DayOrderPortfolioPanel } from "../components/DayOrderPortfolioPanel";
 import { useDayScanSimulationContext } from "../context/DayScanSimulationContext";
 import { useDayOrderSimulation } from "../hooks/useDayOrderSimulation";
 import {
+  DEFAULT_DAY_ORDER_RUN_SETTINGS,
+  MAX_ENTRY_PRICE,
+  MIN_ENTRY_PRICE,
+  ORDER_QUANTITY,
+} from "../types/dayOrder";
+import {
   DAY_SCAN_SIMULATION_VARIANT_OPTIONS,
   type DayScanSimulationVariant,
 } from "../utils/dayScanSimulationVariant";
+import {
+  formatDayOrderRunSettings,
+  parseDayOrderRunSettingsInput,
+} from "../utils/dayOrderRunSettings";
 
 interface DayOrderSimulatorWidgetProps {
   isActive: boolean;
@@ -24,6 +36,10 @@ function formatScanStatus(status: string): string {
     default:
       return "Idle";
   }
+}
+
+function formatInr(value: number): string {
+  return value.toLocaleString("en-IN");
 }
 
 export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetProps) {
@@ -48,12 +64,34 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
     startBlockedReason,
     dateMismatch,
     catchingUp,
+    runSettings,
+    setRunSettings,
+    settingsError,
     start,
     stop,
   } = useDayOrderSimulation();
 
+  const [quantityText, setQuantityText] = useState(
+    () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).quantityText,
+  );
+  const [minEntryPriceText, setMinEntryPriceText] = useState(
+    () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).minEntryPriceText,
+  );
+  const [maxEntryPriceText, setMaxEntryPriceText] = useState(
+    () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).maxEntryPriceText,
+  );
+
   const isRunning = status === "running" || catchingUp;
   const scanBusy = scanStatus === "playing" || scanStatus === "loading";
+  const inputsDisabled = isRunning;
+
+  const applyDraftSettings = (next: {
+    quantityText: string;
+    minEntryPriceText: string;
+    maxEntryPriceText: string;
+  }) => {
+    setRunSettings(parseDayOrderRunSettingsInput(next));
+  };
 
   return (
     <div hidden={!isActive}>
@@ -108,6 +146,84 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
             </button>
           </div>
 
+          <div className="mt-3 flex flex-wrap items-end gap-3">
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayorder-sim-min-price"
+            >
+              Min entry price (₹)
+              <input
+                id="dayorder-sim-min-price"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="decimal"
+                disabled={inputsDisabled}
+                value={minEntryPriceText}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setMinEntryPriceText(value);
+                  applyDraftSettings({
+                    quantityText,
+                    minEntryPriceText: value,
+                    maxEntryPriceText,
+                  });
+                }}
+                className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayorder-sim-max-price"
+            >
+              Max entry price (₹)
+              <input
+                id="dayorder-sim-max-price"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="decimal"
+                disabled={inputsDisabled}
+                value={maxEntryPriceText}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setMaxEntryPriceText(value);
+                  applyDraftSettings({
+                    quantityText,
+                    minEntryPriceText,
+                    maxEntryPriceText: value,
+                  });
+                }}
+                className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayorder-sim-quantity"
+            >
+              Quantity (date run)
+              <input
+                id="dayorder-sim-quantity"
+                type="number"
+                min={1}
+                step={1}
+                inputMode="numeric"
+                disabled={inputsDisabled}
+                value={quantityText}
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setQuantityText(value);
+                  applyDraftSettings({
+                    quantityText: value,
+                    minEntryPriceText,
+                    maxEntryPriceText,
+                  });
+                }}
+                className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
+          </div>
+
           <div className="mt-3 grid gap-1 text-xs text-kite-muted sm:grid-cols-2 lg:grid-cols-4">
             <p className="m-0">
               Order status:{" "}
@@ -139,6 +255,19 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
                   : ""}
               </span>
             </p>
+            <p className="m-0">
+              Qty / price range:{" "}
+              <span className="text-kite-text">
+                {Number.isFinite(runSettings.quantity) ? runSettings.quantity : "—"} qty · ₹
+                {Number.isFinite(runSettings.minEntryPrice)
+                  ? formatInr(runSettings.minEntryPrice)
+                  : "—"}
+                –₹
+                {Number.isFinite(runSettings.maxEntryPrice)
+                  ? formatInr(runSettings.maxEntryPrice)
+                  : "—"}
+              </span>
+            </p>
           </div>
 
           {dateMismatch && (
@@ -147,7 +276,11 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
             </p>
           )}
 
-          {!isRunning && startBlockedReason && !dateMismatch && (
+          {!isRunning && settingsError && (
+            <p className="m-0 mt-2 text-xs text-kite-red">{settingsError}</p>
+          )}
+
+          {!isRunning && startBlockedReason && !dateMismatch && !settingsError && (
             <p className="m-0 mt-2 text-xs text-kite-muted">{startBlockedReason}</p>
           )}
 
@@ -160,9 +293,11 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
 
           <p className="m-0 mt-2 text-xs text-kite-muted">
             Auto paper-trades Day Scan entry/exit signals for the selected rule variant with
-            ₹1,00,00,000 capital, 100 qty per stock, max entry price ₹1,900. Starts automatically
-            when Day Scan Simulator starts and catches up from 09:15. Order history lists every
-            fill (scroll for morning 09:15 square-offs).
+            ₹1,00,00,000 capital. Set quantity and entry price range for this date run before Start
+            (locked while running). Defaults: {ORDER_QUANTITY} qty, ₹{formatInr(MIN_ENTRY_PRICE)}–₹
+            {formatInr(MAX_ENTRY_PRICE)}. Starts automatically when Day Scan Simulator starts and
+            catches up from 09:15. Order history lists every fill (scroll for morning 09:15
+            square-offs).
           </p>
         </section>
 
