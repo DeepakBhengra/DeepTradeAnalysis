@@ -678,6 +678,28 @@ export const config = {
   },
 
   /**
+   * Deeppro1 — generic all-stock SMI cross + fixed % square-off.
+   * Same logic as RuleSUNPHARMA1 / RulePNB1 (black↓red → SELL, black↑red → BUY, SQ 0.45%),
+   * but no symbol lock. Uses Stch Mtm (10,3,3) — not Deeppro's (10,3,10).
+   * Wired to Day Scan + Day Scan Post-Mortem.
+   */
+  deeppro1: {
+    sessionStart: "09:15",
+    sessionEnd: "15:30",
+    /**
+     * Chart-aligned Stch Mtm (matches RuleSUNPHARMA1 / SMI down-cross study):
+     * %K=10, double-smooth=3, signal EMA=3.
+     */
+    smi: {
+      lengthK: 10,
+      lengthD: 3,
+      lengthEma: 3,
+    },
+    /** Same-day square-off when favourable mid move reaches this % from entry mid. */
+    squareOffPct: 0.45,
+  },
+
+  /**
    * Per-symbol favourable profit-range rules (separate from Deepak/Deeppro/RulePNB/RuleSUNPHARMA).
    * Each entry is locked to one trading symbol. Thresholds from 60d rule-free IQR studies.
    */

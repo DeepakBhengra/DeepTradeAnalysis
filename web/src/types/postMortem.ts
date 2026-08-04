@@ -6,6 +6,7 @@ export type PostMortemVariant =
   | "deepak"
   | "deepak2"
   | "deeppro"
+  | "deeppro1"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"

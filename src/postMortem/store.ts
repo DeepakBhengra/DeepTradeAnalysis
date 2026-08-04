@@ -7,6 +7,7 @@ export type PostMortemVariantId =
   | "deepak"
   | "deepak2"
   | "deeppro"
+  | "deeppro1"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"
@@ -20,6 +21,12 @@ export type PostMortemVariantId =
  * signal-day indexes instead of serving a stale cache.
  */
 export const DEEPPRO_SIGNAL_DAYS_RULES_REVISION = 10;
+
+/**
+ * Bump when Deeppro1 detection thresholds change so Post-Mortem recomputes
+ * signal-day indexes instead of serving a stale cache.
+ */
+export const DEEPPRO1_SIGNAL_DAYS_RULES_REVISION = 1;
 
 /**
  * Bump when RulePNB detection thresholds change so Post-Mortem recomputes
@@ -94,6 +101,7 @@ function assertVariant(variant: string): PostMortemVariantId {
     variant === "deepak" ||
     variant === "deepak2" ||
     variant === "deeppro" ||
+    variant === "deeppro1" ||
     variant === "rulePnb" ||
     variant === "ruleSunpharma" ||
     variant === "ruleLtm" ||
@@ -105,7 +113,7 @@ function assertVariant(variant: string): PostMortemVariantId {
     return variant;
   }
   throw new Error(
-    "Invalid variant. Use deepak, deepak2, deeppro, rulePnb, ruleSunpharma, ruleLtm, ruleIcicigi, ruleTechm, ruleTvsmotor, or rulePolicybzr.",
+    "Invalid variant. Use deepak, deepak2, deeppro, deeppro1, rulePnb, ruleSunpharma, ruleLtm, ruleIcicigi, ruleTechm, ruleTvsmotor, or rulePolicybzr.",
   );
 }
 
@@ -179,6 +187,12 @@ export function loadSignalDaysIndex(
     return null;
   }
   if (
+    variantId === "deeppro1" &&
+    stored.rulesRevision !== DEEPPRO1_SIGNAL_DAYS_RULES_REVISION
+  ) {
+    return null;
+  }
+  if (
     variantId === "rulePnb" &&
     stored.rulesRevision !== RULEPNB_SIGNAL_DAYS_RULES_REVISION
   ) {
@@ -221,13 +235,15 @@ export function saveSignalDaysIndex(input: {
     variant: variantId,
     ...(variantId === "deeppro"
       ? { rulesRevision: DEEPPRO_SIGNAL_DAYS_RULES_REVISION }
-      : variantId === "rulePnb"
-        ? { rulesRevision: RULEPNB_SIGNAL_DAYS_RULES_REVISION }
-        : variantId === "ruleSunpharma"
-          ? { rulesRevision: RULESUNPHARMA_SIGNAL_DAYS_RULES_REVISION }
-          : FAVOURABLE_SYMBOL_VARIANTS.has(variantId)
-            ? { rulesRevision: FAVOURABLE_SYMBOL_SIGNAL_DAYS_RULES_REVISION }
-          : {}),
+      : variantId === "deeppro1"
+        ? { rulesRevision: DEEPPRO1_SIGNAL_DAYS_RULES_REVISION }
+        : variantId === "rulePnb"
+          ? { rulesRevision: RULEPNB_SIGNAL_DAYS_RULES_REVISION }
+          : variantId === "ruleSunpharma"
+            ? { rulesRevision: RULESUNPHARMA_SIGNAL_DAYS_RULES_REVISION }
+            : FAVOURABLE_SYMBOL_VARIANTS.has(variantId)
+              ? { rulesRevision: FAVOURABLE_SYMBOL_SIGNAL_DAYS_RULES_REVISION }
+              : {}),
     days: input.days,
     tradingDaysScanned: input.tradingDaysScanned,
     totalSignals: input.totalSignals,

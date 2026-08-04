@@ -12,6 +12,7 @@ import { buildVolumeSnapshots } from "../indicators/volume.js";
 import { computeConfidenceScore } from "../rules/confidenceScore.js";
 import { evaluateDeepakDecision, evaluateDeepak2Decision } from "../rules/deepakDecision.js";
 import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
+import { evaluateDeeppro1Decision } from "../rules/deeppro1Decision.js";
 import {
   evaluateRulePnbDecision,
   isRulePnbSymbol,
@@ -87,6 +88,7 @@ export interface DashboardPayload {
   deepakDecision: DeepakDecisionResult | null;
   deepak2Decision: DeepakDecisionResult | null;
   deepproDecision: DeepakDecisionResult | null;
+  deeppro1Decision: DeepakDecisionResult | null;
   rulePnbDecision: DeepakDecisionResult | null;
   ruleSunpharmaDecision: DeepakDecisionResult | null;
   /** Populated only when the dashboard symbol matches a per-symbol favourable rule. */
@@ -187,6 +189,7 @@ function emptyPayload(
     deepakDecision: null,
     deepak2Decision: null,
     deepproDecision: null,
+    deeppro1Decision: null,
     rulePnbDecision: null,
     ruleSunpharmaDecision: null,
     favourableSymbolDecision: null,
@@ -225,6 +228,8 @@ function buildPayloadFromCandles(input: {
       : null;
   const deepproDecision =
     targetDateKey != null ? evaluateDeepproDecision(snapshots, targetDateKey) : null;
+  const deeppro1Decision =
+    targetDateKey != null ? evaluateDeeppro1Decision(snapshots, targetDateKey) : null;
   // RulePNB is PNB-only and never mixes into Deepak/Deeppro reasons or decision.
   const rulePnbDecision =
     targetDateKey != null && isRulePnbSymbol(dashboardSymbol.tradingSymbol)
@@ -289,6 +294,8 @@ function buildPayloadFromCandles(input: {
     deepak2Decision?.reasons.map((reason) => `[Deepak-2] ${reason}`) ?? [];
   const deepproReasons =
     deepproDecision?.reasons.map((reason) => `[Deeppro] ${reason}`) ?? [];
+  const deeppro1Reasons =
+    deeppro1Decision?.reasons.map((reason) => `[Deeppro1] ${reason}`) ?? [];
 
   const referenceCandle =
     analysisDate && series.length > 0
@@ -311,6 +318,7 @@ function buildPayloadFromCandles(input: {
       ...deepakReasons,
       ...deepak2Reasons,
       ...deepproReasons,
+      ...deeppro1Reasons,
       ...volumeReasons,
       ...depthReasons,
       ...confidenceReasons,
@@ -327,6 +335,7 @@ function buildPayloadFromCandles(input: {
     deepakDecision,
     deepak2Decision,
     deepproDecision,
+    deeppro1Decision,
     rulePnbDecision,
     ruleSunpharmaDecision,
     favourableSymbolDecision,

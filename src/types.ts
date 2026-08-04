@@ -342,6 +342,49 @@ export interface RuleSunpharma1ScanResult {
   signals: RuleSunpharma1Signal[];
 }
 
+/**
+ * Deeppro1 — generic (all-stock) SMI black↔red cross entries with fixed % square-off.
+ * Same cross + 0.45% SQ logic as RuleSUNPHARMA1 / RulePNB1, without a symbol lock.
+ * Separate from Deeppro (exhaustion) and from per-symbol favourable rules.
+ */
+export type Deeppro1ScenarioKey = "sell_smi_down_cross" | "buy_smi_up_cross";
+
+export interface Deeppro1Exit {
+  timeIst: string;
+  price: number;
+  /** True when favourable mid move reached squareOffPct. */
+  targetHit: boolean;
+  /** Realized favourable move % from entry mid (positive when in profit direction). */
+  profitPct: number;
+  squareOffPct: number;
+}
+
+export interface Deeppro1Signal {
+  side: "BUY" | "SELL";
+  rule: "deeppro1";
+  dateKey: string;
+  timeIst: string;
+  scenarioKey: Deeppro1ScenarioKey;
+  /** Entry candle mid (high+low)/2 */
+  price: number;
+  smi: number;
+  signal: number;
+  prevSmi: number;
+  prevSignal: number;
+  rsi: number;
+  squareOffPct: number;
+  exit: Deeppro1Exit | null;
+  reasons: string[];
+}
+
+export interface Deeppro1ScanResult {
+  dateKey: string;
+  rule: "deeppro1";
+  sessionStart: string;
+  sessionEnd: string;
+  signals: Deeppro1Signal[];
+}
+
 /** Per-symbol favourable profit-range rules (LTM / ICICIGI / TECHM / TVSMOTOR / POLICYBZR). */
 export type FavourableSymbolRuleId =
   | "ruleLtm"

@@ -37,6 +37,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deepak3: "dayscan-postmortem-deepak-3",
   watchParty: "dayscan-postmortem-watch-party",
   deeppro: "dayscan-postmortem-deeppro",
+  deeppro1: "dayscan-postmortem-deeppro1",
   rulePnb: "dayscan-postmortem-rule-pnb",
   ruleSunpharma: "dayscan-postmortem-rule-sunpharma",
   ruleLtm: "dayscan-postmortem-rule-ltm",
