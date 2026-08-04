@@ -47,11 +47,12 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
     canStart,
     startBlockedReason,
     dateMismatch,
+    catchingUp,
     start,
     stop,
   } = useDayOrderSimulation();
 
-  const isRunning = status === "running";
+  const isRunning = status === "running" || catchingUp;
   const scanBusy = scanStatus === "playing" || scanStatus === "loading";
 
   return (
@@ -111,11 +112,13 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
             <p className="m-0">
               Order status:{" "}
               <span className="text-kite-text">
-                {status === "running"
-                  ? "Running"
-                  : status === "complete"
-                    ? "Complete"
-                    : "Idle"}
+                {catchingUp
+                  ? "Catching up…"
+                  : status === "running"
+                    ? "Running"
+                    : status === "complete"
+                      ? "Complete"
+                      : "Idle"}
               </span>
             </p>
             <p className="m-0">
@@ -148,10 +151,18 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
             <p className="m-0 mt-2 text-xs text-kite-muted">{startBlockedReason}</p>
           )}
 
+          {catchingUp && (
+            <p className="m-0 mt-2 text-xs text-kite-muted">
+              Replaying Day Scan candles from 09:15 through the current time so morning entries and
+              square-offs are included…
+            </p>
+          )}
+
           <p className="m-0 mt-2 text-xs text-kite-muted">
             Auto paper-trades Day Scan entry/exit signals for the selected rule variant with
             ₹1,00,00,000 capital, 100 qty per stock, max entry price ₹1,900. Starts automatically
-            when Day Scan Simulator starts (same date and rule variant).
+            when Day Scan Simulator starts and catches up from 09:15. Order history lists every
+            fill (scroll for morning 09:15 square-offs).
           </p>
         </section>
 
