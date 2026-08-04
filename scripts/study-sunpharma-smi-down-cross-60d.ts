@@ -12,7 +12,6 @@
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { config } from "../src/config.js";
 import { buildIndicatorSnapshots } from "../src/indicators/compute.js";
 import { computeStochasticMomentum } from "../src/indicators/stochasticMomentum.js";
 import type { Candle, IndicatorSnapshot } from "../src/types.js";
@@ -28,7 +27,12 @@ const YAHOO = "SUNPHARMA.NS";
 const TRADE_DAYS = 60;
 const SESSION_START = "09:15";
 const SESSION_END = "15:30";
-
+/**
+ * Match Kite chart Stch Mtm label (10, 3, 3):
+ * %K=10, double-smooth D=3, signal EMA=3.
+ * (Verified vs 30 Jul 2026 chart: black↓red at 12:45 — signal EMA=10 shifts that cross to 13:00.)
+ */
+const SMI = { lengthK: 10, lengthD: 3, lengthEma: 3 };
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
 const MONTHS = [
   "Jan",
@@ -153,7 +157,7 @@ function collectTradeDates(snapshots: IndicatorSnapshot[]): string[] {
 
 async function main(): Promise<void> {
   mkdirSync(REPORTS_DIR, { recursive: true });
-  const smiCfg = config.deeppro.smi;
+  const smiCfg = SMI;
   console.log(
     `${SYMBOL} SMI black↓red cross · last ${TRADE_DAYS} trade days · Stch Mtm(${smiCfg.lengthK},${smiCfg.lengthD},${smiCfg.lengthEma})`,
   );
@@ -169,7 +173,6 @@ async function main(): Promise<void> {
     smiCfg.lengthD,
     smiCfg.lengthEma,
   );
-
   const allDates = collectTradeDates(snapshots);
   const targetDates = allDates.slice(-TRADE_DAYS);
   const dateSet = new Set(targetDates);
@@ -286,11 +289,11 @@ async function main(): Promise<void> {
     "",
     `- **Symbol:** ${SYMBOL}`,
     `- **Indicator:** Kite Stch Mtm — black = SMI, red = signal EMA`,
-    `- **Params:** %K=${smiCfg.lengthK}, %K smooth=${smiCfg.lengthD}, signal EMA=${smiCfg.lengthEma}`,
+    `- **Params:** Kite Stch Mtm \`(${smiCfg.lengthK}, ${smiCfg.lengthD}, ${smiCfg.lengthEma})\` — %K=${smiCfg.lengthK}, double-smooth=${smiCfg.lengthD}, signal EMA=${smiCfg.lengthEma}`,
     `- **Downward cross:** previous bar \`SMI ≥ signal\` and current bar \`SMI < signal\``,
     `- **Price at cross:** 15m candle mid \`(high+low)/2\` (also close listed)`,
     `- **Lower after cross:** first later same-day mid **strictly below** cross mid; also lowest mid after cross`,
-    `- **Session:** ${SESSION_START}–${SESSION_END} IST`,
+    `- **Note:** signal EMA=3 matches Kite chart pink-circle timing (e.g. 30 Jul 2026 cross @ 12:45)`,    `- **Session:** ${SESSION_START}–${SESSION_END} IST`,
     `- **Window:** ${targetDates[0]} → ${targetDates[targetDates.length - 1]} (${targetDates.length} trade days)`,
     `- **Crosses found:** **${crosses.length}** on **${daysWithCross}** days`,
     `- **Went lower same day:** **${withLower.length}/${crosses.length}** (${crosses.length ? round((withLower.length / crosses.length) * 100) : 0}%)`,
@@ -322,6 +325,24 @@ async function main(): Promise<void> {
     );
   }
   md.push("");
+
+  const jul30 = crosses.filter((c) => c.dateKey === "2026-07-30");
+  if (jul30.length > 0) {
+    md.push(
+      "## Example: Thu 30 Jul 2026 (Kite chart pink circle)",
+      "",
+      "Black SMI crossed below red signal, then price sold off into the lower Bollinger band:",
+      "",
+    );
+    for (const c of jul30) {
+      md.push(
+        `- **Cross:** ${c.timeIst} IST @ mid **₹${c.midPrice.toFixed(2)}** (SMI ${c.prevSmi.toFixed(2)}→${c.smi.toFixed(2)}, signal ${c.prevSignal.toFixed(2)}→${c.signal.toFixed(2)})`,
+        `- **First lower mid:** ${c.lowerTimeIst ?? "—"} @ **₹${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)}**`,
+        `- **Lowest mid after:** ${c.lowestTimeIst ?? "—"} @ **₹${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)}** (${c.dropFromCrossPct == null ? "—" : `${c.dropFromCrossPct.toFixed(2)}%`} below cross)`,
+        "",
+      );
+    }
+  }
   const mdPath = resolve(REPORTS_DIR, "sunpharma-smi-down-cross-60d.md");
   const jsonPath = resolve(REPORTS_DIR, "sunpharma-smi-down-cross-60d.json");
   writeFileSync(mdPath, md.join("\n"));
