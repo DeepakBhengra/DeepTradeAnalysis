@@ -84,9 +84,36 @@ type CrossRow = {
    * +drop when a lower mid exists, else −rise when only higher, else null (no later bars).
    */
   signedDropPct: number | null;
-};function round(value: number, digits = 2): number {
+  /** G/R/D pattern of 3 session 15m candles before the cross (oldest→newest). */
+  pre3Pattern: string | null;
+  /** Timed pre-3 summary, e.g. `12:00R · 12:15G · 12:30G`. */
+  pre3Detail: string | null;
+  /** RSI on those 3 pre candles (oldest→newest). */
+  pre3Rsi: string | null;
+};
+
+type DropBucket = {
+  key: string;
+  label: string;
+  min: number;
+  max: number;
+};
+
+const DROP_BUCKETS: DropBucket[] = [
+  { key: "A_3_to_1", label: "3%–1%", min: 1, max: 3 },
+  { key: "B_0_95_to_0_4", label: "0.95%–0.4%", min: 0.4, max: 0.95 },
+  { key: "C_0_35_to_0_15", label: "0.35%–0.15%", min: 0.15, max: 0.35 },
+];
+
+function round(value: number, digits = 2): number {
   const factor = 10 ** digits;
   return Math.round(value * factor) / factor;
+}
+
+function candleColor(open: number, close: number): "G" | "R" | "D" {
+  if (close > open * 1.0002) return "G";
+  if (close < open * 0.9998) return "R";
+  return "D";
 }
 
 function mid(snapshot: IndicatorSnapshot): number {
@@ -286,6 +313,19 @@ async function main(): Promise<void> {
       laterBarCount,
     };
   }
+  const sessionIdx: number[] = [];
+  for (let i = 0; i < snapshots.length; i++) {
+    if (
+      isWithinIstSessionWindow(snapshots[i].timestamp, SESSION_START, SESSION_END)
+    ) {
+      sessionIdx.push(i);
+    }
+  }
+  const sessionPos = new Map<number, number>();
+  for (let si = 0; si < sessionIdx.length; si++) {
+    sessionPos.set(sessionIdx[si], si);
+  }
+
   const crosses: CrossRow[] = [];
   for (let i = 1; i < snapshots.length; i++) {
     const snapshot = snapshots[i];
@@ -314,6 +354,24 @@ async function main(): Promise<void> {
     const crossMid = mid(snapshot);
     const move = findMoveAfterCross(i, parts.dateKey, crossMid);
 
+    let pre3Pattern: string | null = null;
+    let pre3Detail: string | null = null;
+    let pre3Rsi: string | null = null;
+    const si = sessionPos.get(i);
+    if (si != null && si >= 3) {
+      const pre = [
+        snapshots[sessionIdx[si - 3]],
+        snapshots[sessionIdx[si - 2]],
+        snapshots[sessionIdx[si - 1]],
+      ];
+      const colors = pre.map((b) => candleColor(b.open, b.close));
+      pre3Pattern = colors.join("");
+      pre3Detail = pre
+        .map((b, k) => `${formatIstTime(b.timestamp)}${colors[k]}`)
+        .join(" · ");
+      pre3Rsi = pre.map((b) => round(b.rsi, 1).toFixed(1)).join(" · ");
+    }
+
     crosses.push({
       dateKey: parts.dateKey,
       dayLabel: dayLabel(parts.dateKey),
@@ -339,6 +397,9 @@ async function main(): Promise<void> {
       highestPrice: move.highestPrice,
       riseFromCrossPct: move.riseFromCrossPct,
       signedDropPct: move.signedDropPct,
+      pre3Pattern,
+      pre3Detail,
+      pre3Rsi,
     });
   }
 
@@ -376,6 +437,22 @@ async function main(): Promise<void> {
     return b.timeIst.localeCompare(a.timeIst);
   });
 
+  function dropCell(c: CrossRow): string {
+    if (c.dropFromCrossPct != null) return `${c.dropFromCrossPct.toFixed(2)}%`;
+    if (c.signedDropPct != null) return `${c.signedDropPct.toFixed(2)}%`;
+    return "—";
+  }
+
+  const bucketed = DROP_BUCKETS.map((b) => ({
+    ...b,
+    rows: sorted.filter(
+      (c) =>
+        c.dropFromCrossPct != null &&
+        c.dropFromCrossPct >= b.min &&
+        c.dropFromCrossPct <= b.max,
+    ),
+  }));
+
   const md: string[] = [
     `# SUNPHARMA · SMI black ↓ red (signal) crosses · last ${TRADE_DAYS} trade days`,
     "",
@@ -386,6 +463,9 @@ async function main(): Promise<void> {
     `- **Price at cross:** 15m candle mid \`(high+low)/2\` (also close listed)`,
     `- **Lower after cross:** first later same-day mid **strictly below** cross mid; also lowest mid after cross`,
     `- **Negative Drop %:** no later mid below cross — price only rose/held; Drop % = \`−Rise %\` from highest later mid`,
+    `- **Pre-3:** three session 15m candles immediately before the cross (G=green, R=red, D=doji); times IST`,
+    `- **RSI:** Wilder RSI(14) on the cross bar; **Pre-3 RSI** = RSI on those three prior bars`,
+    `- **Drop buckets:** **3%–1%** · **0.95%–0.4%** · **0.35%–0.15%** (inclusive; went-lower only)`,
     `- **Note:** signal EMA=3 matches Kite chart pink-circle timing (e.g. 30 Jul 2026 cross @ 12:45)`,
     `- **Sort (main table):** **Drop % descending** (adverse / no-lower rows last)`,
     `- **Session:** ${SESSION_START}–${SESSION_END} IST`,
@@ -393,24 +473,39 @@ async function main(): Promise<void> {
     `- **Crosses found:** **${crosses.length}** on **${daysWithCross}** days`,
     `- **Went lower same day:** **${withLower.length}/${crosses.length}** (${crosses.length ? round((withLower.length / crosses.length) * 100) : 0}%)`,
     `- **No lower / rose or held:** **${noLower.length}/${crosses.length}** (${crosses.length ? round((noLower.length / crosses.length) * 100) : 0}%) · of which **${adverseRose.length}** printed a higher mid`,
+    `- **Bucket counts:** ${bucketed.map((b) => `${b.label} **${b.rows.length}**`).join(" · ")}`,
     `- **Data:** Yahoo Finance 15m (\`${YAHOO}\`)`,
     `- **Generated (UTC):** ${new Date().toISOString()}`,
     "",
-    "## Crosses (by Drop % ↓)",
+    "## By Drop % bucket (Pre-3 + RSI)",
     "",
-    "| # | Day | Date | Time (IST) | Mid ₹ | Close ₹ | Lower time | Lower ₹ | Lowest time | Lowest ₹ | Drop % | SMI (black) | Signal (red) | RSI |",
-    "|--:|-----|------|------------|------:|--------:|------------|--------:|-------------|---------:|-------:|------------:|-------------:|----:|",
   ];
 
-  sorted.forEach((c, idx) => {
-    const dropCell =
-      c.dropFromCrossPct != null
-        ? `${c.dropFromCrossPct.toFixed(2)}%`
-        : c.signedDropPct != null
-          ? `${c.signedDropPct.toFixed(2)}%`
-          : "—";
+  for (const b of bucketed) {
     md.push(
-      `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.closePrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} | ${c.lowestTimeIst ?? "—"} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${dropCell} | ${c.smi.toFixed(2)} | ${c.signal.toFixed(2)} | ${c.rsi.toFixed(1)} |`,
+      `### ${b.label} (n=${b.rows.length})`,
+      "",
+      "| # | Day | Date | Time (IST) | Mid ₹ | Lowest ₹ | Drop % | Pre-3 (t−3··t−1) | Pre-3 RSI | RSI @ cross |",
+      "|--:|-----|------|------------|------:|---------:|-------:|------------------|----------:|------------:|",
+    );
+    b.rows.forEach((c, idx) => {
+      md.push(
+        `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${dropCell(c)} | ${c.pre3Detail ?? "—"} (\`${c.pre3Pattern ?? "—"}\`) | ${c.pre3Rsi ?? "—"} | ${c.rsi.toFixed(1)} |`,
+      );
+    });
+    md.push("");
+  }
+
+  md.push(
+    "## Crosses (by Drop % ↓)",
+    "",
+    "| # | Day | Date | Time (IST) | Mid ₹ | Close ₹ | Lower time | Lower ₹ | Lowest time | Lowest ₹ | Drop % | Pre-3 | Pre-3 RSI | SMI (black) | Signal (red) | RSI |",
+    "|--:|-----|------|------------|------:|--------:|------------|--------:|-------------|---------:|-------:|-------|----------:|------------:|-------------:|----:|",
+  );
+
+  sorted.forEach((c, idx) => {
+    md.push(
+      `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.closePrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} | ${c.lowestTimeIst ?? "—"} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${dropCell(c)} | ${c.pre3Detail ?? "—"} (\`${c.pre3Pattern ?? "—"}\`) | ${c.pre3Rsi ?? "—"} | ${c.smi.toFixed(2)} | ${c.signal.toFixed(2)} | ${c.rsi.toFixed(1)} |`,
     );
   });
 
@@ -418,18 +513,12 @@ async function main(): Promise<void> {
     "",
     "## Compact (by Drop % ↓)",
     "",
-    "| Day | Cross time | Cross ₹ | Lower time | Lower ₹ | Lowest ₹ | Drop % |",
-    "|-----|------------|--------:|------------|--------:|---------:|-------:|",
+    "| Day | Cross time | Cross ₹ | Lowest ₹ | Drop % | Pre-3 | RSI |",
+    "|-----|------------|--------:|---------:|-------:|-------|----:|",
   );
   for (const c of sorted) {
-    const dropCell =
-      c.dropFromCrossPct != null
-        ? `${c.dropFromCrossPct.toFixed(2)}%`
-        : c.signedDropPct != null
-          ? `${c.signedDropPct.toFixed(2)}%`
-          : "—";
     md.push(
-      `| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${dropCell} |`,
+      `| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${dropCell(c)} | \`${c.pre3Pattern ?? "—"}\` | ${c.rsi.toFixed(1)} |`,
     );
   }
   md.push("");
@@ -439,24 +528,24 @@ async function main(): Promise<void> {
     "",
     `These **${noLower.length}** crosses never printed a mid **below** the cross mid later that session. Drop % is **negative** (= −Rise % to the highest later mid). Sorted by largest rise first.`,
     "",
-    "| # | Day | Date | Time (IST) | Mid ₹ | Close ₹ | Higher time | Higher ₹ | Highest time | Highest ₹ | Drop % (neg) | Rise % | SMI (black) | Signal (red) | RSI |",
-    "|--:|-----|------|------------|------:|--------:|-------------|---------:|--------------|----------:|-------------:|-------:|------------:|-------------:|----:|",
+    "| # | Day | Date | Time (IST) | Mid ₹ | Close ₹ | Higher time | Higher ₹ | Highest time | Highest ₹ | Drop % (neg) | Rise % | Pre-3 | Pre-3 RSI | SMI (black) | Signal (red) | RSI |",
+    "|--:|-----|------|------------|------:|--------:|-------------|---------:|--------------|----------:|-------------:|-------:|-------|----------:|------------:|-------------:|----:|",
   );
   adverseSorted.forEach((c, idx) => {
     md.push(
-      `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.closePrice.toFixed(2)} | ${c.higherTimeIst ?? "—"} | ${c.higherPrice == null ? "—" : c.higherPrice.toFixed(2)} | ${c.highestTimeIst ?? "—"} | ${c.highestPrice == null ? "—" : c.highestPrice.toFixed(2)} | ${c.signedDropPct == null ? "—" : `${c.signedDropPct.toFixed(2)}%`} | ${c.riseFromCrossPct == null ? "—" : `${c.riseFromCrossPct.toFixed(2)}%`} | ${c.smi.toFixed(2)} | ${c.signal.toFixed(2)} | ${c.rsi.toFixed(1)} |`,
+      `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.closePrice.toFixed(2)} | ${c.higherTimeIst ?? "—"} | ${c.higherPrice == null ? "—" : c.higherPrice.toFixed(2)} | ${c.highestTimeIst ?? "—"} | ${c.highestPrice == null ? "—" : c.highestPrice.toFixed(2)} | ${c.signedDropPct == null ? "—" : `${c.signedDropPct.toFixed(2)}%`} | ${c.riseFromCrossPct == null ? "—" : `${c.riseFromCrossPct.toFixed(2)}%`} | ${c.pre3Detail ?? "—"} (\`${c.pre3Pattern ?? "—"}\`) | ${c.pre3Rsi ?? "—"} | ${c.smi.toFixed(2)} | ${c.signal.toFixed(2)} | ${c.rsi.toFixed(1)} |`,
     );
   });
   md.push(
     "",
     "### Compact adverse",
     "",
-    "| Day | Cross time | Cross ₹ | Higher time | Highest ₹ | Drop % (neg) | Rise % |",
-    "|-----|------------|--------:|-------------|----------:|-------------:|-------:|",
+    "| Day | Cross time | Cross ₹ | Highest ₹ | Drop % (neg) | Rise % | Pre-3 | RSI |",
+    "|-----|------------|--------:|----------:|-------------:|-------:|-------|----:|",
   );
   for (const c of adverseSorted) {
     md.push(
-      `| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.higherTimeIst ?? "—"} | ${c.highestPrice == null ? "—" : c.highestPrice.toFixed(2)} | ${c.signedDropPct == null ? "—" : `${c.signedDropPct.toFixed(2)}%`} | ${c.riseFromCrossPct == null ? "—" : `${c.riseFromCrossPct.toFixed(2)}%`} |`,
+      `| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.highestPrice == null ? "—" : c.highestPrice.toFixed(2)} | ${c.signedDropPct == null ? "—" : `${c.signedDropPct.toFixed(2)}%`} | ${c.riseFromCrossPct == null ? "—" : `${c.riseFromCrossPct.toFixed(2)}%`} | \`${c.pre3Pattern ?? "—"}\` | ${c.rsi.toFixed(1)} |`,
     );
   }
   md.push("");
@@ -501,6 +590,14 @@ async function main(): Promise<void> {
         noLowerCount: noLower.length,
         adverseRoseCount: adverseRose.length,
         sort: "dropFromCrossPct descending; adverse no-lower by rise descending",
+        dropBuckets: bucketed.map((b) => ({
+          key: b.key,
+          label: b.label,
+          min: b.min,
+          max: b.max,
+          count: b.rows.length,
+          crosses: b.rows,
+        })),
         crosses: sorted,
         adverseNoLower: adverseSorted,
         source: `Yahoo 15m ${YAHOO}`,
