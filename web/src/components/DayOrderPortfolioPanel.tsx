@@ -39,7 +39,10 @@ function MetricRow({
 }
 
 export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPanelProps) {
-  const { openPositions, fills } = portfolio;
+  const { openPositions, fills, skippedEntryKeys } = portfolio;
+  const entryFills = fills.filter((fill) => fill.kind === "entry");
+  const exitFills = fills.filter((fill) => fill.kind === "exit");
+  const historyFills = [...fills].reverse();
 
   return (
     <div className="flex flex-col gap-3">
@@ -52,6 +55,9 @@ export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPane
           <MetricRow label="Available cash" value={formatCurrency(pnl.cash)} />
           <MetricRow label="Deployed capital" value={formatCurrency(pnl.deployedCapital)} />
           <MetricRow label="Total equity" value={formatCurrency(pnl.equity)} />
+          <MetricRow label="Entries filled" value={String(entryFills.length)} />
+          <MetricRow label="Exits filled" value={String(exitFills.length)} />
+          <MetricRow label="Entries skipped" value={String(skippedEntryKeys.length)} />
         </div>
       </section>
 
@@ -120,14 +126,22 @@ export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPane
       </section>
 
       <section className="border border-kite-border bg-kite-surface p-3">
-        <h2 className="m-0 text-xs font-semibold uppercase tracking-wide text-kite-muted">
-          Order history
-        </h2>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="m-0 text-xs font-semibold uppercase tracking-wide text-kite-muted">
+            Order history
+          </h2>
+          {fills.length > 0 && (
+            <p className="m-0 text-[10px] text-kite-muted">
+              {fills.length} fill{fills.length === 1 ? "" : "s"} · newest first · scroll for
+              morning 09:15 entries/exits
+            </p>
+          )}
+        </div>
         {fills.length === 0 ? (
           <p className="mt-3 mb-0 text-xs text-kite-muted">No filled orders yet.</p>
         ) : (
-          <ul className="m-0 mt-3 list-none divide-y divide-kite-border p-0">
-            {[...fills].reverse().slice(0, 20).map((fill) => (
+          <ul className="m-0 mt-3 max-h-[28rem] list-none divide-y divide-kite-border overflow-y-auto p-0">
+            {historyFills.map((fill) => (
               <li key={fill.id} className="py-2 text-xs text-kite-text">
                 {describeDayOrderFill(fill)}
               </li>
