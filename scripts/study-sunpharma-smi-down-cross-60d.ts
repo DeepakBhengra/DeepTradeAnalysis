@@ -284,6 +284,23 @@ async function main(): Promise<void> {
 
   const daysWithCross = new Set(crosses.map((c) => c.dateKey)).size;
   const withLower = crosses.filter((c) => c.lowerPrice != null);
+  /** Largest same-day drop first; rows with no lower print last. */
+  const sorted = [...crosses].sort((a, b) => {
+    const aDrop = a.dropFromCrossPct;
+    const bDrop = b.dropFromCrossPct;
+    if (aDrop == null && bDrop == null) {
+      const byDate = b.dateKey.localeCompare(a.dateKey);
+      if (byDate !== 0) return byDate;
+      return b.timeIst.localeCompare(a.timeIst);
+    }
+    if (aDrop == null) return 1;
+    if (bDrop == null) return -1;
+    if (bDrop !== aDrop) return bDrop - aDrop;
+    const byDate = b.dateKey.localeCompare(a.dateKey);
+    if (byDate !== 0) return byDate;
+    return b.timeIst.localeCompare(a.timeIst);
+  });
+
   const md: string[] = [
     `# SUNPHARMA · SMI black ↓ red (signal) crosses · last ${TRADE_DAYS} trade days`,
     "",
@@ -293,20 +310,22 @@ async function main(): Promise<void> {
     `- **Downward cross:** previous bar \`SMI ≥ signal\` and current bar \`SMI < signal\``,
     `- **Price at cross:** 15m candle mid \`(high+low)/2\` (also close listed)`,
     `- **Lower after cross:** first later same-day mid **strictly below** cross mid; also lowest mid after cross`,
-    `- **Note:** signal EMA=3 matches Kite chart pink-circle timing (e.g. 30 Jul 2026 cross @ 12:45)`,    `- **Session:** ${SESSION_START}–${SESSION_END} IST`,
+    `- **Note:** signal EMA=3 matches Kite chart pink-circle timing (e.g. 30 Jul 2026 cross @ 12:45)`,
+    `- **Sort:** tables ordered by **Drop % descending** (no-lower rows last)`,
+    `- **Session:** ${SESSION_START}–${SESSION_END} IST`,
     `- **Window:** ${targetDates[0]} → ${targetDates[targetDates.length - 1]} (${targetDates.length} trade days)`,
     `- **Crosses found:** **${crosses.length}** on **${daysWithCross}** days`,
     `- **Went lower same day:** **${withLower.length}/${crosses.length}** (${crosses.length ? round((withLower.length / crosses.length) * 100) : 0}%)`,
     `- **Data:** Yahoo Finance 15m (\`${YAHOO}\`)`,
     `- **Generated (UTC):** ${new Date().toISOString()}`,
     "",
-    "## Crosses",
+    "## Crosses (by Drop % ↓)",
     "",
     "| # | Day | Date | Time (IST) | Mid ₹ | Close ₹ | Lower time | Lower ₹ | Lowest time | Lowest ₹ | Drop % | SMI (black) | Signal (red) | RSI |",
     "|--:|-----|------|------------|------:|--------:|------------|--------:|-------------|---------:|-------:|------------:|-------------:|----:|",
   ];
 
-  crosses.forEach((c, idx) => {
+  sorted.forEach((c, idx) => {
     md.push(
       `| ${idx + 1} | ${c.dayLabel} | ${c.dateKey} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.closePrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} | ${c.lowestTimeIst ?? "—"} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${c.dropFromCrossPct == null ? "—" : `${c.dropFromCrossPct.toFixed(2)}%`} | ${c.smi.toFixed(2)} | ${c.signal.toFixed(2)} | ${c.rsi.toFixed(1)} |`,
     );
@@ -314,18 +333,17 @@ async function main(): Promise<void> {
 
   md.push(
     "",
-    "## Compact (cross · first lower)",
+    "## Compact (by Drop % ↓)",
     "",
-    "| Day | Cross time | Cross ₹ | Lower time | Lower ₹ |",
-    "|-----|------------|--------:|------------|--------:|",
+    "| Day | Cross time | Cross ₹ | Lower time | Lower ₹ | Lowest ₹ | Drop % |",
+    "|-----|------------|--------:|------------|--------:|---------:|-------:|",
   );
-  for (const c of crosses) {
+  for (const c of sorted) {
     md.push(
-      `| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} |`,
+      `| ${c.dayLabel} | ${c.timeIst} | ${c.midPrice.toFixed(2)} | ${c.lowerTimeIst ?? "—"} | ${c.lowerPrice == null ? "—" : c.lowerPrice.toFixed(2)} | ${c.lowestPrice == null ? "—" : c.lowestPrice.toFixed(2)} | ${c.dropFromCrossPct == null ? "—" : `${c.dropFromCrossPct.toFixed(2)}%`} |`,
     );
   }
   md.push("");
-
   const jul30 = crosses.filter((c) => c.dateKey === "2026-07-30");
   if (jul30.length > 0) {
     md.push(
@@ -363,7 +381,8 @@ async function main(): Promise<void> {
         wentLowerPct: crosses.length
           ? round((withLower.length / crosses.length) * 100)
           : 0,
-        crosses,
+        sort: "dropFromCrossPct descending (nulls last)",
+        crosses: sorted,
         source: `Yahoo 15m ${YAHOO}`,
         generatedAt: new Date().toISOString(),
       },
@@ -371,7 +390,6 @@ async function main(): Promise<void> {
       2,
     ),
   );
-
   console.log(
     `Crosses: ${crosses.length} on ${daysWithCross} days · went lower ${withLower.length}/${crosses.length}`,
   );
