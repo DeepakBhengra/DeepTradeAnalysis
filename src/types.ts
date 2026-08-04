@@ -342,6 +342,45 @@ export interface RuleSunpharma1ScanResult {
   signals: RuleSunpharma1Signal[];
 }
 
+/**
+ * RulePNB1 — SMI black↔red cross entries with fixed % square-off (PNB-only).
+ * Same logic family as RuleSUNPHARMA1; not mixed into RulePNB / other engines.
+ */
+export type RulePnb1ScenarioKey = "sell_smi_down_cross" | "buy_smi_up_cross";
+
+export interface RulePnb1Exit {
+  timeIst: string;
+  price: number;
+  targetHit: boolean;
+  profitPct: number;
+  squareOffPct: number;
+}
+
+export interface RulePnb1Signal {
+  side: "BUY" | "SELL";
+  rule: "rulePnb1";
+  dateKey: string;
+  timeIst: string;
+  scenarioKey: RulePnb1ScenarioKey;
+  price: number;
+  smi: number;
+  signal: number;
+  prevSmi: number;
+  prevSignal: number;
+  rsi: number;
+  squareOffPct: number;
+  exit: RulePnb1Exit | null;
+  reasons: string[];
+}
+
+export interface RulePnb1ScanResult {
+  dateKey: string;
+  rule: "rulePnb1";
+  sessionStart: string;
+  sessionEnd: string;
+  signals: RulePnb1Signal[];
+}
+
 /** Per-symbol favourable profit-range rules (LTM / ICICIGI / TECHM / TVSMOTOR / POLICYBZR). */
 export type FavourableSymbolRuleId =
   | "ruleLtm"
