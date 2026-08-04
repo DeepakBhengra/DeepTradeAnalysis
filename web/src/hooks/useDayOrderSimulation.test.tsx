@@ -6,6 +6,7 @@ import {
   DayScanSimulationProvider,
   useDayScanSimulationContext,
 } from "../context/DayScanSimulationContext";
+import { DAY_ORDER_INITIAL_CASH } from "../types/dayOrder";
 import { useDayOrderSimulation } from "./useDayOrderSimulation";
 
 const { fetchDayScanSimulationMock } = vi.hoisted(() => ({
@@ -89,7 +90,7 @@ describe("useDayOrderSimulation", () => {
     expect(result.current.startBlockedReason).toContain("Start Day Scan Simulator");
   });
 
-  it("allows start after scan starts with matching date", async () => {
+  it("auto-starts when day scan begins playing", async () => {
     const { result } = renderHook(() => useScanAndOrder(), { wrapper });
 
     await act(async () => {
@@ -100,10 +101,12 @@ describe("useDayOrderSimulation", () => {
       expect(result.current.scan.status).toBe("playing");
     });
 
-    expect(result.current.order.canStart).toBe(true);
+    await waitFor(() => {
+      expect(result.current.order.status).toBe("running");
+    });
   });
 
-  it("does not open positions on the start candle", async () => {
+  it("opens positions on the current candle when order starts", async () => {
     fetchDayScanSimulationMock.mockImplementation(async (_date, index) =>
       makePayload(Math.max(index, 1)),
     );
@@ -119,15 +122,12 @@ describe("useDayOrderSimulation", () => {
     });
 
     await waitFor(() => {
-      expect(result.current.scan.data?.entries.length).toBeGreaterThan(0);
+      expect(result.current.order.status).toBe("running");
+      expect(result.current.order.portfolio.openPositions).toHaveLength(1);
+      expect(result.current.order.portfolio.openPositions[0]?.tradingSymbol).toBe(
+        "RELIANCE",
+      );
     });
-
-    await act(async () => {
-      result.current.order.start();
-    });
-
-    expect(result.current.order.status).toBe("running");
-    expect(result.current.order.portfolio.openPositions).toHaveLength(0);
   });
 
   it("resets portfolio when order date changes", () => {
@@ -138,7 +138,11 @@ describe("useDayOrderSimulation", () => {
     });
 
     expect(result.current.orderDate).toBe("2026-06-10");
-    expect(result.current.portfolio.cash).toBe(300_000);
+    expect(result.current.portfolio.cash).toBe(DAY_ORDER_INITIAL_CASH);
     expect(result.current.status).toBe("idle");
+  });
+
+  it("uses ₹1 crore paper capital", () => {
+    expect(DAY_ORDER_INITIAL_CASH).toBe(10_000_000);
   });
 });

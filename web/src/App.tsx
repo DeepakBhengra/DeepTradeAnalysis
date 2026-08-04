@@ -41,7 +41,7 @@ const subtitles: Record<AppWidget, string> = {
   dayScanSimulator:
     "Replay any Day Scan rule variant (including Deeppro1) candle-by-candle from 09:15–15:00 IST.",
   dayOrderSimulator:
-    "Auto paper-trade Day Scan entry/exit signals for the selected rule variant with ₹3,00,000 capital (100 qty, max ₹1,900).",
+    "Auto paper-trade Day Scan entry/exit signals for the selected rule variant with ₹1,00,00,000 capital (100 qty, max ₹1,900). Starts automatically with Day Scan Simulator.",
   samcoTrading:
     "Samco MIS execution: Deepak + Deepak-2 day scan (50 stocks), entry price range, logs.",
 };
