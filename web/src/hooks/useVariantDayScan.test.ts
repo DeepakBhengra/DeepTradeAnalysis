@@ -8,6 +8,7 @@ const fetchDeepak2DayScan = vi.fn();
 const fetchDeepak3DayScan = vi.fn();
 const fetchDeepakWatchPartyDayScan = vi.fn();
 const fetchDeepproDayScan = vi.fn();
+const fetchDeeppro1DayScan = vi.fn();
 const fetchRulePnbDayScan = vi.fn();
 const fetchRuleSunpharmaDayScan = vi.fn();
 const fetchFavourableSymbolDayScan = vi.fn();
@@ -25,6 +26,7 @@ vi.mock("../api/client", () => ({
   fetchDeepakWatchPartyDayScan: (...args: unknown[]) =>
     fetchDeepakWatchPartyDayScan(...args),
   fetchDeepproDayScan: (...args: unknown[]) => fetchDeepproDayScan(...args),
+  fetchDeeppro1DayScan: (...args: unknown[]) => fetchDeeppro1DayScan(...args),
   fetchRulePnbDayScan: (...args: unknown[]) => fetchRulePnbDayScan(...args),
   fetchRuleSunpharmaDayScan: (...args: unknown[]) =>
     fetchRuleSunpharmaDayScan(...args),
@@ -61,6 +63,10 @@ describe("useVariantDayScan", () => {
     fetchDeepproDayScan.mockResolvedValue({
       ...payload,
       label: "deeppro",
+    });
+    fetchDeeppro1DayScan.mockResolvedValue({
+      ...payload,
+      label: "deeppro1",
     });
     fetchRulePnbDayScan.mockResolvedValue({
       ...payload,
@@ -113,6 +119,12 @@ describe("useVariantDayScan", () => {
       await result.current.run("2026-05-11");
     });
     expect(fetchDeepproDayScan).toHaveBeenCalledTimes(1);
+
+    rerender({ variant: "deeppro1" });
+    await act(async () => {
+      await result.current.run("2026-05-11");
+    });
+    expect(fetchDeeppro1DayScan).toHaveBeenCalledTimes(1);
 
     rerender({ variant: "rulePnb" });
     await act(async () => {

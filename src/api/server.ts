@@ -64,6 +64,8 @@ import { buildDeepakWatchPartyDayScanPayload } from "./buildDeepakWatchPartyDayS
 import { buildDeepak3DayScanPayload } from "./buildDeepak3DayScanPayload.js";
 import { buildDeepproBacktestPayload } from "./buildDeepproBacktestPayload.js";
 import { buildDeepproDayScanPayload } from "./buildDeepproDayScanPayload.js";
+import { buildDeeppro1BacktestPayload } from "./buildDeeppro1BacktestPayload.js";
+import { buildDeeppro1DayScanPayload } from "./buildDeeppro1DayScanPayload.js";
 import { buildRulePnbBacktestPayload } from "./buildRulePnbBacktestPayload.js";
 import { buildRulePnbDayScanPayload } from "./buildRulePnbDayScanPayload.js";
 import { buildRuleSunpharmaBacktestPayload } from "./buildRuleSunpharmaBacktestPayload.js";
@@ -559,6 +561,28 @@ app.get("/api/backtest/deeppro/day-scan", disableSocketTimeout, async (req, res)
   }
 });
 
+app.get("/api/backtest/deeppro1/day-scan", disableSocketTimeout, async (req, res) => {
+  try {
+    const dateParam = typeof req.query.date === "string" ? req.query.date : undefined;
+
+    if (!dateParam) {
+      res.status(400).json({ error: "Missing date. Use YYYY-MM-DD." });
+      return;
+    }
+
+    const payload = await buildDeeppro1DayScanPayload({ date: dateParam });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("date") ||
+      message.includes("Invalid")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
 app.get("/api/backtest/rule-pnb/day-scan", disableSocketTimeout, async (req, res) => {
   try {
     const dateParam = typeof req.query.date === "string" ? req.query.date : undefined;
@@ -807,6 +831,37 @@ app.get("/api/backtest/deeppro", async (req, res) => {
     }
 
     const payload = await buildDeepproBacktestPayload({
+      symbol: symbolParam ?? defaultDashboardSymbolId,
+      fromDate: fromParam,
+      toDate: toParam,
+    });
+    res.json(payload);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("date") ||
+      message.includes("symbol") ||
+      message.includes("Invalid") ||
+      message.includes("Enter a valid")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
+});
+
+app.get("/api/backtest/deeppro1", async (req, res) => {
+  try {
+    const symbolParam =
+      typeof req.query.symbol === "string" ? req.query.symbol : undefined;
+    const fromParam = typeof req.query.from === "string" ? req.query.from : undefined;
+    const toParam = typeof req.query.to === "string" ? req.query.to : undefined;
+
+    if (!fromParam || !toParam) {
+      res.status(400).json({ error: "Missing from or to date. Use YYYY-MM-DD." });
+      return;
+    }
+
+    const payload = await buildDeeppro1BacktestPayload({
       symbol: symbolParam ?? defaultDashboardSymbolId,
       fromDate: fromParam,
       toDate: toParam,

@@ -58,6 +58,20 @@ const DEEPPRO_SCENARIOS = [
   { label: "macd bear / bull cross", side: "SELL" as const, number: 4 },
 ];
 
+const DEEPPRO1_RULES = [
+  "All watchlist stocks — no symbol lock (generic RuleSUNPHARMA1 / RulePNB1 logic)",
+  "SELL: SMI black crosses below red signal (Stch Mtm 10,3,3)",
+  "BUY: SMI black crosses above red signal",
+  "Entry price = candle mid (high+low)/2 at the cross bar",
+  "Same-day square-off when favourable mid move reaches 0.45%",
+  "Separate from Deeppro exhaustion (no peak/trough/BB/MACD/RSI gates)",
+];
+
+const DEEPPRO1_SCENARIOS = [
+  { label: "sell SMI down-cross", side: "SELL" as const, number: 1 },
+  { label: "buy SMI up-cross", side: "BUY" as const, number: 1 },
+];
+
 const CASCADE_PATTERN_RULES = [
   "BUY guards: require SMI rising + MACD hist rising + next mid higher; skip if open drawdown < −0.8%",
   "SELL cascade: same oversold levels as BUY quality but SMI+MACD still falling and next mid lower → short on confirm bar",
@@ -114,6 +128,7 @@ type RulesPanelVariant =
   | "deepak2"
   | "deepak3"
   | "deeppro"
+  | "deeppro1"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"
@@ -224,25 +239,29 @@ export function DeepakRulesPanel({
         ? "Deepak-2 Buy / Sell Rules"
         : variant === "deeppro"
           ? "Deeppro Buy / Sell Rules"
-          : variant === "rulePnb"
-            ? "RulePNB Buy / Sell Rules"
-            : variant === "ruleSunpharma"
-              ? "RuleSUNPHARMA Buy / Sell Rules"
-              : favourablePanel
-                ? favourablePanel.title
-                : "Deepak Buy / Sell Rules";
+          : variant === "deeppro1"
+            ? "Deeppro1 Buy / Sell Rules"
+            : variant === "rulePnb"
+              ? "RulePNB Buy / Sell Rules"
+              : variant === "ruleSunpharma"
+                ? "RuleSUNPHARMA Buy / Sell Rules"
+                : favourablePanel
+                  ? favourablePanel.title
+                  : "Deepak Buy / Sell Rules";
   const scenarios =
     variant === "deepak3"
       ? DEEPAK3_SCENARIOS
       : variant === "deeppro"
         ? DEEPPRO_SCENARIOS
-        : variant === "rulePnb"
-          ? RULEPNB_SCENARIOS
-          : variant === "ruleSunpharma"
-            ? RULESUNPHARMA_SCENARIOS
-            : favourablePanel
-              ? FAVOURABLE_SYMBOL_SCENARIOS
-              : TRADE_SCENARIOS;
+        : variant === "deeppro1"
+          ? DEEPPRO1_SCENARIOS
+          : variant === "rulePnb"
+            ? RULEPNB_SCENARIOS
+            : variant === "ruleSunpharma"
+              ? RULESUNPHARMA_SCENARIOS
+              : favourablePanel
+                ? FAVOURABLE_SYMBOL_SCENARIOS
+                : TRADE_SCENARIOS;
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -262,17 +281,26 @@ export function DeepakRulesPanel({
           <p className="m-0 text-kite-muted">
             {variant === "deeppro"
               ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
-              : variant === "rulePnb"
-                ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
-                : variant === "ruleSunpharma"
-                  ? `${sessionLabel} · SUNPHARMA-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak, Deeppro, or RulePNB · day scan evaluates SUNPHARMA only.`
-                  : favourablePanel
-                    ? `${sessionLabel} · ${favourablePanel.blurb}`
-                    : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
+              : variant === "deeppro1"
+                ? `${sessionLabel} · Generic all-stock SMI black↔red cross + 0.45% square-off · same logic as RuleSUNPHARMA1 / RulePNB1 · separate from Deeppro exhaustion · day scan evaluates the full watchlist.`
+                : variant === "rulePnb"
+                  ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
+                  : variant === "ruleSunpharma"
+                    ? `${sessionLabel} · SUNPHARMA-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak, Deeppro, or RulePNB · day scan evaluates SUNPHARMA only.`
+                    : favourablePanel
+                      ? `${sessionLabel} · ${favourablePanel.blurb}`
+                      : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
           </p>
           {variant === "deeppro" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {DEEPPRO_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          )}
+          {variant === "deeppro1" && (
+            <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
+              {DEEPPRO1_RULES.map((rule) => (
                 <li key={rule}>{rule}</li>
               ))}
             </ul>

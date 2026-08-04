@@ -7,6 +7,7 @@ import {
   fetchDeepak2Backtest,
   fetchDeepakBacktest,
   fetchDeepproBacktest,
+  fetchDeeppro1Backtest,
   fetchFavourableSymbolBacktest,
   fetchRulePnbBacktest,
   fetchRuleSunpharmaBacktest,
@@ -46,6 +47,7 @@ const VARIANT_LABEL: Record<PostMortemVariant, string> = {
   deepak: "Deepak",
   deepak2: "Deepak-2",
   deeppro: "Deeppro",
+  deeppro1: "Deeppro1",
   rulePnb: "RulePNB",
   ruleSunpharma: "RuleSUNPHARMA",
   ruleLtm: FAVOURABLE_RULE_LABEL.ruleLtm,
@@ -60,6 +62,7 @@ function readStoredVariant(): PostMortemVariant {
   if (
     stored === "deepak2" ||
     stored === "deeppro" ||
+    stored === "deeppro1" ||
     stored === "rulePnb" ||
     stored === "ruleSunpharma" ||
     isFavourableSymbolRuleVariant(stored)
@@ -273,18 +276,20 @@ export function DeepakPostMortemWidget({
             ? await fetchDeepak2Backtest(normalized, fromDate, toDate)
             : variant === "deeppro"
               ? await fetchDeepproBacktest(normalized, fromDate, toDate)
-              : variant === "rulePnb"
-                ? await fetchRulePnbBacktest(normalized, fromDate, toDate)
-                : variant === "ruleSunpharma"
-                  ? await fetchRuleSunpharmaBacktest(normalized, fromDate, toDate)
-                  : isFavourableSymbolRuleVariant(variant)
-                    ? await fetchFavourableSymbolBacktest(
-                        FAVOURABLE_RULE_SLUG[variant],
-                        normalized,
-                        fromDate,
-                        toDate,
-                      )
-                    : await fetchDeepakBacktest(normalized, fromDate, toDate);
+              : variant === "deeppro1"
+                ? await fetchDeeppro1Backtest(normalized, fromDate, toDate)
+                : variant === "rulePnb"
+                  ? await fetchRulePnbBacktest(normalized, fromDate, toDate)
+                  : variant === "ruleSunpharma"
+                    ? await fetchRuleSunpharmaBacktest(normalized, fromDate, toDate)
+                    : isFavourableSymbolRuleVariant(variant)
+                      ? await fetchFavourableSymbolBacktest(
+                          FAVOURABLE_RULE_SLUG[variant],
+                          normalized,
+                          fromDate,
+                          toDate,
+                        )
+                      : await fetchDeepakBacktest(normalized, fromDate, toDate);
 
         const days = signalDaysFromTrades(payload.trades);
         setSignalDays(days);
@@ -392,13 +397,15 @@ export function DeepakPostMortemWidget({
             ? payload.deepak2Decision
             : variant === "deeppro"
               ? payload.deepproDecision
-              : variant === "rulePnb"
-                ? payload.rulePnbDecision
-                : variant === "ruleSunpharma"
-                  ? payload.ruleSunpharmaDecision
-                  : isFavourableSymbolRuleVariant(variant)
-                    ? payload.favourableSymbolDecision
-                    : payload.deepakDecision;
+              : variant === "deeppro1"
+                ? payload.deeppro1Decision
+                : variant === "rulePnb"
+                  ? payload.rulePnbDecision
+                  : variant === "ruleSunpharma"
+                    ? payload.ruleSunpharmaDecision
+                    : isFavourableSymbolRuleVariant(variant)
+                      ? payload.favourableSymbolDecision
+                      : payload.deepakDecision;
         const graded = buildDeepakPostMortemReport(decision, payload.series, variant);
         if (!graded) {
           setLoaded(null);
@@ -511,6 +518,7 @@ export function DeepakPostMortemWidget({
               <option value="deepak">Deepak</option>
               <option value="deepak2">Deepak-2</option>
               <option value="deeppro">Deeppro</option>
+              <option value="deeppro1">Deeppro1</option>
               <option value="rulePnb">RulePNB</option>
               <option value="ruleSunpharma">RuleSUNPHARMA</option>
               <option value="ruleLtm">RuleLTM</option>

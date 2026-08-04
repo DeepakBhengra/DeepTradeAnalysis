@@ -204,6 +204,7 @@ export interface DashboardPayload {
   deepakDecision: DeepakDecisionResult | null;
   deepak2Decision: DeepakDecisionResult | null;
   deepproDecision: DeepakDecisionResult | null;
+  deeppro1Decision: DeepakDecisionResult | null;
   rulePnbDecision: DeepakDecisionResult | null;
   ruleSunpharmaDecision: DeepakDecisionResult | null;
   favourableSymbolDecision: DeepakDecisionResult | null;

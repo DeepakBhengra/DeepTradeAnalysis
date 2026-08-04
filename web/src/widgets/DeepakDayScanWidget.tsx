@@ -30,6 +30,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deepak3: "deepak-3-day-scan",
   watchParty: "deepak-watch-party-day-scan",
   deeppro: "deeppro-day-scan",
+  deeppro1: "deeppro1-day-scan",
   rulePnb: "rule-pnb-day-scan",
   ruleSunpharma: "rule-sunpharma-day-scan",
   ruleLtm: "rule-ltm-day-scan",
@@ -65,6 +66,8 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
       return `Scans ${universe} for Deepak entries at 10:15 IST with Deepak-2 watch-party stop-loss exits. May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deeppro":
       return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
+    case "deeppro1":
+      return `Scans ${universe} with ${label} — SMI black↔red cross entries (Stch Mtm 10,3,3) and same-day square-off at 0.45% mid move. Generic all-stock rule (same logic as RuleSUNPHARMA1 / RulePNB1, no symbol lock). Separate from Deeppro exhaustion. May take several minutes depending on Kite response time.${liveRefresh}`;
     case "rulePnb":
       return `Scans PNB only with ${label} — a separate RSI/SMI/BB proximity rule from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak or Deeppro and not applied to other stocks.${liveRefresh}`;
     case "ruleSunpharma":
@@ -91,6 +94,7 @@ function rulesPanelVariant(
   | "deepak2"
   | "deepak3"
   | "deeppro"
+  | "deeppro1"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"
@@ -102,6 +106,7 @@ function rulesPanelVariant(
     variant === "deepak2" ||
     variant === "deepak3" ||
     variant === "deeppro" ||
+    variant === "deeppro1" ||
     variant === "rulePnb" ||
     variant === "ruleSunpharma" ||
     isFavourableSymbolRuleVariant(variant)

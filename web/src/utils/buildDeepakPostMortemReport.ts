@@ -19,6 +19,7 @@ const VARIANT_LABEL: Record<PostMortemVariant, string> = {
   deepak: "Deepak",
   deepak2: "Deepak-2",
   deeppro: "Deeppro",
+  deeppro1: "Deeppro1",
   rulePnb: "RulePNB",
   ruleSunpharma: "RuleSUNPHARMA",
   ruleLtm: "RuleLTM",
