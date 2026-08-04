@@ -26,6 +26,24 @@ import {
   pctDistance,
 } from "./bollingerUtils.js";
 
+/** Optional BUY-side guards to skip falling-knife / unconfirmed oversold prints. */
+export type FavourableSymbolBuyGuards = {
+  /** Require SMI_t > SMI_t−1 at the setup bar. */
+  requireSmiRising: boolean;
+  /** Require MACD histogram_t > histogram_t−1 at the setup bar. */
+  requireMacdHistRising: boolean;
+  /**
+   * Require the next same-day 15m mid > setup mid.
+   * When true, the emitted entry is the confirmation bar (fill after proof).
+   */
+  requireNextBarConfirmation: boolean;
+  /**
+   * Reject setup if (setupMid − dayOpenMid) / dayOpenMid * 100 < −maxOpenDrawdownPct.
+   * Set null to disable.
+   */
+  maxOpenDrawdownPct: number | null;
+};
+
 export type FavourableSymbolRuleConfig = {
   tradingSymbol: string;
   displayName: string;
@@ -45,6 +63,8 @@ export type FavourableSymbolRuleConfig = {
     maxSmi: number;
     maxBbLowerGapPct: number;
   };
+  /** Present only on rules that need anti-cascade BUY filters (e.g. RuleICICIGI). */
+  buyGuards?: FavourableSymbolBuyGuards;
   sellQuality: {
     minRsi: number;
     maxRsi: number;
@@ -268,6 +288,98 @@ function matchesBuyExtended(
   return nearLowerBand(bbLower, buyExtended.maxBbLowerGapPct);
 }
 
+export type BuyGuardContext = {
+  smi: number;
+  prevSmi: number | null;
+  macdHist: number;
+  prevMacdHist: number | null;
+  setupMid: number;
+  dayOpenMid: number | null;
+  nextMid: number | null;
+};
+
+export type BuyGuardResult = {
+  ok: boolean;
+  reasons: string[];
+  /** True when next-bar confirmation is required and passed. */
+  confirmedOnNextBar: boolean;
+};
+
+/**
+ * Optional BUY guards (RuleICICIGI): momentum turn + confirmation + open drawdown.
+ * When guards are absent, always passes.
+ */
+export function evaluateBuyGuards(
+  rule: FavourableSymbolRuleConfig,
+  ctx: BuyGuardContext,
+): BuyGuardResult {
+  const guards = rule.buyGuards;
+  if (!guards) {
+    return { ok: true, reasons: [], confirmedOnNextBar: false };
+  }
+
+  const reasons: string[] = [];
+
+  if (guards.requireSmiRising) {
+    if (ctx.prevSmi == null || !(ctx.smi > ctx.prevSmi)) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(`SMI rising ${ctx.prevSmi.toFixed(1)}→${ctx.smi.toFixed(1)}`);
+  }
+
+  if (guards.requireMacdHistRising) {
+    if (
+      ctx.prevMacdHist == null ||
+      !Number.isFinite(ctx.macdHist) ||
+      !Number.isFinite(ctx.prevMacdHist) ||
+      !(ctx.macdHist > ctx.prevMacdHist)
+    ) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(
+      `MACD hist rising ${ctx.prevMacdHist.toFixed(2)}→${ctx.macdHist.toFixed(2)}`,
+    );
+  }
+
+  if (
+    guards.maxOpenDrawdownPct != null &&
+    Number.isFinite(guards.maxOpenDrawdownPct) &&
+    ctx.dayOpenMid != null &&
+    ctx.dayOpenMid > 0
+  ) {
+    const dropPct = ((ctx.setupMid - ctx.dayOpenMid) / ctx.dayOpenMid) * 100;
+    if (dropPct < -guards.maxOpenDrawdownPct) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(
+      `open drawdown ${dropPct.toFixed(2)}% ≥ −${guards.maxOpenDrawdownPct}%`,
+    );
+  }
+
+  if (guards.requireNextBarConfirmation) {
+    if (ctx.nextMid == null || !(ctx.nextMid > ctx.setupMid)) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(
+      `next-bar confirm mid ${ctx.setupMid.toFixed(2)}→${ctx.nextMid.toFixed(2)}`,
+    );
+    return { ok: true, reasons, confirmedOnNextBar: true };
+  }
+
+  return { ok: true, reasons, confirmedOnNextBar: false };
+}
+
+function findNextSameDayIndex(
+  dayIndexes: number[],
+  setupIndex: number,
+): number | null {
+  const position = dayIndexes.indexOf(setupIndex);
+  if (position < 0 || position + 1 >= dayIndexes.length) {
+    return null;
+  }
+  return dayIndexes[position + 1];
+}
+
 /**
  * Per-symbol favourable profit-range gates (60d study).
  * Each ruleId is locked to exactly one trading symbol.
@@ -301,6 +413,9 @@ export function evaluateFavourableSymbolDay(
     }
     dayIndexes.push(i);
   }
+
+  const dayOpenMid =
+    dayIndexes.length > 0 ? entryMid(snapshots[dayIndexes[0]]) : null;
 
   const highs = snapshots.map((snapshot) => snapshot.high);
   const lows = snapshots.map((snapshot) => snapshot.low);
@@ -336,42 +451,84 @@ export function evaluateFavourableSymbolDay(
     const bbLower = buildBbLowerProximity(snapshot);
     const price = entryMid(snapshot);
 
-    if (!buyQuality && matchesBuyQuality(rule, rsi, smi, bbLower)) {
-      buyQuality = {
+    const prevIndex = index > 0 ? index - 1 : null;
+    const prevSmi =
+      prevIndex != null && smiSeries[prevIndex]
+        ? smiSeries[prevIndex].smi
+        : null;
+    const prevMacdHist =
+      prevIndex != null ? snapshots[prevIndex].macd.histogram : null;
+    const nextIndex = findNextSameDayIndex(dayIndexes, index);
+    const nextMid =
+      nextIndex != null ? entryMid(snapshots[nextIndex]) : null;
+
+    const guardResult = evaluateBuyGuards(rule, {
+      smi,
+      prevSmi: prevSmi != null && Number.isFinite(prevSmi) ? prevSmi : null,
+      macdHist: snapshot.macd.histogram,
+      prevMacdHist:
+        prevMacdHist != null && Number.isFinite(prevMacdHist)
+          ? prevMacdHist
+          : null,
+      setupMid: price,
+      dayOpenMid,
+      nextMid,
+    });
+
+    const emitBuy = (
+      scenarioKey: FavourableSymbolScenarioKey,
+      baseReasons: string[],
+    ): FavourableSymbolSignal => {
+      const useConfirm =
+        guardResult.confirmedOnNextBar && nextIndex != null;
+      const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
+      const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
+      const emitSmi =
+        emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
+          ? emitSmiPoint.smi
+          : smi;
+      const emitTimeIst = formatIstTime(emitSnapshot.timestamp);
+      const emitPrice = entryMid(emitSnapshot);
+      const emitBbUpper = buildBbUpperProximity(emitSnapshot);
+      const emitBbLower = buildBbLowerProximity(emitSnapshot);
+      const guardNotes =
+        guardResult.reasons.length > 0
+          ? ` | guards: ${guardResult.reasons.join("; ")}`
+          : "";
+      const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
+
+      return {
         side: "BUY",
         rule: ruleId,
         dateKey,
-        timeIst,
-        scenarioKey: "buy_quality",
-        price,
-        smi,
-        rsi,
-        bbUpperProximity: bbUpper,
-        bbLowerProximity: bbLower,
-        reasons: [
-          `${displayName} BUY quality: RSI ${rsi.toFixed(1)} in ${rule.buyQuality.minRsi}–${rule.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${rule.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
-        ],
+        timeIst: emitTimeIst,
+        scenarioKey,
+        price: emitPrice,
+        smi: emitSmi,
+        rsi: emitSnapshot.rsi,
+        bbUpperProximity: emitBbUpper,
+        bbLowerProximity: emitBbLower,
+        reasons: baseReasons.map((reason) => `${reason}${setupNote}${guardNotes}`),
       };
+    };
+
+    if (
+      !buyQuality &&
+      matchesBuyQuality(rule, rsi, smi, bbLower) &&
+      guardResult.ok
+    ) {
+      buyQuality = emitBuy("buy_quality", [
+        `${displayName} BUY quality: RSI ${rsi.toFixed(1)} in ${rule.buyQuality.minRsi}–${rule.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${rule.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
+      ]);
     } else if (
       !buyQuality &&
       !buyExtended &&
-      matchesBuyExtended(rule, smi, bbLower)
+      matchesBuyExtended(rule, smi, bbLower) &&
+      guardResult.ok
     ) {
-      buyExtended = {
-        side: "BUY",
-        rule: ruleId,
-        dateKey,
-        timeIst,
-        scenarioKey: "buy_extended",
-        price,
-        smi,
-        rsi,
-        bbUpperProximity: bbUpper,
-        bbLowerProximity: bbLower,
-        reasons: [
-          `${displayName} BUY extended (biggest-mover style): SMI ${smi.toFixed(1)} ≤ ${rule.buyExtended.maxSmi}${rule.buyExtended.requireNegativeSmi ? " (negative preferred)" : " (mid-zone OK)"}, BB lower gap ${bbLower.gapPct.toFixed(2)}% (≤ ${rule.buyExtended.maxBbLowerGapPct}%), RSI ${rsi.toFixed(1)}`,
-        ],
-      };
+      buyExtended = emitBuy("buy_extended", [
+        `${displayName} BUY extended (biggest-mover style): SMI ${smi.toFixed(1)} ≤ ${rule.buyExtended.maxSmi}${rule.buyExtended.requireNegativeSmi ? " (negative preferred)" : " (mid-zone OK)"}, BB lower gap ${bbLower.gapPct.toFixed(2)}% (≤ ${rule.buyExtended.maxBbLowerGapPct}%), RSI ${rsi.toFixed(1)}`,
+      ]);
     }
 
     if (!sellSignal && matchesSellQuality(rule, rsi, smi, bbUpper)) {
@@ -478,6 +635,7 @@ export const __favourableSymbolRuleTestables = {
   matchesBuyQuality,
   matchesSellQuality,
   matchesBuyExtended,
+  evaluateBuyGuards,
   nearLowerBand,
   nearUpperBand,
   entryMid,
