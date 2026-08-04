@@ -1,7 +1,8 @@
 import type { DayScanStrategy } from "./backtest";
 import type { OrderSide } from "./paperTrading";
 
-export const DAY_ORDER_INITIAL_CASH = 300_000;
+/** Paper capital for Day Order Simulator (₹1 crore). */
+export const DAY_ORDER_INITIAL_CASH = 10_000_000;
 export const ORDER_QUANTITY = 100;
 export const MAX_ENTRY_PRICE = 1900;
 

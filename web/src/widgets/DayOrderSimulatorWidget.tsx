@@ -150,8 +150,8 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
 
           <p className="m-0 mt-2 text-xs text-kite-muted">
             Auto paper-trades Day Scan entry/exit signals for the selected rule variant with
-            ₹3,00,000 capital, 100 qty per stock, max entry price ₹1,900. Start Day Scan Simulator
-            first with the same date and rule variant.
+            ₹1,00,00,000 capital, 100 qty per stock, max entry price ₹1,900. Starts automatically
+            when Day Scan Simulator starts (same date and rule variant).
           </p>
         </section>
 

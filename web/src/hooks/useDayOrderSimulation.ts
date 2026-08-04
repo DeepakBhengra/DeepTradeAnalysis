@@ -51,9 +51,13 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
   );
 
   const processedSessionIndexRef = useRef<number | null>(null);
-  const orderStartSessionIndexRef = useRef<number | null>(null);
   const statusRef = useRef(status);
   statusRef.current = status;
+  const prevScanStatusRef = useRef(scanStatus);
+  const dataRef = useRef(data);
+  dataRef.current = data;
+  const sessionIndexRef = useRef(sessionIndex);
+  sessionIndexRef.current = sessionIndex;
 
   const dateMismatch = orderDate !== scanDate;
   const startBlockedReason = getStartBlockedReason(scanStatus, dateMismatch);
@@ -74,7 +78,6 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
   const resetPortfolio = useCallback(() => {
     setPortfolio(createInitialDayOrderPortfolio());
     processedSessionIndexRef.current = null;
-    orderStartSessionIndexRef.current = null;
     setStatus("idle");
   }, []);
 
@@ -88,6 +91,53 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     }
   }, [scanStatus, resetPortfolio]);
 
+  const start = useCallback(() => {
+    if (statusRef.current === "running") {
+      return;
+    }
+    if (startBlockedReason != null) {
+      return;
+    }
+
+    const initial = createInitialDayOrderPortfolio();
+    const currentData = dataRef.current;
+    const currentIndex = sessionIndexRef.current;
+
+    // Trade the current scan candle immediately so 09:15 entries are not skipped.
+    if (currentData) {
+      processedSessionIndexRef.current = currentIndex;
+      setPortfolio(processDayOrderTick(initial, currentData));
+    } else {
+      processedSessionIndexRef.current = null;
+      setPortfolio(initial);
+    }
+    setStatus("running");
+  }, [startBlockedReason]);
+
+  const stop = useCallback(() => {
+    setStatus("idle");
+    processedSessionIndexRef.current = null;
+  }, []);
+
+  // Auto-start paper trading as soon as Day Scan Simulator begins playing.
+  useEffect(() => {
+    const prev = prevScanStatusRef.current;
+    prevScanStatusRef.current = scanStatus;
+
+    const scanJustStarted =
+      (scanStatus === "playing" || scanStatus === "paused") &&
+      (prev === "idle" || prev === "loading");
+
+    if (
+      scanJustStarted &&
+      statusRef.current === "idle" &&
+      !dateMismatch &&
+      startBlockedReason == null
+    ) {
+      start();
+    }
+  }, [scanStatus, dateMismatch, startBlockedReason, start]);
+
   useEffect(() => {
     if (statusRef.current !== "running" || !data) {
       return;
@@ -98,13 +148,6 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
       sessionIndex < processedSessionIndexRef.current
     ) {
       processedSessionIndexRef.current = null;
-    }
-
-    if (
-      orderStartSessionIndexRef.current != null &&
-      sessionIndex <= orderStartSessionIndexRef.current
-    ) {
-      return;
     }
 
     if (processedSessionIndexRef.current === sessionIndex) {
@@ -120,26 +163,6 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
       setStatus("complete");
     }
   }, [scanStatus]);
-
-  const start = useCallback(() => {
-    if (statusRef.current === "running") {
-      return;
-    }
-    if (startBlockedReason != null) {
-      return;
-    }
-
-    setPortfolio(createInitialDayOrderPortfolio());
-    orderStartSessionIndexRef.current = sessionIndex;
-    processedSessionIndexRef.current = sessionIndex;
-    setStatus("running");
-  }, [startBlockedReason]);
-
-  const stop = useCallback(() => {
-    setStatus("idle");
-    processedSessionIndexRef.current = null;
-    orderStartSessionIndexRef.current = null;
-  }, []);
 
   const pnl = computeDayOrderPnL(portfolio);
 

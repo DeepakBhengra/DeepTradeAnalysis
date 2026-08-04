@@ -221,8 +221,14 @@ describe("dayOrderEngine", () => {
     });
     const firstExit = makeExit(first, { exitTimeIst: "10:00", exitPrice: 1910 });
 
+    // Cap cash so only one max-price entry fits (independent of ₹1cr default).
+    const limitedCash = {
+      ...createInitialDayOrderPortfolio(),
+      cash: 200_000,
+    };
+
     const at0930 = processDayOrderTick(
-      createInitialDayOrderPortfolio(),
+      limitedCash,
       makePayload([first, second], [], 0, "09:30"),
     );
     const at0945 = processDayOrderTick(
