@@ -598,6 +598,147 @@ export const config = {
     },
   },
 
+  /**
+   * Per-symbol favourable profit-range rules (separate from Deepak/Deeppro/RulePNB/RuleSUNPHARMA).
+   * Each entry is locked to one trading symbol. Thresholds from 60d rule-free IQR studies.
+   */
+  favourableSymbolRules: {
+    ruleLtm: {
+      tradingSymbol: "LTM",
+      displayName: "RuleLTM",
+      sector: "IT",
+      sessionStart: "09:15",
+      sessionEnd: "15:30",
+      entryDeadlineIst: "14:00",
+      smi: { lengthK: 10, lengthD: 3, lengthEma: 10 },
+      /** Mid/low BUY: softer RSI, negative SMI, near BB lower. */
+      buyQuality: {
+        minRsi: 30,
+        maxRsi: 55,
+        maxSmi: -40,
+        maxBbLowerGapPct: 0.8,
+      },
+      /** High-band biggest movers: mid SMI OK, wider BB lower. */
+      buyExtended: {
+        requireNegativeSmi: false,
+        maxSmi: 40,
+        maxBbLowerGapPct: 1.5,
+      },
+      /** Mid/low SELL: RSI elevated, SMI ≥ 40, BB upper. */
+      sellQuality: {
+        minRsi: 50,
+        maxRsi: 75,
+        minSmi: 40,
+        maxBbUpperGapPct: 0.8,
+      },
+    },
+    ruleIcicigi: {
+      tradingSymbol: "ICICIGI",
+      displayName: "RuleICICIGI",
+      sector: "Insurance",
+      sessionStart: "09:15",
+      sessionEnd: "15:30",
+      entryDeadlineIst: "14:00",
+      smi: { lengthK: 10, lengthD: 3, lengthEma: 10 },
+      buyQuality: {
+        minRsi: 30,
+        maxRsi: 50,
+        maxSmi: -40,
+        maxBbLowerGapPct: 0.7,
+      },
+      buyExtended: {
+        requireNegativeSmi: true,
+        maxSmi: 0,
+        maxBbLowerGapPct: 1.0,
+      },
+      sellQuality: {
+        minRsi: 45,
+        maxRsi: 75,
+        minSmi: 20,
+        maxBbUpperGapPct: 1.0,
+      },
+    },
+    ruleTechm: {
+      tradingSymbol: "TECHM",
+      displayName: "RuleTECHM",
+      sector: "IT",
+      sessionStart: "09:15",
+      sessionEnd: "15:30",
+      entryDeadlineIst: "14:00",
+      smi: { lengthK: 10, lengthD: 3, lengthEma: 10 },
+      /** Low-band BUY quality is the clearest oversold setup. */
+      buyQuality: {
+        minRsi: 20,
+        maxRsi: 45,
+        maxSmi: -40,
+        maxBbLowerGapPct: 0.7,
+      },
+      buyExtended: {
+        requireNegativeSmi: false,
+        maxSmi: 40,
+        maxBbLowerGapPct: 2.2,
+      },
+      sellQuality: {
+        minRsi: 50,
+        maxRsi: 80,
+        minSmi: 40,
+        maxBbUpperGapPct: 1.0,
+      },
+    },
+    ruleTvsmotor: {
+      tradingSymbol: "TVSMOTOR",
+      displayName: "RuleTVSMOTOR",
+      sector: "Automobile",
+      sessionStart: "09:15",
+      sessionEnd: "15:30",
+      entryDeadlineIst: "14:00",
+      smi: { lengthK: 10, lengthD: 3, lengthEma: 10 },
+      buyQuality: {
+        minRsi: 30,
+        maxRsi: 55,
+        maxSmi: -30,
+        maxBbLowerGapPct: 0.6,
+      },
+      buyExtended: {
+        requireNegativeSmi: false,
+        maxSmi: 40,
+        maxBbLowerGapPct: 1.4,
+      },
+      sellQuality: {
+        minRsi: 55,
+        maxRsi: 75,
+        minSmi: 40,
+        maxBbUpperGapPct: 0.7,
+      },
+    },
+    rulePolicybzr: {
+      tradingSymbol: "POLICYBZR",
+      displayName: "RulePOLICYBZR",
+      sector: "Insurance",
+      sessionStart: "09:15",
+      sessionEnd: "15:30",
+      entryDeadlineIst: "14:00",
+      smi: { lengthK: 10, lengthD: 3, lengthEma: 10 },
+      buyQuality: {
+        minRsi: 25,
+        maxRsi: 55,
+        maxSmi: -25,
+        maxBbLowerGapPct: 1.0,
+      },
+      buyExtended: {
+        requireNegativeSmi: true,
+        maxSmi: 0,
+        maxBbLowerGapPct: 1.3,
+      },
+      sellQuality: {
+        minRsi: 55,
+        maxRsi: 75,
+        minSmi: 40,
+        maxBbUpperGapPct: 0.5,
+      },
+    },
+  },
+
   volume: {
     smaPeriod: 20,
     spikeThreshold: 1.5,

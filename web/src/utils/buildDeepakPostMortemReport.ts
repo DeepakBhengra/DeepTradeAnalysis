@@ -21,6 +21,11 @@ const VARIANT_LABEL: Record<PostMortemVariant, string> = {
   deeppro: "Deeppro",
   rulePnb: "RulePNB",
   ruleSunpharma: "RuleSUNPHARMA",
+  ruleLtm: "RuleLTM",
+  ruleIcicigi: "RuleICICIGI",
+  ruleTechm: "RuleTECHM",
+  ruleTvsmotor: "RuleTVSMOTOR",
+  rulePolicybzr: "RulePOLICYBZR",
 };
 
 export function seriesTimeIst(timeSeconds: number): string {

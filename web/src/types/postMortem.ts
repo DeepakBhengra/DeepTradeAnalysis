@@ -7,7 +7,12 @@ export type PostMortemVariant =
   | "deepak2"
   | "deeppro"
   | "rulePnb"
-  | "ruleSunpharma";
+  | "ruleSunpharma"
+  | "ruleLtm"
+  | "ruleIcicigi"
+  | "ruleTechm"
+  | "ruleTvsmotor"
+  | "rulePolicybzr";
 
 export type EnhancementPriority = "P0" | "P1" | "P2" | "P3";
 

@@ -1,0 +1,2667 @@
+{
+  "mode": "rule-free-best-entry-times",
+  "symbol": "ICICIGI",
+  "tradeDaysRequested": 60,
+  "tradeDaysScanned": 58,
+  "window": {
+    "from": "2026-05-12",
+    "to": "2026-08-03"
+  },
+  "session": {
+    "start": "09:15",
+    "end": "15:15"
+  },
+  "entryRule": "Every 15m candle mid (high+low)/2 — no strategy rules",
+  "squareOffRule": "Best later same-day mid before 15:15 IST",
+  "positiveOpportunityCount": 2202,
+  "buyOpportunityCount": 1135,
+  "sellOpportunityCount": 1067,
+  "overallBestBuy": {
+    "dateKey": "2026-07-23",
+    "dayLabel": "Thu, 23 Jul 2026",
+    "side": "BUY",
+    "entryTimeIst": "09:45",
+    "entryPrice": 1575.35,
+    "squareOffTimeIst": "15:15",
+    "squareOffPrice": 1622.65,
+    "profitPct": 3,
+    "profitPerShare": 47.3
+  },
+  "overallBestSell": {
+    "dateKey": "2026-07-16",
+    "dayLabel": "Thu, 16 Jul 2026",
+    "side": "SELL",
+    "entryTimeIst": "09:15",
+    "entryPrice": 1666.45,
+    "squareOffTimeIst": "09:30",
+    "squareOffPrice": 1589.35,
+    "profitPct": 4.63,
+    "profitPerShare": 77.1
+  },
+  "recommendedBuyTime": {
+    "timeIst": "09:15",
+    "side": "BUY",
+    "positiveCount": 45,
+    "dayCount": 58,
+    "hitRatePct": 77.59,
+    "avgPositiveProfitPct": 1,
+    "maxProfitPct": 2.59,
+    "bestDateKey": "2026-06-16",
+    "bestDayLabel": "Tue, 16 Jun 2026",
+    "bestEntryPrice": 1738.85,
+    "bestSquareOffTimeIst": "15:15",
+    "bestSquareOffPrice": 1783.85
+  },
+  "recommendedSellTime": {
+    "timeIst": "09:15",
+    "side": "SELL",
+    "positiveCount": 46,
+    "dayCount": 58,
+    "hitRatePct": 79.31,
+    "avgPositiveProfitPct": 1.04,
+    "maxProfitPct": 4.63,
+    "bestDateKey": "2026-07-16",
+    "bestDayLabel": "Thu, 16 Jul 2026",
+    "bestEntryPrice": 1666.45,
+    "bestSquareOffTimeIst": "09:30",
+    "bestSquareOffPrice": 1589.35
+  },
+  "data": {
+    "source": "Yahoo Finance chart (ICICIGI.NS, 15m, range=60d)",
+    "candleCount": 1449
+  },
+  "generatedAtUtc": "2026-08-03T23:49:33.679Z",
+  "topBuys": [
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1575.35,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1622.65,
+      "profitPct": 3,
+      "profitPerShare": 47.3
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1576.85,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1622.65,
+      "profitPct": 2.9,
+      "profitPerShare": 45.8
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1579.6,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1622.65,
+      "profitPct": 2.73,
+      "profitPerShare": 43.05
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1580.25,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1622.65,
+      "profitPct": 2.68,
+      "profitPerShare": 42.4
+    },
+    {
+      "dateKey": "2026-06-16",
+      "dayLabel": "Tue, 16 Jun 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1738.85,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1783.85,
+      "profitPct": 2.59,
+      "profitPerShare": 45
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "Fri, 19 Jun 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1826.1,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1873.3,
+      "profitPct": 2.58,
+      "profitPerShare": 47.2
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1581.9,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1622.65,
+      "profitPct": 2.58,
+      "profitPerShare": 40.75
+    },
+    {
+      "dateKey": "2026-05-13",
+      "dayLabel": "Wed, 13 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1769.65,
+      "squareOffTimeIst": "14:45",
+      "squareOffPrice": 1813.2,
+      "profitPct": 2.46,
+      "profitPerShare": 43.55
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1584.2,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1622.65,
+      "profitPct": 2.43,
+      "profitPerShare": 38.45
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "Fri, 19 Jun 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1829.05,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1873.3,
+      "profitPct": 2.42,
+      "profitPerShare": 44.25
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu, 14 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1805.4,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1849,
+      "profitPct": 2.41,
+      "profitPerShare": 43.6
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu, 14 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1805.75,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1849,
+      "profitPct": 2.4,
+      "profitPerShare": 43.25
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu, 14 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1808.4,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1849,
+      "profitPct": 2.25,
+      "profitPerShare": 40.6
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "Fri, 19 Jun 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1832.3,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1873.3,
+      "profitPct": 2.24,
+      "profitPerShare": 41
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "Fri, 19 Jun 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1832.2,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1873.3,
+      "profitPct": 2.24,
+      "profitPerShare": 41.1
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "Fri, 19 Jun 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1832.35,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1873.3,
+      "profitPct": 2.23,
+      "profitPerShare": 40.95
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu, 14 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1809.5,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1849,
+      "profitPct": 2.18,
+      "profitPerShare": 39.5
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "Tue, 14 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1752.05,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.15,
+      "profitPct": 2.12,
+      "profitPerShare": 37.1
+    },
+    {
+      "dateKey": "2026-05-13",
+      "dayLabel": "Wed, 13 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1775.9,
+      "squareOffTimeIst": "14:45",
+      "squareOffPrice": 1813.2,
+      "profitPct": 2.1,
+      "profitPerShare": 37.3
+    },
+    {
+      "dateKey": "2026-07-16",
+      "dayLabel": "Thu, 16 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1589.35,
+      "squareOffTimeIst": "10:15",
+      "squareOffPrice": 1622.65,
+      "profitPct": 2.1,
+      "profitPerShare": 33.3
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu, 14 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1811.1,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1849,
+      "profitPct": 2.09,
+      "profitPerShare": 37.9
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu, 14 May 2026",
+      "side": "BUY",
+      "entryTimeIst": "11:15",
+      "entryPrice": 1811.25,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1849,
+      "profitPct": 2.08,
+      "profitPerShare": 37.75
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "Tue, 14 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1753.05,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.15,
+      "profitPct": 2.06,
+      "profitPerShare": 36.1
+    },
+    {
+      "dateKey": "2026-06-18",
+      "dayLabel": "Thu, 18 Jun 2026",
+      "side": "BUY",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1803.15,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1839.85,
+      "profitPct": 2.04,
+      "profitPerShare": 36.7
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "Tue, 14 Jul 2026",
+      "side": "BUY",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1753.45,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.15,
+      "profitPct": 2.04,
+      "profitPerShare": 35.7
+    }
+  ],
+  "topSells": [
+    {
+      "dateKey": "2026-07-16",
+      "dayLabel": "Thu, 16 Jul 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1666.45,
+      "squareOffTimeIst": "09:30",
+      "squareOffPrice": 1589.35,
+      "profitPct": 4.63,
+      "profitPerShare": 77.1
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1847.25,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 3.14,
+      "profitPerShare": 58
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "Wed, 10 Jun 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1787.4,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1731.65,
+      "profitPct": 3.12,
+      "profitPerShare": 55.75
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "Wed, 10 Jun 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1785.65,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1731.65,
+      "profitPct": 3.02,
+      "profitPerShare": 54
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1842.65,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.9,
+      "profitPerShare": 53.4
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1841.8,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.85,
+      "profitPerShare": 52.55
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1839.2,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.72,
+      "profitPerShare": 49.95
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1839.15,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.71,
+      "profitPerShare": 49.9
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1838.25,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.67,
+      "profitPerShare": 49
+    },
+    {
+      "dateKey": "2026-06-01",
+      "dayLabel": "Mon, 1 Jun 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1785.25,
+      "squareOffTimeIst": "13:30",
+      "squareOffPrice": 1737.85,
+      "profitPct": 2.66,
+      "profitPerShare": 47.4
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "Wed, 10 Jun 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1778.8,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1731.65,
+      "profitPct": 2.65,
+      "profitPerShare": 47.15
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1837.3,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.62,
+      "profitPerShare": 48.05
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "11:15",
+      "entryPrice": 1836.05,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.55,
+      "profitPerShare": 46.8
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "Wed, 10 Jun 2026",
+      "side": "SELL",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1776.35,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1731.65,
+      "profitPct": 2.52,
+      "profitPerShare": 44.7
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1835.25,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.51,
+      "profitPerShare": 46
+    },
+    {
+      "dateKey": "2026-06-29",
+      "dayLabel": "Mon, 29 Jun 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1812.25,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1766.85,
+      "profitPct": 2.51,
+      "profitPerShare": 45.4
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1834.05,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.44,
+      "profitPerShare": 44.8
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "Wed, 29 Jul 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1689.2,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1648.1,
+      "profitPct": 2.43,
+      "profitPerShare": 41.1
+    },
+    {
+      "dateKey": "2026-05-12",
+      "dayLabel": "Tue, 12 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1822.35,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1779.15,
+      "profitPct": 2.37,
+      "profitPerShare": 43.2
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "Wed, 29 Jul 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1687.85,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1648.1,
+      "profitPct": 2.36,
+      "profitPerShare": 39.75
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1831.35,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.3,
+      "profitPerShare": 42.1
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1830.05,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.23,
+      "profitPerShare": 40.8
+    },
+    {
+      "dateKey": "2026-06-29",
+      "dayLabel": "Mon, 29 Jun 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1806.25,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1766.85,
+      "profitPct": 2.18,
+      "profitPerShare": 39.4
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "Wed, 29 Jul 2026",
+      "side": "SELL",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1684.4,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1648.1,
+      "profitPct": 2.16,
+      "profitPerShare": 36.3
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "side": "SELL",
+      "entryTimeIst": "14:45",
+      "entryPrice": 1826.5,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1789.25,
+      "profitPct": 2.04,
+      "profitPerShare": 37.25
+    }
+  ],
+  "bestBuyTimes": [
+    {
+      "timeIst": "09:15",
+      "side": "BUY",
+      "positiveCount": 45,
+      "dayCount": 58,
+      "hitRatePct": 77.59,
+      "avgPositiveProfitPct": 1,
+      "maxProfitPct": 2.59,
+      "bestDateKey": "2026-06-16",
+      "bestDayLabel": "Tue, 16 Jun 2026",
+      "bestEntryPrice": 1738.85,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1783.85
+    },
+    {
+      "timeIst": "09:30",
+      "side": "BUY",
+      "positiveCount": 54,
+      "dayCount": 58,
+      "hitRatePct": 93.1,
+      "avgPositiveProfitPct": 0.88,
+      "maxProfitPct": 2.9,
+      "bestDateKey": "2026-07-23",
+      "bestDayLabel": "Thu, 23 Jul 2026",
+      "bestEntryPrice": 1576.85,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1622.65
+    },
+    {
+      "timeIst": "09:45",
+      "side": "BUY",
+      "positiveCount": 52,
+      "dayCount": 58,
+      "hitRatePct": 89.66,
+      "avgPositiveProfitPct": 0.86,
+      "maxProfitPct": 3,
+      "bestDateKey": "2026-07-23",
+      "bestDayLabel": "Thu, 23 Jul 2026",
+      "bestEntryPrice": 1575.35,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1622.65
+    },
+    {
+      "timeIst": "10:00",
+      "side": "BUY",
+      "positiveCount": 52,
+      "dayCount": 58,
+      "hitRatePct": 89.66,
+      "avgPositiveProfitPct": 0.78,
+      "maxProfitPct": 2.73,
+      "bestDateKey": "2026-07-23",
+      "bestDayLabel": "Thu, 23 Jul 2026",
+      "bestEntryPrice": 1579.6,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1622.65
+    },
+    {
+      "timeIst": "10:15",
+      "side": "BUY",
+      "positiveCount": 50,
+      "dayCount": 58,
+      "hitRatePct": 86.21,
+      "avgPositiveProfitPct": 0.72,
+      "maxProfitPct": 2.68,
+      "bestDateKey": "2026-07-23",
+      "bestDayLabel": "Thu, 23 Jul 2026",
+      "bestEntryPrice": 1580.25,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1622.65
+    },
+    {
+      "timeIst": "10:30",
+      "side": "BUY",
+      "positiveCount": 50,
+      "dayCount": 58,
+      "hitRatePct": 86.21,
+      "avgPositiveProfitPct": 0.67,
+      "maxProfitPct": 2.43,
+      "bestDateKey": "2026-07-23",
+      "bestDayLabel": "Thu, 23 Jul 2026",
+      "bestEntryPrice": 1584.2,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1622.65
+    },
+    {
+      "timeIst": "10:45",
+      "side": "BUY",
+      "positiveCount": 47,
+      "dayCount": 58,
+      "hitRatePct": 81.03,
+      "avgPositiveProfitPct": 0.63,
+      "maxProfitPct": 2.09,
+      "bestDateKey": "2026-05-14",
+      "bestDayLabel": "Thu, 14 May 2026",
+      "bestEntryPrice": 1811.1,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1849
+    },
+    {
+      "timeIst": "11:00",
+      "side": "BUY",
+      "positiveCount": 45,
+      "dayCount": 58,
+      "hitRatePct": 77.59,
+      "avgPositiveProfitPct": 0.64,
+      "maxProfitPct": 2.25,
+      "bestDateKey": "2026-05-14",
+      "bestDayLabel": "Thu, 14 May 2026",
+      "bestEntryPrice": 1808.4,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1849
+    },
+    {
+      "timeIst": "11:15",
+      "side": "BUY",
+      "positiveCount": 48,
+      "dayCount": 58,
+      "hitRatePct": 82.76,
+      "avgPositiveProfitPct": 0.6,
+      "maxProfitPct": 2.08,
+      "bestDateKey": "2026-05-14",
+      "bestDayLabel": "Thu, 14 May 2026",
+      "bestEntryPrice": 1811.25,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1849
+    },
+    {
+      "timeIst": "11:30",
+      "side": "BUY",
+      "positiveCount": 49,
+      "dayCount": 58,
+      "hitRatePct": 84.48,
+      "avgPositiveProfitPct": 0.58,
+      "maxProfitPct": 2.06,
+      "bestDateKey": "2026-07-14",
+      "bestDayLabel": "Tue, 14 Jul 2026",
+      "bestEntryPrice": 1753.05,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.15
+    },
+    {
+      "timeIst": "11:45",
+      "side": "BUY",
+      "positiveCount": 45,
+      "dayCount": 58,
+      "hitRatePct": 77.59,
+      "avgPositiveProfitPct": 0.6,
+      "maxProfitPct": 2.04,
+      "bestDateKey": "2026-07-14",
+      "bestDayLabel": "Tue, 14 Jul 2026",
+      "bestEntryPrice": 1753.45,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.15
+    },
+    {
+      "timeIst": "12:00",
+      "side": "BUY",
+      "positiveCount": 49,
+      "dayCount": 58,
+      "hitRatePct": 84.48,
+      "avgPositiveProfitPct": 0.54,
+      "maxProfitPct": 2.12,
+      "bestDateKey": "2026-07-14",
+      "bestDayLabel": "Tue, 14 Jul 2026",
+      "bestEntryPrice": 1752.05,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.15
+    },
+    {
+      "timeIst": "12:15",
+      "side": "BUY",
+      "positiveCount": 52,
+      "dayCount": 58,
+      "hitRatePct": 89.66,
+      "avgPositiveProfitPct": 0.49,
+      "maxProfitPct": 1.75,
+      "bestDateKey": "2026-07-14",
+      "bestDayLabel": "Tue, 14 Jul 2026",
+      "bestEntryPrice": 1758.3,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.15
+    },
+    {
+      "timeIst": "12:30",
+      "side": "BUY",
+      "positiveCount": 53,
+      "dayCount": 58,
+      "hitRatePct": 91.38,
+      "avgPositiveProfitPct": 0.46,
+      "maxProfitPct": 1.56,
+      "bestDateKey": "2026-06-19",
+      "bestDayLabel": "Fri, 19 Jun 2026",
+      "bestEntryPrice": 1844.55,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1873.3
+    },
+    {
+      "timeIst": "12:45",
+      "side": "BUY",
+      "positiveCount": 45,
+      "dayCount": 58,
+      "hitRatePct": 77.59,
+      "avgPositiveProfitPct": 0.46,
+      "maxProfitPct": 1.56,
+      "bestDateKey": "2026-07-10",
+      "bestDayLabel": "Fri, 10 Jul 2026",
+      "bestEntryPrice": 1804.25,
+      "bestSquareOffTimeIst": "14:15",
+      "bestSquareOffPrice": 1832.35
+    }
+  ],
+  "bestSellTimes": [
+    {
+      "timeIst": "09:15",
+      "side": "SELL",
+      "positiveCount": 46,
+      "dayCount": 58,
+      "hitRatePct": 79.31,
+      "avgPositiveProfitPct": 1.04,
+      "maxProfitPct": 4.63,
+      "bestDateKey": "2026-07-16",
+      "bestDayLabel": "Thu, 16 Jul 2026",
+      "bestEntryPrice": 1666.45,
+      "bestSquareOffTimeIst": "09:30",
+      "bestSquareOffPrice": 1589.35
+    },
+    {
+      "timeIst": "09:30",
+      "side": "SELL",
+      "positiveCount": 43,
+      "dayCount": 58,
+      "hitRatePct": 74.14,
+      "avgPositiveProfitPct": 0.85,
+      "maxProfitPct": 3.02,
+      "bestDateKey": "2026-06-10",
+      "bestDayLabel": "Wed, 10 Jun 2026",
+      "bestEntryPrice": 1785.65,
+      "bestSquareOffTimeIst": "15:00",
+      "bestSquareOffPrice": 1731.65
+    },
+    {
+      "timeIst": "09:45",
+      "side": "SELL",
+      "positiveCount": 43,
+      "dayCount": 58,
+      "hitRatePct": 74.14,
+      "avgPositiveProfitPct": 0.81,
+      "maxProfitPct": 3.12,
+      "bestDateKey": "2026-06-10",
+      "bestDayLabel": "Wed, 10 Jun 2026",
+      "bestEntryPrice": 1787.4,
+      "bestSquareOffTimeIst": "15:00",
+      "bestSquareOffPrice": 1731.65
+    },
+    {
+      "timeIst": "10:00",
+      "side": "SELL",
+      "positiveCount": 45,
+      "dayCount": 58,
+      "hitRatePct": 77.59,
+      "avgPositiveProfitPct": 0.77,
+      "maxProfitPct": 2.52,
+      "bestDateKey": "2026-06-10",
+      "bestDayLabel": "Wed, 10 Jun 2026",
+      "bestEntryPrice": 1776.35,
+      "bestSquareOffTimeIst": "15:00",
+      "bestSquareOffPrice": 1731.65
+    },
+    {
+      "timeIst": "10:45",
+      "side": "SELL",
+      "positiveCount": 50,
+      "dayCount": 58,
+      "hitRatePct": 86.21,
+      "avgPositiveProfitPct": 0.72,
+      "maxProfitPct": 2.85,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1841.8,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "10:15",
+      "side": "SELL",
+      "positiveCount": 49,
+      "dayCount": 58,
+      "hitRatePct": 84.48,
+      "avgPositiveProfitPct": 0.7,
+      "maxProfitPct": 2.71,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1839.15,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "10:30",
+      "side": "SELL",
+      "positiveCount": 49,
+      "dayCount": 58,
+      "hitRatePct": 84.48,
+      "avgPositiveProfitPct": 0.7,
+      "maxProfitPct": 2.9,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1842.65,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "11:00",
+      "side": "SELL",
+      "positiveCount": 49,
+      "dayCount": 58,
+      "hitRatePct": 84.48,
+      "avgPositiveProfitPct": 0.69,
+      "maxProfitPct": 2.72,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1839.2,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "11:15",
+      "side": "SELL",
+      "positiveCount": 48,
+      "dayCount": 58,
+      "hitRatePct": 82.76,
+      "avgPositiveProfitPct": 0.64,
+      "maxProfitPct": 2.55,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1836.05,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "11:30",
+      "side": "SELL",
+      "positiveCount": 49,
+      "dayCount": 58,
+      "hitRatePct": 84.48,
+      "avgPositiveProfitPct": 0.58,
+      "maxProfitPct": 2.67,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1838.25,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "11:45",
+      "side": "SELL",
+      "positiveCount": 49,
+      "dayCount": 58,
+      "hitRatePct": 84.48,
+      "avgPositiveProfitPct": 0.55,
+      "maxProfitPct": 2.62,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1837.3,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "12:00",
+      "side": "SELL",
+      "positiveCount": 46,
+      "dayCount": 58,
+      "hitRatePct": 79.31,
+      "avgPositiveProfitPct": 0.53,
+      "maxProfitPct": 2.23,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1830.05,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "12:30",
+      "side": "SELL",
+      "positiveCount": 43,
+      "dayCount": 58,
+      "hitRatePct": 74.14,
+      "avgPositiveProfitPct": 0.5,
+      "maxProfitPct": 2.01,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1825.95,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "12:15",
+      "side": "SELL",
+      "positiveCount": 46,
+      "dayCount": 58,
+      "hitRatePct": 79.31,
+      "avgPositiveProfitPct": 0.48,
+      "maxProfitPct": 2.02,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1826.1,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    },
+    {
+      "timeIst": "12:45",
+      "side": "SELL",
+      "positiveCount": 47,
+      "dayCount": 58,
+      "hitRatePct": 81.03,
+      "avgPositiveProfitPct": 0.45,
+      "maxProfitPct": 2.03,
+      "bestDateKey": "2026-05-29",
+      "bestDayLabel": "Fri, 29 May 2026",
+      "bestEntryPrice": 1826.3,
+      "bestSquareOffTimeIst": "15:15",
+      "bestSquareOffPrice": 1789.25
+    }
+  ],
+  "weekdayRows": [
+    {
+      "weekday": "Thursday",
+      "buyDays": 11,
+      "avgBestBuyPct": 1.41,
+      "maxBestBuyPct": 3,
+      "sellDays": 11,
+      "avgBestSellPct": 1.05,
+      "maxBestSellPct": 4.63
+    },
+    {
+      "weekday": "Friday",
+      "buyDays": 11,
+      "avgBestBuyPct": 1.29,
+      "maxBestBuyPct": 2.58,
+      "sellDays": 11,
+      "avgBestSellPct": 0.97,
+      "maxBestSellPct": 3.14
+    },
+    {
+      "weekday": "Tuesday",
+      "buyDays": 12,
+      "avgBestBuyPct": 1.27,
+      "maxBestBuyPct": 2.59,
+      "sellDays": 12,
+      "avgBestSellPct": 1.04,
+      "maxBestSellPct": 2.37
+    },
+    {
+      "weekday": "Monday",
+      "buyDays": 12,
+      "avgBestBuyPct": 0.98,
+      "maxBestBuyPct": 2,
+      "sellDays": 12,
+      "avgBestSellPct": 1.1,
+      "maxBestSellPct": 2.66
+    },
+    {
+      "weekday": "Wednesday",
+      "buyDays": 12,
+      "avgBestBuyPct": 0.89,
+      "maxBestBuyPct": 2.46,
+      "sellDays": 12,
+      "avgBestSellPct": 1.35,
+      "maxBestSellPct": 3.12
+    }
+  ],
+  "dayBests": [
+    {
+      "dateKey": "2026-05-12",
+      "dayLabel": "Tue, 12 May 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-05-12",
+        "dayLabel": "Tue, 12 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "15:00",
+        "entryPrice": 1779.15,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1788.15,
+        "profitPct": 0.51,
+        "profitPerShare": 9
+      },
+      "sell": {
+        "dateKey": "2026-05-12",
+        "dayLabel": "Tue, 12 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1822.35,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1779.15,
+        "profitPct": 2.37,
+        "profitPerShare": 43.2
+      }
+    },
+    {
+      "dateKey": "2026-05-13",
+      "dayLabel": "Wed, 13 May 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-05-13",
+        "dayLabel": "Wed, 13 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1769.65,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1813.2,
+        "profitPct": 2.46,
+        "profitPerShare": 43.55
+      },
+      "sell": {
+        "dateKey": "2026-05-13",
+        "dayLabel": "Wed, 13 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1781.65,
+        "squareOffTimeIst": "09:30",
+        "squareOffPrice": 1769.65,
+        "profitPct": 0.67,
+        "profitPerShare": 12
+      }
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "Thu, 14 May 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-05-14",
+        "dayLabel": "Thu, 14 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1805.4,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1849,
+        "profitPct": 2.41,
+        "profitPerShare": 43.6
+      },
+      "sell": {
+        "dateKey": "2026-05-14",
+        "dayLabel": "Thu, 14 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1817.85,
+        "squareOffTimeIst": "10:00",
+        "squareOffPrice": 1805.4,
+        "profitPct": 0.68,
+        "profitPerShare": 12.45
+      }
+    },
+    {
+      "dateKey": "2026-05-15",
+      "dayLabel": "Fri, 15 May 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-05-15",
+        "dayLabel": "Fri, 15 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1839.85,
+        "squareOffTimeIst": "12:30",
+        "squareOffPrice": 1851.2,
+        "profitPct": 0.62,
+        "profitPerShare": 11.35
+      },
+      "sell": {
+        "dateKey": "2026-05-15",
+        "dayLabel": "Fri, 15 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:30",
+        "entryPrice": 1851.2,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1834.7,
+        "profitPct": 0.89,
+        "profitPerShare": 16.5
+      }
+    },
+    {
+      "dateKey": "2026-05-18",
+      "dayLabel": "Mon, 18 May 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-05-18",
+        "dayLabel": "Mon, 18 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1792.45,
+        "squareOffTimeIst": "13:45",
+        "squareOffPrice": 1816.7,
+        "profitPct": 1.35,
+        "profitPerShare": 24.25
+      },
+      "sell": {
+        "dateKey": "2026-05-18",
+        "dayLabel": "Mon, 18 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1803.55,
+        "squareOffTimeIst": "09:45",
+        "squareOffPrice": 1792.45,
+        "profitPct": 0.62,
+        "profitPerShare": 11.1
+      }
+    },
+    {
+      "dateKey": "2026-05-19",
+      "dayLabel": "Tue, 19 May 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-05-19",
+        "dayLabel": "Tue, 19 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1813.25,
+        "squareOffTimeIst": "13:15",
+        "squareOffPrice": 1829.9,
+        "profitPct": 0.92,
+        "profitPerShare": 16.65
+      },
+      "sell": {
+        "dateKey": "2026-05-19",
+        "dayLabel": "Tue, 19 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "13:15",
+        "entryPrice": 1829.9,
+        "squareOffTimeIst": "14:00",
+        "squareOffPrice": 1821.95,
+        "profitPct": 0.43,
+        "profitPerShare": 7.95
+      }
+    },
+    {
+      "dateKey": "2026-05-20",
+      "dayLabel": "Wed, 20 May 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-05-20",
+        "dayLabel": "Wed, 20 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1798.1,
+        "squareOffTimeIst": "10:45",
+        "squareOffPrice": 1807.8,
+        "profitPct": 0.54,
+        "profitPerShare": 9.7
+      },
+      "sell": {
+        "dateKey": "2026-05-20",
+        "dayLabel": "Wed, 20 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:45",
+        "entryPrice": 1807.8,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1780.7,
+        "profitPct": 1.5,
+        "profitPerShare": 27.1
+      }
+    },
+    {
+      "dateKey": "2026-05-21",
+      "dayLabel": "Thu, 21 May 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-05-21",
+        "dayLabel": "Thu, 21 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1776.4,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1802.45,
+        "profitPct": 1.47,
+        "profitPerShare": 26.05
+      },
+      "sell": {
+        "dateKey": "2026-05-21",
+        "dayLabel": "Thu, 21 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1786.45,
+        "squareOffTimeIst": "10:30",
+        "squareOffPrice": 1782.15,
+        "profitPct": 0.24,
+        "profitPerShare": 4.3
+      }
+    },
+    {
+      "dateKey": "2026-05-22",
+      "dayLabel": "Fri, 22 May 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-05-22",
+        "dayLabel": "Fri, 22 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1819.95,
+        "squareOffTimeIst": "11:45",
+        "squareOffPrice": 1845.8,
+        "profitPct": 1.42,
+        "profitPerShare": 25.85
+      },
+      "sell": {
+        "dateKey": "2026-05-22",
+        "dayLabel": "Fri, 22 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:45",
+        "entryPrice": 1845.8,
+        "squareOffTimeIst": "14:00",
+        "squareOffPrice": 1822.05,
+        "profitPct": 1.29,
+        "profitPerShare": 23.75
+      }
+    },
+    {
+      "dateKey": "2026-05-25",
+      "dayLabel": "Mon, 25 May 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-05-25",
+        "dayLabel": "Mon, 25 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1845.2,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1855.6,
+        "profitPct": 0.56,
+        "profitPerShare": 10.4
+      },
+      "sell": {
+        "dateKey": "2026-05-25",
+        "dayLabel": "Mon, 25 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1851.35,
+        "squareOffTimeIst": "09:45",
+        "squareOffPrice": 1846.5,
+        "profitPct": 0.26,
+        "profitPerShare": 4.85
+      }
+    },
+    {
+      "dateKey": "2026-05-26",
+      "dayLabel": "Tue, 26 May 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-05-26",
+        "dayLabel": "Tue, 26 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1846.1,
+        "squareOffTimeIst": "12:30",
+        "squareOffPrice": 1870.25,
+        "profitPct": 1.31,
+        "profitPerShare": 24.15
+      },
+      "sell": {
+        "dateKey": "2026-05-26",
+        "dayLabel": "Tue, 26 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:30",
+        "entryPrice": 1870.25,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1860.7,
+        "profitPct": 0.51,
+        "profitPerShare": 9.55
+      }
+    },
+    {
+      "dateKey": "2026-05-27",
+      "dayLabel": "Wed, 27 May 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-05-27",
+        "dayLabel": "Wed, 27 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:30",
+        "entryPrice": 1853.25,
+        "squareOffTimeIst": "11:45",
+        "squareOffPrice": 1867.2,
+        "profitPct": 0.75,
+        "profitPerShare": 13.95
+      },
+      "sell": {
+        "dateKey": "2026-05-27",
+        "dayLabel": "Wed, 27 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:45",
+        "entryPrice": 1867.2,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1850.8,
+        "profitPct": 0.88,
+        "profitPerShare": 16.4
+      }
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "Fri, 29 May 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-05-29",
+        "dayLabel": "Fri, 29 May 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1831.35,
+        "squareOffTimeIst": "10:30",
+        "squareOffPrice": 1842.65,
+        "profitPct": 0.62,
+        "profitPerShare": 11.3
+      },
+      "sell": {
+        "dateKey": "2026-05-29",
+        "dayLabel": "Fri, 29 May 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1847.25,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1789.25,
+        "profitPct": 3.14,
+        "profitPerShare": 58
+      }
+    },
+    {
+      "dateKey": "2026-06-01",
+      "dayLabel": "Mon, 1 Jun 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-06-01",
+        "dayLabel": "Mon, 1 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "13:30",
+        "entryPrice": 1737.85,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1748,
+        "profitPct": 0.58,
+        "profitPerShare": 10.15
+      },
+      "sell": {
+        "dateKey": "2026-06-01",
+        "dayLabel": "Mon, 1 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1785.25,
+        "squareOffTimeIst": "13:30",
+        "squareOffPrice": 1737.85,
+        "profitPct": 2.66,
+        "profitPerShare": 47.4
+      }
+    },
+    {
+      "dateKey": "2026-06-02",
+      "dayLabel": "Tue, 2 Jun 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-06-02",
+        "dayLabel": "Tue, 2 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "12:30",
+        "entryPrice": 1722.3,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1748.85,
+        "profitPct": 1.54,
+        "profitPerShare": 26.55
+      },
+      "sell": {
+        "dateKey": "2026-06-02",
+        "dayLabel": "Tue, 2 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1743.55,
+        "squareOffTimeIst": "12:30",
+        "squareOffPrice": 1722.3,
+        "profitPct": 1.22,
+        "profitPerShare": 21.25
+      }
+    },
+    {
+      "dateKey": "2026-06-03",
+      "dayLabel": "Wed, 3 Jun 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-06-03",
+        "dayLabel": "Wed, 3 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1723.95,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1741.95,
+        "profitPct": 1.04,
+        "profitPerShare": 18
+      },
+      "sell": {
+        "dateKey": "2026-06-03",
+        "dayLabel": "Wed, 3 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1733,
+        "squareOffTimeIst": "09:30",
+        "squareOffPrice": 1723.95,
+        "profitPct": 0.52,
+        "profitPerShare": 9.05
+      }
+    },
+    {
+      "dateKey": "2026-06-04",
+      "dayLabel": "Thu, 4 Jun 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-06-04",
+        "dayLabel": "Thu, 4 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "13:45",
+        "entryPrice": 1731.05,
+        "squareOffTimeIst": "14:30",
+        "squareOffPrice": 1737.7,
+        "profitPct": 0.38,
+        "profitPerShare": 6.65
+      },
+      "sell": {
+        "dateKey": "2026-06-04",
+        "dayLabel": "Thu, 4 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1741.35,
+        "squareOffTimeIst": "13:45",
+        "squareOffPrice": 1731.05,
+        "profitPct": 0.59,
+        "profitPerShare": 10.3
+      }
+    },
+    {
+      "dateKey": "2026-06-05",
+      "dayLabel": "Fri, 5 Jun 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-06-05",
+        "dayLabel": "Fri, 5 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1746.55,
+        "squareOffTimeIst": "11:00",
+        "squareOffPrice": 1769.4,
+        "profitPct": 1.31,
+        "profitPerShare": 22.85
+      },
+      "sell": {
+        "dateKey": "2026-06-05",
+        "dayLabel": "Fri, 5 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:00",
+        "entryPrice": 1769.4,
+        "squareOffTimeIst": "13:00",
+        "squareOffPrice": 1752.6,
+        "profitPct": 0.95,
+        "profitPerShare": 16.8
+      }
+    },
+    {
+      "dateKey": "2026-06-08",
+      "dayLabel": "Mon, 8 Jun 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-06-08",
+        "dayLabel": "Mon, 8 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1737.15,
+        "squareOffTimeIst": "12:45",
+        "squareOffPrice": 1752,
+        "profitPct": 0.85,
+        "profitPerShare": 14.85
+      },
+      "sell": {
+        "dateKey": "2026-06-08",
+        "dayLabel": "Mon, 8 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:45",
+        "entryPrice": 1752,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1738.45,
+        "profitPct": 0.77,
+        "profitPerShare": 13.55
+      }
+    },
+    {
+      "dateKey": "2026-06-09",
+      "dayLabel": "Tue, 9 Jun 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-06-09",
+        "dayLabel": "Tue, 9 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1771.4,
+        "squareOffTimeIst": "09:45",
+        "squareOffPrice": 1795.1,
+        "profitPct": 1.34,
+        "profitPerShare": 23.7
+      },
+      "sell": {
+        "dateKey": "2026-06-09",
+        "dayLabel": "Tue, 9 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1795.1,
+        "squareOffTimeIst": "13:45",
+        "squareOffPrice": 1772.3,
+        "profitPct": 1.27,
+        "profitPerShare": 22.8
+      }
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "Wed, 10 Jun 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-06-10",
+        "dayLabel": "Wed, 10 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1778.8,
+        "squareOffTimeIst": "09:45",
+        "squareOffPrice": 1787.4,
+        "profitPct": 0.48,
+        "profitPerShare": 8.6
+      },
+      "sell": {
+        "dateKey": "2026-06-10",
+        "dayLabel": "Wed, 10 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1787.4,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1731.65,
+        "profitPct": 3.12,
+        "profitPerShare": 55.75
+      }
+    },
+    {
+      "dateKey": "2026-06-11",
+      "dayLabel": "Thu, 11 Jun 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-06-11",
+        "dayLabel": "Thu, 11 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "12:45",
+        "entryPrice": 1714.7,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1719.8,
+        "profitPct": 0.3,
+        "profitPerShare": 5.1
+      },
+      "sell": {
+        "dateKey": "2026-06-11",
+        "dayLabel": "Thu, 11 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:30",
+        "entryPrice": 1726.95,
+        "squareOffTimeIst": "12:45",
+        "squareOffPrice": 1714.7,
+        "profitPct": 0.71,
+        "profitPerShare": 12.25
+      }
+    },
+    {
+      "dateKey": "2026-06-12",
+      "dayLabel": "Fri, 12 Jun 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-06-12",
+        "dayLabel": "Fri, 12 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "13:15",
+        "entryPrice": 1674.8,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1696.35,
+        "profitPct": 1.29,
+        "profitPerShare": 21.55
+      },
+      "sell": {
+        "dateKey": "2026-06-12",
+        "dayLabel": "Fri, 12 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1697.5,
+        "squareOffTimeIst": "13:15",
+        "squareOffPrice": 1674.8,
+        "profitPct": 1.34,
+        "profitPerShare": 22.7
+      }
+    },
+    {
+      "dateKey": "2026-06-15",
+      "dayLabel": "Mon, 15 Jun 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-06-15",
+        "dayLabel": "Mon, 15 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1719.85,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1740.1,
+        "profitPct": 1.18,
+        "profitPerShare": 20.25
+      },
+      "sell": {
+        "dateKey": "2026-06-15",
+        "dayLabel": "Mon, 15 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:15",
+        "entryPrice": 1737.85,
+        "squareOffTimeIst": "12:30",
+        "squareOffPrice": 1731.9,
+        "profitPct": 0.34,
+        "profitPerShare": 5.95
+      }
+    },
+    {
+      "dateKey": "2026-06-16",
+      "dayLabel": "Tue, 16 Jun 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-06-16",
+        "dayLabel": "Tue, 16 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1738.85,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1783.85,
+        "profitPct": 2.59,
+        "profitPerShare": 45
+      },
+      "sell": {
+        "dateKey": "2026-06-16",
+        "dayLabel": "Tue, 16 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:00",
+        "entryPrice": 1766.05,
+        "squareOffTimeIst": "11:30",
+        "squareOffPrice": 1762.7,
+        "profitPct": 0.19,
+        "profitPerShare": 3.35
+      }
+    },
+    {
+      "dateKey": "2026-06-17",
+      "dayLabel": "Wed, 17 Jun 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-06-17",
+        "dayLabel": "Wed, 17 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:45",
+        "entryPrice": 1778.9,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1791.65,
+        "profitPct": 0.72,
+        "profitPerShare": 12.75
+      },
+      "sell": {
+        "dateKey": "2026-06-17",
+        "dayLabel": "Wed, 17 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1788,
+        "squareOffTimeIst": "10:45",
+        "squareOffPrice": 1778.9,
+        "profitPct": 0.51,
+        "profitPerShare": 9.1
+      }
+    },
+    {
+      "dateKey": "2026-06-18",
+      "dayLabel": "Thu, 18 Jun 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-06-18",
+        "dayLabel": "Thu, 18 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1803.15,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1839.85,
+        "profitPct": 2.04,
+        "profitPerShare": 36.7
+      },
+      "sell": {
+        "dateKey": "2026-06-18",
+        "dayLabel": "Thu, 18 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "13:45",
+        "entryPrice": 1836.55,
+        "squareOffTimeIst": "14:15",
+        "squareOffPrice": 1832,
+        "profitPct": 0.25,
+        "profitPerShare": 4.55
+      }
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "Fri, 19 Jun 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-06-19",
+        "dayLabel": "Fri, 19 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1826.1,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1873.3,
+        "profitPct": 2.58,
+        "profitPerShare": 47.2
+      },
+      "sell": {
+        "dateKey": "2026-06-19",
+        "dayLabel": "Fri, 19 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:30",
+        "entryPrice": 1850.3,
+        "squareOffTimeIst": "12:30",
+        "squareOffPrice": 1844.55,
+        "profitPct": 0.31,
+        "profitPerShare": 5.75
+      }
+    },
+    {
+      "dateKey": "2026-06-22",
+      "dayLabel": "Mon, 22 Jun 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-06-22",
+        "dayLabel": "Mon, 22 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1880.15,
+        "squareOffTimeIst": "10:45",
+        "squareOffPrice": 1885.2,
+        "profitPct": 0.27,
+        "profitPerShare": 5.05
+      },
+      "sell": {
+        "dateKey": "2026-06-22",
+        "dayLabel": "Mon, 22 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1885.4,
+        "squareOffTimeIst": "14:00",
+        "squareOffPrice": 1858.85,
+        "profitPct": 1.41,
+        "profitPerShare": 26.55
+      }
+    },
+    {
+      "dateKey": "2026-06-23",
+      "dayLabel": "Tue, 23 Jun 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-06-23",
+        "dayLabel": "Tue, 23 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "13:45",
+        "entryPrice": 1826.1,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1840.95,
+        "profitPct": 0.81,
+        "profitPerShare": 14.85
+      },
+      "sell": {
+        "dateKey": "2026-06-23",
+        "dayLabel": "Tue, 23 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1863.2,
+        "squareOffTimeIst": "13:45",
+        "squareOffPrice": 1826.1,
+        "profitPct": 1.99,
+        "profitPerShare": 37.1
+      }
+    },
+    {
+      "dateKey": "2026-06-24",
+      "dayLabel": "Wed, 24 Jun 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-06-24",
+        "dayLabel": "Wed, 24 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "11:45",
+        "entryPrice": 1815.8,
+        "squareOffTimeIst": "13:30",
+        "squareOffPrice": 1829,
+        "profitPct": 0.73,
+        "profitPerShare": 13.2
+      },
+      "sell": {
+        "dateKey": "2026-06-24",
+        "dayLabel": "Wed, 24 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1840.85,
+        "squareOffTimeIst": "11:45",
+        "squareOffPrice": 1815.8,
+        "profitPct": 1.36,
+        "profitPerShare": 25.05
+      }
+    },
+    {
+      "dateKey": "2026-06-25",
+      "dayLabel": "Thu, 25 Jun 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-06-25",
+        "dayLabel": "Thu, 25 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:30",
+        "entryPrice": 1824.6,
+        "squareOffTimeIst": "11:45",
+        "squareOffPrice": 1835.65,
+        "profitPct": 0.61,
+        "profitPerShare": 11.05
+      },
+      "sell": {
+        "dateKey": "2026-06-25",
+        "dayLabel": "Thu, 25 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:45",
+        "entryPrice": 1835.65,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1813,
+        "profitPct": 1.23,
+        "profitPerShare": 22.65
+      }
+    },
+    {
+      "dateKey": "2026-06-29",
+      "dayLabel": "Mon, 29 Jun 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-06-29",
+        "dayLabel": "Mon, 29 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "13:45",
+        "entryPrice": 1767.85,
+        "squareOffTimeIst": "14:15",
+        "squareOffPrice": 1771.8,
+        "profitPct": 0.22,
+        "profitPerShare": 3.95
+      },
+      "sell": {
+        "dateKey": "2026-06-29",
+        "dayLabel": "Mon, 29 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1812.25,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1766.85,
+        "profitPct": 2.51,
+        "profitPerShare": 45.4
+      }
+    },
+    {
+      "dateKey": "2026-06-30",
+      "dayLabel": "Tue, 30 Jun 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-06-30",
+        "dayLabel": "Tue, 30 Jun 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:15",
+        "entryPrice": 1756.4,
+        "squareOffTimeIst": "11:00",
+        "squareOffPrice": 1768.25,
+        "profitPct": 0.67,
+        "profitPerShare": 11.85
+      },
+      "sell": {
+        "dateKey": "2026-06-30",
+        "dayLabel": "Tue, 30 Jun 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:00",
+        "entryPrice": 1768.25,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1737.7,
+        "profitPct": 1.73,
+        "profitPerShare": 30.55
+      }
+    },
+    {
+      "dateKey": "2026-07-01",
+      "dayLabel": "Wed, 1 Jul 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-07-01",
+        "dayLabel": "Wed, 1 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1739.25,
+        "squareOffTimeIst": "13:45",
+        "squareOffPrice": 1757.5,
+        "profitPct": 1.05,
+        "profitPerShare": 18.25
+      },
+      "sell": {
+        "dateKey": "2026-07-01",
+        "dayLabel": "Wed, 1 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:15",
+        "entryPrice": 1756.35,
+        "squareOffTimeIst": "13:00",
+        "squareOffPrice": 1745.5,
+        "profitPct": 0.62,
+        "profitPerShare": 10.85
+      }
+    },
+    {
+      "dateKey": "2026-07-02",
+      "dayLabel": "Thu, 2 Jul 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-07-02",
+        "dayLabel": "Thu, 2 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:15",
+        "entryPrice": 1747,
+        "squareOffTimeIst": "13:45",
+        "squareOffPrice": 1765.5,
+        "profitPct": 1.06,
+        "profitPerShare": 18.5
+      },
+      "sell": {
+        "dateKey": "2026-07-02",
+        "dayLabel": "Thu, 2 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1759.5,
+        "squareOffTimeIst": "10:15",
+        "squareOffPrice": 1747,
+        "profitPct": 0.71,
+        "profitPerShare": 12.5
+      }
+    },
+    {
+      "dateKey": "2026-07-03",
+      "dayLabel": "Fri, 3 Jul 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-07-03",
+        "dayLabel": "Fri, 3 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "14:15",
+        "entryPrice": 1766.6,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1774.5,
+        "profitPct": 0.45,
+        "profitPerShare": 7.9
+      },
+      "sell": {
+        "dateKey": "2026-07-03",
+        "dayLabel": "Fri, 3 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1777.8,
+        "squareOffTimeIst": "14:15",
+        "squareOffPrice": 1766.6,
+        "profitPct": 0.63,
+        "profitPerShare": 11.2
+      }
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "Mon, 6 Jul 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-07-06",
+        "dayLabel": "Mon, 6 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1769.5,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1786.4,
+        "profitPct": 0.96,
+        "profitPerShare": 16.9
+      },
+      "sell": {
+        "dateKey": "2026-07-06",
+        "dayLabel": "Mon, 6 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1775.7,
+        "squareOffTimeIst": "10:00",
+        "squareOffPrice": 1769.5,
+        "profitPct": 0.35,
+        "profitPerShare": 6.2
+      }
+    },
+    {
+      "dateKey": "2026-07-07",
+      "dayLabel": "Tue, 7 Jul 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-07-07",
+        "dayLabel": "Tue, 7 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "12:30",
+        "entryPrice": 1774.1,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1799.55,
+        "profitPct": 1.43,
+        "profitPerShare": 25.45
+      },
+      "sell": {
+        "dateKey": "2026-07-07",
+        "dayLabel": "Tue, 7 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1795.45,
+        "squareOffTimeIst": "12:30",
+        "squareOffPrice": 1774.1,
+        "profitPct": 1.19,
+        "profitPerShare": 21.35
+      }
+    },
+    {
+      "dateKey": "2026-07-08",
+      "dayLabel": "Wed, 8 Jul 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-07-08",
+        "dayLabel": "Wed, 8 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1807.55,
+        "squareOffTimeIst": "10:45",
+        "squareOffPrice": 1833.5,
+        "profitPct": 1.44,
+        "profitPerShare": 25.95
+      },
+      "sell": {
+        "dateKey": "2026-07-08",
+        "dayLabel": "Wed, 8 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:45",
+        "entryPrice": 1833.5,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1797.4,
+        "profitPct": 1.97,
+        "profitPerShare": 36.1
+      }
+    },
+    {
+      "dateKey": "2026-07-09",
+      "dayLabel": "Thu, 9 Jul 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-07-09",
+        "dayLabel": "Thu, 9 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1785,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1797,
+        "profitPct": 0.67,
+        "profitPerShare": 12
+      },
+      "sell": {
+        "dateKey": "2026-07-09",
+        "dayLabel": "Thu, 9 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1802.4,
+        "squareOffTimeIst": "09:30",
+        "squareOffPrice": 1785,
+        "profitPct": 0.97,
+        "profitPerShare": 17.4
+      }
+    },
+    {
+      "dateKey": "2026-07-10",
+      "dayLabel": "Fri, 10 Jul 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-07-10",
+        "dayLabel": "Fri, 10 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1803.4,
+        "squareOffTimeIst": "14:15",
+        "squareOffPrice": 1832.35,
+        "profitPct": 1.61,
+        "profitPerShare": 28.95
+      },
+      "sell": {
+        "dateKey": "2026-07-10",
+        "dayLabel": "Fri, 10 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "14:15",
+        "entryPrice": 1832.35,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1824.75,
+        "profitPct": 0.41,
+        "profitPerShare": 7.6
+      }
+    },
+    {
+      "dateKey": "2026-07-13",
+      "dayLabel": "Mon, 13 Jul 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-07-13",
+        "dayLabel": "Mon, 13 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1753.4,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1788.4,
+        "profitPct": 2,
+        "profitPerShare": 35
+      },
+      "sell": {
+        "dateKey": "2026-07-13",
+        "dayLabel": "Mon, 13 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1788.85,
+        "squareOffTimeIst": "10:00",
+        "squareOffPrice": 1753.4,
+        "profitPct": 1.98,
+        "profitPerShare": 35.45
+      }
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "Tue, 14 Jul 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-07-14",
+        "dayLabel": "Tue, 14 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "12:00",
+        "entryPrice": 1752.05,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1789.15,
+        "profitPct": 2.12,
+        "profitPerShare": 37.1
+      },
+      "sell": {
+        "dateKey": "2026-07-14",
+        "dayLabel": "Tue, 14 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1764.35,
+        "squareOffTimeIst": "12:00",
+        "squareOffPrice": 1752.05,
+        "profitPct": 0.7,
+        "profitPerShare": 12.3
+      }
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "Wed, 15 Jul 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-07-15",
+        "dayLabel": "Wed, 15 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1802.95,
+        "squareOffTimeIst": "14:15",
+        "squareOffPrice": 1816.6,
+        "profitPct": 0.76,
+        "profitPerShare": 13.65
+      },
+      "sell": {
+        "dateKey": "2026-07-15",
+        "dayLabel": "Wed, 15 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:15",
+        "entryPrice": 1815.7,
+        "squareOffTimeIst": "13:00",
+        "squareOffPrice": 1803.1,
+        "profitPct": 0.69,
+        "profitPerShare": 12.6
+      }
+    },
+    {
+      "dateKey": "2026-07-16",
+      "dayLabel": "Thu, 16 Jul 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-07-16",
+        "dayLabel": "Thu, 16 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1589.35,
+        "squareOffTimeIst": "10:15",
+        "squareOffPrice": 1622.65,
+        "profitPct": 2.1,
+        "profitPerShare": 33.3
+      },
+      "sell": {
+        "dateKey": "2026-07-16",
+        "dayLabel": "Thu, 16 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1666.45,
+        "squareOffTimeIst": "09:30",
+        "squareOffPrice": 1589.35,
+        "profitPct": 4.63,
+        "profitPerShare": 77.1
+      }
+    },
+    {
+      "dateKey": "2026-07-17",
+      "dayLabel": "Fri, 17 Jul 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-07-17",
+        "dayLabel": "Fri, 17 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1583.45,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1614,
+        "profitPct": 1.93,
+        "profitPerShare": 30.55
+      },
+      "sell": {
+        "dateKey": "2026-07-17",
+        "dayLabel": "Fri, 17 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "11:15",
+        "entryPrice": 1606.1,
+        "squareOffTimeIst": "12:15",
+        "squareOffPrice": 1598.25,
+        "profitPct": 0.49,
+        "profitPerShare": 7.85
+      }
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "Mon, 20 Jul 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-07-20",
+        "dayLabel": "Mon, 20 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1607.3,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1623.3,
+        "profitPct": 1,
+        "profitPerShare": 16
+      },
+      "sell": {
+        "dateKey": "2026-07-20",
+        "dayLabel": "Mon, 20 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:30",
+        "entryPrice": 1623.15,
+        "squareOffTimeIst": "12:45",
+        "squareOffPrice": 1615.5,
+        "profitPct": 0.47,
+        "profitPerShare": 7.65
+      }
+    },
+    {
+      "dateKey": "2026-07-21",
+      "dayLabel": "Tue, 21 Jul 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-07-21",
+        "dayLabel": "Tue, 21 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1613.1,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1624.25,
+        "profitPct": 0.69,
+        "profitPerShare": 11.15
+      },
+      "sell": {
+        "dateKey": "2026-07-21",
+        "dayLabel": "Tue, 21 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:15",
+        "entryPrice": 1619.6,
+        "squareOffTimeIst": "10:45",
+        "squareOffPrice": 1616.25,
+        "profitPct": 0.21,
+        "profitPerShare": 3.35
+      }
+    },
+    {
+      "dateKey": "2026-07-22",
+      "dayLabel": "Wed, 22 Jul 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-07-22",
+        "dayLabel": "Wed, 22 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1595.05,
+        "squareOffTimeIst": "10:00",
+        "squareOffPrice": 1602.8,
+        "profitPct": 0.49,
+        "profitPerShare": 7.75
+      },
+      "sell": {
+        "dateKey": "2026-07-22",
+        "dayLabel": "Wed, 22 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1611,
+        "squareOffTimeIst": "15:00",
+        "squareOffPrice": 1580.3,
+        "profitPct": 1.91,
+        "profitPerShare": 30.7
+      }
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-07-23",
+        "dayLabel": "Thu, 23 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:45",
+        "entryPrice": 1575.35,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1622.65,
+        "profitPct": 3,
+        "profitPerShare": 47.3
+      },
+      "sell": {
+        "dateKey": "2026-07-23",
+        "dayLabel": "Thu, 23 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:30",
+        "entryPrice": 1613.75,
+        "squareOffTimeIst": "14:00",
+        "squareOffPrice": 1605.4,
+        "profitPct": 0.52,
+        "profitPerShare": 8.35
+      }
+    },
+    {
+      "dateKey": "2026-07-24",
+      "dayLabel": "Fri, 24 Jul 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-07-24",
+        "dayLabel": "Fri, 24 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1628.95,
+        "squareOffTimeIst": "12:45",
+        "squareOffPrice": 1662.25,
+        "profitPct": 2.04,
+        "profitPerShare": 33.3
+      },
+      "sell": {
+        "dateKey": "2026-07-24",
+        "dayLabel": "Fri, 24 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:45",
+        "entryPrice": 1662.25,
+        "squareOffTimeIst": "13:30",
+        "squareOffPrice": 1654.85,
+        "profitPct": 0.45,
+        "profitPerShare": 7.4
+      }
+    },
+    {
+      "dateKey": "2026-07-27",
+      "dayLabel": "Mon, 27 Jul 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-07-27",
+        "dayLabel": "Mon, 27 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1659.1,
+        "squareOffTimeIst": "12:45",
+        "squareOffPrice": 1686.65,
+        "profitPct": 1.66,
+        "profitPerShare": 27.55
+      },
+      "sell": {
+        "dateKey": "2026-07-27",
+        "dayLabel": "Mon, 27 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "12:45",
+        "entryPrice": 1686.65,
+        "squareOffTimeIst": "14:45",
+        "squareOffPrice": 1671.75,
+        "profitPct": 0.88,
+        "profitPerShare": 14.9
+      }
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "Tue, 28 Jul 2026",
+      "weekday": "Tuesday",
+      "buy": {
+        "dateKey": "2026-07-28",
+        "dayLabel": "Tue, 28 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:00",
+        "entryPrice": 1668.25,
+        "squareOffTimeIst": "13:00",
+        "squareOffPrice": 1690.35,
+        "profitPct": 1.32,
+        "profitPerShare": 22.1
+      },
+      "sell": {
+        "dateKey": "2026-07-28",
+        "dayLabel": "Tue, 28 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:30",
+        "entryPrice": 1680.1,
+        "squareOffTimeIst": "10:00",
+        "squareOffPrice": 1668.25,
+        "profitPct": 0.71,
+        "profitPerShare": 11.85
+      }
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "Wed, 29 Jul 2026",
+      "weekday": "Wednesday",
+      "buy": {
+        "dateKey": "2026-07-29",
+        "dayLabel": "Wed, 29 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "12:15",
+        "entryPrice": 1655.05,
+        "squareOffTimeIst": "12:45",
+        "squareOffPrice": 1657.85,
+        "profitPct": 0.17,
+        "profitPerShare": 2.8
+      },
+      "sell": {
+        "dateKey": "2026-07-29",
+        "dayLabel": "Wed, 29 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1689.2,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1648.1,
+        "profitPct": 2.43,
+        "profitPerShare": 41.1
+      }
+    },
+    {
+      "dateKey": "2026-07-30",
+      "dayLabel": "Thu, 30 Jul 2026",
+      "weekday": "Thursday",
+      "buy": {
+        "dateKey": "2026-07-30",
+        "dayLabel": "Thu, 30 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:30",
+        "entryPrice": 1622.9,
+        "squareOffTimeIst": "13:00",
+        "squareOffPrice": 1646.15,
+        "profitPct": 1.43,
+        "profitPerShare": 23.25
+      },
+      "sell": {
+        "dateKey": "2026-07-30",
+        "dayLabel": "Thu, 30 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1639.9,
+        "squareOffTimeIst": "10:30",
+        "squareOffPrice": 1622.9,
+        "profitPct": 1.04,
+        "profitPerShare": 17
+      }
+    },
+    {
+      "dateKey": "2026-07-31",
+      "dayLabel": "Fri, 31 Jul 2026",
+      "weekday": "Friday",
+      "buy": {
+        "dateKey": "2026-07-31",
+        "dayLabel": "Fri, 31 Jul 2026",
+        "side": "BUY",
+        "entryTimeIst": "10:45",
+        "entryPrice": 1629.6,
+        "squareOffTimeIst": "12:15",
+        "squareOffPrice": 1634.45,
+        "profitPct": 0.3,
+        "profitPerShare": 4.85
+      },
+      "sell": {
+        "dateKey": "2026-07-31",
+        "dayLabel": "Fri, 31 Jul 2026",
+        "side": "SELL",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1636.25,
+        "squareOffTimeIst": "15:15",
+        "squareOffPrice": 1623.75,
+        "profitPct": 0.76,
+        "profitPerShare": 12.5
+      }
+    },
+    {
+      "dateKey": "2026-08-03",
+      "dayLabel": "Mon, 3 Aug 2026",
+      "weekday": "Monday",
+      "buy": {
+        "dateKey": "2026-08-03",
+        "dayLabel": "Mon, 3 Aug 2026",
+        "side": "BUY",
+        "entryTimeIst": "09:15",
+        "entryPrice": 1643.85,
+        "squareOffTimeIst": "10:15",
+        "squareOffPrice": 1662.85,
+        "profitPct": 1.16,
+        "profitPerShare": 19
+      },
+      "sell": {
+        "dateKey": "2026-08-03",
+        "dayLabel": "Mon, 3 Aug 2026",
+        "side": "SELL",
+        "entryTimeIst": "10:15",
+        "entryPrice": 1662.85,
+        "squareOffTimeIst": "12:15",
+        "squareOffPrice": 1646.35,
+        "profitPct": 0.99,
+        "profitPerShare": 16.5
+      }
+    }
+  ]
+}

@@ -296,6 +296,42 @@ export interface RuleSunpharmaScanResult {
   signals: RuleSunpharmaSignal[];
 }
 
+/** Per-symbol favourable profit-range rules (LTM / ICICIGI / TECHM / TVSMOTOR / POLICYBZR). */
+export type FavourableSymbolRuleId =
+  | "ruleLtm"
+  | "ruleIcicigi"
+  | "ruleTechm"
+  | "ruleTvsmotor"
+  | "rulePolicybzr";
+
+export type FavourableSymbolScenarioKey =
+  | "buy_quality"
+  | "sell_quality"
+  | "buy_extended";
+
+export interface FavourableSymbolSignal {
+  side: "BUY" | "SELL";
+  rule: FavourableSymbolRuleId;
+  dateKey: string;
+  timeIst: string;
+  scenarioKey: FavourableSymbolScenarioKey;
+  /** Candle mid (high+low)/2 */
+  price: number;
+  smi: number;
+  rsi: number;
+  bbUpperProximity: DeepproBbProximity;
+  bbLowerProximity: DeepproBbProximity;
+  reasons: string[];
+}
+
+export interface FavourableSymbolScanResult {
+  dateKey: string;
+  rule: FavourableSymbolRuleId;
+  sessionStart: string;
+  sessionEnd: string;
+  signals: FavourableSymbolSignal[];
+}
+
 export interface ParameterCheckCandleRef {
   timeIst: string;
   intervalLabel: string;

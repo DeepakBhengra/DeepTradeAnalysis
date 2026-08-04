@@ -7,6 +7,7 @@ import {
   fetchDeepak2Backtest,
   fetchDeepakBacktest,
   fetchDeepproBacktest,
+  fetchFavourableSymbolBacktest,
   fetchRulePnbBacktest,
   fetchRuleSunpharmaBacktest,
   savePostMortemReport,
@@ -18,6 +19,12 @@ import { StockSymbolInput } from "../components/StockSymbolInput";
 import type { DashboardSeriesPoint } from "../types/dashboard";
 import type { DeepakPostMortemReport, PostMortemVariant } from "../types/postMortem";
 import { buildDeepakPostMortemReport } from "../utils/buildDeepakPostMortemReport";
+import {
+  FAVOURABLE_RULE_LABEL,
+  FAVOURABLE_RULE_SLUG,
+  FAVOURABLE_RULE_SYMBOL,
+  isFavourableSymbolRuleVariant,
+} from "../utils/favourableSymbolRule";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 import {
   signalDaysFromTrades,
@@ -41,6 +48,11 @@ const VARIANT_LABEL: Record<PostMortemVariant, string> = {
   deeppro: "Deeppro",
   rulePnb: "RulePNB",
   ruleSunpharma: "RuleSUNPHARMA",
+  ruleLtm: FAVOURABLE_RULE_LABEL.ruleLtm,
+  ruleIcicigi: FAVOURABLE_RULE_LABEL.ruleIcicigi,
+  ruleTechm: FAVOURABLE_RULE_LABEL.ruleTechm,
+  ruleTvsmotor: FAVOURABLE_RULE_LABEL.ruleTvsmotor,
+  rulePolicybzr: FAVOURABLE_RULE_LABEL.rulePolicybzr,
 };
 
 function readStoredVariant(): PostMortemVariant {
@@ -49,7 +61,8 @@ function readStoredVariant(): PostMortemVariant {
     stored === "deepak2" ||
     stored === "deeppro" ||
     stored === "rulePnb" ||
-    stored === "ruleSunpharma"
+    stored === "ruleSunpharma" ||
+    isFavourableSymbolRuleVariant(stored)
   ) {
     return stored;
   }
@@ -63,6 +76,9 @@ function initialSymbolForVariant(variant: PostMortemVariant): string {
   if (variant === "ruleSunpharma") {
     return "SUNPHARMA";
   }
+  if (isFavourableSymbolRuleVariant(variant)) {
+    return FAVOURABLE_RULE_SYMBOL[variant];
+  }
   return readStoredSymbol();
 }
 
@@ -73,7 +89,55 @@ function lockedSymbolForVariant(variant: PostMortemVariant): string | null {
   if (variant === "ruleSunpharma") {
     return "SUNPHARMA";
   }
+  if (isFavourableSymbolRuleVariant(variant)) {
+    return FAVOURABLE_RULE_SYMBOL[variant];
+  }
   return null;
+}
+
+function lockedReasonForVariant(variant: PostMortemVariant): string | null {
+  if (variant === "rulePnb") {
+    return "RulePNB is a separate PNB-only rule — symbol is locked to PNB and is not mixed with Deepak/Deeppro.";
+  }
+  if (variant === "ruleSunpharma") {
+    return "RuleSUNPHARMA is a separate SUNPHARMA-only rule — symbol is locked to SUNPHARMA and is not mixed with Deepak/Deeppro/RulePNB.";
+  }
+  if (isFavourableSymbolRuleVariant(variant)) {
+    const symbol = FAVOURABLE_RULE_SYMBOL[variant];
+    const label = FAVOURABLE_RULE_LABEL[variant];
+    return `${label} is a separate ${symbol}-only rule — symbol is locked to ${symbol} and is not mixed with Deepak/Deeppro.`;
+  }
+  return null;
+}
+
+function descriptionForVariant(variant: PostMortemVariant): string {
+  if (variant === "rulePnb") {
+    return "RulePNB scans PNB only (separate from Deepak/Deeppro). Max 90 calendar days. Results are cached on the server.";
+  }
+  if (variant === "ruleSunpharma") {
+    return "RuleSUNPHARMA scans SUNPHARMA only (separate from Deepak/Deeppro/RulePNB). Max 90 calendar days. Results are cached on the server.";
+  }
+  if (isFavourableSymbolRuleVariant(variant)) {
+    const symbol = FAVOURABLE_RULE_SYMBOL[variant];
+    const label = FAVOURABLE_RULE_LABEL[variant];
+    return `${label} scans ${symbol} only (separate from Deepak/Deeppro). Max 90 calendar days. Results are cached on the server.`;
+  }
+  return "Scan BUY/SELL days for the selected rule variant (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh.";
+}
+
+function variantChangeInfo(variant: PostMortemVariant): string {
+  if (variant === "rulePnb") {
+    return "RulePNB is PNB-only — symbol locked to PNB. Scan the date range again.";
+  }
+  if (variant === "ruleSunpharma") {
+    return "RuleSUNPHARMA is SUNPHARMA-only — symbol locked to SUNPHARMA. Scan the date range again.";
+  }
+  if (isFavourableSymbolRuleVariant(variant)) {
+    const symbol = FAVOURABLE_RULE_SYMBOL[variant];
+    const label = FAVOURABLE_RULE_LABEL[variant];
+    return `${label} is ${symbol}-only — symbol locked to ${symbol}. Scan the date range again.`;
+  }
+  return "Variant changed — scan the date range again.";
 }
 
 interface LoadedReport {
@@ -149,13 +213,7 @@ export function DeepakPostMortemWidget({
       writeLocalStorage(SYMBOL_STORAGE_KEY, locked);
     }
     clearResults();
-    setScanInfo(
-      next === "rulePnb"
-        ? "RulePNB is PNB-only — symbol locked to PNB. Scan the date range again."
-        : next === "ruleSunpharma"
-          ? "RuleSUNPHARMA is SUNPHARMA-only — symbol locked to SUNPHARMA. Scan the date range again."
-          : "Variant changed — scan the date range again.",
-    );
+    setScanInfo(variantChangeInfo(next));
   };
 
   const runRangeScan = useCallback(
@@ -219,7 +277,14 @@ export function DeepakPostMortemWidget({
                 ? await fetchRulePnbBacktest(normalized, fromDate, toDate)
                 : variant === "ruleSunpharma"
                   ? await fetchRuleSunpharmaBacktest(normalized, fromDate, toDate)
-              : await fetchDeepakBacktest(normalized, fromDate, toDate);
+                  : isFavourableSymbolRuleVariant(variant)
+                    ? await fetchFavourableSymbolBacktest(
+                        FAVOURABLE_RULE_SLUG[variant],
+                        normalized,
+                        fromDate,
+                        toDate,
+                      )
+                    : await fetchDeepakBacktest(normalized, fromDate, toDate);
 
         const days = signalDaysFromTrades(payload.trades);
         setSignalDays(days);
@@ -331,7 +396,9 @@ export function DeepakPostMortemWidget({
                 ? payload.rulePnbDecision
                 : variant === "ruleSunpharma"
                   ? payload.ruleSunpharmaDecision
-              : payload.deepakDecision;
+                  : isFavourableSymbolRuleVariant(variant)
+                    ? payload.favourableSymbolDecision
+                    : payload.deepakDecision;
         const graded = buildDeepakPostMortemReport(decision, payload.series, variant);
         if (!graded) {
           setLoaded(null);
@@ -397,13 +464,7 @@ export function DeepakPostMortemWidget({
         onChange={setSymbolInput}
         onLoad={handleLoadSymbol}
         loading={busy}
-        lockedReason={
-          variant === "rulePnb"
-            ? "RulePNB is a separate PNB-only rule — symbol is locked to PNB and is not mixed with Deepak/Deeppro."
-            : variant === "ruleSunpharma"
-              ? "RuleSUNPHARMA is a separate SUNPHARMA-only rule — symbol is locked to SUNPHARMA and is not mixed with Deepak/Deeppro/RulePNB."
-            : null
-        }
+        lockedReason={lockedReasonForVariant(variant)}
       />
 
       <DateRangePicker
@@ -426,13 +487,7 @@ export function DeepakPostMortemWidget({
         runLabel="Scan signal days"
         loadingLabel="Scanning..."
         idPrefix="postmortem"
-        description={
-          variant === "rulePnb"
-            ? "RulePNB scans PNB only (separate from Deepak/Deeppro). Max 90 calendar days. Results are cached on the server."
-            : variant === "ruleSunpharma"
-              ? "RuleSUNPHARMA scans SUNPHARMA only (separate from Deepak/Deeppro/RulePNB). Max 90 calendar days. Results are cached on the server."
-            : "Scan BUY/SELL days for the selected rule variant (max 90 calendar days). Results are stored on the server; later scans reuse cache unless you Refresh."
-        }
+        description={descriptionForVariant(variant)}
       />
 
       <section className="flex flex-wrap items-end justify-between gap-3 border-b border-kite-border bg-kite-surface px-3 py-2">
@@ -458,6 +513,11 @@ export function DeepakPostMortemWidget({
               <option value="deeppro">Deeppro</option>
               <option value="rulePnb">RulePNB</option>
               <option value="ruleSunpharma">RuleSUNPHARMA</option>
+              <option value="ruleLtm">RuleLTM</option>
+              <option value="ruleIcicigi">RuleICICIGI</option>
+              <option value="ruleTechm">RuleTECHM</option>
+              <option value="ruleTvsmotor">RuleTVSMOTOR</option>
+              <option value="rulePolicybzr">RulePOLICYBZR</option>
             </select>
           </div>
 

@@ -6,6 +6,7 @@ import {
   fetchDeepakDayScan,
   fetchDeepakWatchPartyDayScan,
   fetchDeepproDayScan,
+  fetchFavourableSymbolDayScan,
   fetchRulePnbDayScan,
   fetchRuleSunpharmaDayScan,
 } from "../api/client";
@@ -13,6 +14,11 @@ import type {
   DeepakDayScanPayload,
   DeepakWatchPartyDayScanPayload,
 } from "../types/backtest";
+import {
+  FAVOURABLE_RULE_LABEL,
+  FAVOURABLE_RULE_SLUG,
+  isFavourableSymbolRuleVariant,
+} from "../utils/favourableSymbolRule";
 import { useCancellableDayScan } from "./useCancellableDayScan";
 
 export type DayScanRuleVariant =
@@ -22,7 +28,12 @@ export type DayScanRuleVariant =
   | "watchParty"
   | "deeppro"
   | "rulePnb"
-  | "ruleSunpharma";
+  | "ruleSunpharma"
+  | "ruleLtm"
+  | "ruleIcicigi"
+  | "ruleTechm"
+  | "ruleTvsmotor"
+  | "rulePolicybzr";
 
 export type VariantDayScanPayload = DeepakDayScanPayload | DeepakWatchPartyDayScanPayload;
 
@@ -37,6 +48,11 @@ export const DAY_SCAN_RULE_VARIANT_OPTIONS: ReadonlyArray<{
   { value: "deeppro", label: "Deeppro" },
   { value: "rulePnb", label: "RulePNB" },
   { value: "ruleSunpharma", label: "RuleSUNPHARMA" },
+  { value: "ruleLtm", label: FAVOURABLE_RULE_LABEL.ruleLtm },
+  { value: "ruleIcicigi", label: FAVOURABLE_RULE_LABEL.ruleIcicigi },
+  { value: "ruleTechm", label: FAVOURABLE_RULE_LABEL.ruleTechm },
+  { value: "ruleTvsmotor", label: FAVOURABLE_RULE_LABEL.ruleTvsmotor },
+  { value: "rulePolicybzr", label: FAVOURABLE_RULE_LABEL.rulePolicybzr },
 ];
 
 export const DAY_SCAN_RULE_VARIANT_LABEL: Record<DayScanRuleVariant, string> = {
@@ -47,6 +63,11 @@ export const DAY_SCAN_RULE_VARIANT_LABEL: Record<DayScanRuleVariant, string> = {
   deeppro: "Deeppro",
   rulePnb: "RulePNB",
   ruleSunpharma: "RuleSUNPHARMA",
+  ruleLtm: FAVOURABLE_RULE_LABEL.ruleLtm,
+  ruleIcicigi: FAVOURABLE_RULE_LABEL.ruleIcicigi,
+  ruleTechm: FAVOURABLE_RULE_LABEL.ruleTechm,
+  ruleTvsmotor: FAVOURABLE_RULE_LABEL.ruleTvsmotor,
+  rulePolicybzr: FAVOURABLE_RULE_LABEL.rulePolicybzr,
 };
 
 export function isDayScanRuleVariant(
@@ -59,7 +80,8 @@ export function isDayScanRuleVariant(
     value === "watchParty" ||
     value === "deeppro" ||
     value === "rulePnb" ||
-    value === "ruleSunpharma"
+    value === "ruleSunpharma" ||
+    isFavourableSymbolRuleVariant(value)
   );
 }
 
@@ -81,6 +103,12 @@ function fetchByVariant(
       return fetchRulePnbDayScan(date, signal);
     case "ruleSunpharma":
       return fetchRuleSunpharmaDayScan(date, signal);
+    case "ruleLtm":
+    case "ruleIcicigi":
+    case "ruleTechm":
+    case "ruleTvsmotor":
+    case "rulePolicybzr":
+      return fetchFavourableSymbolDayScan(FAVOURABLE_RULE_SLUG[variant], date, signal);
     case "deepak":
     default:
       return fetchDeepakDayScan(date, signal);

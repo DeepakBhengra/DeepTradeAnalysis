@@ -1,6 +1,6 @@
 # PNB 15m Signal Engine
 
-PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail), the **Deeppro** Stch Mtm exhaustion rules, **RulePNB** (PNB favourable profit-range RSI/SMI/BB gates), and **RuleSUNPHARMA** (SUNPHARMA-only favourable profit-range gates) — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
+PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail), the **Deeppro** Stch Mtm exhaustion rules, **RulePNB** / **RuleSUNPHARMA**, and per-symbol favourable rules (**RuleLTM**, **RuleICICIGI**, **RuleTECHM**, **RuleTVSMOTOR**, **RulePOLICYBZR**) — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
 
 Implementation (Deepak): `src/rules/deepakDecision.ts`, `src/rules/deepakCore.ts`, `src/rules/deepakTarget.ts`, `src/rules/bollingerUtils.ts`.
 
@@ -9,6 +9,8 @@ Implementation (Deeppro): `src/rules/deepproDecision.ts`, `src/indicators/stocha
 Implementation (RulePNB): `src/rules/rulePnbDecision.ts`, `config.rulePnb` in `src/config.ts`.
 
 Implementation (RuleSUNPHARMA): `src/rules/ruleSunpharmaDecision.ts`, `config.ruleSunpharma` in `src/config.ts`.
+
+Implementation (per-symbol favourable rules): `src/rules/favourableSymbolRule.ts`, `config.favourableSymbolRules` in `src/config.ts`.
 
 
 ---
@@ -696,3 +698,29 @@ Entry price = candle mid `(high+low)/2`. Event candle must be before **14:00 IST
 
 - `tests/rules/ruleSunpharmaDecision.test.ts` — quality matchers + quiet day  
 - `tests/api/buildRuleSunpharmaDayScanPayload.test.ts` — Day Scan payload wiring
+
+## Per-symbol favourable rules (LTM / ICICIGI / TECHM / TVSMOTOR / POLICYBZR)
+
+Five **separate, symbol-locked** rules encoded from each stock’s 60-day rule-free profit-range study (same pattern as RulePNB / RuleSUNPHARMA):
+
+| Rule | Symbol | Day Scan variant |
+|------|--------|------------------|
+| **RuleLTM** | LTM | `ruleLtm` |
+| **RuleICICIGI** | ICICIGI | `ruleIcicigi` |
+| **RuleTECHM** | TECHM | `ruleTechm` |
+| **RuleTVSMOTOR** | TVSMOTOR | `ruleTvsmotor` |
+| **RulePOLICYBZR** | POLICYBZR | `rulePolicybzr` |
+
+| Surface | Detail |
+|--------|--------|
+| **Widget tab** | **Day Scan** / **Day Scan Post-Mortem** / **Post-Mortem** — each variant locks its symbol |
+| **API** | `GET /api/backtest/symbol-rule/{ltm\|icicigi\|techm\|tvsmotor\|policybzr}/day-scan?date=` · backtest sibling |
+| **Engine** | `evaluateFavourableSymbolDay` in `src/rules/favourableSymbolRule.ts` |
+| **Config** | `config.favourableSymbolRules` in `src/config.ts` |
+| **Study summary** | `reports/five-stock-favourable-rules-60d-summary.md` |
+
+Each rule exposes BUY quality / SELL quality / BUY extended scenarios (entry mid, before 14:00 IST). They do **not** scan the 100-stock watchlist and do **not** mix into shared Deepak/Deeppro reasons.
+
+### Tests
+
+- `tests/rules/favourableSymbolRule.test.ts` — symbol locks + quality matchers

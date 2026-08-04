@@ -88,16 +88,115 @@ const RULESUNPHARMA_SCENARIOS = [
   { label: "buy extended", side: "BUY" as const, number: 2 },
 ];
 
+const FAVOURABLE_SYMBOL_SCENARIOS = [
+  { label: "buy quality", side: "BUY" as const, number: 1 },
+  { label: "sell quality", side: "SELL" as const, number: 1 },
+  { label: "buy extended", side: "BUY" as const, number: 2 },
+];
+
+type RulesPanelVariant =
+  | "deepak"
+  | "deepak2"
+  | "deepak3"
+  | "deeppro"
+  | "rulePnb"
+  | "ruleSunpharma"
+  | "ruleLtm"
+  | "ruleIcicigi"
+  | "ruleTechm"
+  | "ruleTvsmotor"
+  | "rulePolicybzr";
+
+const FAVOURABLE_SYMBOL_PANEL: Record<
+  "ruleLtm" | "ruleIcicigi" | "ruleTechm" | "ruleTvsmotor" | "rulePolicybzr",
+  { title: string; blurb: string; rules: string[] }
+> = {
+  ruleLtm: {
+    title: "RuleLTM Buy / Sell Rules",
+    blurb:
+      "LTM-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates LTM only.",
+    rules: [
+      "LTM stock only — never evaluates other symbols; separate from Deepak / Deeppro",
+      "BUY quality: RSI 30–55, SMI ≤ −40, near BB lower (gap ≤ 0.8% or crossed/close)",
+      "SELL quality: RSI 50–75, SMI ≥ 40, near BB upper (gap ≤ 0.8% or crossed/close)",
+      "BUY extended: mid-zone SMI OK (≤ 40); still near BB lower (gap ≤ 1.5%)",
+      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+    ],
+  },
+  ruleIcicigi: {
+    title: "RuleICICIGI Buy / Sell Rules",
+    blurb:
+      "ICICIGI-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates ICICIGI only.",
+    rules: [
+      "ICICIGI stock only — never evaluates other symbols; separate from Deepak / Deeppro",
+      "BUY quality: RSI 30–50, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
+      "SELL quality: RSI 45–75, SMI ≥ 20, near BB upper (gap ≤ 1.0% or crossed/close)",
+      "BUY extended: prefer negative SMI; BB lower gaps can be wider (≤ 1.0%)",
+      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+    ],
+  },
+  ruleTechm: {
+    title: "RuleTECHM Buy / Sell Rules",
+    blurb:
+      "TECHM-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates TECHM only.",
+    rules: [
+      "TECHM stock only — never evaluates other symbols; separate from Deepak / Deeppro",
+      "BUY quality: RSI 20–45, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
+      "SELL quality: RSI 50–80, SMI ≥ 40, near BB upper (gap ≤ 1.0% or crossed/close)",
+      "BUY extended: mid-zone SMI OK (≤ 40); BB lower gaps can be wider (≤ 2.2%)",
+      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+    ],
+  },
+  ruleTvsmotor: {
+    title: "RuleTVSMOTOR Buy / Sell Rules",
+    blurb:
+      "TVSMOTOR-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates TVSMOTOR only.",
+    rules: [
+      "TVSMOTOR stock only — never evaluates other symbols; separate from Deepak / Deeppro",
+      "BUY quality: RSI 30–55, SMI ≤ −30, near BB lower (gap ≤ 0.6% or crossed/close)",
+      "SELL quality: RSI 55–75, SMI ≥ 40, near BB upper (gap ≤ 0.7% or crossed/close)",
+      "BUY extended: mid-zone SMI OK (≤ 40); BB lower gaps can be wider (≤ 1.4%)",
+      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+    ],
+  },
+  rulePolicybzr: {
+    title: "RulePOLICYBZR Buy / Sell Rules",
+    blurb:
+      "POLICYBZR-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates POLICYBZR only.",
+    rules: [
+      "POLICYBZR stock only — never evaluates other symbols; separate from Deepak / Deeppro",
+      "BUY quality: RSI 25–55, SMI ≤ −25, near BB lower (gap ≤ 1.0% or crossed/close)",
+      "SELL quality: RSI 55–75, SMI ≥ 40, near BB upper (gap ≤ 0.5% or crossed/close)",
+      "BUY extended: prefer negative SMI; BB lower gaps can be wider (≤ 1.3%)",
+      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+    ],
+  },
+};
+
+function isFavourablePanelVariant(
+  variant: RulesPanelVariant,
+): variant is keyof typeof FAVOURABLE_SYMBOL_PANEL {
+  return variant in FAVOURABLE_SYMBOL_PANEL;
+}
+
 export function DeepakRulesPanel({
   variant = "deepak",
 }: {
-  variant?: "deepak" | "deepak2" | "deepak3" | "deeppro" | "rulePnb" | "ruleSunpharma";
+  variant?: RulesPanelVariant;
 }) {
   const [expanded, setExpanded] = useState(false);
   const sessionLabel =
     variant === "deepak2"
       ? "Session 10:15–15:30 IST"
       : "Session 09:15–15:30 IST";
+  const favourablePanel = isFavourablePanelVariant(variant)
+    ? FAVOURABLE_SYMBOL_PANEL[variant]
+    : null;
   const titleLabel =
     variant === "deepak3"
       ? "Deepak-3 Buy / Sell Rules"
@@ -109,7 +208,9 @@ export function DeepakRulesPanel({
             ? "RulePNB Buy / Sell Rules"
             : variant === "ruleSunpharma"
               ? "RuleSUNPHARMA Buy / Sell Rules"
-            : "Deepak Buy / Sell Rules";
+              : favourablePanel
+                ? favourablePanel.title
+                : "Deepak Buy / Sell Rules";
   const scenarios =
     variant === "deepak3"
       ? DEEPAK3_SCENARIOS
@@ -119,7 +220,9 @@ export function DeepakRulesPanel({
           ? RULEPNB_SCENARIOS
           : variant === "ruleSunpharma"
             ? RULESUNPHARMA_SCENARIOS
-          : TRADE_SCENARIOS;
+            : favourablePanel
+              ? FAVOURABLE_SYMBOL_SCENARIOS
+              : TRADE_SCENARIOS;
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -143,7 +246,9 @@ export function DeepakRulesPanel({
                 ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
                 : variant === "ruleSunpharma"
                   ? `${sessionLabel} · SUNPHARMA-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak, Deeppro, or RulePNB · day scan evaluates SUNPHARMA only.`
-              : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
+                  : favourablePanel
+                    ? `${sessionLabel} · ${favourablePanel.blurb}`
+                    : `${sessionLabel} · 4-candle initial BB run from session open · adaptive exit target from average of last 20 trading-day ranges · exit when candle mid reaches entry ± target.`}
           </p>
           {variant === "deeppro" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
@@ -162,6 +267,13 @@ export function DeepakRulesPanel({
           {variant === "ruleSunpharma" && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {RULESUNPHARMA_RULES.map((rule) => (
+                <li key={rule}>{rule}</li>
+              ))}
+            </ul>
+          )}
+          {favourablePanel && (
+            <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
+              {favourablePanel.rules.map((rule) => (
                 <li key={rule}>{rule}</li>
               ))}
             </ul>

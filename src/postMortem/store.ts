@@ -8,7 +8,12 @@ export type PostMortemVariantId =
   | "deepak2"
   | "deeppro"
   | "rulePnb"
-  | "ruleSunpharma";
+  | "ruleSunpharma"
+  | "ruleLtm"
+  | "ruleIcicigi"
+  | "ruleTechm"
+  | "ruleTvsmotor"
+  | "rulePolicybzr";
 
 /**
  * Bump when deeppro detection thresholds change so Post-Mortem recomputes
@@ -27,6 +32,20 @@ export const RULEPNB_SIGNAL_DAYS_RULES_REVISION = 1;
  * signal-day indexes instead of serving a stale cache.
  */
 export const RULESUNPHARMA_SIGNAL_DAYS_RULES_REVISION = 1;
+
+/**
+ * Bump when per-symbol favourable rules (LTM/ICICIGI/TECHM/TVSMOTOR/POLICYBZR)
+ * change so Post-Mortem recomputes signal-day indexes.
+ */
+export const FAVOURABLE_SYMBOL_SIGNAL_DAYS_RULES_REVISION = 1;
+
+const FAVOURABLE_SYMBOL_VARIANTS = new Set<PostMortemVariantId>([
+  "ruleLtm",
+  "ruleIcicigi",
+  "ruleTechm",
+  "ruleTvsmotor",
+  "rulePolicybzr",
+]);
 
 export interface StoredSignalDay {
   date: string;
@@ -76,12 +95,17 @@ function assertVariant(variant: string): PostMortemVariantId {
     variant === "deepak2" ||
     variant === "deeppro" ||
     variant === "rulePnb" ||
-    variant === "ruleSunpharma"
+    variant === "ruleSunpharma" ||
+    variant === "ruleLtm" ||
+    variant === "ruleIcicigi" ||
+    variant === "ruleTechm" ||
+    variant === "ruleTvsmotor" ||
+    variant === "rulePolicybzr"
   ) {
     return variant;
   }
   throw new Error(
-    "Invalid variant. Use deepak, deepak2, deeppro, rulePnb, or ruleSunpharma.",
+    "Invalid variant. Use deepak, deepak2, deeppro, rulePnb, ruleSunpharma, ruleLtm, ruleIcicigi, ruleTechm, ruleTvsmotor, or rulePolicybzr.",
   );
 }
 
@@ -166,6 +190,12 @@ export function loadSignalDaysIndex(
   ) {
     return null;
   }
+  if (
+    FAVOURABLE_SYMBOL_VARIANTS.has(variantId) &&
+    stored.rulesRevision !== FAVOURABLE_SYMBOL_SIGNAL_DAYS_RULES_REVISION
+  ) {
+    return null;
+  }
   return stored;
 }
 
@@ -195,6 +225,8 @@ export function saveSignalDaysIndex(input: {
         ? { rulesRevision: RULEPNB_SIGNAL_DAYS_RULES_REVISION }
         : variantId === "ruleSunpharma"
           ? { rulesRevision: RULESUNPHARMA_SIGNAL_DAYS_RULES_REVISION }
+          : FAVOURABLE_SYMBOL_VARIANTS.has(variantId)
+            ? { rulesRevision: FAVOURABLE_SYMBOL_SIGNAL_DAYS_RULES_REVISION }
           : {}),
     days: input.days,
     tradingDaysScanned: input.tradingDaysScanned,

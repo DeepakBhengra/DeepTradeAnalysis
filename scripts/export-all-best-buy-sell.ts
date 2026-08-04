@@ -1,0 +1,188 @@
+#!/usr/bin/env node
+/**
+ * Export all day-best BUY/SELL (positive profit) from a rule-free best-entry study JSON.
+ *
+ * Usage:
+ *   npx tsx scripts/export-all-best-buy-sell.ts \
+ *     --src reports/sunpharma-best-entry-times-60d.json \
+ *     --out-suffix 60d
+ */
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const REPORTS_DIR = resolve(process.cwd(), "reports");
+
+type Opp = {
+  entryTimeIst: string;
+  entryPrice: number;
+  squareOffTimeIst: string;
+  squareOffPrice: number;
+  profitPct: number;
+};
+
+type DayBest = {
+  dateKey: string;
+  dayLabel: string;
+  weekday: string;
+  buy: Opp | null;
+  sell: Opp | null;
+};
+
+function avg(values: number[]): number {
+  if (values.length === 0) return 0;
+  return Math.round((values.reduce((s, v) => s + v, 0) / values.length) * 100) / 100;
+}
+
+function parseArgs(argv: string[]): { src: string; outSuffix: string } {
+  let src = resolve(REPORTS_DIR, "sunpharma-best-entry-times-60d.json");
+  let outSuffix = "60d";
+
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === "--src" && argv[i + 1]) {
+      src = resolve(process.cwd(), argv[++i]);
+      continue;
+    }
+    if (arg === "--out-suffix" && argv[i + 1]) {
+      outSuffix = argv[++i];
+      continue;
+    }
+  }
+
+  return { src, outSuffix };
+}
+
+function main(): void {
+  const { src: SRC, outSuffix } = parseArgs(process.argv.slice(2));
+  const src = JSON.parse(readFileSync(SRC, "utf8")) as {
+    symbol?: string;
+    tradeDaysScanned: number;
+    window: { from: string; to: string };
+    dayBests: DayBest[];
+  };
+
+  const reportSymbol = (src.symbol ?? "SUNPHARMA").toUpperCase();
+  const slug = reportSymbol.toLowerCase();
+  const dayBests = src.dayBests;
+  const buys = dayBests
+    .filter((d) => d.buy && d.buy.profitPct > 0)
+    .map((d) => ({ ...d.buy!, dateKey: d.dateKey, dayLabel: d.dayLabel, weekday: d.weekday }));
+  const sells = dayBests
+    .filter((d) => d.sell && d.sell.profitPct > 0)
+    .map((d) => ({ ...d.sell!, dateKey: d.dateKey, dayLabel: d.dayLabel, weekday: d.weekday }));
+
+  const buysByPct = [...buys].sort((a, b) => b.profitPct - a.profitPct);
+  const sellsByPct = [...sells].sort((a, b) => b.profitPct - a.profitPct);
+  const generatedAtUtc = new Date().toISOString();
+
+  const lines = [
+    `# ${reportSymbol} — all best BUY & SELL (${src.window.from} → ${src.window.to}, positive profit only)`,
+    "",
+    `- **Symbol:** ${reportSymbol}`,
+    `- **Window:** ${src.tradeDaysScanned} trade days (${src.window.from} → ${src.window.to})`,
+    `- **Rules:** none — best same-day opportunity from any 15m mid`,
+    `- **Entry:** candle mid \`(high+low)/2\``,
+    `- **Square-off:** best later same-day mid before \`15:15\` IST`,
+    `- **Filter:** positive profit % only`,
+    `- **Best BUY days:** ${buys.length}`,
+    `- **Best SELL days:** ${sells.length}`,
+    `- **Avg best BUY %:** ${avg(buys.map((b) => b.profitPct)).toFixed(2)}%`,
+    `- **Avg best SELL %:** ${avg(sells.map((s) => s.profitPct)).toFixed(2)}%`,
+    `- **Generated (UTC):** ${generatedAtUtc}`,
+    "",
+    "## All best BUY (sorted by profit %)",
+    "",
+    "| Rank | Day | Weekday | Entry time | Buy price | SQ time | SQ price | Profit % |",
+    "|------|-----|---------|------------|-----------|---------|----------|----------|",
+  ];
+
+  buysByPct.forEach((b, i) => {
+    lines.push(
+      `| ${i + 1} | ${b.dayLabel} | ${b.weekday} | ${b.entryTimeIst} | ${b.entryPrice.toFixed(2)} | ${b.squareOffTimeIst} | ${b.squareOffPrice.toFixed(2)} | **${b.profitPct.toFixed(2)}%** |`,
+    );
+  });
+
+  lines.push(
+    "",
+    "## All best SELL (sorted by profit %)",
+    "",
+    "| Rank | Day | Weekday | Entry time | Sell price | SQ time | SQ price | Profit % |",
+    "|------|-----|---------|------------|------------|---------|----------|----------|",
+  );
+
+  sellsByPct.forEach((s, i) => {
+    lines.push(
+      `| ${i + 1} | ${s.dayLabel} | ${s.weekday} | ${s.entryTimeIst} | ${s.entryPrice.toFixed(2)} | ${s.squareOffTimeIst} | ${s.squareOffPrice.toFixed(2)} | **${s.profitPct.toFixed(2)}%** |`,
+    );
+  });
+
+  lines.push(
+    "",
+    "## Day-by-day (chronological)",
+    "",
+    "| Day | Weekday | BUY time | Buy price | BUY SQ | BUY % | SELL time | Sell price | SELL SQ | SELL % |",
+    "|-----|---------|----------|-----------|--------|-------|-----------|------------|---------|--------|",
+  );
+
+  for (const d of [...dayBests].sort((a, b) => a.dateKey.localeCompare(b.dateKey))) {
+    const b = d.buy && d.buy.profitPct > 0 ? d.buy : null;
+    const s = d.sell && d.sell.profitPct > 0 ? d.sell : null;
+    lines.push(
+      `| ${d.dayLabel} | ${d.weekday} | ${b?.entryTimeIst ?? "—"} | ${b ? b.entryPrice.toFixed(2) : "—"} | ${b ? `${b.squareOffTimeIst} @ ${b.squareOffPrice.toFixed(2)}` : "—"} | ${b ? `**${b.profitPct.toFixed(2)}%**` : "—"} | ${s?.entryTimeIst ?? "—"} | ${s ? s.entryPrice.toFixed(2) : "—"} | ${s ? `${s.squareOffTimeIst} @ ${s.squareOffPrice.toFixed(2)}` : "—"} | ${s ? `**${s.profitPct.toFixed(2)}%**` : "—"} |`,
+    );
+  }
+
+  lines.push(
+    "",
+    "## Notes",
+    "",
+    "- One best BUY and one best SELL per trade day (highest positive same-day square-off %).",
+    "- No Deepak / Deeppro / RulePNB rules — pure 15m mid hindsight.",
+    "- Square-off is best later mid before 15:15 (not a live fill guarantee).",
+    "",
+  );
+
+  mkdirSync(REPORTS_DIR, { recursive: true });
+  const mdPath = resolve(REPORTS_DIR, `${slug}-all-best-buy-sell-${outSuffix}.md`);
+  const jsonPath = resolve(REPORTS_DIR, `${slug}-all-best-buy-sell-${outSuffix}.json`);
+  writeFileSync(mdPath, `${lines.join("\n")}\n`);
+  writeFileSync(
+    jsonPath,
+    `${JSON.stringify(
+      {
+        symbol: reportSymbol,
+        window: src.window,
+        tradeDaysScanned: src.tradeDaysScanned,
+        buyCount: buys.length,
+        sellCount: sells.length,
+        avgBestBuyPct: avg(buys.map((b) => b.profitPct)),
+        avgBestSellPct: avg(sells.map((s) => s.profitPct)),
+        buysByProfitPct: buysByPct,
+        sellsByProfitPct: sellsByPct,
+        dayByDay: dayBests,
+        generatedAtUtc,
+      },
+      null,
+      2,
+    )}\n`,
+  );
+
+  console.log(
+    JSON.stringify(
+      {
+        ok: true,
+        symbol: reportSymbol,
+        buyCount: buys.length,
+        sellCount: sells.length,
+        topBuy: buysByPct[0] ?? null,
+        topSell: sellsByPct[0] ?? null,
+        markdown: mdPath,
+        json: jsonPath,
+      },
+      null,
+      2,
+    ),
+  );
+}
+
+main();

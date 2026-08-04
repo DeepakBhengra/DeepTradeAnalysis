@@ -20,6 +20,10 @@ import {
   evaluateRuleSunpharmaDecision,
   isRuleSunpharmaSymbol,
 } from "../rules/ruleSunpharmaDecision.js";
+import {
+  evaluateFavourableSymbolDecision,
+  favourableSymbolRuleIdForTradingSymbol,
+} from "../rules/favourableSymbolRule.js";
 import { evaluateDepthAnalysis } from "../rules/depthAnalysis.js";
 import {
   buildSidewaysDebug,
@@ -38,6 +42,7 @@ import type {
   Decision,
   DeepakDecisionResult,
   DepthSnapshot,
+  FavourableSymbolRuleId,
   SidewaysDebug,
   SidewaysTrendState,
   VolumeFlags,
@@ -84,6 +89,9 @@ export interface DashboardPayload {
   deepproDecision: DeepakDecisionResult | null;
   rulePnbDecision: DeepakDecisionResult | null;
   ruleSunpharmaDecision: DeepakDecisionResult | null;
+  /** Populated only when the dashboard symbol matches a per-symbol favourable rule. */
+  favourableSymbolDecision: DeepakDecisionResult | null;
+  favourableSymbolRuleId: FavourableSymbolRuleId | null;
   analysisDate: string | null;
   mode: "live" | "historical" | "simulation";
   series: DashboardSeriesPoint[];
@@ -181,6 +189,8 @@ function emptyPayload(
     deepproDecision: null,
     rulePnbDecision: null,
     ruleSunpharmaDecision: null,
+    favourableSymbolDecision: null,
+    favourableSymbolRuleId: null,
     analysisDate,
     mode,
     series: [],
@@ -224,6 +234,18 @@ function buildPayloadFromCandles(input: {
   const ruleSunpharmaDecision =
     targetDateKey != null && isRuleSunpharmaSymbol(dashboardSymbol.tradingSymbol)
       ? evaluateRuleSunpharmaDecision(snapshots, targetDateKey)
+      : null;
+  // Per-symbol favourable rules (LTM/ICICIGI/TECHM/TVSMOTOR/POLICYBZR) — never mixed.
+  const favourableSymbolRuleId = favourableSymbolRuleIdForTradingSymbol(
+    dashboardSymbol.tradingSymbol,
+  );
+  const favourableSymbolDecision =
+    targetDateKey != null && favourableSymbolRuleId != null
+      ? evaluateFavourableSymbolDecision(
+          favourableSymbolRuleId,
+          snapshots,
+          targetDateKey,
+        )
       : null;
   const volumeAnalysis = evaluateVolumeAnalysis(candles);
   const sidewaysTrend = evaluateSidewaysTrend(snapshots, { targetDateKey });
@@ -307,6 +329,8 @@ function buildPayloadFromCandles(input: {
     deepproDecision,
     rulePnbDecision,
     ruleSunpharmaDecision,
+    favourableSymbolDecision,
+    favourableSymbolRuleId,
     analysisDate: analysisDate ?? null,
     mode,
     series,
