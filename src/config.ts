@@ -549,6 +549,20 @@ export const config = {
       minSmi: 40,
       maxBbUpperGapPct: 0.8,
     },
+    /** Falling-knife BUY guards + SELL cascade (shared with favourable symbol rules). */
+    buyGuards: {
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarConfirmation: true,
+      maxOpenDrawdownPct: 0.8,
+    },
+    sellCascade: {
+      enabled: true,
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarLower: true,
+      minOpenDrawdownPct: null,
+    },
   },
 
   /**
@@ -596,6 +610,20 @@ export const config = {
       minSmi: 40,
       maxBbUpperGapPct: 0.3,
     },
+    /** Falling-knife BUY guards + SELL cascade (shared with favourable symbol rules). */
+    buyGuards: {
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarConfirmation: true,
+      maxOpenDrawdownPct: 0.8,
+    },
+    sellCascade: {
+      enabled: true,
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarLower: true,
+      minOpenDrawdownPct: null,
+    },
   },
 
   /**
@@ -630,6 +658,19 @@ export const config = {
         maxRsi: 75,
         minSmi: 40,
         maxBbUpperGapPct: 0.8,
+      },
+      buyGuards: {
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarConfirmation: true,
+        maxOpenDrawdownPct: 0.8,
+      },
+      sellCascade: {
+        enabled: true,
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarLower: true,
+        minOpenDrawdownPct: null,
       },
     },
     ruleIcicigi: {
@@ -706,6 +747,19 @@ export const config = {
         minSmi: 40,
         maxBbUpperGapPct: 1.0,
       },
+      buyGuards: {
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarConfirmation: true,
+        maxOpenDrawdownPct: 0.8,
+      },
+      sellCascade: {
+        enabled: true,
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarLower: true,
+        minOpenDrawdownPct: null,
+      },
     },
     ruleTvsmotor: {
       tradingSymbol: "TVSMOTOR",
@@ -731,6 +785,19 @@ export const config = {
         maxRsi: 75,
         minSmi: 40,
         maxBbUpperGapPct: 0.7,
+      },
+      buyGuards: {
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarConfirmation: true,
+        maxOpenDrawdownPct: 0.8,
+      },
+      sellCascade: {
+        enabled: true,
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarLower: true,
+        minOpenDrawdownPct: null,
       },
     },
     rulePolicybzr: {
@@ -759,6 +826,19 @@ export const config = {
         maxRsi: 85,
         minSmi: 60,
         maxBbUpperGapPct: 0.7,
+      },
+      buyGuards: {
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarConfirmation: true,
+        maxOpenDrawdownPct: 0.8,
+      },
+      sellCascade: {
+        enabled: true,
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarLower: true,
+        minOpenDrawdownPct: null,
       },
     },
   },
