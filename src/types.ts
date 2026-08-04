@@ -307,7 +307,8 @@ export type FavourableSymbolRuleId =
 export type FavourableSymbolScenarioKey =
   | "buy_quality"
   | "sell_quality"
-  | "buy_extended";
+  | "buy_extended"
+  | "sell_cascade";
 
 export interface FavourableSymbolSignal {
   side: "BUY" | "SELL";
