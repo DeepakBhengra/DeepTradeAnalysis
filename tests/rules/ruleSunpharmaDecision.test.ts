@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { config } from "../../src/config.js";
 import { buildIndicatorSnapshots } from "../../src/indicators/compute.js";
 import {
   __ruleSunpharmaTestables,
@@ -23,6 +24,22 @@ describe("RuleSUNPHARMA SUNPHARMA-only symbol guard", () => {
 
   it("rejects non-SUNPHARMA symbols with a clear error", () => {
     expect(() => assertRuleSunpharmaSymbol("PNB")).toThrow(/SUNPHARMA-only/);
+  });
+
+  it("enables buyGuards + sellCascade (same pattern as RuleICICIGI)", () => {
+    expect(config.ruleSunpharma.buyGuards).toEqual({
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarConfirmation: true,
+      maxOpenDrawdownPct: 0.8,
+    });
+    expect(config.ruleSunpharma.sellCascade).toEqual({
+      enabled: true,
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarLower: true,
+      minOpenDrawdownPct: null,
+    });
   });
 });
 

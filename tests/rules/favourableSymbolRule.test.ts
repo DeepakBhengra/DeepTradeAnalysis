@@ -35,25 +35,31 @@ describe("favourable symbol rule registry", () => {
     );
   });
 
-  it("enables buyGuards only on RuleICICIGI", () => {
-    expect(getFavourableSymbolRuleConfig("ruleIcicigi").buyGuards).toEqual({
+  it("enables buyGuards + sellCascade on every favourable symbol rule", () => {
+    const expectedGuards = {
       requireSmiRising: true,
       requireMacdHistRising: true,
       requireNextBarConfirmation: true,
       maxOpenDrawdownPct: 0.8,
-    });
-    expect(getFavourableSymbolRuleConfig("ruleLtm").buyGuards).toBeUndefined();
-  });
-
-  it("enables sellCascade only on RuleICICIGI", () => {
-    expect(getFavourableSymbolRuleConfig("ruleIcicigi").sellCascade).toEqual({
+    };
+    const expectedCascade = {
       enabled: true,
       requireSmiFalling: true,
       requireMacdHistFalling: true,
       requireNextBarLower: true,
       minOpenDrawdownPct: null,
-    });
-    expect(getFavourableSymbolRuleConfig("ruleLtm").sellCascade).toBeUndefined();
+    };
+    for (const id of [
+      "ruleLtm",
+      "ruleIcicigi",
+      "ruleTechm",
+      "ruleTvsmotor",
+      "rulePolicybzr",
+    ] as const) {
+      const rule = getFavourableSymbolRuleConfig(id);
+      expect(rule.buyGuards).toEqual(expectedGuards);
+      expect(rule.sellCascade).toEqual(expectedCascade);
+    }
   });
 });
 

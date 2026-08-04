@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { config } from "../../src/config.js";
 import { buildIndicatorSnapshots } from "../../src/indicators/compute.js";
 import {
   __rulePnbTestables,
@@ -23,6 +24,22 @@ describe("RulePNB PNB-only symbol guard", () => {
 
   it("rejects non-PNB symbols with a clear error", () => {
     expect(() => assertRulePnbSymbol("TCS")).toThrow(/PNB-only/);
+  });
+
+  it("enables buyGuards + sellCascade (same pattern as RuleICICIGI)", () => {
+    expect(config.rulePnb.buyGuards).toEqual({
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarConfirmation: true,
+      maxOpenDrawdownPct: 0.8,
+    });
+    expect(config.rulePnb.sellCascade).toEqual({
+      enabled: true,
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarLower: true,
+      minOpenDrawdownPct: null,
+    });
   });
 });
 

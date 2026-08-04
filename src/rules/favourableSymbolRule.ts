@@ -25,40 +25,28 @@ import {
   classifyBbTopMatch,
   pctDistance,
 } from "./bollingerUtils.js";
+import {
+  DEFAULT_OVERSOLD_BUY_GUARDS,
+  DEFAULT_OVERSOLD_SELL_CASCADE,
+  evaluateOversoldBuyGuards,
+  evaluateOversoldSellCascade,
+  findNextSameDayIndex,
+  type CascadeGuardResult,
+  type CascadeMomentumContext,
+  type OversoldBuyGuards,
+  type OversoldSellCascade,
+} from "./oversoldCascade.js";
 
-/** Optional BUY-side guards to skip falling-knife / unconfirmed oversold prints. */
-export type FavourableSymbolBuyGuards = {
-  /** Require SMI_t > SMI_t−1 at the setup bar. */
-  requireSmiRising: boolean;
-  /** Require MACD histogram_t > histogram_t−1 at the setup bar. */
-  requireMacdHistRising: boolean;
-  /**
-   * Require the next same-day 15m mid > setup mid.
-   * When true, the emitted entry is the confirmation bar (fill after proof).
-   */
-  requireNextBarConfirmation: boolean;
-  /**
-   * Reject setup if (setupMid − dayOpenMid) / dayOpenMid * 100 < −maxOpenDrawdownPct.
-   * Set null to disable.
-   */
-  maxOpenDrawdownPct: number | null;
-};
+export type FavourableSymbolBuyGuards = OversoldBuyGuards;
+export type FavourableSymbolSellCascade = OversoldSellCascade;
+export type BuyGuardContext = CascadeMomentumContext;
+export type BuyGuardResult = CascadeGuardResult;
+export type SellCascadeContext = CascadeMomentumContext;
+export type SellCascadeResult = CascadeGuardResult;
 
-/**
- * Optional SELL cascade: flip the blocked falling-knife BUY into a short.
- * Uses the same oversold level band as BUY quality, but requires momentum
- * still falling and next mid lower; entry on the confirm bar.
- */
-export type FavourableSymbolSellCascade = {
-  enabled: boolean;
-  requireSmiFalling: boolean;
-  requireMacdHistFalling: boolean;
-  requireNextBarLower: boolean;
-  /**
-   * Optional: only fire if open→setup drop ≤ −minOpenDrawdownPct.
-   * null = no minimum drawdown required.
-   */
-  minOpenDrawdownPct: number | null;
+export {
+  DEFAULT_OVERSOLD_BUY_GUARDS,
+  DEFAULT_OVERSOLD_SELL_CASCADE,
 };
 
 export type FavourableSymbolRuleConfig = {
@@ -80,9 +68,7 @@ export type FavourableSymbolRuleConfig = {
     maxSmi: number;
     maxBbLowerGapPct: number;
   };
-  /** Present only on rules that need anti-cascade BUY filters (e.g. RuleICICIGI). */
   buyGuards?: FavourableSymbolBuyGuards;
-  /** Present on RuleICICIGI: falling-knife → SELL opportunity. */
   sellCascade?: FavourableSymbolSellCascade;
   sellQuality: {
     minRsi: number;
@@ -321,176 +307,23 @@ export function matchesSellCascadeLevels(
   if (!rule.sellCascade?.enabled) {
     return false;
   }
-  // Reuse BUY quality oversold band — the "fake long" print.
   return matchesBuyQuality(rule, rsi, smi, bbLower);
 }
 
-export type SellCascadeContext = {
-  smi: number;
-  prevSmi: number | null;
-  macdHist: number;
-  prevMacdHist: number | null;
-  setupMid: number;
-  dayOpenMid: number | null;
-  nextMid: number | null;
-};
-
-export type SellCascadeResult = {
-  ok: boolean;
-  reasons: string[];
-  confirmedOnNextBar: boolean;
-};
-
-export function evaluateSellCascade(
-  rule: FavourableSymbolRuleConfig,
-  ctx: SellCascadeContext,
-): SellCascadeResult {
-  const cascade = rule.sellCascade;
-  if (!cascade?.enabled) {
-    return { ok: false, reasons: [], confirmedOnNextBar: false };
-  }
-
-  const reasons: string[] = [];
-
-  if (cascade.requireSmiFalling) {
-    if (ctx.prevSmi == null || !(ctx.smi < ctx.prevSmi)) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(`SMI falling ${ctx.prevSmi.toFixed(1)}→${ctx.smi.toFixed(1)}`);
-  }
-
-  if (cascade.requireMacdHistFalling) {
-    if (
-      ctx.prevMacdHist == null ||
-      !Number.isFinite(ctx.macdHist) ||
-      !Number.isFinite(ctx.prevMacdHist) ||
-      !(ctx.macdHist < ctx.prevMacdHist)
-    ) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(
-      `MACD hist falling ${ctx.prevMacdHist.toFixed(2)}→${ctx.macdHist.toFixed(2)}`,
-    );
-  }
-
-  if (
-    cascade.minOpenDrawdownPct != null &&
-    Number.isFinite(cascade.minOpenDrawdownPct) &&
-    ctx.dayOpenMid != null &&
-    ctx.dayOpenMid > 0
-  ) {
-    const dropPct = ((ctx.setupMid - ctx.dayOpenMid) / ctx.dayOpenMid) * 100;
-    if (dropPct > -cascade.minOpenDrawdownPct) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(
-      `open drawdown ${dropPct.toFixed(2)}% ≤ −${cascade.minOpenDrawdownPct}%`,
-    );
-  }
-
-  if (cascade.requireNextBarLower) {
-    if (ctx.nextMid == null || !(ctx.nextMid < ctx.setupMid)) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(
-      `next-bar cascade mid ${ctx.setupMid.toFixed(2)}→${ctx.nextMid.toFixed(2)}`,
-    );
-    return { ok: true, reasons, confirmedOnNextBar: true };
-  }
-
-  return { ok: true, reasons, confirmedOnNextBar: false };
-}
-
-export type BuyGuardContext = {
-  smi: number;
-  prevSmi: number | null;
-  macdHist: number;
-  prevMacdHist: number | null;
-  setupMid: number;
-  dayOpenMid: number | null;
-  nextMid: number | null;
-};
-
-export type BuyGuardResult = {
-  ok: boolean;
-  reasons: string[];
-  /** True when next-bar confirmation is required and passed. */
-  confirmedOnNextBar: boolean;
-};
-
-/**
- * Optional BUY guards (RuleICICIGI): momentum turn + confirmation + open drawdown.
- * When guards are absent, always passes.
- */
+/** Optional BUY guards: momentum turn + confirmation + open drawdown. */
 export function evaluateBuyGuards(
   rule: FavourableSymbolRuleConfig,
   ctx: BuyGuardContext,
 ): BuyGuardResult {
-  const guards = rule.buyGuards;
-  if (!guards) {
-    return { ok: true, reasons: [], confirmedOnNextBar: false };
-  }
-
-  const reasons: string[] = [];
-
-  if (guards.requireSmiRising) {
-    if (ctx.prevSmi == null || !(ctx.smi > ctx.prevSmi)) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(`SMI rising ${ctx.prevSmi.toFixed(1)}→${ctx.smi.toFixed(1)}`);
-  }
-
-  if (guards.requireMacdHistRising) {
-    if (
-      ctx.prevMacdHist == null ||
-      !Number.isFinite(ctx.macdHist) ||
-      !Number.isFinite(ctx.prevMacdHist) ||
-      !(ctx.macdHist > ctx.prevMacdHist)
-    ) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(
-      `MACD hist rising ${ctx.prevMacdHist.toFixed(2)}→${ctx.macdHist.toFixed(2)}`,
-    );
-  }
-
-  if (
-    guards.maxOpenDrawdownPct != null &&
-    Number.isFinite(guards.maxOpenDrawdownPct) &&
-    ctx.dayOpenMid != null &&
-    ctx.dayOpenMid > 0
-  ) {
-    const dropPct = ((ctx.setupMid - ctx.dayOpenMid) / ctx.dayOpenMid) * 100;
-    if (dropPct < -guards.maxOpenDrawdownPct) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(
-      `open drawdown ${dropPct.toFixed(2)}% ≥ −${guards.maxOpenDrawdownPct}%`,
-    );
-  }
-
-  if (guards.requireNextBarConfirmation) {
-    if (ctx.nextMid == null || !(ctx.nextMid > ctx.setupMid)) {
-      return { ok: false, reasons: [], confirmedOnNextBar: false };
-    }
-    reasons.push(
-      `next-bar confirm mid ${ctx.setupMid.toFixed(2)}→${ctx.nextMid.toFixed(2)}`,
-    );
-    return { ok: true, reasons, confirmedOnNextBar: true };
-  }
-
-  return { ok: true, reasons, confirmedOnNextBar: false };
+  return evaluateOversoldBuyGuards(rule.buyGuards, ctx);
 }
 
-function findNextSameDayIndex(
-  dayIndexes: number[],
-  setupIndex: number,
-): number | null {
-  const position = dayIndexes.indexOf(setupIndex);
-  if (position < 0 || position + 1 >= dayIndexes.length) {
-    return null;
-  }
-  return dayIndexes[position + 1];
+/** Optional SELL cascade guards for falling-knife shorts. */
+export function evaluateSellCascade(
+  rule: FavourableSymbolRuleConfig,
+  ctx: SellCascadeContext,
+): SellCascadeResult {
+  return evaluateOversoldSellCascade(rule.sellCascade, ctx);
 }
 
 /**

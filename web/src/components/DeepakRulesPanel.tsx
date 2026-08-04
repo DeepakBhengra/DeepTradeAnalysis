@@ -58,40 +58,50 @@ const DEEPPRO_SCENARIOS = [
   { label: "macd bear / bull cross", side: "SELL" as const, number: 4 },
 ];
 
+const CASCADE_PATTERN_RULES = [
+  "BUY guards: require SMI rising + MACD hist rising + next mid higher; skip if open drawdown < −0.8%",
+  "SELL cascade: same oversold levels as BUY quality but SMI+MACD still falling and next mid lower → short on confirm bar",
+];
+
 const RULEPNB_RULES = [
   "PNB stock only — never evaluates other symbols; separate from Deepak / Deeppro",
   "BUY quality (1.7%–0.9%): RSI 25–50, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
+  ...CASCADE_PATTERN_RULES,
   "SELL quality (1.7%–0.9% / 0.8%–0.4%): RSI 50–70, SMI ≥ 40, near BB upper (gap ≤ 0.8% or crossed/close)",
   "BUY extended (3%–1.8% movers): prefer negative SMI; RSI mixed; BB lower gaps can be wider (≤ 1.4%)",
-  "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
-  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+  "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
+  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
 ];
 
 const RULEPNB_SCENARIOS = [
   { label: "buy quality", side: "BUY" as const, number: 1 },
   { label: "sell quality", side: "SELL" as const, number: 1 },
   { label: "buy extended", side: "BUY" as const, number: 2 },
+  { label: "sell cascade", side: "SELL" as const, number: 2 },
 ];
 
 const RULESUNPHARMA_RULES = [
   "SUNPHARMA stock only — never evaluates other symbols; separate from Deepak / Deeppro / RulePNB",
   "BUY quality (1.7%–0.9%): RSI 33–56, SMI ≤ −40, near BB lower (gap ≤ 0.5% or crossed/close)",
+  ...CASCADE_PATTERN_RULES,
   "SELL quality (0.8%–0.4% / mid): RSI 56–72, SMI ≥ 40, tight BB upper (gap ≤ 0.3% or crossed/close)",
   "BUY extended (3%–1.8% movers): less oversold than mid bucket; mid-zone SMI OK (≤ 40); still near BB lower (gap ≤ 0.5%)",
-  "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
-  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+  "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
+  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
 ];
 
 const RULESUNPHARMA_SCENARIOS = [
   { label: "buy quality", side: "BUY" as const, number: 1 },
   { label: "sell quality", side: "SELL" as const, number: 1 },
   { label: "buy extended", side: "BUY" as const, number: 2 },
+  { label: "sell cascade", side: "SELL" as const, number: 2 },
 ];
 
 const FAVOURABLE_SYMBOL_SCENARIOS = [
   { label: "buy quality", side: "BUY" as const, number: 1 },
   { label: "sell quality", side: "SELL" as const, number: 1 },
   { label: "buy extended", side: "BUY" as const, number: 2 },
+  { label: "sell cascade", side: "SELL" as const, number: 2 },
 ];
 
 type RulesPanelVariant =
@@ -114,26 +124,26 @@ const FAVOURABLE_SYMBOL_PANEL: Record<
   ruleLtm: {
     title: "RuleLTM Buy / Sell Rules",
     blurb:
-      "LTM-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates LTM only.",
+      "LTM-only rule · favourable profit-range RSI / Stch Mtm / BB proximity · BUY turn guards + SELL cascade · day scan evaluates LTM only.",
     rules: [
       "LTM stock only — never evaluates other symbols; separate from Deepak / Deeppro",
       "BUY quality: RSI 30–55, SMI ≤ −40, near BB lower (gap ≤ 0.8% or crossed/close)",
+      ...CASCADE_PATTERN_RULES,
       "SELL quality: RSI 50–75, SMI ≥ 40, near BB upper (gap ≤ 0.8% or crossed/close)",
       "BUY extended: mid-zone SMI OK (≤ 40); still near BB lower (gap ≤ 1.5%)",
-      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
-      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+      "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
     ],
   },
   ruleIcicigi: {
     title: "RuleICICIGI Buy / Sell Rules",
     blurb:
-      "ICICIGI-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · BUY turn guards + SELL cascade on falling knives · day scan evaluates ICICIGI only.",
+      "ICICIGI-only rule · favourable profit-range RSI / Stch Mtm / BB proximity · BUY turn guards + SELL cascade · day scan evaluates ICICIGI only.",
     rules: [
       "ICICIGI stock only — never evaluates other symbols; separate from Deepak / Deeppro",
       "BUY quality: RSI 30–50, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
-      "BUY guards: require SMI rising + MACD hist rising + next mid higher; skip if open drawdown < −0.8%",
+      ...CASCADE_PATTERN_RULES,
       "SELL quality: RSI 45–75, SMI ≥ 20, near BB upper (gap ≤ 1.0% or crossed/close)",
-      "SELL cascade: same oversold levels as BUY quality but SMI+MACD still falling and next mid lower → short on confirm bar",
       "BUY extended: prefer negative SMI; BB lower gaps can be wider (≤ 1.0%)",
       "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
       "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
@@ -142,40 +152,43 @@ const FAVOURABLE_SYMBOL_PANEL: Record<
   ruleTechm: {
     title: "RuleTECHM Buy / Sell Rules",
     blurb:
-      "TECHM-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates TECHM only.",
+      "TECHM-only rule · favourable profit-range RSI / Stch Mtm / BB proximity · BUY turn guards + SELL cascade · day scan evaluates TECHM only.",
     rules: [
       "TECHM stock only — never evaluates other symbols; separate from Deepak / Deeppro",
       "BUY quality: RSI 20–45, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
+      ...CASCADE_PATTERN_RULES,
       "SELL quality: RSI 50–80, SMI ≥ 40, near BB upper (gap ≤ 1.0% or crossed/close)",
       "BUY extended: mid-zone SMI OK (≤ 40); BB lower gaps can be wider (≤ 2.2%)",
-      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
-      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+      "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
     ],
   },
   ruleTvsmotor: {
     title: "RuleTVSMOTOR Buy / Sell Rules",
     blurb:
-      "TVSMOTOR-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates TVSMOTOR only.",
+      "TVSMOTOR-only rule · favourable profit-range RSI / Stch Mtm / BB proximity · BUY turn guards + SELL cascade · day scan evaluates TVSMOTOR only.",
     rules: [
       "TVSMOTOR stock only — never evaluates other symbols; separate from Deepak / Deeppro",
       "BUY quality: RSI 30–55, SMI ≤ −30, near BB lower (gap ≤ 0.6% or crossed/close)",
+      ...CASCADE_PATTERN_RULES,
       "SELL quality: RSI 55–75, SMI ≥ 40, near BB upper (gap ≤ 0.7% or crossed/close)",
       "BUY extended: mid-zone SMI OK (≤ 40); BB lower gaps can be wider (≤ 1.4%)",
-      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
-      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+      "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
     ],
   },
   rulePolicybzr: {
     title: "RulePOLICYBZR Buy / Sell Rules",
     blurb:
-      "POLICYBZR-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates POLICYBZR only.",
+      "POLICYBZR-only rule · favourable profit-range RSI / Stch Mtm / BB proximity · BUY turn guards + SELL cascade · day scan evaluates POLICYBZR only.",
     rules: [
       "POLICYBZR stock only — never evaluates other symbols; separate from Deepak / Deeppro",
       "BUY quality: RSI 25–55, SMI ≤ −25, near BB lower (gap ≤ 1.0% or crossed/close)",
-      "SELL quality: RSI 55–75, SMI ≥ 40, near BB upper (gap ≤ 0.5% or crossed/close)",
-      "BUY extended: prefer negative SMI; BB lower gaps can be wider (≤ 1.3%)",
-      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
-      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+      ...CASCADE_PATTERN_RULES,
+      "SELL quality: RSI 55–85, SMI ≥ 60, near BB upper (gap ≤ 0.7% or crossed/close)",
+      "BUY extended: mid SMI ≤ 40; BB lower gaps can be wider (≤ 1.6%)",
+      "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
     ],
   },
 };

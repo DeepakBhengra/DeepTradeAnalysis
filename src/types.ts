@@ -242,7 +242,8 @@ export interface DeepproScanResult {
 export type RulePnbScenarioKey =
   | "buy_quality"
   | "sell_quality"
-  | "buy_extended";
+  | "buy_extended"
+  | "sell_cascade";
 
 export interface RulePnbSignal {
   side: "BUY" | "SELL";
@@ -271,7 +272,8 @@ export interface RulePnbScanResult {
 export type RuleSunpharmaScenarioKey =
   | "buy_quality"
   | "sell_quality"
-  | "buy_extended";
+  | "buy_extended"
+  | "sell_cascade";
 
 export interface RuleSunpharmaSignal {
   side: "BUY" | "SELL";
