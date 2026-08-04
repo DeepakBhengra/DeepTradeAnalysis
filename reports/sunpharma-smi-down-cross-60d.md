@@ -16,6 +16,7 @@
 - **No lower / rose or held:** **15/118** (12.71%) · of which **9** printed a higher mid
 - **Data:** Yahoo Finance 15m (`SUNPHARMA.NS`)
 - **Generated (UTC):** 2026-08-04T19:52:21.203Z
+- **Follow-up:** pre-cross 3×15m + RSI by Drop % bucket → [`sunpharma-smi-precross-patterns-by-drop.md`](./sunpharma-smi-precross-patterns-by-drop.md)
 
 ## Crosses (by Drop % ↓)
 
