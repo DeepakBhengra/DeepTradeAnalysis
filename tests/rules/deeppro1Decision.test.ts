@@ -13,8 +13,9 @@ const { isSmiBlackDownCrossRed, isSmiBlackUpCrossRed, simulateDeeppro1SquareOff 
   __deeppro1Testables;
 
 describe("Deeppro1 config", () => {
-  it("uses chart-aligned SMI (10,3,3) and 0.45% square-off with no symbol lock", () => {
+  it("uses chart-aligned SMI (10,3,3), 0.45% square-off, and 13:30 entry deadline", () => {
     expect(config.deeppro1.squareOffPct).toBe(0.45);
+    expect(config.deeppro1.entryDeadlineIst).toBe("13:30");
     expect(config.deeppro1.smi).toEqual({
       lengthK: 10,
       lengthD: 3,
@@ -22,6 +23,17 @@ describe("Deeppro1 config", () => {
     });
     expect(config.deeppro1).not.toHaveProperty("tradingSymbol");
     expect(config.deeppro1.smi.lengthEma).not.toBe(config.deeppro.smi.lengthEma);
+  });
+});
+
+describe("Deeppro1 entry deadline", () => {
+  const { isAtOrBeforeEntryDeadline } = __deeppro1Testables;
+
+  it("allows entries at or before 13:30 and blocks later candles", () => {
+    expect(isAtOrBeforeEntryDeadline("13:30", "13:30")).toBe(true);
+    expect(isAtOrBeforeEntryDeadline("13:15", "13:30")).toBe(true);
+    expect(isAtOrBeforeEntryDeadline("13:45", "13:30")).toBe(false);
+    expect(isAtOrBeforeEntryDeadline("14:00", "13:30")).toBe(false);
   });
 });
 

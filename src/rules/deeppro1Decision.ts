@@ -30,6 +30,19 @@ function midPrice(snapshot: IndicatorSnapshot): number {
   return (snapshot.high + snapshot.low) / 2;
 }
 
+function parseHmToMinutes(timeIst: string): number {
+  const [hourText, minuteText] = timeIst.split(":");
+  return Number(hourText) * 60 + Number(minuteText);
+}
+
+/** True when entry time is at or before the inclusive deadline (e.g. 13:30). */
+export function isAtOrBeforeEntryDeadline(
+  timeIst: string,
+  deadlineIst: string,
+): boolean {
+  return parseHmToMinutes(timeIst) <= parseHmToMinutes(deadlineIst);
+}
+
 /** SMI black crosses below red signal (study-aligned: prev ≥ signal, cur < signal). */
 export function isSmiBlackDownCrossRed(
   prevSmi: number,
@@ -96,14 +109,21 @@ export function simulateDeeppro1SquareOff(
 
 /**
  * Evaluate Deeppro1 for one IST trade day (any symbol).
- * Emits every SMI black↔red cross in session; attaches 0.45% square-off when hit same day.
+ * Emits SMI black↔red crosses at or before entryDeadlineIst (default 13:30);
+ * attaches 0.45% square-off when hit same day (exits may print after the deadline).
  * Does not share logic with Deeppro exhaustion / Deepak / per-symbol favourable rules.
  */
 export function evaluateDeeppro1Day(
   snapshots: IndicatorSnapshot[],
   dateKey: string,
 ): Deeppro1ScanResult {
-  const { sessionStart, sessionEnd, smi: smiCfg, squareOffPct } = config.deeppro1;
+  const {
+    sessionStart,
+    sessionEnd,
+    entryDeadlineIst,
+    smi: smiCfg,
+    squareOffPct,
+  } = config.deeppro1;
 
   const smiSeries = computeStochasticMomentum(
     snapshots.map((s) => s.high),
@@ -123,6 +143,11 @@ export function evaluateDeeppro1Day(
     }
     const parts = getIstTimeParts(snap.timestamp);
     if (parts.dateKey !== dateKey) {
+      continue;
+    }
+
+    const timeIst = formatIstTime(snap.timestamp);
+    if (!isAtOrBeforeEntryDeadline(timeIst, entryDeadlineIst)) {
       continue;
     }
 
@@ -177,7 +202,7 @@ export function evaluateDeeppro1Day(
       side,
       rule: "deeppro1",
       dateKey,
-      timeIst: formatIstTime(snap.timestamp),
+      timeIst,
       scenarioKey,
       price: entryMid,
       smi: cur.smi,
@@ -271,5 +296,6 @@ export const __deeppro1Testables = {
   isSmiBlackDownCrossRed,
   isSmiBlackUpCrossRed,
   simulateDeeppro1SquareOff,
+  isAtOrBeforeEntryDeadline,
   midPrice,
 };
