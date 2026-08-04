@@ -621,7 +621,20 @@ export interface DeepakDayScanPayload {
   runAt: string;
 }
 
-export type DayScanStrategy = "deepak" | "deepak-2" | "deepak-watch-party";
+export type DayScanStrategy =
+  | "deepak"
+  | "deepak-2"
+  | "deepak-3"
+  | "deepak-watch-party"
+  | "deeppro"
+  | "deeppro1"
+  | "rulePnb"
+  | "ruleSunpharma"
+  | "ruleLtm"
+  | "ruleIcicigi"
+  | "ruleTechm"
+  | "ruleTvsmotor"
+  | "rulePolicybzr";
 
 export interface DayScanSimulationSignal extends DeepakDayScanTrade {
   strategy: DayScanStrategy;

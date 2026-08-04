@@ -13,11 +13,13 @@ const {
   evaluateDeepakDecisionMock,
   evaluateDeepak2DecisionMock,
   evaluateDeepakWatchPartyDecisionMock,
+  evaluateDeeppro1DecisionMock,
 } = vi.hoisted(() => ({
   fetchPnbCandlesMock: vi.fn(),
   evaluateDeepakDecisionMock: vi.fn(),
   evaluateDeepak2DecisionMock: vi.fn(),
   evaluateDeepakWatchPartyDecisionMock: vi.fn(),
+  evaluateDeeppro1DecisionMock: vi.fn(),
 }));
 
 vi.mock("../../src/data/pnbFeed.js", () => ({
@@ -26,6 +28,10 @@ vi.mock("../../src/data/pnbFeed.js", () => ({
 
 vi.mock("../../src/rules/deepakWatchParty.js", () => ({
   evaluateDeepakWatchPartyDecision: evaluateDeepakWatchPartyDecisionMock,
+}));
+
+vi.mock("../../src/rules/deeppro1Decision.js", () => ({
+  evaluateDeeppro1Decision: evaluateDeeppro1DecisionMock,
 }));
 
 vi.mock("../../src/rules/deepakDecision.js", async (importOriginal) => {
@@ -118,6 +124,7 @@ describe("buildDayScanSimulationPayload", () => {
     evaluateDeepakDecisionMock.mockReset();
     evaluateDeepak2DecisionMock.mockReset();
     evaluateDeepakWatchPartyDecisionMock.mockReset();
+    evaluateDeeppro1DecisionMock.mockReset();
     cache.clear();
 
     fetchPnbCandlesMock.mockImplementation(async () =>
@@ -126,6 +133,7 @@ describe("buildDayScanSimulationPayload", () => {
     evaluateDeepakDecisionMock.mockReturnValue(null);
     evaluateDeepak2DecisionMock.mockReturnValue(null);
     evaluateDeepakWatchPartyDecisionMock.mockReturnValue(null);
+    evaluateDeeppro1DecisionMock.mockReturnValue(null);
   });
 
   it("returns simulation metadata at sessionIndex 0", async () => {
@@ -214,6 +222,56 @@ describe("buildDayScanSimulationPayload", () => {
     expect(payload.entries).toHaveLength(1);
     expect(payload.entries[0]?.strategy).toBe("deepak-2");
     expect(payload.entries[0]?.side).toBe("BUY");
+  });
+
+  it("evaluates only Deeppro1 when variant=deeppro1", async () => {
+    let callCount = 0;
+    evaluateDeeppro1DecisionMock.mockImplementation(() => {
+      callCount += 1;
+      if ((callCount - 1) % SECTOR_WATCHLIST.length !== 0) {
+        return null;
+      }
+
+      return {
+        dateKey: "2026-06-09",
+        decision: "SELL",
+        activeScenario: null,
+        scenarioTrail: [],
+        signals: [
+          {
+            ...makeSignal("10:15"),
+            scenarioKey: "deeppro1 sell SMI down-cross",
+            profitTarget: 0.45,
+            exit: {
+              timeIst: "10:45",
+              price: 99.8,
+              targetHit: true,
+              profit: 0.5,
+              profitTarget: 0.45,
+            },
+          },
+        ],
+        reasons: [],
+        snapshot: {} as never,
+      };
+    });
+
+    const payload = await buildDayScanSimulationPayload({
+      date: "2026-06-09",
+      sessionIndex: 6,
+      cache,
+      variant: "deeppro1",
+    });
+
+    expect(evaluateDeepakDecisionMock).not.toHaveBeenCalled();
+    expect(evaluateDeepak2DecisionMock).not.toHaveBeenCalled();
+    expect(evaluateDeepakWatchPartyDecisionMock).not.toHaveBeenCalled();
+    expect(evaluateDeeppro1DecisionMock).toHaveBeenCalled();
+    expect(payload.entries).toHaveLength(1);
+    expect(payload.entries[0]?.strategy).toBe("deeppro1");
+    expect(payload.exits).toHaveLength(1);
+    expect(payload.exits[0]?.strategy).toBe("deeppro1");
+    expect(cache.getFrame("2026-06-09", "deeppro1", 6)).toBeDefined();
   });
 
   it("reveals exits only when simulated time reaches exit time", async () => {
@@ -343,7 +401,7 @@ describe("buildDayScanSimulationPayload", () => {
     });
 
     expect(evaluateDeepakDecisionMock.mock.calls.length).toBe(callsAfterFirst);
-    expect(cache.getFrame("2026-06-09", 0)).toBeDefined();
+    expect(cache.getFrame("2026-06-09", "all", 0)).toBeDefined();
   });
 
   it("precomputes the next session frame in the background", async () => {
@@ -355,7 +413,7 @@ describe("buildDayScanSimulationPayload", () => {
 
     await vi.waitFor(
       () => {
-        expect(cache.getFrame("2026-06-09", 1)).toBeDefined();
+        expect(cache.getFrame("2026-06-09", "all", 1)).toBeDefined();
       },
       { timeout: 10_000 },
     );
@@ -370,6 +428,6 @@ describe("buildDayScanSimulationPayload", () => {
 
     const callsAdded = evaluateDeepakDecisionMock.mock.calls.length - callsBeforeSecond;
     expect(callsAdded).toBeLessThanOrEqual(SECTOR_WATCHLIST.length);
-    expect(cache.getFrame("2026-06-09", 1)).toBeDefined();
+    expect(cache.getFrame("2026-06-09", "all", 1)).toBeDefined();
   }, 30_000);
 });

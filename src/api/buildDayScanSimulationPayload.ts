@@ -4,7 +4,21 @@ import {
   evaluateDeepak2Decision,
   evaluateDeepakDecision,
 } from "../rules/deepakDecision.js";
+import { evaluateDeepak3Decision } from "../rules/deepak3Decision.js";
 import { evaluateDeepakWatchPartyDecision } from "../rules/deepakWatchParty.js";
+import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
+import { evaluateDeeppro1Decision } from "../rules/deeppro1Decision.js";
+import {
+  evaluateFavourableSymbolDecision,
+} from "../rules/favourableSymbolRule.js";
+import {
+  evaluateRulePnbDecision,
+  isRulePnbSymbol,
+} from "../rules/rulePnbDecision.js";
+import {
+  evaluateRuleSunpharmaDecision,
+  isRuleSunpharmaSymbol,
+} from "../rules/ruleSunpharmaDecision.js";
 import {
   getSectorRank,
   type SectorName,
@@ -15,6 +29,7 @@ import type {
   DayScanSimulationPayload,
   DayScanSimulationSignal,
   DayScanSimulationSummary,
+  DayScanStrategy,
   DeepakDayScanError,
   DeepakTradeSignal,
 } from "../types.js";
@@ -24,8 +39,14 @@ import {
   DayScanSimulationCache,
   truncateDayScanCandlesForIndex,
 } from "./dayScanSimulationCache.js";
-
-type DayScanStrategy = "deepak" | "deepak-2" | "deepak-watch-party";
+import {
+  dayScanStrategyForVariant,
+  isFavourableSimulationVariant,
+  parseDayScanSimulationVariant,
+  watchlistForSimulationVariant,
+  type DayScanSimulationRuleVariant,
+  type DayScanSimulationVariant,
+} from "./dayScanSimulationVariant.js";
 
 function signalToSimulationSignal(
   date: string,
@@ -133,11 +154,69 @@ function buildSummary(
   };
 }
 
+function appendDecisionSignals(
+  signals: DayScanSimulationSignal[],
+  decision: { signals: DeepakTradeSignal[] } | null,
+  date: string,
+  strategy: DayScanStrategy,
+  entry: SectorWatchlistEntry,
+  symbolLabel: string,
+): void {
+  if (!decision) {
+    return;
+  }
+  for (const signal of decision.signals) {
+    signals.push(
+      signalToSimulationSignal(date, signal, strategy, entry, symbolLabel),
+    );
+  }
+}
+
+function evaluateRuleVariant(
+  variant: DayScanSimulationRuleVariant,
+  snapshots: ReturnType<typeof buildIndicatorSnapshots>,
+  date: string,
+  tradingSymbol: string,
+): { signals: DeepakTradeSignal[] } | null {
+  switch (variant) {
+    case "deepak2":
+      return evaluateDeepak2Decision(snapshots, date);
+    case "deepak3":
+      return evaluateDeepak3Decision(snapshots, date);
+    case "watchParty":
+      return evaluateDeepakWatchPartyDecision(snapshots, date);
+    case "deeppro":
+      return evaluateDeepproDecision(snapshots, date);
+    case "deeppro1":
+      return evaluateDeeppro1Decision(snapshots, date);
+    case "rulePnb":
+      return isRulePnbSymbol(tradingSymbol)
+        ? evaluateRulePnbDecision(snapshots, date)
+        : null;
+    case "ruleSunpharma":
+      return isRuleSunpharmaSymbol(tradingSymbol)
+        ? evaluateRuleSunpharmaDecision(snapshots, date)
+        : null;
+    case "ruleLtm":
+    case "ruleIcicigi":
+    case "ruleTechm":
+    case "ruleTvsmotor":
+    case "rulePolicybzr":
+      return isFavourableSimulationVariant(variant)
+        ? evaluateFavourableSymbolDecision(variant, snapshots, date)
+        : null;
+    case "deepak":
+    default:
+      return evaluateDeepakDecision(snapshots, date);
+  }
+}
+
 function evaluateSymbolAtIndex(
   entry: SectorWatchlistEntry,
   date: string,
   sessionIndex: number,
   cache: DayScanSimulationCache,
+  variant: DayScanSimulationVariant,
 ): { signals: DayScanSimulationSignal[]; error: DeepakDayScanError | null } {
   const candles = cache.getCandles(date, entry.tradingSymbol);
   const fetchError = cache.getSymbolError(date, entry.tradingSymbol);
@@ -185,52 +264,42 @@ function evaluateSymbolAtIndex(
     };
   }
 
-  const deepakResult = evaluateDeepakDecision(snapshots, date);
-  const deepak2Result = evaluateDeepak2Decision(snapshots, date);
-  const watchPartyResult = evaluateDeepakWatchPartyDecision(snapshots, date);
-
   const signals: DayScanSimulationSignal[] = [];
 
-  if (deepakResult) {
-    for (const signal of deepakResult.signals) {
-      signals.push(
-        signalToSimulationSignal(
-          date,
-          signal,
-          "deepak",
-          entry,
-          dashboardSymbol.symbol,
-        ),
-      );
-    }
-  }
-
-  if (deepak2Result) {
-    for (const signal of deepak2Result.signals) {
-      signals.push(
-        signalToSimulationSignal(
-          date,
-          signal,
-          "deepak-2",
-          entry,
-          dashboardSymbol.symbol,
-        ),
-      );
-    }
-  }
-
-  if (watchPartyResult) {
-    for (const signal of watchPartyResult.signals) {
-      signals.push(
-        signalToSimulationSignal(
-          date,
-          signal,
-          "deepak-watch-party",
-          entry,
-          dashboardSymbol.symbol,
-        ),
-      );
-    }
+  if (variant === "all") {
+    appendDecisionSignals(
+      signals,
+      evaluateDeepakDecision(snapshots, date),
+      date,
+      "deepak",
+      entry,
+      dashboardSymbol.symbol,
+    );
+    appendDecisionSignals(
+      signals,
+      evaluateDeepak2Decision(snapshots, date),
+      date,
+      "deepak-2",
+      entry,
+      dashboardSymbol.symbol,
+    );
+    appendDecisionSignals(
+      signals,
+      evaluateDeepakWatchPartyDecision(snapshots, date),
+      date,
+      "deepak-watch-party",
+      entry,
+      dashboardSymbol.symbol,
+    );
+  } else {
+    appendDecisionSignals(
+      signals,
+      evaluateRuleVariant(variant, snapshots, date, entry.tradingSymbol),
+      date,
+      dayScanStrategyForVariant(variant),
+      entry,
+      dashboardSymbol.symbol,
+    );
   }
 
   return { signals, error: null };
@@ -240,21 +309,25 @@ async function computeDayScanSimulationFrame(input: {
   date: string;
   sessionIndex: number;
   cache: DayScanSimulationCache;
+  variant: DayScanSimulationVariant;
 }): Promise<DayScanSimulationPayload> {
-  const { date, sessionIndex, cache } = input;
+  const { date, sessionIndex, cache, variant } = input;
   const sessionCandleCount = cache.getSessionCandleCount(date);
+  const watchlist = watchlistForSimulationVariant(variant);
 
-  const referenceSymbol = cache.getWatchlist()[0]?.tradingSymbol ?? "";
+  const referenceSymbol =
+    watchlist[0]?.tradingSymbol ?? cache.getWatchlist()[0]?.tradingSymbol ?? "";
   const sessionCandles = cache.getSessionCandlesForSymbol(date, referenceSymbol) ?? [];
   const latestSessionCandle = sessionCandles[sessionIndex];
   const simulatedTimeIst = latestSessionCandle
     ? formatIstTime(latestSessionCandle.timestamp)
     : DAY_SCAN_SIMULATION.sessionStart;
 
-  const watchlist = cache.getWatchlist();
   const results = await Promise.all(
     watchlist.map((entry) =>
-      Promise.resolve().then(() => evaluateSymbolAtIndex(entry, date, sessionIndex, cache)),
+      Promise.resolve().then(() =>
+        evaluateSymbolAtIndex(entry, date, sessionIndex, cache, variant),
+      ),
     ),
   );
 
@@ -324,6 +397,7 @@ export async function buildDayScanSimulationPayload(input: {
   date: string;
   sessionIndex: number;
   cache: DayScanSimulationCache;
+  variant?: string | null;
 }): Promise<DayScanSimulationPayload> {
   const dateError = validateDayScanDate(input.date);
   if (dateError) {
@@ -333,6 +407,8 @@ export async function buildDayScanSimulationPayload(input: {
   if (!Number.isInteger(input.sessionIndex) || input.sessionIndex < 0) {
     throw new RangeError("sessionIndex must be a non-negative integer.");
   }
+
+  const variant = parseDayScanSimulationVariant(input.variant);
 
   await input.cache.prefetch(input.date);
 
@@ -352,17 +428,25 @@ export async function buildDayScanSimulationPayload(input: {
 
   const payload = await input.cache.getOrBuildFrame(
     input.date,
+    variant,
     input.sessionIndex,
-    () => computeDayScanSimulationFrame(input),
+    () =>
+      computeDayScanSimulationFrame({
+        date: input.date,
+        sessionIndex: input.sessionIndex,
+        cache: input.cache,
+        variant,
+      }),
   );
 
   const nextIndex = input.sessionIndex + 1;
   if (nextIndex < sessionCandleCount) {
-    input.cache.ensureFrameCached(input.date, nextIndex, () =>
+    input.cache.ensureFrameCached(input.date, variant, nextIndex, () =>
       computeDayScanSimulationFrame({
         date: input.date,
         sessionIndex: nextIndex,
         cache: input.cache,
+        variant,
       }),
     );
   }

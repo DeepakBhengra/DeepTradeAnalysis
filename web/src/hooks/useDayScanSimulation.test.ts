@@ -58,8 +58,28 @@ describe("useDayScanSimulation", () => {
       expect(result.current.status).toBe("playing");
     });
 
-    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith("2026-06-09", 0);
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith("2026-06-09", 0, "all");
     expect(result.current.simulatedTimeIst).toBe("09:15");
+  });
+
+  it("passes the selected rule variant to the simulation API", async () => {
+    const { result } = renderHook(() =>
+      useDayScanSimulation("2026-06-09", "deeppro1"),
+    );
+
+    await act(async () => {
+      result.current.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("playing");
+    });
+
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-06-09",
+      0,
+      "deeppro1",
+    );
   });
 
   it("pauses and resumes playback", async () => {
@@ -105,6 +125,10 @@ describe("useDayScanSimulation", () => {
       expect(result.current.status).toBe("idle");
     });
 
-    expect(fetchDayScanSimulationMock).toHaveBeenLastCalledWith("2026-06-09", 0);
+    expect(fetchDayScanSimulationMock).toHaveBeenLastCalledWith(
+      "2026-06-09",
+      0,
+      "all",
+    );
   });
 });

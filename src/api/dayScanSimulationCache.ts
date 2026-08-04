@@ -19,8 +19,8 @@ function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function frameKey(date: string, sessionIndex: number): string {
-  return `${date}:${sessionIndex}`;
+function frameKey(date: string, variant: string, sessionIndex: number): string {
+  return `${date}:${variant}:${sessionIndex}`;
 }
 
 export function getDayScanSessionCandles(
@@ -57,7 +57,11 @@ export class DayScanSimulationCache {
   private sessionCandlesByDate = new Map<string, Map<string, Candle[]>>();
   private resolvedSymbolsByDate = new Map<string, Map<string, DashboardSymbolConfig>>();
   private errorsByDate = new Map<string, Map<string, string>>();
-  private framesByDate = new Map<string, Map<number, DayScanSimulationPayload>>();
+  /** Frames keyed by date → variant → sessionIndex */
+  private framesByDate = new Map<
+    string,
+    Map<string, Map<number, DayScanSimulationPayload>>
+  >();
   private computingFrames = new Map<string, Promise<DayScanSimulationPayload>>();
   private prefetchingDates = new Set<string>();
 
@@ -118,28 +122,42 @@ export class DayScanSimulationCache {
     }
   }
 
-  getFrame(date: string, sessionIndex: number): DayScanSimulationPayload | undefined {
-    return this.framesByDate.get(date)?.get(sessionIndex);
+  getFrame(
+    date: string,
+    variant: string,
+    sessionIndex: number,
+  ): DayScanSimulationPayload | undefined {
+    return this.framesByDate.get(date)?.get(variant)?.get(sessionIndex);
   }
 
-  setFrame(date: string, sessionIndex: number, payload: DayScanSimulationPayload): void {
+  setFrame(
+    date: string,
+    variant: string,
+    sessionIndex: number,
+    payload: DayScanSimulationPayload,
+  ): void {
     if (!this.framesByDate.has(date)) {
       this.framesByDate.set(date, new Map());
     }
-    this.framesByDate.get(date)!.set(sessionIndex, payload);
+    const byVariant = this.framesByDate.get(date)!;
+    if (!byVariant.has(variant)) {
+      byVariant.set(variant, new Map());
+    }
+    byVariant.get(variant)!.set(sessionIndex, payload);
   }
 
   async getOrBuildFrame(
     date: string,
+    variant: string,
     sessionIndex: number,
     build: () => Promise<DayScanSimulationPayload>,
   ): Promise<DayScanSimulationPayload> {
-    const cached = this.getFrame(date, sessionIndex);
+    const cached = this.getFrame(date, variant, sessionIndex);
     if (cached) {
       return cached;
     }
 
-    const key = frameKey(date, sessionIndex);
+    const key = frameKey(date, variant, sessionIndex);
     const inFlight = this.computingFrames.get(key);
     if (inFlight) {
       return inFlight;
@@ -147,7 +165,7 @@ export class DayScanSimulationCache {
 
     const promise = build()
       .then((payload) => {
-        this.setFrame(date, sessionIndex, payload);
+        this.setFrame(date, variant, sessionIndex, payload);
         this.computingFrames.delete(key);
         return payload;
       })
@@ -162,6 +180,7 @@ export class DayScanSimulationCache {
 
   ensureFrameCached(
     date: string,
+    variant: string,
     sessionIndex: number,
     build: () => Promise<DayScanSimulationPayload>,
   ): void {
@@ -169,16 +188,16 @@ export class DayScanSimulationCache {
       return;
     }
 
-    if (this.getFrame(date, sessionIndex) != null) {
+    if (this.getFrame(date, variant, sessionIndex) != null) {
       return;
     }
 
-    const key = frameKey(date, sessionIndex);
+    const key = frameKey(date, variant, sessionIndex);
     if (this.computingFrames.has(key)) {
       return;
     }
 
-    void this.getOrBuildFrame(date, sessionIndex, build).catch(() => {
+    void this.getOrBuildFrame(date, variant, sessionIndex, build).catch(() => {
       // Precompute failures are non-fatal; the next request will retry.
     });
   }

@@ -571,10 +571,12 @@ export async function fetchFavourableSymbolDayScan(
 export async function fetchDayScanSimulation(
   date: string,
   sessionIndex: number,
+  variant: string = "all",
 ): Promise<DayScanSimulationPayload> {
   const params = new URLSearchParams({
     date,
     sessionIndex: String(sessionIndex),
+    variant,
   });
 
   const url = `/api/backtest/day-scan/simulate?${params.toString()}`;
