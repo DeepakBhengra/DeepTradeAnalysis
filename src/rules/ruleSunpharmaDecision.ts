@@ -23,9 +23,12 @@ import {
   pctDistance,
 } from "./bollingerUtils.js";
 import {
+  evaluateOverboughtBuyCascade,
+  evaluateOverboughtSellGuards,
   evaluateOversoldBuyGuards,
   evaluateOversoldSellCascade,
   findNextSameDayIndex,
+  type CascadeGuardResult,
 } from "./oversoldCascade.js";
 
 /** Normalize NSE:SUNPHARMA / sunpharma → SUNPHARMA for the exclusive-symbol guard. */
@@ -58,6 +61,7 @@ const SCENARIO_NUMBER: Record<RuleSunpharmaScenarioKey, number> = {
   sell_quality: 1,
   buy_extended: 2,
   sell_cascade: 2,
+  buy_cascade: 3,
 };
 
 const SCENARIO_LABEL: Record<RuleSunpharmaScenarioKey, string> = {
@@ -65,6 +69,7 @@ const SCENARIO_LABEL: Record<RuleSunpharmaScenarioKey, string> = {
   sell_quality: "ruleSunpharma sell quality",
   buy_extended: "ruleSunpharma buy extended",
   sell_cascade: "ruleSunpharma sell cascade",
+  buy_cascade: "ruleSunpharma buy cascade",
 };
 
 function buildBbUpperProximity(snapshot: IndicatorSnapshot): DeepproBbProximity {
@@ -253,6 +258,7 @@ export function evaluateRuleSunpharmaDay(
 
   let buyQuality: RuleSunpharmaSignal | null = null;
   let buyExtended: RuleSunpharmaSignal | null = null;
+  let buyCascade: RuleSunpharmaSignal | null = null;
   let sellSignal: RuleSunpharmaSignal | null = null;
 
   const dayOpenMid =
@@ -297,29 +303,37 @@ export function evaluateRuleSunpharmaDay(
       dayOpenMid,
       nextMid,
     };
-    const guardResult = evaluateOversoldBuyGuards(
+    const buyGuardResult = evaluateOversoldBuyGuards(
       config.ruleSunpharma.buyGuards,
       cascadeCtx,
     );
+    const sellGuardResult = evaluateOverboughtSellGuards(
+      config.ruleSunpharma.sellGuards,
+      cascadeCtx,
+    );
 
-    const emitBuy = (
+    const emitFromConfirm = (
+      side: "BUY" | "SELL",
       scenarioKey: RuleSunpharmaScenarioKey,
       baseReasons: string[],
+      confirmResult: CascadeGuardResult,
+      notePrefix: "guards" | "cascade",
     ): RuleSunpharmaSignal => {
-      const useConfirm = guardResult.confirmedOnNextBar && nextIndex != null;
+      const useConfirm =
+        confirmResult.confirmedOnNextBar && nextIndex != null;
       const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
       const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
       const emitSmi =
         emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
           ? emitSmiPoint.smi
           : smi;
-      const guardNotes =
-        guardResult.reasons.length > 0
-          ? ` | guards: ${guardResult.reasons.join("; ")}`
+      const notes =
+        confirmResult.reasons.length > 0
+          ? ` | ${notePrefix}: ${confirmResult.reasons.join("; ")}`
           : "";
       const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
       return {
-        side: "BUY",
+        side,
         rule: "ruleSunpharma",
         dateKey,
         timeIst: formatIstTime(emitSnapshot.timestamp),
@@ -329,41 +343,73 @@ export function evaluateRuleSunpharmaDay(
         rsi: emitSnapshot.rsi,
         bbUpperProximity: buildBbUpperProximity(emitSnapshot),
         bbLowerProximity: buildBbLowerProximity(emitSnapshot),
-        reasons: baseReasons.map((r) => `${r}${setupNote}${guardNotes}`),
+        reasons: baseReasons.map((r) => `${r}${setupNote}${notes}`),
       };
     };
 
-    if (!buyQuality && matchesBuyQuality(rsi, smi, bbLower) && guardResult.ok) {
-      buyQuality = emitBuy("buy_quality", [
-        `RuleSUNPHARMA BUY quality: RSI ${rsi.toFixed(1)} in ${config.ruleSunpharma.buyQuality.minRsi}–${config.ruleSunpharma.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${config.ruleSunpharma.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
-      ]);
+    if (!buyQuality && matchesBuyQuality(rsi, smi, bbLower) && buyGuardResult.ok) {
+      buyQuality = emitFromConfirm(
+        "BUY",
+        "buy_quality",
+        [
+          `RuleSUNPHARMA BUY quality: RSI ${rsi.toFixed(1)} in ${config.ruleSunpharma.buyQuality.minRsi}–${config.ruleSunpharma.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${config.ruleSunpharma.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
+        ],
+        buyGuardResult,
+        "guards",
+      );
     } else if (
       !buyQuality &&
       !buyExtended &&
       matchesBuyExtended(smi, bbLower) &&
-      guardResult.ok
+      buyGuardResult.ok
     ) {
-      buyExtended = emitBuy("buy_extended", [
-        `RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI ${smi.toFixed(1)} mid-zone (≤ ${config.ruleSunpharma.buyExtended.maxSmi}), BB lower gap ${bbLower.gapPct.toFixed(2)}% (≤ ${config.ruleSunpharma.buyExtended.maxBbLowerGapPct}%), RSI ${rsi.toFixed(1)}`,
-      ]);
+      buyExtended = emitFromConfirm(
+        "BUY",
+        "buy_extended",
+        [
+          `RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI ${smi.toFixed(1)} mid-zone (≤ ${config.ruleSunpharma.buyExtended.maxSmi}), BB lower gap ${bbLower.gapPct.toFixed(2)}% (≤ ${config.ruleSunpharma.buyExtended.maxBbLowerGapPct}%), RSI ${rsi.toFixed(1)}`,
+        ],
+        buyGuardResult,
+        "guards",
+      );
+    } else if (
+      !buyQuality &&
+      !buyExtended &&
+      !buyCascade &&
+      config.ruleSunpharma.buyCascade?.enabled &&
+      matchesSellQuality(rsi, smi, bbUpper)
+    ) {
+      const cascadeResult = evaluateOverboughtBuyCascade(
+        config.ruleSunpharma.buyCascade,
+        cascadeCtx,
+      );
+      if (cascadeResult.ok) {
+        buyCascade = emitFromConfirm(
+          "BUY",
+          "buy_cascade",
+          [
+            `RuleSUNPHARMA BUY cascade (rising-knife): overbought levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB upper, momentum still rising — long on confirm`,
+          ],
+          cascadeResult,
+          "cascade",
+        );
+      }
     }
 
-    if (!sellSignal && matchesSellQuality(rsi, smi, bbUpper)) {
-      sellSignal = {
-        side: "SELL",
-        rule: "ruleSunpharma",
-        dateKey,
-        timeIst,
-        scenarioKey: "sell_quality",
-        price,
-        smi,
-        rsi,
-        bbUpperProximity: bbUpper,
-        bbLowerProximity: bbLower,
-        reasons: [
+    if (
+      !sellSignal &&
+      matchesSellQuality(rsi, smi, bbUpper) &&
+      sellGuardResult.ok
+    ) {
+      sellSignal = emitFromConfirm(
+        "SELL",
+        "sell_quality",
+        [
           `RuleSUNPHARMA SELL quality: RSI ${rsi.toFixed(1)} in ${config.ruleSunpharma.sellQuality.minRsi}–${config.ruleSunpharma.sellQuality.maxRsi}, SMI ${smi.toFixed(1)} ≥ ${config.ruleSunpharma.sellQuality.minSmi}, BB upper gap ${bbUpper.gapPct.toFixed(2)}%${bbUpper.matchType ? ` (${bbUpper.matchType})` : ""}`,
         ],
-      };
+        sellGuardResult,
+        "guards",
+      );
     } else if (
       !sellSignal &&
       config.ruleSunpharma.sellCascade?.enabled &&
@@ -374,43 +420,25 @@ export function evaluateRuleSunpharmaDay(
         cascadeCtx,
       );
       if (cascadeResult.ok) {
-        const useConfirm =
-          cascadeResult.confirmedOnNextBar && nextIndex != null;
-        const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
-        const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
-        const emitSmi =
-          emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
-            ? emitSmiPoint.smi
-            : smi;
-        const cascadeNotes =
-          cascadeResult.reasons.length > 0
-            ? ` | cascade: ${cascadeResult.reasons.join("; ")}`
-            : "";
-        const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
-        sellSignal = {
-          side: "SELL",
-          rule: "ruleSunpharma",
-          dateKey,
-          timeIst: formatIstTime(emitSnapshot.timestamp),
-          scenarioKey: "sell_cascade",
-          price: entryMid(emitSnapshot),
-          smi: emitSmi,
-          rsi: emitSnapshot.rsi,
-          bbUpperProximity: buildBbUpperProximity(emitSnapshot),
-          bbLowerProximity: buildBbLowerProximity(emitSnapshot),
-          reasons: [
-            `RuleSUNPHARMA SELL cascade (falling-knife): oversold levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB lower, momentum still falling — short on confirm${setupNote}${cascadeNotes}`,
+        sellSignal = emitFromConfirm(
+          "SELL",
+          "sell_cascade",
+          [
+            `RuleSUNPHARMA SELL cascade (falling-knife): oversold levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB lower, momentum still falling — short on confirm`,
           ],
-        };
+          cascadeResult,
+          "cascade",
+        );
       }
     }
 
-    if (buyQuality && sellSignal) {
+    const buyFound = buyQuality != null || buyExtended != null || buyCascade != null;
+    if (buyFound && sellSignal) {
       break;
     }
   }
 
-  const buySignal = buyQuality ?? buyExtended;
+  const buySignal = buyQuality ?? buyExtended ?? buyCascade;
 
   const signals = [buySignal, sellSignal]
     .filter((signal): signal is RuleSunpharmaSignal => signal != null)

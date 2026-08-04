@@ -243,7 +243,8 @@ export type RulePnbScenarioKey =
   | "buy_quality"
   | "sell_quality"
   | "buy_extended"
-  | "sell_cascade";
+  | "sell_cascade"
+  | "buy_cascade";
 
 export interface RulePnbSignal {
   side: "BUY" | "SELL";
@@ -273,7 +274,8 @@ export type RuleSunpharmaScenarioKey =
   | "buy_quality"
   | "sell_quality"
   | "buy_extended"
-  | "sell_cascade";
+  | "sell_cascade"
+  | "buy_cascade";
 
 export interface RuleSunpharmaSignal {
   side: "BUY" | "SELL";
@@ -310,7 +312,8 @@ export type FavourableSymbolScenarioKey =
   | "buy_quality"
   | "sell_quality"
   | "buy_extended"
-  | "sell_cascade";
+  | "sell_cascade"
+  | "buy_cascade";
 
 export interface FavourableSymbolSignal {
   side: "BUY" | "SELL";

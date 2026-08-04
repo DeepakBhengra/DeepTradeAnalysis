@@ -23,9 +23,12 @@ import {
   pctDistance,
 } from "./bollingerUtils.js";
 import {
+  evaluateOverboughtBuyCascade,
+  evaluateOverboughtSellGuards,
   evaluateOversoldBuyGuards,
   evaluateOversoldSellCascade,
   findNextSameDayIndex,
+  type CascadeGuardResult,
 } from "./oversoldCascade.js";
 
 /** Normalize NSE:PNB / pnb → PNB for the exclusive-symbol guard. */
@@ -55,6 +58,7 @@ const SCENARIO_NUMBER: Record<RulePnbScenarioKey, number> = {
   sell_quality: 1,
   buy_extended: 2,
   sell_cascade: 2,
+  buy_cascade: 3,
 };
 
 const SCENARIO_LABEL: Record<RulePnbScenarioKey, string> = {
@@ -62,6 +66,7 @@ const SCENARIO_LABEL: Record<RulePnbScenarioKey, string> = {
   sell_quality: "rulePnb sell quality",
   buy_extended: "rulePnb buy extended",
   sell_cascade: "rulePnb sell cascade",
+  buy_cascade: "rulePnb buy cascade",
 };
 
 function buildBbUpperProximity(snapshot: IndicatorSnapshot): DeepproBbProximity {
@@ -247,6 +252,7 @@ export function evaluateRulePnbDay(
 
   let buyQuality: RulePnbSignal | null = null;
   let buyExtended: RulePnbSignal | null = null;
+  let buyCascade: RulePnbSignal | null = null;
   let sellSignal: RulePnbSignal | null = null;
 
   const dayOpenMid =
@@ -291,29 +297,37 @@ export function evaluateRulePnbDay(
       dayOpenMid,
       nextMid,
     };
-    const guardResult = evaluateOversoldBuyGuards(
+    const buyGuardResult = evaluateOversoldBuyGuards(
       config.rulePnb.buyGuards,
       cascadeCtx,
     );
+    const sellGuardResult = evaluateOverboughtSellGuards(
+      config.rulePnb.sellGuards,
+      cascadeCtx,
+    );
 
-    const emitBuy = (
+    const emitFromConfirm = (
+      side: "BUY" | "SELL",
       scenarioKey: RulePnbScenarioKey,
       baseReasons: string[],
+      confirmResult: CascadeGuardResult,
+      notePrefix: "guards" | "cascade",
     ): RulePnbSignal => {
-      const useConfirm = guardResult.confirmedOnNextBar && nextIndex != null;
+      const useConfirm =
+        confirmResult.confirmedOnNextBar && nextIndex != null;
       const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
       const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
       const emitSmi =
         emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
           ? emitSmiPoint.smi
           : smi;
-      const guardNotes =
-        guardResult.reasons.length > 0
-          ? ` | guards: ${guardResult.reasons.join("; ")}`
+      const notes =
+        confirmResult.reasons.length > 0
+          ? ` | ${notePrefix}: ${confirmResult.reasons.join("; ")}`
           : "";
       const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
       return {
-        side: "BUY",
+        side,
         rule: "rulePnb",
         dateKey,
         timeIst: formatIstTime(emitSnapshot.timestamp),
@@ -323,41 +337,73 @@ export function evaluateRulePnbDay(
         rsi: emitSnapshot.rsi,
         bbUpperProximity: buildBbUpperProximity(emitSnapshot),
         bbLowerProximity: buildBbLowerProximity(emitSnapshot),
-        reasons: baseReasons.map((r) => `${r}${setupNote}${guardNotes}`),
+        reasons: baseReasons.map((r) => `${r}${setupNote}${notes}`),
       };
     };
 
-    if (!buyQuality && matchesBuyQuality(rsi, smi, bbLower) && guardResult.ok) {
-      buyQuality = emitBuy("buy_quality", [
-        `RulePNB BUY quality: RSI ${rsi.toFixed(1)} in ${config.rulePnb.buyQuality.minRsi}–${config.rulePnb.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${config.rulePnb.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
-      ]);
+    if (!buyQuality && matchesBuyQuality(rsi, smi, bbLower) && buyGuardResult.ok) {
+      buyQuality = emitFromConfirm(
+        "BUY",
+        "buy_quality",
+        [
+          `RulePNB BUY quality: RSI ${rsi.toFixed(1)} in ${config.rulePnb.buyQuality.minRsi}–${config.rulePnb.buyQuality.maxRsi}, SMI ${smi.toFixed(1)} ≤ ${config.rulePnb.buyQuality.maxSmi}, BB lower gap ${bbLower.gapPct.toFixed(2)}%${bbLower.matchType ? ` (${bbLower.matchType})` : ""}`,
+        ],
+        buyGuardResult,
+        "guards",
+      );
     } else if (
       !buyQuality &&
       !buyExtended &&
       matchesBuyExtended(smi, bbLower) &&
-      guardResult.ok
+      buyGuardResult.ok
     ) {
-      buyExtended = emitBuy("buy_extended", [
-        `RulePNB BUY extended (biggest-mover style): SMI ${smi.toFixed(1)} < 0, BB lower gap ${bbLower.gapPct.toFixed(2)}% (wider ≤ ${config.rulePnb.buyExtended.maxBbLowerGapPct}%), RSI mixed (${rsi.toFixed(1)})`,
-      ]);
+      buyExtended = emitFromConfirm(
+        "BUY",
+        "buy_extended",
+        [
+          `RulePNB BUY extended (biggest-mover style): SMI ${smi.toFixed(1)} < 0, BB lower gap ${bbLower.gapPct.toFixed(2)}% (wider ≤ ${config.rulePnb.buyExtended.maxBbLowerGapPct}%), RSI mixed (${rsi.toFixed(1)})`,
+        ],
+        buyGuardResult,
+        "guards",
+      );
+    } else if (
+      !buyQuality &&
+      !buyExtended &&
+      !buyCascade &&
+      config.rulePnb.buyCascade?.enabled &&
+      matchesSellQuality(rsi, smi, bbUpper)
+    ) {
+      const cascadeResult = evaluateOverboughtBuyCascade(
+        config.rulePnb.buyCascade,
+        cascadeCtx,
+      );
+      if (cascadeResult.ok) {
+        buyCascade = emitFromConfirm(
+          "BUY",
+          "buy_cascade",
+          [
+            `RulePNB BUY cascade (rising-knife): overbought levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB upper, momentum still rising — long on confirm`,
+          ],
+          cascadeResult,
+          "cascade",
+        );
+      }
     }
 
-    if (!sellSignal && matchesSellQuality(rsi, smi, bbUpper)) {
-      sellSignal = {
-        side: "SELL",
-        rule: "rulePnb",
-        dateKey,
-        timeIst,
-        scenarioKey: "sell_quality",
-        price,
-        smi,
-        rsi,
-        bbUpperProximity: bbUpper,
-        bbLowerProximity: bbLower,
-        reasons: [
+    if (
+      !sellSignal &&
+      matchesSellQuality(rsi, smi, bbUpper) &&
+      sellGuardResult.ok
+    ) {
+      sellSignal = emitFromConfirm(
+        "SELL",
+        "sell_quality",
+        [
           `RulePNB SELL quality: RSI ${rsi.toFixed(1)} in ${config.rulePnb.sellQuality.minRsi}–${config.rulePnb.sellQuality.maxRsi}, SMI ${smi.toFixed(1)} ≥ ${config.rulePnb.sellQuality.minSmi}, BB upper gap ${bbUpper.gapPct.toFixed(2)}%${bbUpper.matchType ? ` (${bbUpper.matchType})` : ""}`,
         ],
-      };
+        sellGuardResult,
+        "guards",
+      );
     } else if (
       !sellSignal &&
       config.rulePnb.sellCascade?.enabled &&
@@ -368,43 +414,25 @@ export function evaluateRulePnbDay(
         cascadeCtx,
       );
       if (cascadeResult.ok) {
-        const useConfirm =
-          cascadeResult.confirmedOnNextBar && nextIndex != null;
-        const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
-        const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
-        const emitSmi =
-          emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
-            ? emitSmiPoint.smi
-            : smi;
-        const cascadeNotes =
-          cascadeResult.reasons.length > 0
-            ? ` | cascade: ${cascadeResult.reasons.join("; ")}`
-            : "";
-        const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
-        sellSignal = {
-          side: "SELL",
-          rule: "rulePnb",
-          dateKey,
-          timeIst: formatIstTime(emitSnapshot.timestamp),
-          scenarioKey: "sell_cascade",
-          price: entryMid(emitSnapshot),
-          smi: emitSmi,
-          rsi: emitSnapshot.rsi,
-          bbUpperProximity: buildBbUpperProximity(emitSnapshot),
-          bbLowerProximity: buildBbLowerProximity(emitSnapshot),
-          reasons: [
-            `RulePNB SELL cascade (falling-knife): oversold levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB lower, momentum still falling — short on confirm${setupNote}${cascadeNotes}`,
+        sellSignal = emitFromConfirm(
+          "SELL",
+          "sell_cascade",
+          [
+            `RulePNB SELL cascade (falling-knife): oversold levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB lower, momentum still falling — short on confirm`,
           ],
-        };
+          cascadeResult,
+          "cascade",
+        );
       }
     }
 
-    if (buyQuality && sellSignal) {
+    const buyFound = buyQuality != null || buyExtended != null || buyCascade != null;
+    if (buyFound && sellSignal) {
       break;
     }
   }
 
-  const buySignal = buyQuality ?? buyExtended;
+  const buySignal = buyQuality ?? buyExtended ?? buyCascade;
 
   const signals = [buySignal, sellSignal]
     .filter((signal): signal is RulePnbSignal => signal != null)

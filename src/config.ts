@@ -549,7 +549,7 @@ export const config = {
       minSmi: 40,
       maxBbUpperGapPct: 0.8,
     },
-    /** Falling-knife BUY guards + SELL cascade (shared with favourable symbol rules). */
+    /** Falling-knife BUY guards + SELL cascade; rising-knife SELL guards + BUY cascade. */
     buyGuards: {
       requireSmiRising: true,
       requireMacdHistRising: true,
@@ -562,6 +562,19 @@ export const config = {
       requireMacdHistFalling: true,
       requireNextBarLower: true,
       minOpenDrawdownPct: null,
+    },
+    sellGuards: {
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarConfirmation: true,
+      maxOpenRallyPct: 0.8,
+    },
+    buyCascade: {
+      enabled: true,
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarHigher: true,
+      minOpenRallyPct: null,
     },
   },
 
@@ -610,7 +623,7 @@ export const config = {
       minSmi: 40,
       maxBbUpperGapPct: 0.3,
     },
-    /** Falling-knife BUY guards + SELL cascade (shared with favourable symbol rules). */
+    /** Falling-knife BUY guards + SELL cascade; rising-knife SELL guards + BUY cascade. */
     buyGuards: {
       requireSmiRising: true,
       requireMacdHistRising: true,
@@ -623,6 +636,19 @@ export const config = {
       requireMacdHistFalling: true,
       requireNextBarLower: true,
       minOpenDrawdownPct: null,
+    },
+    sellGuards: {
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarConfirmation: true,
+      maxOpenRallyPct: 0.8,
+    },
+    buyCascade: {
+      enabled: true,
+      requireSmiRising: true,
+      requireMacdHistRising: true,
+      requireNextBarHigher: true,
+      minOpenRallyPct: null,
     },
   },
 
@@ -672,6 +698,19 @@ export const config = {
         requireNextBarLower: true,
         minOpenDrawdownPct: null,
       },
+      sellGuards: {
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarConfirmation: true,
+        maxOpenRallyPct: 0.8,
+      },
+      buyCascade: {
+        enabled: true,
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarHigher: true,
+        minOpenRallyPct: null,
+      },
     },
     ruleIcicigi: {
       tradingSymbol: "ICICIGI",
@@ -713,6 +752,19 @@ export const config = {
         requireMacdHistFalling: true,
         requireNextBarLower: true,
         minOpenDrawdownPct: null,
+      },
+      sellGuards: {
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarConfirmation: true,
+        maxOpenRallyPct: 0.8,
+      },
+      buyCascade: {
+        enabled: true,
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarHigher: true,
+        minOpenRallyPct: null,
       },
       sellQuality: {
         minRsi: 45,
@@ -760,6 +812,19 @@ export const config = {
         requireNextBarLower: true,
         minOpenDrawdownPct: null,
       },
+      sellGuards: {
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarConfirmation: true,
+        maxOpenRallyPct: 0.8,
+      },
+      buyCascade: {
+        enabled: true,
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarHigher: true,
+        minOpenRallyPct: null,
+      },
     },
     ruleTvsmotor: {
       tradingSymbol: "TVSMOTOR",
@@ -798,6 +863,19 @@ export const config = {
         requireMacdHistFalling: true,
         requireNextBarLower: true,
         minOpenDrawdownPct: null,
+      },
+      sellGuards: {
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarConfirmation: true,
+        maxOpenRallyPct: 0.8,
+      },
+      buyCascade: {
+        enabled: true,
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarHigher: true,
+        minOpenRallyPct: null,
       },
     },
     rulePolicybzr: {
@@ -839,6 +917,19 @@ export const config = {
         requireMacdHistFalling: true,
         requireNextBarLower: true,
         minOpenDrawdownPct: null,
+      },
+      sellGuards: {
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarConfirmation: true,
+        maxOpenRallyPct: 0.8,
+      },
+      buyCascade: {
+        enabled: true,
+        requireSmiRising: true,
+        requireMacdHistRising: true,
+        requireNextBarHigher: true,
+        minOpenRallyPct: null,
       },
     },
   },

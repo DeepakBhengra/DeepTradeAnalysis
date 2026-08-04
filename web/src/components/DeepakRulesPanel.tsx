@@ -61,6 +61,8 @@ const DEEPPRO_SCENARIOS = [
 const CASCADE_PATTERN_RULES = [
   "BUY guards: require SMI rising + MACD hist rising + next mid higher; skip if open drawdown < −0.8%",
   "SELL cascade: same oversold levels as BUY quality but SMI+MACD still falling and next mid lower → short on confirm bar",
+  "SELL guards: require SMI falling + MACD hist falling + next mid lower; skip if open rally > 0.8%",
+  "BUY cascade: same overbought levels as SELL quality but SMI+MACD still rising and next mid higher → long on confirm bar",
 ];
 
 const RULEPNB_RULES = [
@@ -70,7 +72,7 @@ const RULEPNB_RULES = [
   "SELL quality (1.7%–0.9% / 0.8%–0.4%): RSI 50–70, SMI ≥ 40, near BB upper (gap ≤ 0.8% or crossed/close)",
   "BUY extended (3%–1.8% movers): prefer negative SMI; RSI mixed; BB lower gaps can be wider (≤ 1.4%)",
   "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
-  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
+  "One earliest BUY and one earliest SELL per day (BUY prefers quality > extended > cascade; SELL prefers quality over cascade)",
 ];
 
 const RULEPNB_SCENARIOS = [
@@ -78,6 +80,7 @@ const RULEPNB_SCENARIOS = [
   { label: "sell quality", side: "SELL" as const, number: 1 },
   { label: "buy extended", side: "BUY" as const, number: 2 },
   { label: "sell cascade", side: "SELL" as const, number: 2 },
+  { label: "buy cascade", side: "BUY" as const, number: 3 },
 ];
 
 const RULESUNPHARMA_RULES = [
@@ -87,7 +90,7 @@ const RULESUNPHARMA_RULES = [
   "SELL quality (0.8%–0.4% / mid): RSI 56–72, SMI ≥ 40, tight BB upper (gap ≤ 0.3% or crossed/close)",
   "BUY extended (3%–1.8% movers): less oversold than mid bucket; mid-zone SMI OK (≤ 40); still near BB lower (gap ≤ 0.5%)",
   "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
-  "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
+  "One earliest BUY and one earliest SELL per day (BUY prefers quality > extended > cascade; SELL prefers quality over cascade)",
 ];
 
 const RULESUNPHARMA_SCENARIOS = [
@@ -95,6 +98,7 @@ const RULESUNPHARMA_SCENARIOS = [
   { label: "sell quality", side: "SELL" as const, number: 1 },
   { label: "buy extended", side: "BUY" as const, number: 2 },
   { label: "sell cascade", side: "SELL" as const, number: 2 },
+  { label: "buy cascade", side: "BUY" as const, number: 3 },
 ];
 
 const FAVOURABLE_SYMBOL_SCENARIOS = [
@@ -102,6 +106,7 @@ const FAVOURABLE_SYMBOL_SCENARIOS = [
   { label: "sell quality", side: "SELL" as const, number: 1 },
   { label: "buy extended", side: "BUY" as const, number: 2 },
   { label: "sell cascade", side: "SELL" as const, number: 2 },
+  { label: "buy cascade", side: "BUY" as const, number: 3 },
 ];
 
 type RulesPanelVariant =
