@@ -3,14 +3,19 @@ import {
   __favourableSymbolRuleTestables,
   assertFavourableSymbolRuleSymbol,
   evaluateBuyGuards,
+  evaluateSellCascade,
   favourableSymbolRuleIdForTradingSymbol,
   getFavourableSymbolRuleConfig,
   isFavourableSymbolRuleSymbol,
   type FavourableSymbolRuleConfig,
 } from "../../src/rules/favourableSymbolRule.js";
 
-const { matchesBuyQuality, matchesSellQuality, matchesBuyExtended } =
-  __favourableSymbolRuleTestables;
+const {
+  matchesBuyQuality,
+  matchesSellQuality,
+  matchesBuyExtended,
+  matchesSellCascadeLevels,
+} = __favourableSymbolRuleTestables;
 
 describe("favourable symbol rule registry", () => {
   it("locks each rule to its exclusive symbol", () => {
@@ -38,6 +43,17 @@ describe("favourable symbol rule registry", () => {
       maxOpenDrawdownPct: 0.8,
     });
     expect(getFavourableSymbolRuleConfig("ruleLtm").buyGuards).toBeUndefined();
+  });
+
+  it("enables sellCascade only on RuleICICIGI", () => {
+    expect(getFavourableSymbolRuleConfig("ruleIcicigi").sellCascade).toEqual({
+      enabled: true,
+      requireSmiFalling: true,
+      requireMacdHistFalling: true,
+      requireNextBarLower: true,
+      minOpenDrawdownPct: null,
+    });
+    expect(getFavourableSymbolRuleConfig("ruleLtm").sellCascade).toBeUndefined();
   });
 });
 
@@ -222,5 +238,60 @@ describe("RuleICICIGI buyGuards", () => {
         nextMid: 90,
       }),
     ).toEqual({ ok: true, reasons: [], confirmedOnNextBar: false });
+  });
+});
+
+describe("RuleICICIGI sellCascade", () => {
+  const rule = getFavourableSymbolRuleConfig("ruleIcicigi");
+
+  const cascadeCtx = {
+    smi: -54,
+    prevSmi: -34,
+    macdHist: -1.33,
+    prevMacdHist: -0.75,
+    setupMid: 1675.7,
+    dayOpenMid: 1691.75,
+    nextMid: 1673.3,
+  };
+
+  it("accepts oversold levels that match BUY quality band", () => {
+    expect(
+      matchesSellCascadeLevels(rule, 33.7, -54, {
+        gapPct: 0.3,
+        signedGapPct: -0.3,
+        matchType: null,
+        price: 1671,
+        bbLevel: 1666,
+      }),
+    ).toBe(true);
+  });
+
+  it("passes 29 Jul–style falling knife as SELL cascade", () => {
+    const result = evaluateSellCascade(rule, cascadeCtx);
+    expect(result.ok).toBe(true);
+    expect(result.confirmedOnNextBar).toBe(true);
+    expect(result.reasons.some((r) => r.includes("SMI falling"))).toBe(true);
+    expect(result.reasons.some((r) => r.includes("MACD hist falling"))).toBe(
+      true,
+    );
+    expect(result.reasons.some((r) => r.includes("next-bar cascade"))).toBe(
+      true,
+    );
+  });
+
+  it("rejects when SMI is rising (would be a BUY turn instead)", () => {
+    expect(
+      evaluateSellCascade(rule, {
+        ...cascadeCtx,
+        smi: -40,
+        prevSmi: -50,
+      }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects when next bar is higher", () => {
+    expect(
+      evaluateSellCascade(rule, { ...cascadeCtx, nextMid: 1680 }).ok,
+    ).toBe(false);
   });
 });

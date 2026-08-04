@@ -44,6 +44,23 @@ export type FavourableSymbolBuyGuards = {
   maxOpenDrawdownPct: number | null;
 };
 
+/**
+ * Optional SELL cascade: flip the blocked falling-knife BUY into a short.
+ * Uses the same oversold level band as BUY quality, but requires momentum
+ * still falling and next mid lower; entry on the confirm bar.
+ */
+export type FavourableSymbolSellCascade = {
+  enabled: boolean;
+  requireSmiFalling: boolean;
+  requireMacdHistFalling: boolean;
+  requireNextBarLower: boolean;
+  /**
+   * Optional: only fire if open→setup drop ≤ −minOpenDrawdownPct.
+   * null = no minimum drawdown required.
+   */
+  minOpenDrawdownPct: number | null;
+};
+
 export type FavourableSymbolRuleConfig = {
   tradingSymbol: string;
   displayName: string;
@@ -65,6 +82,8 @@ export type FavourableSymbolRuleConfig = {
   };
   /** Present only on rules that need anti-cascade BUY filters (e.g. RuleICICIGI). */
   buyGuards?: FavourableSymbolBuyGuards;
+  /** Present on RuleICICIGI: falling-knife → SELL opportunity. */
+  sellCascade?: FavourableSymbolSellCascade;
   sellQuality: {
     minRsi: number;
     maxRsi: number;
@@ -148,6 +167,7 @@ const SCENARIO_NUMBER: Record<FavourableSymbolScenarioKey, number> = {
   buy_quality: 1,
   sell_quality: 1,
   buy_extended: 2,
+  sell_cascade: 2,
 };
 
 function scenarioLabel(
@@ -286,6 +306,99 @@ function matchesBuyExtended(
     return false;
   }
   return nearLowerBand(bbLower, buyExtended.maxBbLowerGapPct);
+}
+
+/**
+ * Falling-knife SELL: same oversold level band as BUY quality, but momentum
+ * still cascading (SMI/MACD falling) with next mid lower.
+ */
+export function matchesSellCascadeLevels(
+  rule: FavourableSymbolRuleConfig,
+  rsi: number,
+  smi: number,
+  bbLower: DeepproBbProximity,
+): boolean {
+  if (!rule.sellCascade?.enabled) {
+    return false;
+  }
+  // Reuse BUY quality oversold band — the "fake long" print.
+  return matchesBuyQuality(rule, rsi, smi, bbLower);
+}
+
+export type SellCascadeContext = {
+  smi: number;
+  prevSmi: number | null;
+  macdHist: number;
+  prevMacdHist: number | null;
+  setupMid: number;
+  dayOpenMid: number | null;
+  nextMid: number | null;
+};
+
+export type SellCascadeResult = {
+  ok: boolean;
+  reasons: string[];
+  confirmedOnNextBar: boolean;
+};
+
+export function evaluateSellCascade(
+  rule: FavourableSymbolRuleConfig,
+  ctx: SellCascadeContext,
+): SellCascadeResult {
+  const cascade = rule.sellCascade;
+  if (!cascade?.enabled) {
+    return { ok: false, reasons: [], confirmedOnNextBar: false };
+  }
+
+  const reasons: string[] = [];
+
+  if (cascade.requireSmiFalling) {
+    if (ctx.prevSmi == null || !(ctx.smi < ctx.prevSmi)) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(`SMI falling ${ctx.prevSmi.toFixed(1)}→${ctx.smi.toFixed(1)}`);
+  }
+
+  if (cascade.requireMacdHistFalling) {
+    if (
+      ctx.prevMacdHist == null ||
+      !Number.isFinite(ctx.macdHist) ||
+      !Number.isFinite(ctx.prevMacdHist) ||
+      !(ctx.macdHist < ctx.prevMacdHist)
+    ) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(
+      `MACD hist falling ${ctx.prevMacdHist.toFixed(2)}→${ctx.macdHist.toFixed(2)}`,
+    );
+  }
+
+  if (
+    cascade.minOpenDrawdownPct != null &&
+    Number.isFinite(cascade.minOpenDrawdownPct) &&
+    ctx.dayOpenMid != null &&
+    ctx.dayOpenMid > 0
+  ) {
+    const dropPct = ((ctx.setupMid - ctx.dayOpenMid) / ctx.dayOpenMid) * 100;
+    if (dropPct > -cascade.minOpenDrawdownPct) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(
+      `open drawdown ${dropPct.toFixed(2)}% ≤ −${cascade.minOpenDrawdownPct}%`,
+    );
+  }
+
+  if (cascade.requireNextBarLower) {
+    if (ctx.nextMid == null || !(ctx.nextMid < ctx.setupMid)) {
+      return { ok: false, reasons: [], confirmedOnNextBar: false };
+    }
+    reasons.push(
+      `next-bar cascade mid ${ctx.setupMid.toFixed(2)}→${ctx.nextMid.toFixed(2)}`,
+    );
+    return { ok: true, reasons, confirmedOnNextBar: true };
+  }
+
+  return { ok: true, reasons, confirmedOnNextBar: false };
 }
 
 export type BuyGuardContext = {
@@ -547,6 +660,54 @@ export function evaluateFavourableSymbolDay(
           `${displayName} SELL quality: RSI ${rsi.toFixed(1)} in ${rule.sellQuality.minRsi}–${rule.sellQuality.maxRsi}, SMI ${smi.toFixed(1)} ≥ ${rule.sellQuality.minSmi}, BB upper gap ${bbUpper.gapPct.toFixed(2)}%${bbUpper.matchType ? ` (${bbUpper.matchType})` : ""}`,
         ],
       };
+    } else if (
+      !sellSignal &&
+      matchesSellCascadeLevels(rule, rsi, smi, bbLower)
+    ) {
+      const cascadeResult = evaluateSellCascade(rule, {
+        smi,
+        prevSmi: prevSmi != null && Number.isFinite(prevSmi) ? prevSmi : null,
+        macdHist: snapshot.macd.histogram,
+        prevMacdHist:
+          prevMacdHist != null && Number.isFinite(prevMacdHist)
+            ? prevMacdHist
+            : null,
+        setupMid: price,
+        dayOpenMid,
+        nextMid,
+      });
+      if (cascadeResult.ok) {
+        const useConfirm =
+          cascadeResult.confirmedOnNextBar && nextIndex != null;
+        const emitSnapshot = useConfirm ? snapshots[nextIndex] : snapshot;
+        const emitSmiPoint = useConfirm ? smiSeries[nextIndex] : smiPoint;
+        const emitSmi =
+          emitSmiPoint && Number.isFinite(emitSmiPoint.smi)
+            ? emitSmiPoint.smi
+            : smi;
+        const emitTimeIst = formatIstTime(emitSnapshot.timestamp);
+        const emitPrice = entryMid(emitSnapshot);
+        const cascadeNotes =
+          cascadeResult.reasons.length > 0
+            ? ` | cascade: ${cascadeResult.reasons.join("; ")}`
+            : "";
+        const setupNote = useConfirm ? ` (setup ${timeIst})` : "";
+        sellSignal = {
+          side: "SELL",
+          rule: ruleId,
+          dateKey,
+          timeIst: emitTimeIst,
+          scenarioKey: "sell_cascade",
+          price: emitPrice,
+          smi: emitSmi,
+          rsi: emitSnapshot.rsi,
+          bbUpperProximity: buildBbUpperProximity(emitSnapshot),
+          bbLowerProximity: buildBbLowerProximity(emitSnapshot),
+          reasons: [
+            `${displayName} SELL cascade (falling-knife): oversold levels RSI ${rsi.toFixed(1)} / SMI ${smi.toFixed(1)} near BB lower, momentum still falling — short on confirm${setupNote}${cascadeNotes}`,
+          ],
+        };
+      }
     }
 
     if (buyQuality && sellSignal) {
@@ -635,7 +796,9 @@ export const __favourableSymbolRuleTestables = {
   matchesBuyQuality,
   matchesSellQuality,
   matchesBuyExtended,
+  matchesSellCascadeLevels,
   evaluateBuyGuards,
+  evaluateSellCascade,
   nearLowerBand,
   nearUpperBand,
   entryMid,

@@ -661,6 +661,18 @@ export const config = {
         requireNextBarConfirmation: true,
         maxOpenDrawdownPct: 0.8,
       },
+      /**
+       * Flip the same falling-knife print into a SELL: oversold BUY-quality levels
+       * with SMI+MACD still falling and next mid lower → enter on confirm bar.
+       * 60d Yahoo study: ~19 signals, ~84% best-SQ positive (incl. 29 Jul +1.5%).
+       */
+      sellCascade: {
+        enabled: true,
+        requireSmiFalling: true,
+        requireMacdHistFalling: true,
+        requireNextBarLower: true,
+        minOpenDrawdownPct: null,
+      },
       sellQuality: {
         minRsi: 45,
         maxRsi: 75,

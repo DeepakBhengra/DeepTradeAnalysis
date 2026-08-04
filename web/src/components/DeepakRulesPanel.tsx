@@ -127,14 +127,16 @@ const FAVOURABLE_SYMBOL_PANEL: Record<
   ruleIcicigi: {
     title: "RuleICICIGI Buy / Sell Rules",
     blurb:
-      "ICICIGI-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak / Deeppro · day scan evaluates ICICIGI only.",
+      "ICICIGI-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · BUY turn guards + SELL cascade on falling knives · day scan evaluates ICICIGI only.",
     rules: [
       "ICICIGI stock only — never evaluates other symbols; separate from Deepak / Deeppro",
       "BUY quality: RSI 30–50, SMI ≤ −40, near BB lower (gap ≤ 0.7% or crossed/close)",
+      "BUY guards: require SMI rising + MACD hist rising + next mid higher; skip if open drawdown < −0.8%",
       "SELL quality: RSI 45–75, SMI ≥ 20, near BB upper (gap ≤ 1.0% or crossed/close)",
+      "SELL cascade: same oversold levels as BUY quality but SMI+MACD still falling and next mid lower → short on confirm bar",
       "BUY extended: prefer negative SMI; BB lower gaps can be wider (≤ 1.0%)",
-      "Entry price = candle mid (high+low)/2; event candle before 14:00 IST",
-      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended)",
+      "Entry price = candle mid (high+low)/2; setup candle before 14:00 IST",
+      "One earliest BUY and one earliest SELL per day (BUY prefers quality over extended; SELL prefers quality over cascade)",
     ],
   },
   ruleTechm: {
