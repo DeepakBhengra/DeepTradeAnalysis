@@ -3,6 +3,7 @@ dist/
 .env
 *.log
 .DS_Store
+.cache/
 data/samco-ledger.json
 data/samco-settings.json
 data/samco-trade-log.json
