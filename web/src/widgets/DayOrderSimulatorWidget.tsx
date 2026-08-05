@@ -296,8 +296,8 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
             ₹1,00,00,000 capital. Set quantity and entry price range for this date run before Start
             (locked while running). Defaults: {ORDER_QUANTITY} qty, ₹{formatInr(MIN_ENTRY_PRICE)}–₹
             {formatInr(MAX_ENTRY_PRICE)}. Starts automatically when Day Scan Simulator starts and
-            catches up from 09:15. Order history lists every fill (scroll for morning 09:15
-            square-offs).
+            catches up from 09:15. Order history is a column table of every fill (scroll for
+            morning 09:15 square-offs).
           </p>
         </section>
 

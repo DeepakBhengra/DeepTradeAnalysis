@@ -1,8 +1,11 @@
-import type { DayOrderPortfolio, DayOrderPnLSummary } from "../types/dayOrder";
+import type { DayOrderFill, DayOrderPortfolio, DayOrderPnLSummary } from "../types/dayOrder";
 import { DAY_ORDER_INITIAL_CASH } from "../types/dayOrder";
 import { formatDayScanStrategy } from "../utils/backtestFormat";
-import { describeDayOrderFill } from "../utils/dayOrderEngine";
 import { formatCurrency, formatPnL } from "../utils/paperTrading";
+
+function sideClass(side: DayOrderFill["side"]): string {
+  return side === "BUY" ? "text-kite-green" : "text-kite-red";
+}
 
 interface DayOrderPortfolioPanelProps {
   portfolio: DayOrderPortfolio;
@@ -140,13 +143,58 @@ export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPane
         {fills.length === 0 ? (
           <p className="mt-3 mb-0 text-xs text-kite-muted">No filled orders yet.</p>
         ) : (
-          <ul className="m-0 mt-3 max-h-[28rem] list-none divide-y divide-kite-border overflow-y-auto p-0">
-            {historyFills.map((fill) => (
-              <li key={fill.id} className="py-2 text-xs text-kite-text">
-                {describeDayOrderFill(fill)}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-3 max-h-[28rem] overflow-auto">
+            <table className="w-full min-w-[720px] border-collapse text-xs">
+              <thead className="sticky top-0 bg-kite-surface">
+                <tr className="border-b border-kite-border text-left text-kite-muted">
+                  <th className="pb-2 pr-2 font-medium">Type</th>
+                  <th className="pb-2 pr-2 font-medium">Side</th>
+                  <th className="pb-2 pr-2 font-medium">Qty</th>
+                  <th className="pb-2 pr-2 font-medium">Stock</th>
+                  <th className="pb-2 pr-2 font-medium">Price</th>
+                  <th className="pb-2 pr-2 font-medium">Strategy</th>
+                  <th className="pb-2 pr-2 font-medium">Time (IST)</th>
+                  <th className="pb-2 font-medium">P&amp;L</th>
+                </tr>
+              </thead>
+              <tbody>
+                {historyFills.map((fill) => (
+                  <tr key={fill.id} className="border-b border-kite-border">
+                    <td className="py-2 pr-2 capitalize text-kite-text">
+                      {fill.kind}
+                    </td>
+                    <td className={`py-2 pr-2 font-medium ${sideClass(fill.side)}`}>
+                      {fill.side}
+                    </td>
+                    <td className="py-2 pr-2 tabular-nums text-kite-text">
+                      {fill.quantity}
+                    </td>
+                    <td className="py-2 pr-2 font-medium text-kite-text">
+                      {fill.tradingSymbol}
+                    </td>
+                    <td className="py-2 pr-2 tabular-nums text-kite-text">
+                      {fill.price.toFixed(2)}
+                    </td>
+                    <td className="py-2 pr-2 text-kite-text">
+                      {formatDayScanStrategy(fill.strategy)}
+                    </td>
+                    <td className="py-2 pr-2 tabular-nums text-kite-text">
+                      {fill.timeIst}
+                    </td>
+                    <td
+                      className={`py-2 tabular-nums ${
+                        fill.realizedPnL == null
+                          ? "text-kite-muted"
+                          : pnlClass(fill.realizedPnL)
+                      }`}
+                    >
+                      {fill.realizedPnL == null ? "—" : formatPnL(fill.realizedPnL)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
 

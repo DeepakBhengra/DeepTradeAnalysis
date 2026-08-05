@@ -287,17 +287,6 @@ export function processDayOrderTick(
   );
 }
 
-export function describeDayOrderFill(fill: DayOrderFill): string {
-  const action = fill.kind === "entry" ? "Entry" : "Exit";
-  const strategy = formatDayScanStrategy(fill.strategy);
-  const pnl =
-    fill.realizedPnL != null
-      ? ` · P&L ${fill.realizedPnL >= 0 ? "+" : ""}${fill.realizedPnL.toFixed(2)}`
-      : "";
-
-  return `${action} ${fill.side} ${fill.quantity} ${fill.tradingSymbol} @ ${fill.price.toFixed(2)} (${strategy}, ${fill.timeIst} IST)${pnl}`;
-}
-
 /** Validate UI-editable run settings; returns an error message or null. */
 export function validateDayOrderRunSettings(settings: DayOrderRunSettings): string | null {
   if (!Number.isInteger(settings.quantity) || settings.quantity < 1) {
