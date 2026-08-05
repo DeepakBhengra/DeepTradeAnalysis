@@ -30,6 +30,9 @@ describe("SectorBacktestResultsTable", () => {
       screen.getByText(/No BUY\/SELL signals on 2026-05-11 across the sector watchlist/),
     ).toBeTruthy();
     expect(screen.getByText(/Stocks scanned:/)).toBeTruthy();
+    expect(screen.getByText("Entry Signals (BUY / SELL)")).toBeTruthy();
+    expect(screen.getByText("Exit Signals")).toBeTruthy();
+    expect(screen.getByText(/No exits yet/)).toBeTruthy();
   });
 
   it("hides Download CSV when csvFilePrefix is omitted", () => {
@@ -47,17 +50,18 @@ describe("SectorBacktestResultsTable", () => {
     expect(screen.getByRole("button", { name: "Download CSV" })).toBeTruthy();
   });
 
-  it("renders stock, hit, target, and profit columns", () => {
+  it("renders entry signals and a separate exit section for closed trades", () => {
     const payload: DeepakDayScanPayload = {
       ...emptyPayload,
       summary: {
         ...emptyPayload.summary,
-        stocksWithSignals: 1,
-        totalSignals: 1,
+        stocksWithSignals: 2,
+        totalSignals: 2,
+        buyCount: 1,
         sellCount: 1,
-        targetsHit: 0,
+        targetsHit: 1,
         targetsMissed: 1,
-        avgProfit: null,
+        avgProfit: 2.5,
       },
       trades: [
         {
@@ -77,17 +81,41 @@ describe("SectorBacktestResultsTable", () => {
           profitTarget: 4.5,
           bbMatchType: "close",
         },
+        {
+          symbol: "NSE:TCS",
+          tradingSymbol: "TCS",
+          sector: "IT",
+          date: "2026-05-04",
+          side: "BUY",
+          scenarioNumber: 1,
+          scenarioKey: "deeppro1 buy SMI up-cross",
+          entryTimeIst: "10:15",
+          entryPrice: 3500,
+          exitTimeIst: "11:00",
+          exitPrice: 3515.75,
+          targetHit: true,
+          profit: 15.75,
+          profitTarget: 15.75,
+          bbMatchType: "crossed",
+          exitReason: "target",
+        },
       ],
     };
 
     render(<SectorBacktestResultsTable payload={payload} />);
 
+    expect(screen.getByText("Entry Signals (BUY / SELL)")).toBeTruthy();
+    expect(screen.getByText("Exit Signals")).toBeTruthy();
     expect(screen.getByText("RELIANCE")).toBeTruthy();
-    expect(screen.getByText("IT")).toBeTruthy();
+    expect(screen.getAllByText("TCS")).toHaveLength(2);
     expect(screen.getByText("SELL")).toBeTruthy();
     expect(screen.getByText("4.50")).toBeTruthy();
     expect(screen.getByText("1040.25")).toBeTruthy();
     expect(screen.getByText("continue downward direction - 2")).toBeTruthy();
     expect(screen.getByText("close")).toBeTruthy();
+    expect(screen.getByText("11:00")).toBeTruthy();
+    expect(screen.getByText("3515.75")).toBeTruthy();
+    expect(screen.getAllByText("15.75").length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/No exits yet/)).toBeNull();
   });
 });
