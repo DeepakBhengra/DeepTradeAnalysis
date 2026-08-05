@@ -30,4 +30,17 @@ describe("computeStochasticMomentum", () => {
     const lateIdx = values.length - 1;
     expect(values[peakIdx].smi).toBeGreaterThan(values[lateIdx].smi);
   });
+
+  it("RMA double-smooth stays finite after warmup", () => {
+    const closes = Array.from({ length: 40 }, (_, i) => 100 + Math.sin(i / 2) * 3 + i * 0.05);
+    const highs = closes.map((close, i) => close + 1 + (i % 3) * 0.2);
+    const lows = closes.map((close, i) => close - 1 - (i % 2) * 0.2);
+
+    const values = computeStochasticMomentum(highs, lows, closes, 10, 3, 3, {
+      doubleSmooth: "rma",
+    });
+
+    expect(Number.isFinite(values[39].smi)).toBe(true);
+    expect(Number.isFinite(values[39].signal)).toBe(true);
+  });
 });

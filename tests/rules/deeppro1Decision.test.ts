@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { config } from "../../src/config.js";
 import { buildIndicatorSnapshots } from "../../src/indicators/compute.js";
 import {
@@ -8,6 +11,8 @@ import {
   evaluateDeeppro1Decision,
 } from "../../src/rules/deeppro1Decision.js";
 import type { Candle } from "../../src/types.js";
+
+const fixtureDir = dirname(fileURLToPath(import.meta.url));
 
 const { isSmiBlackDownCrossRed, isSmiBlackUpCrossRed, simulateDeeppro1SquareOff } =
   __deeppro1Testables;
@@ -174,5 +179,35 @@ describe("Deeppro1 day evaluation smoke", () => {
     expect(day.rule).toBe("deeppro1");
     expect(day.signals).toEqual([]);
     expect(evaluateDeeppro1Decision(snapshots, dateKey)).toBeNull();
+  });
+});
+
+describe("Deeppro1 HINDUNILVR 2026-08-05 chart alignment", () => {
+  it("keeps only the visible 11:45 SMI down-cross (not false 10:15 / 11:00)", () => {
+    const raw = JSON.parse(
+      readFileSync(
+        resolve(
+          fixtureDir,
+          "../fixtures/hindunilvr-15m-2026-07-20_2026-08-05.json",
+        ),
+        "utf8",
+      ),
+    ) as Array<[string, number, number, number, number, number]>;
+
+    const candles: Candle[] = raw.map((row) => ({
+      timestamp: new Date(row[0]),
+      open: row[1],
+      high: row[2],
+      low: row[3],
+      close: row[4],
+      volume: row[5],
+    }));
+    const snapshots = buildIndicatorSnapshots(candles);
+    const day = evaluateDeeppro1Day(snapshots, "2026-08-05");
+    const times = day.signals.map((signal) => `${signal.timeIst}:${signal.side}`);
+
+    expect(times).not.toContain("10:15:SELL");
+    expect(times).not.toContain("11:00:BUY");
+    expect(times).toContain("11:45:SELL");
   });
 });
