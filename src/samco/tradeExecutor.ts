@@ -382,7 +382,8 @@ export async function processDecisionResult(
     if (
       openEntry &&
       (openEntry.status === "open" || openEntry.status === "closing") &&
-      shouldExitSignal(signal)
+      shouldExitSignal(signal) &&
+      signal.exit?.timeIst === latestCandleTimeIst
     ) {
       try {
         const closed = await squareOffLedgerEntry(
@@ -456,12 +457,11 @@ export async function processDayScanSignalSnapshot(
     };
     const existing = findLedgerEntry(ledger, signalKey);
 
-    // Open Day Scan trades (no exit yet, entry at or before latest closed candle)
-    // become Samco entries even if the poll missed the exact entry candle.
+    // Only take entry signals from the current closed candle — never past timings.
     if (
       !existing &&
       trade.exitTimeIst == null &&
-      trade.entryTimeIst <= latestCandleTimeIst
+      trade.entryTimeIst === latestCandleTimeIst
     ) {
       const signal: DeepakTradeSignal = {
         side: trade.side,
@@ -508,12 +508,13 @@ export async function processDayScanSignalSnapshot(
       }
     }
 
+    // Only take exit signals from the current closed candle — never past timings.
     const openEntry = findLedgerEntry(ledger, signalKey);
     if (
       openEntry &&
       (openEntry.status === "open" || openEntry.status === "closing") &&
       trade.exitTimeIst != null &&
-      trade.exitTimeIst <= latestCandleTimeIst
+      trade.exitTimeIst === latestCandleTimeIst
     ) {
       try {
         const closed = await squareOffLedgerEntry(
