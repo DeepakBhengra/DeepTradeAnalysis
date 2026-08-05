@@ -2,7 +2,6 @@ import { getSamcoLiveTradingEnabled } from "../samco/samcoLiveTrading.js";
 import {
   getSamcoDryRun,
   getSamcoRuleVariant,
-  setSamcoRuleVariant,
 } from "../samco/samcoRuntimeSettings.js";
 import {
   latestClosedSessionCandleIst,
@@ -80,12 +79,12 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
   const dayScanSnapshot = loadSamcoDayScanSignalSnapshot();
   const latestCandle = latestClosedSessionCandleIst();
 
-  if (dayScanSnapshot && dayScanSnapshot.date === today) {
-    // Prefer Day Scan widget signals when a fresh ingest exists for today.
-    if (getSamcoRuleVariant() !== dayScanSnapshot.variant) {
-      setSamcoRuleVariant(dayScanSnapshot.variant);
-    }
-
+  if (
+    dayScanSnapshot &&
+    dayScanSnapshot.date === today &&
+    dayScanSnapshot.variant === getSamcoRuleVariant()
+  ) {
+    // Prefer Day Scan widget signals when today's ingest matches the Samco rule variant.
     const dayScanResult = await processDayScanSignalSnapshot(
       dayScanSnapshot,
       latestCandle,
