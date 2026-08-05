@@ -1,14 +1,24 @@
 import { getSamcoLiveTradingEnabled } from "../samco/samcoLiveTrading.js";
-import { getSamcoDryRun } from "../samco/samcoRuntimeSettings.js";
+import {
+  getSamcoDryRun,
+  getSamcoRuleVariant,
+  setSamcoRuleVariant,
+} from "../samco/samcoRuntimeSettings.js";
+import {
+  latestClosedSessionCandleIst,
+  loadSamcoDayScanSignalSnapshot,
+} from "../samco/samcoDayScanBridge.js";
 import { appendSamcoTradeLogs } from "../samco/samcoTradeLog.js";
 import {
   forceEodSquareOff,
   isEodSquareOffDue,
+  processDayScanSignalSnapshot,
   processDecisionResult,
   reconcilePendingEntries,
   type ProcessDecisionResult,
   type TradeExecutorLog,
 } from "../samco/tradeExecutor.js";
+import { getIstTimeParts } from "../utils/marketTime.js";
 import { runSamcoDayScanCycle } from "./samcoDayScanCycle.js";
 
 export interface LiveTradingCycleResult {
@@ -18,6 +28,7 @@ export interface LiveTradingCycleResult {
   scanErrors: number;
   entriesPlaced: number;
   exitsPlaced: number;
+  signalSource: "dayscan" | "poll" | "none";
   eod?: ProcessDecisionResult;
   reconcileLogs: TradeExecutorLog[];
 }
@@ -46,6 +57,7 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
     scanErrors: 0,
     entriesPlaced: 0,
     exitsPlaced: 0,
+    signalSource: "none",
     reconcileLogs: [],
   };
 
@@ -64,41 +76,69 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
     return result;
   }
 
-  const cycle = await runSamcoDayScanCycle();
-  result.stocksScanned = cycle.symbols.length;
-  result.scanErrors = cycle.errors.length;
+  const today = getIstTimeParts(new Date()).dateKey;
+  const dayScanSnapshot = loadSamcoDayScanSignalSnapshot();
+  const latestCandle = latestClosedSessionCandleIst();
 
-  if (cycle.errors.length > 0) {
-    for (const scanError of cycle.errors) {
-      console.warn(
-        `Samco day scan ${scanError.tradingSymbol}: ${scanError.error}`,
-      );
-    }
-  }
-
-  for (const symbolResult of cycle.symbols) {
-    if (!symbolResult.latestCandleTimeIst || symbolResult.error) {
-      continue;
+  if (dayScanSnapshot && dayScanSnapshot.date === today) {
+    // Prefer Day Scan widget signals when a fresh ingest exists for today.
+    if (getSamcoRuleVariant() !== dayScanSnapshot.variant) {
+      setSamcoRuleVariant(dayScanSnapshot.variant);
     }
 
-    const executorOptions = {
-      tradingSymbol: symbolResult.tradingSymbol,
-      exchange: symbolResult.exchange,
-    };
+    const dayScanResult = await processDayScanSignalSnapshot(
+      dayScanSnapshot,
+      latestCandle,
+    );
+    result.signalSource = "dayscan";
+    result.stocksScanned = new Set(
+      dayScanSnapshot.trades.map((trade) => trade.tradingSymbol),
+    ).size;
+    result.entriesPlaced += dayScanResult.entriesPlaced;
+    result.exitsPlaced += dayScanResult.exitsPlaced;
+    logExecutorMessages(dayScanResult.logs);
+    appendSamcoTradeLogs(dayScanResult.logs, {
+      dryRun: dryRun || !liveEnabled,
+    });
+  } else {
+    const cycle = await runSamcoDayScanCycle();
+    result.signalSource = "poll";
+    result.stocksScanned = cycle.symbols.length;
+    result.scanErrors = cycle.errors.length;
 
-    for (const decision of symbolResult.decisions) {
-      const decisionResult = await processDecisionResult(
-        decision.strategy,
-        decision.result,
-        symbolResult.latestCandleTimeIst,
-        executorOptions,
-      );
-      result.entriesPlaced += decisionResult.entriesPlaced;
-      result.exitsPlaced += decisionResult.exitsPlaced;
-      logExecutorMessages(decisionResult.logs);
-      appendSamcoTradeLogs(decisionResult.logs, {
-        dryRun: dryRun || !liveEnabled,
-      });
+    if (cycle.errors.length > 0) {
+      for (const scanError of cycle.errors) {
+        console.warn(
+          `Samco day scan ${scanError.tradingSymbol}: ${scanError.error}`,
+        );
+      }
+    }
+
+    for (const symbolResult of cycle.symbols) {
+      if (!symbolResult.latestCandleTimeIst || symbolResult.error) {
+        continue;
+      }
+
+      const executorOptions = {
+        tradingSymbol: symbolResult.tradingSymbol,
+        exchange: symbolResult.exchange,
+        source: "poll" as const,
+      };
+
+      for (const decision of symbolResult.decisions) {
+        const decisionResult = await processDecisionResult(
+          decision.strategy,
+          decision.result,
+          symbolResult.latestCandleTimeIst,
+          executorOptions,
+        );
+        result.entriesPlaced += decisionResult.entriesPlaced;
+        result.exitsPlaced += decisionResult.exitsPlaced;
+        logExecutorMessages(decisionResult.logs);
+        appendSamcoTradeLogs(decisionResult.logs, {
+          dryRun: dryRun || !liveEnabled,
+        });
+      }
     }
   }
 
@@ -109,7 +149,7 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
   result.processed =
     result.entriesPlaced > 0 ||
     result.exitsPlaced > 0 ||
-    cycle.symbols.some((symbol) => symbol.decisions.length > 0);
+    result.signalSource === "dayscan";
 
   return result;
 }

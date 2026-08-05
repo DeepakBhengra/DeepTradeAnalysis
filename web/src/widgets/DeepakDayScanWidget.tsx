@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 
+import { pushDayScanSignalsToSamco } from "../api/samco";
 import { DayScanProgressBanner } from "../components/DayScanProgressBanner";
 import { DayScanRunControls } from "../components/DayScanRunControls";
 import { DeepakRulesPanel } from "../components/DeepakRulesPanel";
@@ -19,6 +20,7 @@ import {
   isFavourableSymbolRuleVariant,
 } from "../utils/favourableSymbolRule";
 import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST } from "../utils/istTime";
+import { isSamcoRuleVariant } from "../utils/samcoRuleVariant";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
 const DEFAULT_DATE = "2026-05-11";
@@ -132,8 +134,56 @@ export function DeepakDayScanWidget({
   const { data, loading, loadingElapsedSec, error, info, run, stop, reset } =
     useVariantDayScan(variant);
   const hasRunRef = useRef(false);
+  const [samcoPushInfo, setSamcoPushInfo] = useState<string | null>(null);
 
   const variantLabel = DAY_SCAN_RULE_VARIANT_LABEL[variant];
+
+  useEffect(() => {
+    if (!data || !isSamcoRuleVariant(variant)) {
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        await pushDayScanSignalsToSamco({
+          date: data.date,
+          variant,
+          runAt: data.runAt,
+          trades: data.trades.map((trade) => ({
+            tradingSymbol: trade.tradingSymbol,
+            symbol: trade.symbol,
+            sector: trade.sector,
+            side: trade.side,
+            scenarioNumber: trade.scenarioNumber,
+            scenarioKey: trade.scenarioKey,
+            entryTimeIst: trade.entryTimeIst,
+            entryPrice: trade.entryPrice,
+            exitTimeIst: trade.exitTimeIst,
+            exitPrice: trade.exitPrice,
+            targetHit: trade.targetHit,
+            exitReason: trade.exitReason ?? null,
+            stopLossHit: trade.stopLossHit,
+          })),
+        });
+        if (!cancelled) {
+          setSamcoPushInfo(
+            `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}).`,
+          );
+        }
+      } catch (pushError) {
+        if (!cancelled) {
+          const message =
+            pushError instanceof Error ? pushError.message : String(pushError);
+          setSamcoPushInfo(`Samco push skipped: ${message}`);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [data, variant, variantLabel]);
 
   const handleVariantChange = (next: DayScanRuleVariant) => {
     if (next === variant) {
@@ -198,6 +248,12 @@ export function DeepakDayScanWidget({
         {info && (
           <section className="border border-kite-border bg-kite-surface p-3 text-xs text-kite-muted">
             {info}
+          </section>
+        )}
+
+        {samcoPushInfo && (
+          <section className="border border-kite-border bg-kite-surface p-3 text-xs text-kite-muted">
+            {samcoPushInfo}
           </section>
         )}
 

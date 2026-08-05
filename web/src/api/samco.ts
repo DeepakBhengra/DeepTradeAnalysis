@@ -51,22 +51,60 @@ export interface SamcoLedgerEntry {
   signalKey: string;
   strategy: string;
   tradingSymbol: string;
+  stockName?: string;
   exchange: string;
   side: "BUY" | "SELL";
   quantity: number;
   entryPrice: number | null;
+  limitPrice?: number | null;
   entryTimeIst: string;
   orderNumber: string | null;
   status: string;
   exitReason?: string;
+  exitTimeIst?: string | null;
+  exitPrice?: number | null;
+  exitLimitPrice?: number | null;
+  exitSide?: "BUY" | "SELL";
   closedAt?: string;
   lastError?: string;
+  rejectedReason?: string;
+  source?: string;
 }
 
 export interface SamcoLedger {
   version: number;
   updatedAt: string;
   entries: SamcoLedgerEntry[];
+}
+
+export interface SamcoOrderView {
+  id: string;
+  bucket: "open" | "executed" | "rejected";
+  kind: "entry" | "exit";
+  stockName: string;
+  tradingSymbol: string;
+  timing: string;
+  side: "BUY" | "SELL";
+  limitPrice: number | null;
+  quantity: number;
+  orderNumber: string | null;
+  status: string;
+  strategy: string;
+  signalKey: string;
+  reason?: string;
+}
+
+export interface SamcoOrdersResponse {
+  open: SamcoOrderView[];
+  executed: SamcoOrderView[];
+  rejected: SamcoOrderView[];
+  updatedAt: string;
+  signalSource: {
+    date: string | null;
+    variant: string | null;
+    tradeCount: number;
+    runAt: string | null;
+  };
 }
 
 async function samcoFetch<T>(path: string, init?: RequestInit): Promise<T> {
@@ -139,6 +177,37 @@ export async function refreshSamcoSession(): Promise<{
 
 export async function fetchSamcoLedger(): Promise<SamcoLedger> {
   return samcoFetch<SamcoLedger>("/api/samco/ledger");
+}
+
+export async function fetchSamcoOrders(): Promise<SamcoOrdersResponse> {
+  return samcoFetch<SamcoOrdersResponse>("/api/samco/orders");
+}
+
+export async function pushDayScanSignalsToSamco(body: {
+  date: string;
+  variant: string;
+  runAt?: string;
+  trades: Array<{
+    tradingSymbol: string;
+    symbol?: string;
+    sector?: string;
+    side: "BUY" | "SELL";
+    scenarioNumber?: number;
+    scenarioKey?: string;
+    entryTimeIst: string;
+    entryPrice: number;
+    exitTimeIst?: string | null;
+    exitPrice?: number | null;
+    targetHit?: boolean;
+    exitReason?: string | null;
+    stopLossHit?: boolean;
+  }>;
+}): Promise<{ ok: boolean; snapshot: unknown; settings?: SamcoRuntimeSettings }> {
+  return samcoFetch("/api/samco/day-scan-signals", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 }
 
 export async function fetchSamcoLogs(date?: string): Promise<SamcoLogsResponse> {

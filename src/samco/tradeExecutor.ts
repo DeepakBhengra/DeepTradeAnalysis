@@ -45,6 +45,8 @@ export interface TradeExecutorOptions {
   exchange?: string;
   dryRun?: boolean;
   liveTradingEnabled?: boolean;
+  stockName?: string;
+  source?: "dayscan" | "poll";
 }
 
 function defaultOptions(): Required<TradeExecutorOptions> {
@@ -53,6 +55,8 @@ function defaultOptions(): Required<TradeExecutorOptions> {
     exchange: config.exchange,
     dryRun: getSamcoDryRun(),
     liveTradingEnabled: getSamcoLiveTradingEnabled(),
+    stockName: "",
+    source: "poll",
   };
 }
 
@@ -104,12 +108,30 @@ async function placeEntryOrder(
 
   const { min: entryPriceMin, max: entryPriceMax } = getSamcoEntryPriceRange();
   if (signal.price < entryPriceMin || signal.price > entryPriceMax) {
+    const reason = `Skipped entry outside price range (${signal.price} not in [${entryPriceMin}, ${entryPriceMax}]).`;
     logs.push({
       level: "warn",
-      message: `Skipped entry outside price range (${signal.price} not in [${entryPriceMin}, ${entryPriceMax}]).`,
+      message: reason,
       signalKey,
     });
-    return null;
+    return {
+      signalKey,
+      strategy,
+      tradingSymbol: options.tradingSymbol,
+      stockName: options.stockName || options.tradingSymbol,
+      exchange: options.exchange,
+      side: signal.side,
+      quantity: getSamcoEffectiveQuantity(),
+      entryPrice: signal.price,
+      limitPrice: signal.price,
+      entryTimeIst: signal.timeIst,
+      orderNumber: null,
+      status: "failed",
+      exitReason: "price_filter",
+      rejectedReason: reason,
+      lastError: reason,
+      source: options.source,
+    };
   }
 
   const request = buildPlaceOrderRequest(signal, options);
@@ -124,13 +146,16 @@ async function placeEntryOrder(
       signalKey,
       strategy,
       tradingSymbol: options.tradingSymbol,
+      stockName: options.stockName || options.tradingSymbol,
       exchange: options.exchange,
       side: signal.side,
       quantity: getSamcoEffectiveQuantity(),
       entryPrice: signal.price,
+      limitPrice: signal.price,
       entryTimeIst: signal.timeIst,
       orderNumber: null,
       status: "open",
+      source: options.source,
     };
   }
 
@@ -164,13 +189,16 @@ async function placeEntryOrder(
     signalKey,
     strategy,
     tradingSymbol: options.tradingSymbol,
+    stockName: options.stockName || options.tradingSymbol,
     exchange: options.exchange,
     side: signal.side,
     quantity: Number.isFinite(filledQty) ? filledQty : getSamcoEffectiveQuantity(),
     entryPrice: Number.isFinite(entryPrice) ? entryPrice : signal.price,
+    limitPrice: signal.price,
     entryTimeIst: signal.timeIst,
     orderNumber,
     status: "open",
+    source: options.source,
   };
 }
 
@@ -191,6 +219,10 @@ async function squareOffLedgerEntry(
     return {
       ...closing,
       status: "closed",
+      exitSide: oppositeTransactionType(entry.side),
+      exitLimitPrice: entry.exitLimitPrice ?? entry.entryPrice,
+      exitPrice: entry.exitPrice ?? entry.entryPrice,
+      exitTimeIst: entry.exitTimeIst ?? formatIstTime(new Date()),
       closedAt: new Date().toISOString(),
     };
   }
@@ -238,6 +270,10 @@ async function squareOffLedgerEntry(
   return {
     ...closing,
     status: "closed",
+    exitSide: oppositeTransactionType(entry.side),
+    exitLimitPrice: entry.exitLimitPrice ?? entry.entryPrice,
+    exitPrice: entry.exitPrice ?? entry.entryPrice,
+    exitTimeIst: entry.exitTimeIst ?? formatIstTime(new Date()),
     closedAt: new Date().toISOString(),
   };
 }
@@ -311,7 +347,9 @@ export async function processDecisionResult(
         const entry = await placeEntryOrder(signal, strategy, resolved, logs);
         if (entry) {
           ledger = upsertLedgerEntry(ledger, entry);
-          entriesPlaced += 1;
+          if (entry.status !== "failed") {
+            entriesPlaced += 1;
+          }
         }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
@@ -324,14 +362,18 @@ export async function processDecisionResult(
           signalKey,
           strategy,
           tradingSymbol: resolved.tradingSymbol,
+          stockName: resolved.stockName || resolved.tradingSymbol,
           exchange: resolved.exchange,
           side: signal.side,
           quantity: getSamcoEffectiveQuantity(),
           entryPrice: signal.price,
+          limitPrice: signal.price,
           entryTimeIst: signal.timeIst,
           orderNumber: null,
           status: "failed",
           lastError: message,
+          rejectedReason: message,
+          source: resolved.source,
         });
       }
     }
@@ -362,6 +404,147 @@ export async function processDecisionResult(
           ...openEntry,
           status: "failed",
           lastError: message,
+        });
+      }
+    }
+  }
+
+  savePositionLedger(ledger);
+  return { entriesPlaced, exitsPlaced, eodSquareOffs: 0, logs };
+}
+
+export async function processDayScanSignalSnapshot(
+  snapshot: {
+    strategy: SamcoStrategy;
+    trades: Array<{
+      tradingSymbol: string;
+      stockName: string;
+      side: "BUY" | "SELL";
+      scenarioNumber: number;
+      entryTimeIst: string;
+      entryPrice: number;
+      exitTimeIst: string | null;
+      exitPrice: number | null;
+      targetHit: boolean;
+      exitReason?: string | null;
+      stopLossHit?: boolean;
+    }>;
+  },
+  latestCandleTimeIst: string | null,
+): Promise<ProcessDecisionResult> {
+  const logs: TradeExecutorLog[] = [];
+  let entriesPlaced = 0;
+  let exitsPlaced = 0;
+  let ledger = loadPositionLedger();
+
+  if (!latestCandleTimeIst) {
+    return { entriesPlaced: 0, exitsPlaced: 0, eodSquareOffs: 0, logs };
+  }
+
+  for (const trade of snapshot.trades) {
+    const signalKey = buildSignalKey({
+      strategy: snapshot.strategy,
+      tradingSymbol: trade.tradingSymbol,
+      entryTimeIst: trade.entryTimeIst,
+      scenarioNumber: trade.scenarioNumber,
+    });
+    const resolved = {
+      ...defaultOptions(),
+      tradingSymbol: trade.tradingSymbol,
+      stockName: trade.stockName,
+      source: "dayscan" as const,
+    };
+    const existing = findLedgerEntry(ledger, signalKey);
+
+    // Open Day Scan trades (no exit yet, entry at or before latest closed candle)
+    // become Samco entries even if the poll missed the exact entry candle.
+    if (
+      !existing &&
+      trade.exitTimeIst == null &&
+      trade.entryTimeIst <= latestCandleTimeIst
+    ) {
+      const signal: DeepakTradeSignal = {
+        side: trade.side,
+        scenarioKey: `${snapshot.strategy}-${trade.tradingSymbol}`,
+        scenarioNumber: trade.scenarioNumber,
+        timeIst: trade.entryTimeIst,
+        price: trade.entryPrice,
+        bbMatchType: "close",
+        profitTarget: 0,
+        exit: null,
+      };
+      try {
+        const entry = await placeEntryOrder(signal, snapshot.strategy, resolved, logs);
+        if (entry) {
+          ledger = upsertLedgerEntry(ledger, entry);
+          if (entry.status !== "failed") {
+            entriesPlaced += 1;
+          }
+        }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logs.push({
+          level: "error",
+          message: `Day Scan entry failed: ${message}`,
+          signalKey,
+        });
+        ledger = upsertLedgerEntry(ledger, {
+          signalKey,
+          strategy: snapshot.strategy,
+          tradingSymbol: trade.tradingSymbol,
+          stockName: trade.stockName,
+          exchange: resolved.exchange,
+          side: trade.side,
+          quantity: getSamcoEffectiveQuantity(),
+          entryPrice: trade.entryPrice,
+          limitPrice: trade.entryPrice,
+          entryTimeIst: trade.entryTimeIst,
+          orderNumber: null,
+          status: "failed",
+          lastError: message,
+          rejectedReason: message,
+          source: "dayscan",
+        });
+      }
+    }
+
+    const openEntry = findLedgerEntry(ledger, signalKey);
+    if (
+      openEntry &&
+      (openEntry.status === "open" || openEntry.status === "closing") &&
+      trade.exitTimeIst != null &&
+      trade.exitTimeIst <= latestCandleTimeIst
+    ) {
+      try {
+        const closed = await squareOffLedgerEntry(
+          {
+            ...openEntry,
+            exitTimeIst: trade.exitTimeIst,
+            exitPrice: trade.exitPrice,
+            exitLimitPrice: trade.exitPrice,
+          },
+          trade.exitReason === "deepak2_stop"
+            ? "deepak2_stop"
+            : trade.targetHit
+              ? "target"
+              : "target",
+          resolved,
+          logs,
+        );
+        ledger = upsertLedgerEntry(ledger, closed);
+        exitsPlaced += 1;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logs.push({
+          level: "error",
+          message: `Day Scan exit failed: ${message}`,
+          signalKey,
+        });
+        ledger = upsertLedgerEntry(ledger, {
+          ...openEntry,
+          status: "failed",
+          lastError: message,
+          rejectedReason: message,
         });
       }
     }

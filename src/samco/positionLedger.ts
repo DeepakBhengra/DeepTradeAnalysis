@@ -15,16 +15,27 @@ export interface LedgerEntry {
   signalKey: string;
   strategy: SamcoStrategy;
   tradingSymbol: string;
+  /** Human-readable stock name when available from Day Scan. */
+  stockName?: string;
   exchange: string;
   side: "BUY" | "SELL";
   quantity: number;
   entryPrice: number | null;
+  /** Limit / signal price used for the entry order. */
+  limitPrice: number | null;
   entryTimeIst: string;
   orderNumber: string | null;
   status: LedgerPositionStatus;
-  exitReason?: DeepakExitReason | "eod";
+  exitReason?: DeepakExitReason | "eod" | "price_filter";
+  exitTimeIst?: string | null;
+  exitPrice?: number | null;
+  exitLimitPrice?: number | null;
+  exitSide?: "BUY" | "SELL";
+  exitOrderNumber?: string | null;
   closedAt?: string;
   lastError?: string;
+  rejectedReason?: string;
+  source?: "dayscan" | "poll";
 }
 
 export interface PositionLedger {
@@ -45,6 +56,15 @@ function createEmptyLedger(): PositionLedger {
   };
 }
 
+function normalizeEntry(entry: LedgerEntry): LedgerEntry {
+  return {
+    ...entry,
+    limitPrice:
+      entry.limitPrice ??
+      (typeof entry.entryPrice === "number" ? entry.entryPrice : null),
+  };
+}
+
 export function loadPositionLedger(): PositionLedger {
   const filePath = ledgerFilePath();
   if (!existsSync(filePath)) {
@@ -57,7 +77,10 @@ export function loadPositionLedger(): PositionLedger {
     if (parsed.version !== 1 || !Array.isArray(parsed.entries)) {
       return createEmptyLedger();
     }
-    return parsed;
+    return {
+      ...parsed,
+      entries: parsed.entries.map((entry) => normalizeEntry(entry)),
+    };
   } catch {
     return createEmptyLedger();
   }
@@ -101,14 +124,15 @@ export function upsertLedgerEntry(
   ledger: PositionLedger,
   entry: LedgerEntry,
 ): PositionLedger {
+  const normalized = normalizeEntry(entry);
   const index = ledger.entries.findIndex(
-    (existing) => existing.signalKey === entry.signalKey,
+    (existing) => existing.signalKey === normalized.signalKey,
   );
 
   const entries =
     index >= 0
-      ? ledger.entries.map((existing, i) => (i === index ? entry : existing))
-      : [...ledger.entries, entry];
+      ? ledger.entries.map((existing, i) => (i === index ? normalized : existing))
+      : [...ledger.entries, normalized];
 
   return {
     ...ledger,

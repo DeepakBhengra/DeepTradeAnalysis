@@ -28,6 +28,12 @@ import {
   setSamcoRuleVariant,
 } from "../samco/samcoRuntimeSettings.js";
 import {
+  getDayScanSignalSourceSummary,
+  ingestDayScanTrades,
+  loadSamcoDayScanSignalSnapshot,
+} from "../samco/samcoDayScanBridge.js";
+import { buildSamcoOrdersFromLedger } from "../samco/samcoOrders.js";
+import {
   exportSamcoTradeLogsCsv,
   exportSamcoTradeLogsJson,
   getSamcoTradeLogs,
@@ -222,6 +228,67 @@ app.get("/api/samco/positions", async (_req, res) => {
 
 app.get("/api/samco/ledger", (_req, res) => {
   res.json(loadPositionLedger());
+});
+
+app.get("/api/samco/orders", (_req, res) => {
+  try {
+    const ledger = loadPositionLedger();
+    const buckets = buildSamcoOrdersFromLedger(ledger);
+    res.json({
+      ...buckets,
+      updatedAt: ledger.updatedAt,
+      signalSource: getDayScanSignalSourceSummary(),
+    });
+  } catch (error) {
+    const message = formatUnknownError(error);
+    res.status(500).json({ error: message });
+  }
+});
+
+app.get("/api/samco/day-scan-signals", (_req, res) => {
+  try {
+    const snapshot = loadSamcoDayScanSignalSnapshot();
+    res.json({
+      snapshot,
+      summary: getDayScanSignalSourceSummary(),
+    });
+  } catch (error) {
+    const message = formatUnknownError(error);
+    res.status(500).json({ error: message });
+  }
+});
+
+app.post("/api/samco/day-scan-signals", (req, res) => {
+  try {
+    const date = typeof req.body?.date === "string" ? req.body.date : "";
+    const variant = typeof req.body?.variant === "string" ? req.body.variant : "";
+    const runAt = typeof req.body?.runAt === "string" ? req.body.runAt : undefined;
+    const trades = Array.isArray(req.body?.trades) ? req.body.trades : null;
+
+    if (!date || !variant || trades == null) {
+      res.status(400).json({
+        error: "Body must include date, variant, and trades[].",
+      });
+      return;
+    }
+
+    const snapshot = ingestDayScanTrades({ date, variant, runAt, trades });
+    // Keep Samco rule variant aligned with the Day Scan run that feeds it.
+    setSamcoRuleVariant(snapshot.variant);
+
+    res.json({
+      ok: true,
+      snapshot,
+      settings: {
+        ...getSamcoRuntimeSettings(),
+        liveTradingEnabled: getSamcoLiveTradingEnabled(),
+      },
+    });
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status = message.includes("not supported by Samco") ? 400 : 500;
+    res.status(status).json({ error: message });
+  }
 });
 
 app.get("/api/samco/settings", (_req, res) => {
