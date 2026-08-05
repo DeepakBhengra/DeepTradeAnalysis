@@ -301,7 +301,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
           </p>
         </section>
 
-        <DayOrderPortfolioPanel portfolio={portfolio} pnl={pnl} />
+        <DayOrderPortfolioPanel portfolio={portfolio} pnl={pnl} date={orderDate} />
       </main>
     </div>
   );

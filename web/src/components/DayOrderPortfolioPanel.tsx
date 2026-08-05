@@ -1,6 +1,7 @@
 import type { DayOrderFill, DayOrderPortfolio, DayOrderPnLSummary } from "../types/dayOrder";
 import { DAY_ORDER_INITIAL_CASH } from "../types/dayOrder";
 import { formatDayScanStrategy } from "../utils/backtestFormat";
+import { downloadDayOrderHistoryCsv } from "../utils/dayOrderHistoryCsv";
 import { formatCurrency, formatPnL } from "../utils/paperTrading";
 
 function sideClass(side: DayOrderFill["side"]): string {
@@ -10,6 +11,8 @@ function sideClass(side: DayOrderFill["side"]): string {
 interface DayOrderPortfolioPanelProps {
   portfolio: DayOrderPortfolio;
   pnl: DayOrderPnLSummary;
+  /** IST analysis date (YYYY-MM-DD) used for the CSV filename. */
+  date: string;
 }
 
 function pnlClass(value: number): string {
@@ -41,11 +44,22 @@ function MetricRow({
   );
 }
 
-export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPanelProps) {
+export function DayOrderPortfolioPanel({
+  portfolio,
+  pnl,
+  date,
+}: DayOrderPortfolioPanelProps) {
   const { openPositions, fills, skippedEntryKeys } = portfolio;
   const entryFills = fills.filter((fill) => fill.kind === "entry");
   const exitFills = fills.filter((fill) => fill.kind === "exit");
   const historyFills = [...fills].reverse();
+
+  const handleDownloadCsv = () => {
+    if (fills.length === 0) {
+      return;
+    }
+    downloadDayOrderHistoryCsv({ fills, date });
+  };
 
   return (
     <div className="flex flex-col gap-3">
@@ -129,16 +143,27 @@ export function DayOrderPortfolioPanel({ portfolio, pnl }: DayOrderPortfolioPane
       </section>
 
       <section className="border border-kite-border bg-kite-surface p-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <h2 className="m-0 text-xs font-semibold uppercase tracking-wide text-kite-muted">
             Order history
           </h2>
-          {fills.length > 0 && (
-            <p className="m-0 text-[10px] text-kite-muted">
-              {fills.length} fill{fills.length === 1 ? "" : "s"} · newest first · scroll for
-              morning 09:15 entries/exits
-            </p>
-          )}
+          <div className="flex flex-wrap items-center gap-2">
+            {fills.length > 0 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handleDownloadCsv}
+                  className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-[10px] font-medium text-kite-text"
+                >
+                  Download CSV
+                </button>
+                <p className="m-0 text-[10px] text-kite-muted">
+                  {fills.length} fill{fills.length === 1 ? "" : "s"} · newest first · scroll for
+                  morning 09:15 entries/exits
+                </p>
+              </>
+            )}
+          </div>
         </div>
         {fills.length === 0 ? (
           <p className="mt-3 mb-0 text-xs text-kite-muted">No filled orders yet.</p>
