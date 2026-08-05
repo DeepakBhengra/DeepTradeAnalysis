@@ -13,6 +13,11 @@ import {
   type SamcoRuntimeSettings,
   type SamcoTradeLogRecord,
 } from "../api/samco";
+import {
+  DEFAULT_SAMCO_RULE_VARIANT,
+  isSamcoRuleVariant,
+  type SamcoRuleVariant,
+} from "../utils/samcoRuleVariant";
 
 function todayIstDateKey(): string {
   return new Intl.DateTimeFormat("en-CA", {
@@ -21,6 +26,10 @@ function todayIstDateKey(): string {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+}
+
+function resolveRuleVariant(value: string | undefined): SamcoRuleVariant {
+  return isSamcoRuleVariant(value) ? value : DEFAULT_SAMCO_RULE_VARIANT;
 }
 
 export function useSamcoTrading(isActive: boolean) {
@@ -32,6 +41,9 @@ export function useSamcoTrading(isActive: boolean) {
   const [quantityInput, setQuantityInput] = useState("100");
   const [minPriceInput, setMinPriceInput] = useState("0");
   const [maxPriceInput, setMaxPriceInput] = useState("3900");
+  const [ruleVariantInput, setRuleVariantInput] = useState<SamcoRuleVariant>(
+    DEFAULT_SAMCO_RULE_VARIANT,
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -44,6 +56,7 @@ export function useSamcoTrading(isActive: boolean) {
     setQuantityInput(String(nextSettings.effectiveQuantity));
     setMinPriceInput(String(nextSettings.entryPriceMin));
     setMaxPriceInput(String(nextSettings.entryPriceMax));
+    setRuleVariantInput(resolveRuleVariant(nextSettings.ruleVariant));
   }, []);
 
   const markInputsDirty = useCallback(() => {
@@ -169,6 +182,7 @@ export function useSamcoTrading(isActive: boolean) {
       setQuantityInput(String(next.effectiveQuantity));
       setMinPriceInput(String(next.entryPriceMin));
       setMaxPriceInput(String(next.entryPriceMax));
+      setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setActionError(message);
@@ -192,12 +206,35 @@ export function useSamcoTrading(isActive: boolean) {
       setMinPriceInput(String(next.entryPriceMin));
       setMaxPriceInput(String(next.entryPriceMax));
       setQuantityInput(String(next.effectiveQuantity));
+      setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setActionError(message);
       throw err;
     }
   }, [minPriceInput, maxPriceInput, clearInputsDirty]);
+
+  const applyRuleVariant = useCallback(
+    async (nextVariant: SamcoRuleVariant) => {
+      setActionError(null);
+      markInputsDirty();
+      setRuleVariantInput(nextVariant);
+      try {
+        const next = await updateSamcoSettings({ ruleVariant: nextVariant });
+        setSettings(next);
+        clearInputsDirty();
+        setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
+        setQuantityInput(String(next.effectiveQuantity));
+        setMinPriceInput(String(next.entryPriceMin));
+        setMaxPriceInput(String(next.entryPriceMax));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setActionError(message);
+        throw err;
+      }
+    },
+    [markInputsDirty, clearInputsDirty],
+  );
 
   const applyTradingParams = useCallback(async () => {
     const quantity = Number(quantityInput);
@@ -218,18 +255,20 @@ export function useSamcoTrading(isActive: boolean) {
         quantity,
         entryPriceMin,
         entryPriceMax,
+        ruleVariant: ruleVariantInput,
       });
       setSettings(next);
       clearInputsDirty();
       setQuantityInput(String(next.effectiveQuantity));
       setMinPriceInput(String(next.entryPriceMin));
       setMaxPriceInput(String(next.entryPriceMax));
+      setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setActionError(message);
       throw err;
     }
-  }, [quantityInput, minPriceInput, maxPriceInput, clearInputsDirty]);
+  }, [quantityInput, minPriceInput, maxPriceInput, ruleVariantInput, clearInputsDirty]);
 
   const refreshSession = useCallback(async () => {
     setActionError(null);
@@ -284,6 +323,8 @@ export function useSamcoTrading(isActive: boolean) {
       markInputsDirty();
       setMaxPriceInput(value);
     },
+    ruleVariantInput,
+    applyRuleVariant,
     loading,
     error,
     actionError,

@@ -157,4 +157,78 @@ describe("samcoRuntimeSettings", () => {
       process.chdir(originalCwd);
     }
   });
+
+  it("stores and returns rule variant", async () => {
+    const originalCwd = process.cwd();
+
+    try {
+      process.chdir(tempDir);
+      const { setSamcoRuleVariant, getSamcoRuleVariant, getSamcoRuntimeSettings } =
+        await loadRuntimeSettingsModule();
+
+      setSamcoRuleVariant("deeppro1", new Date("2026-06-29T06:00:00+05:30"));
+      expect(getSamcoRuleVariant(new Date("2026-06-29T10:00:00+05:30"))).toBe(
+        "deeppro1",
+      );
+      expect(
+        getSamcoRuntimeSettings(new Date("2026-06-29T10:00:00+05:30")).ruleVariant,
+      ).toBe("deeppro1");
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
+  it("persists rule variant across IST days", async () => {
+    const originalCwd = process.cwd();
+
+    try {
+      process.chdir(tempDir);
+      const { setSamcoRuleVariant, getSamcoRuntimeSettings } =
+        await loadRuntimeSettingsModule();
+
+      setSamcoRuleVariant("watchParty", new Date("2026-06-29T06:00:00+05:30"));
+      const nextDay = getSamcoRuntimeSettings(new Date("2026-06-30T06:00:00+05:30"));
+      expect(nextDay.ruleVariant).toBe("watchParty");
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
+  it("rejects invalid rule variants", async () => {
+    const originalCwd = process.cwd();
+
+    try {
+      process.chdir(tempDir);
+      const { setSamcoRuleVariant } = await loadRuntimeSettingsModule();
+      expect(() => setSamcoRuleVariant("rulePnb")).toThrow(/Invalid ruleVariant/i);
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
+  it("defaults missing ruleVariant to Deepak + Deepak-2", async () => {
+    const originalCwd = process.cwd();
+
+    try {
+      process.chdir(tempDir);
+      mkdirSync(join(tempDir, "data"), { recursive: true });
+      writeFileSync(
+        join(tempDir, "data", "samco-settings.json"),
+        JSON.stringify({
+          dateKey: "2026-06-29",
+          quantity: 100,
+          dryRun: true,
+          entryPriceMin: 0,
+          entryPriceMax: 3900,
+        }),
+        "utf8",
+      );
+
+      const { getSamcoRuntimeSettings } = await loadRuntimeSettingsModule();
+      const settings = getSamcoRuntimeSettings(new Date("2026-06-29T10:00:00+05:30"));
+      expect(settings.ruleVariant).toBe("deepak+deepak2");
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
 });

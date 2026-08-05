@@ -1,4 +1,10 @@
-export type SamcoStrategy = "deepak" | "deepak2";
+export type SamcoStrategy =
+  | "deepak"
+  | "deepak2"
+  | "deepak3"
+  | "watchParty"
+  | "deeppro"
+  | "deeppro1";
 
 export function buildSignalKey(params: {
   strategy: SamcoStrategy;

@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
 import { useSamcoTrading } from "../hooks/useSamcoTrading";
+import {
+  SAMCO_RULE_VARIANT_LABEL,
+  SAMCO_RULE_VARIANT_OPTIONS,
+  type SamcoRuleVariant,
+} from "../utils/samcoRuleVariant";
 
 interface SamcoTradingWidgetProps {
   isActive: boolean;
@@ -39,6 +44,8 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
     setMinPriceInput,
     maxPriceInput,
     setMaxPriceInput,
+    ruleVariantInput,
+    applyRuleVariant,
     loading,
     error,
     actionError,
@@ -54,6 +61,8 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
   } = useSamcoTrading(isActive);
 
   const [pendingLiveEnable, setPendingLiveEnable] = useState(false);
+  const ruleVariantLabel =
+    SAMCO_RULE_VARIANT_LABEL[ruleVariantInput] ?? ruleVariantInput;
 
   const handleDryRunToggle = async () => {
     if (!settings) {
@@ -107,8 +116,9 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             <div>
               <h2 className="m-0 text-sm font-semibold text-kite-text">Samco Trading</h2>
               <p className="mt-1 text-xs text-kite-muted">
-                MIS execution for Deepak + Deepak-2 day scan signals across 50
-                sector stocks (configurable entry price range; EOD 15:01–15:15 IST).
+                MIS execution for the selected rule variant across 50 sector stocks
+                (configurable entry price range; EOD 15:01–15:15 IST). Current rule:{" "}
+                {ruleVariantLabel}.
               </p>
             </div>
             <span
@@ -139,6 +149,9 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             <p className="m-0">
               Watchlist:{" "}
               <span className="text-kite-text">50 sector stocks</span>
+            </p>
+            <p className="m-0">
+              Rule: <span className="text-kite-text">{ruleVariantLabel}</span>
             </p>
           </div>
 
@@ -173,6 +186,28 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           </h3>
 
           <div className="mt-3 flex flex-wrap items-end gap-4">
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="samco-rule-variant"
+            >
+              Rule variant
+              <select
+                id="samco-rule-variant"
+                value={ruleVariantInput}
+                disabled={loading || !settings}
+                onChange={(event) =>
+                  void applyRuleVariant(event.target.value as SamcoRuleVariant)
+                }
+                className="min-w-[200px] rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {SAMCO_RULE_VARIANT_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
             <label className="flex items-center gap-2 text-xs text-kite-text">
               <input
                 type="checkbox"
@@ -260,12 +295,14 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           </div>
 
           <p className="mt-2 text-[10px] text-kite-muted">
-            Settings date: {settings?.dateKey ?? "—"} · Saved entry range: ₹
-            {settings?.entryPriceMin ?? "—"}–₹{settings?.entryPriceMax ?? "—"} ·
-            Saved qty: {settings?.effectiveQuantity ?? "—"} · Env defaults: ₹
+            Settings date: {settings?.dateKey ?? "—"} · Rule: {ruleVariantLabel} · Saved
+            entry range: ₹{settings?.entryPriceMin ?? "—"}–₹
+            {settings?.entryPriceMax ?? "—"} · Saved qty:{" "}
+            {settings?.effectiveQuantity ?? "—"} · Env defaults: ₹
             {settings?.envDefaultEntryPriceMin ?? "—"}–₹
             {settings?.envDefaultEntryPriceMax ?? "—"}, qty{" "}
-            {settings?.envDefaultQuantity ?? "—"} · Click Apply to save edits
+            {settings?.envDefaultQuantity ?? "—"} · Click Apply to save price/qty edits;
+            rule variant saves on change
           </p>
         </section>
 
