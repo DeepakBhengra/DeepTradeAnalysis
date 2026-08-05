@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
+import { SamcoOrdersPanels } from "../components/SamcoOrdersPanels";
 import { useSamcoTrading } from "../hooks/useSamcoTrading";
 import {
   SAMCO_RULE_VARIANT_LABEL,
@@ -34,7 +35,7 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
   const {
     status,
     settings,
-    ledger,
+    orders,
     logs,
     logDate,
     setLogDate,
@@ -103,11 +104,6 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
     setPendingLiveEnable(false);
   };
 
-  const openEntries =
-    ledger?.entries.filter(
-      (entry) => entry.status === "open" || entry.status === "closing",
-    ) ?? [];
-
   return (
     <div hidden={!isActive}>
       <main className="mx-auto flex max-w-6xl flex-col gap-3 p-3">
@@ -116,8 +112,8 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             <div>
               <h2 className="m-0 text-sm font-semibold text-kite-text">Samco Trading</h2>
               <p className="mt-1 text-xs text-kite-muted">
-                MIS execution for the selected rule variant across 50 sector stocks
-                (configurable entry price range; EOD 15:01–15:15 IST). Current rule:{" "}
+                MIS execution fed by Day Scan BUY/SELL/exit signals (supported variants).
+                Configurable entry price range; EOD 15:01–15:15 IST. Current rule:{" "}
                 {ruleVariantLabel}.
               </p>
             </div>
@@ -330,48 +326,12 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           </section>
         )}
 
-        <section className="border border-kite-border bg-kite-surface p-3">
-          <h3 className="m-0 text-xs font-semibold uppercase tracking-wide text-kite-muted">
-            Position ledger
-          </h3>
-
-          <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[720px] border-collapse text-left text-xs">
-              <thead>
-                <tr className="border-b border-kite-border text-kite-muted">
-                  <th className="py-2 pr-3 font-medium">Symbol</th>
-                  <th className="py-2 pr-3 font-medium">Signal</th>
-                  <th className="py-2 pr-3 font-medium">Side</th>
-                  <th className="py-2 pr-3 font-medium">Qty</th>
-                  <th className="py-2 pr-3 font-medium">Entry</th>
-                  <th className="py-2 pr-3 font-medium">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {openEntries.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-3 text-kite-muted">
-                      No open ledger positions.
-                    </td>
-                  </tr>
-                ) : (
-                  openEntries.map((entry) => (
-                    <tr key={entry.signalKey} className="border-b border-kite-border/60">
-                      <td className="py-2 pr-3 text-kite-text">{entry.tradingSymbol}</td>
-                      <td className="py-2 pr-3 text-kite-text">{entry.signalKey}</td>
-                      <td className="py-2 pr-3 text-kite-text">{entry.side}</td>
-                      <td className="py-2 pr-3 text-kite-text">{entry.quantity}</td>
-                      <td className="py-2 pr-3 text-kite-text">
-                        {entry.entryTimeIst} @ {entry.entryPrice ?? "—"}
-                      </td>
-                      <td className="py-2 pr-3 text-kite-text">{entry.status}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </section>
+        <SamcoOrdersPanels
+          open={orders?.open ?? []}
+          executed={orders?.executed ?? []}
+          rejected={orders?.rejected ?? []}
+          signalSource={orders?.signalSource}
+        />
 
         <section className="border border-kite-border bg-kite-surface p-3">
           <div className="flex flex-wrap items-end justify-between gap-3">

@@ -3,6 +3,7 @@ import {
   downloadSamcoLogs,
   fetchSamcoLedger,
   fetchSamcoLogs,
+  fetchSamcoOrders,
   fetchSamcoSettings,
   fetchSamcoStatus,
   refreshSamcoSession,
@@ -10,6 +11,7 @@ import {
   updateSamcoSettings,
   type SamcoAuthStatus,
   type SamcoLedger,
+  type SamcoOrdersResponse,
   type SamcoRuntimeSettings,
   type SamcoTradeLogRecord,
 } from "../api/samco";
@@ -36,6 +38,7 @@ export function useSamcoTrading(isActive: boolean) {
   const [status, setStatus] = useState<SamcoAuthStatus | null>(null);
   const [settings, setSettings] = useState<SamcoRuntimeSettings | null>(null);
   const [ledger, setLedger] = useState<SamcoLedger | null>(null);
+  const [orders, setOrders] = useState<SamcoOrdersResponse | null>(null);
   const [logs, setLogs] = useState<SamcoTradeLogRecord[]>([]);
   const [logDate, setLogDate] = useState(todayIstDateKey);
   const [quantityInput, setQuantityInput] = useState("100");
@@ -69,15 +72,18 @@ export function useSamcoTrading(isActive: boolean) {
 
   const refresh = useCallback(async () => {
     try {
-      const [nextStatus, nextSettings, nextLedger, nextLogs] = await Promise.all([
-        fetchSamcoStatus(),
-        fetchSamcoSettings(),
-        fetchSamcoLedger(),
-        fetchSamcoLogs(logDate),
-      ]);
+      const [nextStatus, nextSettings, nextLedger, nextOrders, nextLogs] =
+        await Promise.all([
+          fetchSamcoStatus(),
+          fetchSamcoSettings(),
+          fetchSamcoLedger(),
+          fetchSamcoOrders(),
+          fetchSamcoLogs(logDate),
+        ]);
       setStatus(nextStatus);
       setSettings(nextSettings);
       setLedger(nextLedger);
+      setOrders(nextOrders);
       setLogs(nextLogs.records);
       syncInputsFromSettings(nextSettings);
       setError(null);
@@ -305,6 +311,7 @@ export function useSamcoTrading(isActive: boolean) {
     status,
     settings,
     ledger,
+    orders,
     logs,
     logDate,
     setLogDate,
