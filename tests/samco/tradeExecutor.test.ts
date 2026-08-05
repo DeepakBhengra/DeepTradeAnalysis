@@ -254,4 +254,169 @@ describe("tradeExecutor", () => {
 
     expect(result.entriesPlaced).toBe(1);
   });
+
+  it("skips poll entry signals whose timing has already passed", async () => {
+    const { resetPositionLedger, processDecisionResult } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    const signal = buildSignal({ timeIst: "10:15" });
+    const result = await processDecisionResult(
+      "deepak",
+      buildDecision([signal]),
+      "10:30",
+      { dryRun: true, liveTradingEnabled: false },
+    );
+
+    expect(result.entriesPlaced).toBe(0);
+  });
+
+  it("skips poll exit signals whose timing has already passed", async () => {
+    const { resetPositionLedger, processDecisionResult } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    await processDecisionResult(
+      "deepak",
+      buildDecision([buildSignal()]),
+      "10:30",
+      { dryRun: true, liveTradingEnabled: false },
+    );
+
+    const closedSignal = buildSignal({
+      exit: {
+        timeIst: "11:00",
+        price: 120.7,
+        targetHit: true,
+        profit: 0.7,
+        profitTarget: 0.7,
+        exitReason: "target",
+      },
+    });
+
+    const exitResult = await processDecisionResult(
+      "deepak",
+      buildDecision([closedSignal]),
+      "11:15",
+      { dryRun: true, liveTradingEnabled: false },
+    );
+
+    expect(exitResult.exitsPlaced).toBe(0);
+  });
+
+  it("Day Scan places entry only at the current candle timing", async () => {
+    const { resetPositionLedger, processDayScanSignalSnapshot } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    const result = await processDayScanSignalSnapshot(
+      {
+        strategy: "deepak",
+        trades: [
+          {
+            tradingSymbol: "RELIANCE",
+            stockName: "Reliance",
+            side: "BUY",
+            scenarioNumber: 2,
+            entryTimeIst: "10:30",
+            entryPrice: 120,
+            exitTimeIst: null,
+            exitPrice: null,
+            targetHit: false,
+          },
+          {
+            tradingSymbol: "TCS",
+            stockName: "TCS",
+            side: "BUY",
+            scenarioNumber: 2,
+            entryTimeIst: "10:15",
+            entryPrice: 130,
+            exitTimeIst: null,
+            exitPrice: null,
+            targetHit: false,
+          },
+        ],
+      },
+      "10:30",
+    );
+
+    expect(result.entriesPlaced).toBe(1);
+    expect(
+      result.logs.some(
+        (log) =>
+          log.message.includes("Dry-run entry") &&
+          log.message.includes("RELIANCE"),
+      ),
+    ).toBe(true);
+  });
+
+  it("Day Scan places exit only at the current candle timing", async () => {
+    const { resetPositionLedger, processDayScanSignalSnapshot } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    await processDayScanSignalSnapshot(
+      {
+        strategy: "deepak",
+        trades: [
+          {
+            tradingSymbol: "RELIANCE",
+            stockName: "Reliance",
+            side: "BUY",
+            scenarioNumber: 2,
+            entryTimeIst: "10:30",
+            entryPrice: 120,
+            exitTimeIst: null,
+            exitPrice: null,
+            targetHit: false,
+          },
+        ],
+      },
+      "10:30",
+    );
+
+    const pastExit = await processDayScanSignalSnapshot(
+      {
+        strategy: "deepak",
+        trades: [
+          {
+            tradingSymbol: "RELIANCE",
+            stockName: "Reliance",
+            side: "BUY",
+            scenarioNumber: 2,
+            entryTimeIst: "10:30",
+            entryPrice: 120,
+            exitTimeIst: "11:00",
+            exitPrice: 120.7,
+            targetHit: true,
+            exitReason: "target",
+          },
+        ],
+      },
+      "11:15",
+    );
+    expect(pastExit.exitsPlaced).toBe(0);
+
+    const currentExit = await processDayScanSignalSnapshot(
+      {
+        strategy: "deepak",
+        trades: [
+          {
+            tradingSymbol: "RELIANCE",
+            stockName: "Reliance",
+            side: "BUY",
+            scenarioNumber: 2,
+            entryTimeIst: "10:30",
+            entryPrice: 120,
+            exitTimeIst: "11:00",
+            exitPrice: 120.7,
+            targetHit: true,
+            exitReason: "target",
+          },
+        ],
+      },
+      "11:00",
+    );
+    expect(currentExit.exitsPlaced).toBe(1);
+  });
 });
