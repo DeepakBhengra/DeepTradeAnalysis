@@ -22,10 +22,12 @@ export interface SamcoRuntimeSettings {
   dryRun: boolean;
   entryPriceMin: number;
   entryPriceMax: number;
+  ruleVariant: string;
   envDefaultQuantity: number;
   envDefaultDryRun: boolean;
   envDefaultEntryPriceMin: number;
   envDefaultEntryPriceMax: number;
+  envDefaultRuleVariant: string;
   liveTradingEnabled: boolean;
 }
 
@@ -107,6 +109,7 @@ export async function updateSamcoSettings(body: {
   quantity?: number;
   entryPriceMin?: number;
   entryPriceMax?: number;
+  ruleVariant?: string;
   confirmLive?: boolean;
 }): Promise<SamcoRuntimeSettings> {
   return samcoFetch<SamcoRuntimeSettings>("/api/samco/settings", {

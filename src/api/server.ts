@@ -25,6 +25,7 @@ import {
   setSamcoDayQuantity,
   setSamcoDryRun,
   setSamcoEntryPriceRange,
+  setSamcoRuleVariant,
 } from "../samco/samcoRuntimeSettings.js";
 import {
   exportSamcoTradeLogsCsv,
@@ -241,6 +242,7 @@ app.patch("/api/samco/settings", (req, res) => {
     const quantity = req.body?.quantity;
     const entryPriceMin = req.body?.entryPriceMin;
     const entryPriceMax = req.body?.entryPriceMax;
+    const ruleVariant = req.body?.ruleVariant;
     const confirmLive = req.body?.confirmLive === true;
 
     if (dryRun !== undefined && typeof dryRun !== "boolean") {
@@ -260,6 +262,11 @@ app.patch("/api/samco/settings", (req, res) => {
 
     if (entryPriceMax !== undefined && typeof entryPriceMax !== "number") {
       res.status(400).json({ error: "entryPriceMax must be a number when provided." });
+      return;
+    }
+
+    if (ruleVariant !== undefined && typeof ruleVariant !== "string") {
+      res.status(400).json({ error: "ruleVariant must be a string when provided." });
       return;
     }
 
@@ -296,6 +303,10 @@ app.patch("/api/samco/settings", (req, res) => {
       setSamcoEntryPriceRange(entryPriceMin, entryPriceMax);
     }
 
+    if (typeof ruleVariant === "string") {
+      setSamcoRuleVariant(ruleVariant);
+    }
+
     res.json({
       ...getSamcoRuntimeSettings(),
       liveTradingEnabled: getSamcoLiveTradingEnabled(),
@@ -304,7 +315,8 @@ app.patch("/api/samco/settings", (req, res) => {
     const message = formatUnknownError(error);
     const status =
       message.includes("Quantity must") ||
-      message.includes("Entry price")
+      message.includes("Entry price") ||
+      message.includes("Invalid ruleVariant")
         ? 400
         : 500;
     res.status(status).json({ error: message });

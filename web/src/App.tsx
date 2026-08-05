@@ -43,7 +43,7 @@ const subtitles: Record<AppWidget, string> = {
   dayOrderSimulator:
     "Auto paper-trade Day Scan entry/exit signals for the selected rule variant with ₹1,00,00,000 capital; set quantity and entry price range per date run. Starts automatically with Day Scan Simulator.",
   samcoTrading:
-    "Samco MIS execution: Deepak + Deepak-2 day scan (50 stocks), entry price range, logs.",
+    "Samco MIS execution for a selectable rule variant (Deepak / Deepak-2 / Deeppro1 / …) across 50 stocks, with entry price range and logs.",
 };
 
 function readStoredTab(): AppWidget {

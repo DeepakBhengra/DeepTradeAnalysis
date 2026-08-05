@@ -86,32 +86,17 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
       exchange: symbolResult.exchange,
     };
 
-    if (symbolResult.deepak) {
-      const deepakResult = await processDecisionResult(
-        "deepak",
-        symbolResult.deepak,
+    for (const decision of symbolResult.decisions) {
+      const decisionResult = await processDecisionResult(
+        decision.strategy,
+        decision.result,
         symbolResult.latestCandleTimeIst,
         executorOptions,
       );
-      result.entriesPlaced += deepakResult.entriesPlaced;
-      result.exitsPlaced += deepakResult.exitsPlaced;
-      logExecutorMessages(deepakResult.logs);
-      appendSamcoTradeLogs(deepakResult.logs, {
-        dryRun: dryRun || !liveEnabled,
-      });
-    }
-
-    if (symbolResult.deepak2) {
-      const deepak2Result = await processDecisionResult(
-        "deepak2",
-        symbolResult.deepak2,
-        symbolResult.latestCandleTimeIst,
-        executorOptions,
-      );
-      result.entriesPlaced += deepak2Result.entriesPlaced;
-      result.exitsPlaced += deepak2Result.exitsPlaced;
-      logExecutorMessages(deepak2Result.logs);
-      appendSamcoTradeLogs(deepak2Result.logs, {
+      result.entriesPlaced += decisionResult.entriesPlaced;
+      result.exitsPlaced += decisionResult.exitsPlaced;
+      logExecutorMessages(decisionResult.logs);
+      appendSamcoTradeLogs(decisionResult.logs, {
         dryRun: dryRun || !liveEnabled,
       });
     }
@@ -124,7 +109,7 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
   result.processed =
     result.entriesPlaced > 0 ||
     result.exitsPlaced > 0 ||
-    cycle.symbols.some((symbol) => symbol.deepak || symbol.deepak2);
+    cycle.symbols.some((symbol) => symbol.decisions.length > 0);
 
   return result;
 }

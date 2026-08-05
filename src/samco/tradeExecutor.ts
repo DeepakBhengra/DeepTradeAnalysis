@@ -283,7 +283,7 @@ export async function forceEodSquareOff(
 
 export async function processDecisionResult(
   strategy: SamcoStrategy,
-  result: DeepakDecisionResult,
+  result: Pick<DeepakDecisionResult, "signals">,
   latestCandleTimeIst: string,
   options?: TradeExecutorOptions,
 ): Promise<ProcessDecisionResult> {
