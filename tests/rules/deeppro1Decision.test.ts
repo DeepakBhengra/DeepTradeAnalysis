@@ -38,16 +38,20 @@ describe("Deeppro1 entry deadline", () => {
 });
 
 describe("Deeppro1 SMI cross detectors", () => {
-  it("detects black↓red down-cross", () => {
+  it("detects black↓red only when black was strictly above red, then at-or-below", () => {
     expect(isSmiBlackDownCrossRed(10, 8, 7, 9)).toBe(true);
-    expect(isSmiBlackDownCrossRed(8, 8, 7, 9)).toBe(true);
+    expect(isSmiBlackDownCrossRed(10, 8, 8, 8)).toBe(true); // touch counts
+    // Equal/tangled prior bar is not a visual cross (HINDUNILVR 10:15-style).
+    expect(isSmiBlackDownCrossRed(8, 8, 7, 9)).toBe(false);
     expect(isSmiBlackDownCrossRed(10, 8, 9, 8)).toBe(false);
     expect(isSmiBlackDownCrossRed(5, 8, 4, 9)).toBe(false);
   });
 
-  it("detects black↑red up-cross", () => {
+  it("detects black↑red only when black was strictly below red, then at-or-above", () => {
     expect(isSmiBlackUpCrossRed(5, 8, 10, 9)).toBe(true);
-    expect(isSmiBlackUpCrossRed(8, 8, 10, 9)).toBe(true);
+    expect(isSmiBlackUpCrossRed(5, 8, 8, 8)).toBe(true); // touch counts
+    // Equal/tangled prior bar is not a visual cross (HINDUNILVR 11:00-style).
+    expect(isSmiBlackUpCrossRed(8, 8, 10, 9)).toBe(false);
     expect(isSmiBlackUpCrossRed(5, 8, 7, 9)).toBe(false);
     expect(isSmiBlackUpCrossRed(12, 8, 13, 9)).toBe(false);
   });
