@@ -665,8 +665,8 @@ export const config = {
     sessionStart: "09:15",
     sessionEnd: "15:30",
     /**
-     * Chart-aligned Stch Mtm (matches SMI down-cross study):
-     * %K=10, double-smooth=3, signal EMA=3.
+     * Chart-aligned Stch Mtm (matches SMI down-cross study / Kite):
+     * %K=10, Wilder RMA double-smooth=3, signal EMA=3.
      */
     smi: {
       lengthK: 10,
@@ -680,8 +680,8 @@ export const config = {
   /**
    * Deeppro1 — generic all-stock SMI cross + fixed % square-off.
    * Same logic as RuleSUNPHARMA1 / RulePNB1 (black↓red → SELL, black↑red → BUY, SQ 0.45%),
-   * but no symbol lock. Uses Stch Mtm (10,3,3) — not Deeppro's (10,3,10).
-   * Wired to Day Scan + Day Scan Post-Mortem.
+   * but no symbol lock. Uses Stch Mtm (10,3,3) with RMA double-smooth — not Deeppro's
+   * (10,3,10) EMA path. Wired to Day Scan + Day Scan Post-Mortem.
    */
   deeppro1: {
     sessionStart: "09:15",
@@ -692,8 +692,8 @@ export const config = {
      */
     entryDeadlineIst: "13:30",
     /**
-     * Chart-aligned Stch Mtm (matches RuleSUNPHARMA1 / SMI down-cross study):
-     * %K=10, double-smooth=3, signal EMA=3.
+     * Chart-aligned Stch Mtm (matches RuleSUNPHARMA1 / Kite):
+     * %K=10, Wilder RMA double-smooth=3, signal EMA=3.
      */
     smi: {
       lengthK: 10,

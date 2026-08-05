@@ -144,6 +144,8 @@ export function evaluateRuleSunpharma1Day(
     smiCfg.lengthK,
     smiCfg.lengthD,
     smiCfg.lengthEma,
+    // Kite Stch Mtm (10,3,3) black/red crosses align with Wilder RMA double-smooth.
+    { doubleSmooth: "rma" },
   );
 
   const signals: RuleSunpharma1Signal[] = [];
