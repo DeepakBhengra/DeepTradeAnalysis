@@ -45,16 +45,18 @@ describe("RuleSUNPHARMA1 SUNPHARMA-only symbol guard", () => {
 });
 
 describe("RuleSUNPHARMA1 SMI cross detectors", () => {
-  it("detects black↓red down-cross", () => {
+  it("detects black↓red only when black was strictly above red, then at-or-below", () => {
     expect(isSmiBlackDownCrossRed(10, 8, 7, 9)).toBe(true);
-    expect(isSmiBlackDownCrossRed(8, 8, 7, 9)).toBe(true); // was equal, then below
+    expect(isSmiBlackDownCrossRed(10, 8, 8, 8)).toBe(true); // touch counts
+    expect(isSmiBlackDownCrossRed(8, 8, 7, 9)).toBe(false); // equal prior — no visual cross
     expect(isSmiBlackDownCrossRed(10, 8, 9, 8)).toBe(false); // still above
     expect(isSmiBlackDownCrossRed(5, 8, 4, 9)).toBe(false); // already below
   });
 
-  it("detects black↑red up-cross", () => {
+  it("detects black↑red only when black was strictly below red, then at-or-above", () => {
     expect(isSmiBlackUpCrossRed(5, 8, 10, 9)).toBe(true);
-    expect(isSmiBlackUpCrossRed(8, 8, 10, 9)).toBe(true);
+    expect(isSmiBlackUpCrossRed(5, 8, 8, 8)).toBe(true); // touch counts
+    expect(isSmiBlackUpCrossRed(8, 8, 10, 9)).toBe(false); // equal prior — no visual cross
     expect(isSmiBlackUpCrossRed(5, 8, 7, 9)).toBe(false);
     expect(isSmiBlackUpCrossRed(12, 8, 13, 9)).toBe(false);
   });

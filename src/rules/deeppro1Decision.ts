@@ -43,24 +43,31 @@ export function isAtOrBeforeEntryDeadline(
   return parseHmToMinutes(timeIst) <= parseHmToMinutes(deadlineIst);
 }
 
-/** SMI black crosses below red signal (study-aligned: prev ≥ signal, cur < signal). */
+/**
+ * SMI black crosses below red signal.
+ * Requires a true prior separation (black strictly above red), then at-or-below.
+ * Rejects equal/tangled bars that never visually crossed (Deeppro chart-aligned).
+ */
 export function isSmiBlackDownCrossRed(
   prevSmi: number,
   prevSignal: number,
   curSmi: number,
   curSignal: number,
 ): boolean {
-  return prevSmi >= prevSignal && curSmi < curSignal;
+  return prevSmi > prevSignal && curSmi <= curSignal;
 }
 
-/** SMI black crosses above red signal (mirror of down-cross). */
+/**
+ * SMI black crosses above red signal (mirror of down-cross).
+ * Requires black strictly below red on the prior bar, then at-or-above.
+ */
 export function isSmiBlackUpCrossRed(
   prevSmi: number,
   prevSignal: number,
   curSmi: number,
   curSignal: number,
 ): boolean {
-  return prevSmi <= prevSignal && curSmi > curSignal;
+  return prevSmi < prevSignal && curSmi >= curSignal;
 }
 
 /**
