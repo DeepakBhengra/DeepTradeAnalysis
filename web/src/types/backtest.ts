@@ -17,7 +17,7 @@ export interface DeepakBacktestTrade {
   deepak2StopTimeIst?: string | null;
 }
 
-export type DeepakExitReason = "target" | "deepak2_stop";
+export type DeepakExitReason = "target" | "deepak2_stop" | "breakeven";
 
 export interface DeepakBacktestSummary {
   tradingDaysScanned: number;

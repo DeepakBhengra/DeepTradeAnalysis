@@ -120,7 +120,7 @@ export interface DeepakScenarioEvent {
   bbMatchType?: DeepakBbMatchType;
 }
 
-export type DeepakExitReason = "target" | "deepak2_stop";
+export type DeepakExitReason = "target" | "deepak2_stop" | "breakeven";
 
 export interface DeepakExitSignal {
   timeIst: string;
@@ -349,6 +349,8 @@ export interface RuleSunpharma1ScanResult {
  */
 export type Deeppro1ScenarioKey = "sell_smi_down_cross" | "buy_smi_up_cross";
 
+export type Deeppro1ExitReason = "target" | "breakeven";
+
 export interface Deeppro1Exit {
   timeIst: string;
   price: number;
@@ -357,6 +359,9 @@ export interface Deeppro1Exit {
   /** Realized favourable move % from entry mid (positive when in profit direction). */
   profitPct: number;
   squareOffPct: number;
+  exitReason: Deeppro1ExitReason;
+  /** Arm threshold used for breakeven exits (absent on pure target exits). */
+  breakevenArmPct?: number;
 }
 
 export interface Deeppro1Signal {
@@ -515,6 +520,7 @@ export interface DeepakBacktestTrade {
   profit: number | null;
   profitTarget: number;
   bbMatchType: DeepakBbMatchType;
+  exitReason?: DeepakExitReason | null;
 }
 
 export interface DeepakBacktestSummary {

@@ -98,6 +98,7 @@ export function runDeeppro1Backtest(
         profit: tradeSignal.exit?.profit ?? null,
         profitTarget: tradeSignal.profitTarget,
         bbMatchType: tradeSignal.bbMatchType,
+        exitReason: tradeSignal.exit?.exitReason ?? null,
       });
     }
   }

@@ -99,6 +99,7 @@ async function scanSymbol(
           profit: tradeSignal.exit?.profit ?? null,
           profitTarget: tradeSignal.profitTarget,
           bbMatchType: tradeSignal.bbMatchType,
+          exitReason: tradeSignal.exit?.exitReason ?? null,
           symbol: dashboardSymbol.symbol,
           tradingSymbol: dashboardSymbol.tradingSymbol,
           sector: entry.sector,
@@ -120,7 +121,7 @@ async function scanSymbol(
 
 /**
  * Day Scan for Deeppro1 — evaluates the full sector watchlist.
- * SMI black↔red cross + 0.45% same-day square-off (RuleSUNPHARMA1-style, all stocks).
+ * SMI black↔red cross + same-day exits (0.45% target, or breakeven after 0.3% arm).
  */
 export async function buildDeeppro1DayScanPayload(input: {
   date: string;
