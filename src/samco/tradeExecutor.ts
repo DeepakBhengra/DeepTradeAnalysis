@@ -526,8 +526,8 @@ export async function processDayScanSignalSnapshot(
           },
           trade.exitReason === "deepak2_stop"
             ? "deepak2_stop"
-            : trade.targetHit
-              ? "target"
+            : trade.exitReason === "breakeven"
+              ? "breakeven"
               : "target",
           resolved,
           logs,

@@ -70,9 +70,30 @@ export function isSmiBlackUpCrossRed(
   return prevSmi < prevSignal && curSmi >= curSignal;
 }
 
+function favourableMovePct(
+  side: "BUY" | "SELL",
+  entryMid: number,
+  exitMid: number,
+): number {
+  return side === "SELL"
+    ? ((entryMid - exitMid) / entryMid) * 100
+    : ((exitMid - entryMid) / entryMid) * 100;
+}
+
+/** True when mid has returned to (or through) the entry price against the open side. */
+export function isBackToEntryPrice(
+  side: "BUY" | "SELL",
+  entryMid: number,
+  exitMid: number,
+): boolean {
+  return side === "BUY" ? exitMid <= entryMid : exitMid >= entryMid;
+}
+
 /**
- * Square-off when favourable mid move from entry reaches squareOffPct.
- * SELL → drop %; BUY → rise %.
+ * Same-day square-off from entry mid:
+ * 1. Target when favourable move ≥ squareOffPct (default 0.45%)
+ * 2. Breakeven when move first reaches breakevenArmPct (default 0.3%), then mid
+ *    returns to the entry price (BUY: mid ≤ entry; SELL: mid ≥ entry)
  */
 export function simulateDeeppro1SquareOff(
   snapshots: IndicatorSnapshot[],
@@ -81,8 +102,10 @@ export function simulateDeeppro1SquareOff(
   side: "BUY" | "SELL",
   entryMid: number,
   squareOffPct: number,
+  breakevenArmPct: number = config.deeppro1.breakevenArmPct,
 ): Deeppro1Exit | null {
   const { sessionStart, sessionEnd } = config.deeppro1;
+  let armedForBreakeven = false;
 
   for (let i = entryIndex + 1; i < snapshots.length; i++) {
     const snap = snapshots[i];
@@ -95,10 +118,7 @@ export function simulateDeeppro1SquareOff(
     }
 
     const exitMid = midPrice(snap);
-    const movePct =
-      side === "SELL"
-        ? ((entryMid - exitMid) / entryMid) * 100
-        : ((exitMid - entryMid) / entryMid) * 100;
+    const movePct = favourableMovePct(side, entryMid, exitMid);
 
     if (movePct >= squareOffPct) {
       return {
@@ -107,7 +127,24 @@ export function simulateDeeppro1SquareOff(
         targetHit: true,
         profitPct: movePct,
         squareOffPct,
+        exitReason: "target",
       };
+    }
+
+    if (armedForBreakeven && isBackToEntryPrice(side, entryMid, exitMid)) {
+      return {
+        timeIst: formatIstTime(snap.timestamp),
+        price: exitMid,
+        targetHit: false,
+        profitPct: movePct,
+        squareOffPct,
+        exitReason: "breakeven",
+        breakevenArmPct,
+      };
+    }
+
+    if (movePct >= breakevenArmPct) {
+      armedForBreakeven = true;
     }
   }
 
@@ -117,7 +154,8 @@ export function simulateDeeppro1SquareOff(
 /**
  * Evaluate Deeppro1 for one IST trade day (any symbol).
  * Emits SMI black↔red crosses at or before entryDeadlineIst (default 13:30);
- * attaches 0.45% square-off when hit same day (exits may print after the deadline).
+ * attaches same-day exits: 0.45% target, or breakeven after 0.3% arm then return
+ * to entry (exits may print after the deadline).
  * Does not share logic with Deeppro exhaustion / Deepak / per-symbol favourable rules.
  */
 export function evaluateDeeppro1Day(
@@ -130,6 +168,7 @@ export function evaluateDeeppro1Day(
     entryDeadlineIst,
     smi: smiCfg,
     squareOffPct,
+    breakevenArmPct,
   } = config.deeppro1;
 
   const smiSeries = computeStochasticMomentum(
@@ -196,6 +235,7 @@ export function evaluateDeeppro1Day(
       side,
       entryMid,
       squareOffPct,
+      breakevenArmPct,
     );
 
     const reasons = [
@@ -203,8 +243,10 @@ export function evaluateDeeppro1Day(
         ? `Deeppro1 SELL: SMI black crossed below red signal (${prev.smi.toFixed(2)}→${cur.smi.toFixed(2)} vs ${prev.signal.toFixed(2)}→${cur.signal.toFixed(2)})`
         : `Deeppro1 BUY: SMI black crossed above red signal (${prev.smi.toFixed(2)}→${cur.smi.toFixed(2)} vs ${prev.signal.toFixed(2)}→${cur.signal.toFixed(2)})`,
       exit
-        ? `Square-off hit ${exit.profitPct.toFixed(2)}% at ${exit.timeIst} (target ${squareOffPct}%)`
-        : `No same-day square-off at ${squareOffPct}%`,
+        ? exit.exitReason === "breakeven"
+          ? `Breakeven exit at ${exit.timeIst}: armed after ${breakevenArmPct}% then mid returned to entry (P&L ${exit.profitPct.toFixed(2)}%)`
+          : `Square-off hit ${exit.profitPct.toFixed(2)}% at ${exit.timeIst} (target ${squareOffPct}%)`
+        : `No same-day square-off (target ${squareOffPct}% / breakeven after ${breakevenArmPct}%)`,
     ];
 
     signals.push({
@@ -245,6 +287,7 @@ export function deeppro1SignalToTradeSignal(
         targetHit: signal.exit.targetHit,
         profit: signal.exit.profitPct,
         profitTarget: signal.squareOffPct,
+        exitReason: signal.exit.exitReason,
       }
     : null;
 
@@ -305,6 +348,7 @@ export const __deeppro1Testables = {
   isSmiBlackDownCrossRed,
   isSmiBlackUpCrossRed,
   simulateDeeppro1SquareOff,
+  isBackToEntryPrice,
   isAtOrBeforeEntryDeadline,
   midPrice,
 };

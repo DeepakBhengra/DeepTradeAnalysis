@@ -682,6 +682,11 @@ export const config = {
    * Same logic as RuleSUNPHARMA1 / RulePNB1 (black↓red → SELL, black↑red → BUY, SQ 0.45%),
    * but no symbol lock. Uses Stch Mtm (10,3,3) with RMA double-smooth — not Deeppro's
    * (10,3,10) EMA path. Wired to Day Scan + Day Scan Post-Mortem.
+   *
+   * Exits (same day, mid price):
+   * 1. Target when favourable move ≥ squareOffPct (0.45%)
+   * 2. Breakeven when move first reaches breakevenArmPct (0.3%), then mid returns
+   *    to the entry price (BUY: mid ≤ entry; SELL: mid ≥ entry)
    */
   deeppro1: {
     sessionStart: "09:15",
@@ -702,6 +707,11 @@ export const config = {
     },
     /** Same-day square-off when favourable mid move reaches this % from entry mid. */
     squareOffPct: 0.45,
+    /**
+     * After favourable mid reaches this %, arm a breakeven exit: if mid later
+     * returns to the entry price, square off (even if the 0.45% target was never hit).
+     */
+    breakevenArmPct: 0.3,
   },
 
   /**

@@ -14,12 +14,17 @@ import type { Candle } from "../../src/types.js";
 
 const fixtureDir = dirname(fileURLToPath(import.meta.url));
 
-const { isSmiBlackDownCrossRed, isSmiBlackUpCrossRed, simulateDeeppro1SquareOff } =
-  __deeppro1Testables;
+const {
+  isSmiBlackDownCrossRed,
+  isSmiBlackUpCrossRed,
+  simulateDeeppro1SquareOff,
+  isBackToEntryPrice,
+} = __deeppro1Testables;
 
 describe("Deeppro1 config", () => {
-  it("uses chart-aligned SMI (10,3,3), 0.45% square-off, and 13:30 entry deadline", () => {
+  it("uses chart-aligned SMI (10,3,3), 0.45% target, 0.3% breakeven arm, and 13:30 entry deadline", () => {
     expect(config.deeppro1.squareOffPct).toBe(0.45);
+    expect(config.deeppro1.breakevenArmPct).toBe(0.3);
     expect(config.deeppro1.entryDeadlineIst).toBe("13:30");
     expect(config.deeppro1.smi).toEqual({
       lengthK: 10,
@@ -104,6 +109,7 @@ describe("Deeppro1 square-off simulation", () => {
     );
     expect(exit).not.toBeNull();
     expect(exit!.targetHit).toBe(true);
+    expect(exit!.exitReason).toBe("target");
     expect(exit!.timeIst).toBe("10:30");
     expect(exit!.profitPct).toBeGreaterThanOrEqual(0.45);
   });
@@ -127,7 +133,118 @@ describe("Deeppro1 square-off simulation", () => {
     );
     expect(exit).not.toBeNull();
     expect(exit!.targetHit).toBe(true);
+    expect(exit!.exitReason).toBe("target");
     expect(exit!.timeIst).toBe("11:30");
+  });
+
+  it("BUY: after 0.3% profit, exits at breakeven when mid returns to entry", () => {
+    const dateKey = "2026-03-10";
+    const entry = 2000;
+    // +0.3% mid = 2006; then back to entry mid = 2000
+    const candles: Candle[] = [
+      istCandle(dateKey, 10, 0, entry, entry + 2, entry - 2, entry),
+      istCandle(dateKey, 10, 15, 2006, 2007, 2005, 2006),
+      istCandle(dateKey, 10, 30, 2003, 2004, 2002, 2003),
+      istCandle(dateKey, 10, 45, entry, entry + 1, entry - 1, entry),
+    ];
+    const snapshots = buildIndicatorSnapshots(candles);
+    const exit = simulateDeeppro1SquareOff(
+      snapshots,
+      dateKey,
+      0,
+      "BUY",
+      entry,
+      0.45,
+      0.3,
+    );
+    expect(exit).not.toBeNull();
+    expect(exit!.exitReason).toBe("breakeven");
+    expect(exit!.targetHit).toBe(false);
+    expect(exit!.timeIst).toBe("10:45");
+    expect(exit!.price).toBe(entry);
+    expect(exit!.profitPct).toBeCloseTo(0, 5);
+  });
+
+  it("SELL: after 0.3% profit, exits at breakeven when mid returns to entry", () => {
+    const dateKey = "2026-03-10";
+    const entry = 2000;
+    // −0.3% mid = 1994; then back to entry mid = 2000
+    const candles: Candle[] = [
+      istCandle(dateKey, 11, 0, entry, entry + 2, entry - 2, entry),
+      istCandle(dateKey, 11, 15, 1994, 1995, 1993, 1994),
+      istCandle(dateKey, 11, 30, 1997, 1998, 1996, 1997),
+      istCandle(dateKey, 11, 45, entry, entry + 1, entry - 1, entry),
+    ];
+    const snapshots = buildIndicatorSnapshots(candles);
+    const exit = simulateDeeppro1SquareOff(
+      snapshots,
+      dateKey,
+      0,
+      "SELL",
+      entry,
+      0.45,
+      0.3,
+    );
+    expect(exit).not.toBeNull();
+    expect(exit!.exitReason).toBe("breakeven");
+    expect(exit!.targetHit).toBe(false);
+    expect(exit!.timeIst).toBe("11:45");
+    expect(exit!.price).toBe(entry);
+  });
+
+  it("does not breakeven-exit if 0.3% was never reached", () => {
+    const dateKey = "2026-03-10";
+    const entry = 2000;
+    const candles: Candle[] = [
+      istCandle(dateKey, 10, 0, entry, entry + 2, entry - 2, entry),
+      // +0.2% only — below arm
+      istCandle(dateKey, 10, 15, 2004, 2005, 2003, 2004),
+      istCandle(dateKey, 10, 30, entry, entry + 1, entry - 1, entry),
+    ];
+    const snapshots = buildIndicatorSnapshots(candles);
+    const exit = simulateDeeppro1SquareOff(
+      snapshots,
+      dateKey,
+      0,
+      "BUY",
+      entry,
+      0.45,
+      0.3,
+    );
+    expect(exit).toBeNull();
+  });
+
+  it("prefers 0.45% target over breakeven when both would apply", () => {
+    const dateKey = "2026-03-10";
+    const entry = 2000;
+    const candles: Candle[] = [
+      istCandle(dateKey, 10, 0, entry, entry + 2, entry - 2, entry),
+      istCandle(dateKey, 10, 15, 2006, 2007, 2005, 2006), // arms 0.3%
+      istCandle(dateKey, 10, 30, 2010, 2011, 2009, 2010), // +0.5% target
+    ];
+    const snapshots = buildIndicatorSnapshots(candles);
+    const exit = simulateDeeppro1SquareOff(
+      snapshots,
+      dateKey,
+      0,
+      "BUY",
+      entry,
+      0.45,
+      0.3,
+    );
+    expect(exit!.exitReason).toBe("target");
+    expect(exit!.targetHit).toBe(true);
+  });
+});
+
+describe("Deeppro1 breakeven helpers", () => {
+  it("detects return to entry for BUY and SELL", () => {
+    expect(isBackToEntryPrice("BUY", 100, 100)).toBe(true);
+    expect(isBackToEntryPrice("BUY", 100, 99.5)).toBe(true);
+    expect(isBackToEntryPrice("BUY", 100, 100.1)).toBe(false);
+    expect(isBackToEntryPrice("SELL", 100, 100)).toBe(true);
+    expect(isBackToEntryPrice("SELL", 100, 100.5)).toBe(true);
+    expect(isBackToEntryPrice("SELL", 100, 99.9)).toBe(false);
   });
 });
 
@@ -152,6 +269,7 @@ describe("Deeppro1 trade signal mapping", () => {
         targetHit: true,
         profitPct: 0.5,
         squareOffPct: 0.45,
+        exitReason: "target" as const,
       },
       reasons: ["test"],
     };
@@ -161,6 +279,37 @@ describe("Deeppro1 trade signal mapping", () => {
     expect(trade.profitTarget).toBe(0.45);
     expect(trade.exit?.targetHit).toBe(true);
     expect(trade.exit?.profit).toBe(0.5);
+    expect(trade.exit?.exitReason).toBe("target");
+  });
+
+  it("maps breakeven exitReason through to the trade signal", () => {
+    const signal = {
+      side: "BUY" as const,
+      rule: "deeppro1" as const,
+      dateKey: "2026-03-10",
+      timeIst: "10:00",
+      scenarioKey: "buy_smi_up_cross" as const,
+      price: 2000,
+      smi: -10,
+      signal: -12,
+      prevSmi: -14,
+      prevSignal: -12,
+      rsi: 40,
+      squareOffPct: 0.45,
+      exit: {
+        timeIst: "11:00",
+        price: 2000,
+        targetHit: false,
+        profitPct: 0,
+        squareOffPct: 0.45,
+        exitReason: "breakeven" as const,
+        breakevenArmPct: 0.3,
+      },
+      reasons: ["test"],
+    };
+    const trade = deeppro1SignalToTradeSignal(signal);
+    expect(trade.exit?.exitReason).toBe("breakeven");
+    expect(trade.exit?.targetHit).toBe(false);
   });
 });
 
