@@ -14,7 +14,6 @@ import {
   DAY_ORDER_INITIAL_CASH,
   DEFAULT_DAY_ORDER_RUN_SETTINGS,
 } from "../types/dayOrder";
-import { formatDayScanStrategy } from "./backtestFormat";
 
 let fillIdCounter = 0;
 
