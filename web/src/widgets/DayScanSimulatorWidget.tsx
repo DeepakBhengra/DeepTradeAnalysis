@@ -30,7 +30,7 @@ function descriptionForVariant(variant: DayScanSimulationVariant): string {
     return `Replay ${DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)?.label ?? variant} signals for its locked symbol from 09:15–15:00 IST (10s per 15m candle). First Start loads market data; later candles advance from cache.`;
   }
   if (variant === "deeppro1") {
-    return `Replay Deeppro1 SMI black↔red cross signals until 13:30 IST (+ 0.45% square-off) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
+    return `Replay Deeppro1 SMI black↔red crosses until 11:45 IST (exits: 0.45% target / 0.3%→breakeven / opposite flip / 15:00 force) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
   }
   const label =
     DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)

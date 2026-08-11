@@ -5,6 +5,7 @@ import type {
   DeepakDecisionResult,
   DeepakTradeSignal,
   Deeppro1Exit,
+  Deeppro1ExitReason,
   Deeppro1ScanResult,
   Deeppro1ScenarioKey,
   Deeppro1Signal,
@@ -35,12 +36,20 @@ function parseHmToMinutes(timeIst: string): number {
   return Number(hourText) * 60 + Number(minuteText);
 }
 
-/** True when entry time is at or before the inclusive deadline (e.g. 13:30). */
+/** True when entry time is at or before the inclusive deadline (e.g. 11:45). */
 export function isAtOrBeforeEntryDeadline(
   timeIst: string,
   deadlineIst: string,
 ): boolean {
   return parseHmToMinutes(timeIst) <= parseHmToMinutes(deadlineIst);
+}
+
+/** True when candle time is at or after the forced exit time (e.g. 15:00). */
+export function isAtOrAfterForceExit(
+  timeIst: string,
+  forceExitIst: string,
+): boolean {
+  return parseHmToMinutes(timeIst) >= parseHmToMinutes(forceExitIst);
 }
 
 /**
@@ -89,11 +98,48 @@ export function isBackToEntryPrice(
   return side === "BUY" ? exitMid <= entryMid : exitMid >= entryMid;
 }
 
+function buildExit(
+  timeIst: string,
+  price: number,
+  profitPct: number,
+  squareOffPct: number,
+  exitReason: Deeppro1ExitReason,
+  breakevenArmPct?: number,
+): Deeppro1Exit {
+  return {
+    timeIst,
+    price,
+    targetHit: exitReason === "target",
+    profitPct,
+    squareOffPct,
+    exitReason,
+    ...(exitReason === "breakeven" && breakevenArmPct != null
+      ? { breakevenArmPct }
+      : {}),
+  };
+}
+
+function exitReasonText(
+  exit: Deeppro1Exit,
+  squareOffPct: number,
+  breakevenArmPct: number,
+): string {
+  switch (exit.exitReason) {
+    case "breakeven":
+      return `Breakeven exit at ${exit.timeIst}: armed after ${breakevenArmPct}% then mid returned to entry (P&L ${exit.profitPct.toFixed(2)}%)`;
+    case "flip":
+      return `Flip exit at ${exit.timeIst}: opposite SMI cross closed the position (P&L ${exit.profitPct.toFixed(2)}%)`;
+    case "eod":
+      return `Forced exit at ${exit.timeIst}: still open at 15:00 (P&L ${exit.profitPct.toFixed(2)}%)`;
+    case "target":
+    default:
+      return `Square-off hit ${exit.profitPct.toFixed(2)}% at ${exit.timeIst} (target ${squareOffPct}%)`;
+  }
+}
+
 /**
- * Same-day square-off from entry mid:
- * 1. Target when favourable move ≥ squareOffPct (default 0.45%)
- * 2. Breakeven when move first reaches breakevenArmPct (default 0.3%), then mid
- *    returns to the entry price (BUY: mid ≤ entry; SELL: mid ≥ entry)
+ * Look-ahead square-off helper (target / breakeven only).
+ * Full day evaluation also applies flip + 15:00 force-exit in evaluateDeeppro1Day.
  */
 export function simulateDeeppro1SquareOff(
   snapshots: IndicatorSnapshot[],
@@ -121,26 +167,24 @@ export function simulateDeeppro1SquareOff(
     const movePct = favourableMovePct(side, entryMid, exitMid);
 
     if (movePct >= squareOffPct) {
-      return {
-        timeIst: formatIstTime(snap.timestamp),
-        price: exitMid,
-        targetHit: true,
-        profitPct: movePct,
+      return buildExit(
+        formatIstTime(snap.timestamp),
+        exitMid,
+        movePct,
         squareOffPct,
-        exitReason: "target",
-      };
+        "target",
+      );
     }
 
     if (armedForBreakeven && isBackToEntryPrice(side, entryMid, exitMid)) {
-      return {
-        timeIst: formatIstTime(snap.timestamp),
-        price: exitMid,
-        targetHit: false,
-        profitPct: movePct,
+      return buildExit(
+        formatIstTime(snap.timestamp),
+        exitMid,
+        movePct,
         squareOffPct,
-        exitReason: "breakeven",
+        "breakeven",
         breakevenArmPct,
-      };
+      );
     }
 
     if (movePct >= breakevenArmPct) {
@@ -151,12 +195,96 @@ export function simulateDeeppro1SquareOff(
   return null;
 }
 
+type OpenDeeppro1 = {
+  side: "BUY" | "SELL";
+  scenarioKey: Deeppro1ScenarioKey;
+  timeIst: string;
+  price: number;
+  smi: number;
+  signal: number;
+  prevSmi: number;
+  prevSignal: number;
+  rsi: number;
+  entryReasons: string[];
+  armedForBreakeven: boolean;
+};
+
+function detectCrossSide(
+  prevSmi: number,
+  prevSignal: number,
+  curSmi: number,
+  curSignal: number,
+): "BUY" | "SELL" | null {
+  if (isSmiBlackDownCrossRed(prevSmi, prevSignal, curSmi, curSignal)) {
+    return "SELL";
+  }
+  if (isSmiBlackUpCrossRed(prevSmi, prevSignal, curSmi, curSignal)) {
+    return "BUY";
+  }
+  return null;
+}
+
+function finalizeSignal(
+  open: OpenDeeppro1,
+  dateKey: string,
+  squareOffPct: number,
+  exit: Deeppro1Exit,
+  breakevenArmPct: number,
+): Deeppro1Signal {
+  return {
+    side: open.side,
+    rule: "deeppro1",
+    dateKey,
+    timeIst: open.timeIst,
+    scenarioKey: open.scenarioKey,
+    price: open.price,
+    smi: open.smi,
+    signal: open.signal,
+    prevSmi: open.prevSmi,
+    prevSignal: open.prevSignal,
+    rsi: open.rsi,
+    squareOffPct,
+    exit,
+    reasons: [...open.entryReasons, exitReasonText(exit, squareOffPct, breakevenArmPct)],
+  };
+}
+
+function openFromCross(params: {
+  side: "BUY" | "SELL";
+  timeIst: string;
+  price: number;
+  smi: number;
+  signal: number;
+  prevSmi: number;
+  prevSignal: number;
+  rsi: number;
+}): OpenDeeppro1 {
+  const scenarioKey: Deeppro1ScenarioKey =
+    params.side === "SELL" ? "sell_smi_down_cross" : "buy_smi_up_cross";
+  const entryReasons = [
+    params.side === "SELL"
+      ? `Deeppro1 SELL: SMI black crossed below red signal (${params.prevSmi.toFixed(2)}→${params.smi.toFixed(2)} vs ${params.prevSignal.toFixed(2)}→${params.signal.toFixed(2)})`
+      : `Deeppro1 BUY: SMI black crossed above red signal (${params.prevSmi.toFixed(2)}→${params.smi.toFixed(2)} vs ${params.prevSignal.toFixed(2)}→${params.signal.toFixed(2)})`,
+  ];
+  return {
+    side: params.side,
+    scenarioKey,
+    timeIst: params.timeIst,
+    price: params.price,
+    smi: params.smi,
+    signal: params.signal,
+    prevSmi: params.prevSmi,
+    prevSignal: params.prevSignal,
+    rsi: params.rsi,
+    entryReasons,
+    armedForBreakeven: false,
+  };
+}
+
 /**
  * Evaluate Deeppro1 for one IST trade day (any symbol).
- * Emits SMI black↔red crosses at or before entryDeadlineIst (default 13:30);
- * attaches same-day exits: 0.45% target, or breakeven after 0.3% arm then return
- * to entry (exits may print after the deadline).
- * Does not share logic with Deeppro exhaustion / Deepak / per-symbol favourable rules.
+ * One open position at a time. Entries only at/before entryDeadlineIst (11:45).
+ * Exits: 0.45% target, 0.3%→breakeven, opposite-cross flip, or forced 15:00 exit.
  */
 export function evaluateDeeppro1Day(
   snapshots: IndicatorSnapshot[],
@@ -166,6 +294,7 @@ export function evaluateDeeppro1Day(
     sessionStart,
     sessionEnd,
     entryDeadlineIst,
+    forceExitIst,
     smi: smiCfg,
     squareOffPct,
     breakevenArmPct,
@@ -183,6 +312,7 @@ export function evaluateDeeppro1Day(
   );
 
   const signals: Deeppro1Signal[] = [];
+  let open: OpenDeeppro1 | null = null;
 
   for (let i = 1; i < snapshots.length; i++) {
     const snap = snapshots[i];
@@ -195,76 +325,120 @@ export function evaluateDeeppro1Day(
     }
 
     const timeIst = formatIstTime(snap.timestamp);
-    if (!isAtOrBeforeEntryDeadline(timeIst, entryDeadlineIst)) {
-      continue;
-    }
-
+    const mid = midPrice(snap);
     const prev = smiSeries[i - 1];
     const cur = smiSeries[i];
-    if (
-      ![prev.smi, prev.signal, cur.smi, cur.signal].every(Number.isFinite)
-    ) {
-      continue;
+    const crossReady = [prev.smi, prev.signal, cur.smi, cur.signal].every(
+      Number.isFinite,
+    );
+    const crossSide = crossReady
+      ? detectCrossSide(prev.smi, prev.signal, cur.smi, cur.signal)
+      : null;
+    const canEnter = isAtOrBeforeEntryDeadline(timeIst, entryDeadlineIst);
+
+    if (open) {
+      const movePct = favourableMovePct(open.side, open.price, mid);
+      let exit: Deeppro1Exit | null = null;
+
+      if (movePct >= squareOffPct) {
+        exit = buildExit(timeIst, mid, movePct, squareOffPct, "target");
+      } else if (
+        open.armedForBreakeven &&
+        isBackToEntryPrice(open.side, open.price, mid)
+      ) {
+        exit = buildExit(
+          timeIst,
+          mid,
+          movePct,
+          squareOffPct,
+          "breakeven",
+          breakevenArmPct,
+        );
+      } else if (crossSide != null && crossSide !== open.side) {
+        exit = buildExit(timeIst, mid, movePct, squareOffPct, "flip");
+      } else if (isAtOrAfterForceExit(timeIst, forceExitIst)) {
+        exit = buildExit(timeIst, mid, movePct, squareOffPct, "eod");
+      }
+
+      if (movePct >= breakevenArmPct) {
+        open.armedForBreakeven = true;
+      }
+
+      if (exit) {
+        const wasFlip = exit.exitReason === "flip";
+        signals.push(
+          finalizeSignal(open, dateKey, squareOffPct, exit, breakevenArmPct),
+        );
+        open = null;
+
+        if (wasFlip && crossSide != null && canEnter && crossReady) {
+          open = openFromCross({
+            side: crossSide,
+            timeIst,
+            price: mid,
+            smi: cur.smi,
+            signal: cur.signal,
+            prevSmi: prev.smi,
+            prevSignal: prev.signal,
+            rsi: snap.rsi,
+          });
+        } else if (
+          !wasFlip &&
+          crossSide != null &&
+          canEnter &&
+          crossReady
+        ) {
+          // Target/breakeven/eod closed this bar; same-bar cross may open a new side.
+          open = openFromCross({
+            side: crossSide,
+            timeIst,
+            price: mid,
+            smi: cur.smi,
+            signal: cur.signal,
+            prevSmi: prev.smi,
+            prevSignal: prev.signal,
+            rsi: snap.rsi,
+          });
+        }
+        continue;
+      }
     }
 
-    const down = isSmiBlackDownCrossRed(
-      prev.smi,
-      prev.signal,
-      cur.smi,
-      cur.signal,
-    );
-    const up = isSmiBlackUpCrossRed(
-      prev.smi,
-      prev.signal,
-      cur.smi,
-      cur.signal,
-    );
-    if (!down && !up) {
-      continue;
+    if (!open && crossSide != null && canEnter && crossReady) {
+      open = openFromCross({
+        side: crossSide,
+        timeIst,
+        price: mid,
+        smi: cur.smi,
+        signal: cur.signal,
+        prevSmi: prev.smi,
+        prevSignal: prev.signal,
+        rsi: snap.rsi,
+      });
     }
+  }
 
-    const side: "BUY" | "SELL" = down ? "SELL" : "BUY";
-    const scenarioKey: Deeppro1ScenarioKey = down
-      ? "sell_smi_down_cross"
-      : "buy_smi_up_cross";
-    const entryMid = midPrice(snap);
-    const exit = simulateDeeppro1SquareOff(
-      snapshots,
-      dateKey,
-      i,
-      side,
-      entryMid,
-      squareOffPct,
-      breakevenArmPct,
-    );
-
-    const reasons = [
-      down
-        ? `Deeppro1 SELL: SMI black crossed below red signal (${prev.smi.toFixed(2)}→${cur.smi.toFixed(2)} vs ${prev.signal.toFixed(2)}→${cur.signal.toFixed(2)})`
-        : `Deeppro1 BUY: SMI black crossed above red signal (${prev.smi.toFixed(2)}→${cur.smi.toFixed(2)} vs ${prev.signal.toFixed(2)}→${cur.signal.toFixed(2)})`,
-      exit
-        ? exit.exitReason === "breakeven"
-          ? `Breakeven exit at ${exit.timeIst}: armed after ${breakevenArmPct}% then mid returned to entry (P&L ${exit.profitPct.toFixed(2)}%)`
-          : `Square-off hit ${exit.profitPct.toFixed(2)}% at ${exit.timeIst} (target ${squareOffPct}%)`
-        : `No same-day square-off (target ${squareOffPct}% / breakeven after ${breakevenArmPct}%)`,
-    ];
-
-    signals.push({
-      side,
-      rule: "deeppro1",
-      dateKey,
-      timeIst,
-      scenarioKey,
-      price: entryMid,
-      smi: cur.smi,
-      signal: cur.signal,
-      prevSmi: prev.smi,
-      prevSignal: prev.signal,
-      rsi: snap.rsi,
-      squareOffPct,
-      exit,
-      reasons,
-    });
+  // Safety: still open with no 15:00 bar in the series — close on last same-day session bar.
+  if (open) {
+    for (let i = snapshots.length - 1; i >= 0; i--) {
+      const snap = snapshots[i];
+      if (!isWithinIstSessionWindow(snap.timestamp, sessionStart, sessionEnd)) {
+        continue;
+      }
+      const parts = getIstTimeParts(snap.timestamp);
+      if (parts.dateKey !== dateKey) {
+        continue;
+      }
+      const timeIst = formatIstTime(snap.timestamp);
+      const mid = midPrice(snap);
+      const movePct = favourableMovePct(open.side, open.price, mid);
+      const exit = buildExit(timeIst, mid, movePct, squareOffPct, "eod");
+      signals.push(
+        finalizeSignal(open, dateKey, squareOffPct, exit, breakevenArmPct),
+      );
+      open = null;
+      break;
+    }
   }
 
   return {
@@ -318,7 +492,10 @@ export function evaluateDeeppro1Decision(
   const lastSnapshot =
     snapshots.find((snapshot) => {
       const parts = getIstTimeParts(snapshot.timestamp);
-      return parts.dateKey === dateKey && formatIstTime(snapshot.timestamp) === lastSignal.timeIst;
+      return (
+        parts.dateKey === dateKey &&
+        formatIstTime(snapshot.timestamp) === lastSignal.timeIst
+      );
     }) ??
     [...snapshots].reverse().find((snapshot) => {
       const parts = getIstTimeParts(snapshot.timestamp);
@@ -350,5 +527,6 @@ export const __deeppro1Testables = {
   simulateDeeppro1SquareOff,
   isBackToEntryPrice,
   isAtOrBeforeEntryDeadline,
+  isAtOrAfterForceExit,
   midPrice,
 };

@@ -679,23 +679,29 @@ export const config = {
 
   /**
    * Deeppro1 — generic all-stock SMI cross + fixed % square-off.
-   * Same logic as RuleSUNPHARMA1 / RulePNB1 (black↓red → SELL, black↑red → BUY, SQ 0.45%),
-   * but no symbol lock. Uses Stch Mtm (10,3,3) with RMA double-smooth — not Deeppro's
-   * (10,3,10) EMA path. Wired to Day Scan + Day Scan Post-Mortem.
+   * One open position at a time per symbol/day. Uses Stch Mtm (10,3,3) with RMA
+   * double-smooth — not Deeppro's (10,3,10) EMA path.
    *
-   * Exits (same day, mid price):
+   * Entries: SMI black↔red crosses at or before entryDeadlineIst (11:45).
+   * Exits (same-day mid):
    * 1. Target when favourable move ≥ squareOffPct (0.45%)
-   * 2. Breakeven when move first reaches breakevenArmPct (0.3%), then mid returns
-   *    to the entry price (BUY: mid ≤ entry; SELL: mid ≥ entry)
+   * 2. Breakeven when move first reaches breakevenArmPct (0.3%), then mid returns to entry
+   * 3. Flip: opposite SMI cross closes the open side (and may open the new side if ≤ 11:45)
+   * 4. Forced exit at forceExitIst (15:00) if still open
    */
   deeppro1: {
     sessionStart: "09:15",
     sessionEnd: "15:30",
     /**
-     * No new BUY/SELL after this IST time (inclusive: 13:30 candle still allowed;
-     * 13:45+ blocked). Same-day square-off may still occur after the deadline.
+     * No new BUY/SELL after this IST time (inclusive: 11:45 candle still allowed;
+     * 12:00+ blocked). Exits (target / breakeven / flip / 15:00) may still occur after.
      */
-    entryDeadlineIst: "13:30",
+    entryDeadlineIst: "11:45",
+    /**
+     * If still open at this IST candle, force an exit at that bar's mid
+     * ("market value @ 15:00").
+     */
+    forceExitIst: "15:00",
     /**
      * Chart-aligned Stch Mtm (matches RuleSUNPHARMA1 / Kite):
      * %K=10, Wilder RMA double-smooth=3, signal EMA=3.
