@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 import type { DeepakDayScanTrade } from "../types.js";
@@ -102,6 +102,14 @@ export function saveSamcoDayScanSignalSnapshot(
     mkdirSync(directory, { recursive: true });
   }
   writeFileSync(filePath, JSON.stringify(snapshot, null, 2), "utf8");
+}
+
+/** Remove the ingested Day Scan feed so Samco panels stay empty until the next push. */
+export function clearSamcoDayScanSignalSnapshot(): void {
+  const filePath = snapshotPath();
+  if (existsSync(filePath)) {
+    unlinkSync(filePath);
+  }
 }
 
 export function ingestDayScanTrades(input: {

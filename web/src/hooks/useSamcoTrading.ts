@@ -126,26 +126,22 @@ export function useSamcoTrading(isActive: boolean) {
           });
           setStatus(cycleResult.status);
           setOrders(cycleResult.orders);
-          if (cycleResult.logs) {
-            setLogs(cycleResult.logs.records);
-          }
-          const [nextSettings, nextLedger, nextLogs] = await Promise.all([
+          setLogs(cycleResult.logs?.records ?? []);
+          const [nextSettings, nextLedger] = await Promise.all([
             fetchSamcoSettings(),
             fetchSamcoLedger(),
-            cycleResult.logs
-              ? Promise.resolve(cycleResult.logs)
-              : fetchSamcoLogs(logDate),
           ]);
           setSettings(nextSettings);
           setLedger(nextLedger);
-          setLogs(nextLogs.records);
           syncInputsFromSettings(nextSettings);
           if (!silent) {
             setRefreshInfo(
-              `Cleared previous orders + trade logs · executed ${cycleResult.orders.executed.length} · open ${cycleResult.orders.open.length} · rejected ${cycleResult.orders.rejected.length}` +
-                (cycleResult.cycle.processed
-                  ? ` · cycle +${cycleResult.cycle.entriesPlaced} entry / +${cycleResult.cycle.exitsPlaced} exit (${cycleResult.cycle.signalSource})`
-                  : ""),
+              cycleResult.cleared
+                ? "Cleared open / executed / rejected orders and trade logs. Run Day Scan again to refill."
+                : `Orders refreshed · executed ${cycleResult.orders.executed.length} · open ${cycleResult.orders.open.length} · rejected ${cycleResult.orders.rejected.length}` +
+                    (cycleResult.cycle.processed
+                      ? ` · cycle +${cycleResult.cycle.entriesPlaced} entry / +${cycleResult.cycle.exitsPlaced} exit (${cycleResult.cycle.signalSource})`
+                      : ""),
             );
           }
         } else {
