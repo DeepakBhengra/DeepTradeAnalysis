@@ -111,7 +111,13 @@ async function samcoFetch<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
 
   try {
-    response = await fetch(path, init);
+    response = await fetch(path, {
+      cache: "no-store",
+      ...init,
+      headers: {
+        ...(init?.headers ?? {}),
+      },
+    });
   } catch {
     throw new Error(
       "Cannot reach the API on port 3001. Start both servers with: npm run dev:dashboard",
@@ -173,6 +179,26 @@ export async function refreshSamcoSession(): Promise<{
   sessionTokenPresent: boolean;
 }> {
   return samcoFetch("/api/samco/session/refresh", { method: "POST" });
+}
+
+export interface SamcoCycleResponse {
+  ok: boolean;
+  cycle: {
+    processed: boolean;
+    signalSource: "dayscan" | "poll" | "none";
+    entriesPlaced: number;
+    exitsPlaced: number;
+    eodSquareOff: boolean;
+    stocksScanned: number;
+    scanErrors: number;
+  };
+  orders: SamcoOrdersResponse;
+  status: SamcoAuthStatus;
+}
+
+/** Process one trading cycle and return fresh order buckets + auth status. */
+export async function runSamcoTradingCycle(): Promise<SamcoCycleResponse> {
+  return samcoFetch<SamcoCycleResponse>("/api/samco/cycle", { method: "POST" });
 }
 
 export async function fetchSamcoLedger(): Promise<SamcoLedger> {

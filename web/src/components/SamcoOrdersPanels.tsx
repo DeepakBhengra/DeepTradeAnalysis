@@ -4,6 +4,7 @@ interface SamcoOrdersPanelsProps {
   open: SamcoOrderView[];
   executed: SamcoOrderView[];
   rejected: SamcoOrderView[];
+  updatedAt?: string | null;
   signalSource?: {
     date: string | null;
     variant: string | null;
@@ -19,14 +20,27 @@ function formatPrice(value: number | null): string {
   return value.toFixed(2);
 }
 
+function formatUpdatedAt(value?: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return value;
+  }
+  return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
+}
+
 function OrdersTable({
   title,
   emptyLabel,
   rows,
+  scrollable,
 }: {
   title: string;
   emptyLabel: string;
   rows: SamcoOrderView[];
+  scrollable?: boolean;
 }) {
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -35,9 +49,11 @@ function OrdersTable({
         <span className="font-normal normal-case text-kite-text">({rows.length})</span>
       </h3>
 
-      <div className="mt-3 overflow-x-auto">
+      <div
+        className={`mt-3 overflow-x-auto ${scrollable ? "max-h-96 overflow-y-auto" : ""}`}
+      >
         <table className="w-full min-w-[780px] border-collapse text-left text-xs">
-          <thead>
+          <thead className={scrollable ? "sticky top-0 bg-kite-surface" : undefined}>
             <tr className="border-b border-kite-border text-kite-muted">
               <th className="py-2 pr-3 font-medium">Stock</th>
               <th className="py-2 pr-3 font-medium">Timing</th>
@@ -58,8 +74,11 @@ function OrdersTable({
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
-                <tr key={row.id} className="border-b border-kite-border/60">
+              rows.map((row, index) => (
+                <tr
+                  key={`${row.id}:${row.orderNumber ?? "none"}:${index}`}
+                  className="border-b border-kite-border/60"
+                >
                   <td className="py-2 pr-3 text-kite-text">
                     <div className="font-medium">{row.stockName}</div>
                     <div className="text-[10px] text-kite-muted">{row.tradingSymbol}</div>
@@ -96,8 +115,10 @@ export function SamcoOrdersPanels({
   open,
   executed,
   rejected,
+  updatedAt,
   signalSource,
 }: SamcoOrdersPanelsProps) {
+  const updatedLabel = formatUpdatedAt(updatedAt);
   return (
     <div className="flex flex-col gap-3">
       {signalSource && (
@@ -106,6 +127,7 @@ export function SamcoOrdersPanels({
           {signalSource.date
             ? `${signalSource.variant ?? "—"} · ${signalSource.date} · ${signalSource.tradeCount} trade(s)`
             : "none yet — run Day Scan (supported variant) to push BUY/SELL/exit signals here"}
+          {updatedLabel ? ` · ledger ${updatedLabel}` : ""}
         </p>
       )}
       <OrdersTable
@@ -117,6 +139,7 @@ export function SamcoOrdersPanels({
         title="Executed orders"
         emptyLabel="No executed orders yet."
         rows={executed}
+        scrollable
       />
       <OrdersTable
         title="Rejected orders"

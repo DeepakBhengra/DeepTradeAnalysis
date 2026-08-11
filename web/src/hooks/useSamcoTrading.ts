@@ -7,6 +7,7 @@ import {
   fetchSamcoSettings,
   fetchSamcoStatus,
   refreshSamcoSession,
+  runSamcoTradingCycle,
   setSamcoLiveTrading,
   updateSamcoSettings,
   type SamcoAuthStatus,
@@ -48,8 +49,10 @@ export function useSamcoTrading(isActive: boolean) {
     DEFAULT_SAMCO_RULE_VARIANT,
   );
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [refreshInfo, setRefreshInfo] = useState<string | null>(null);
   const inputsDirtyRef = useRef(false);
 
   const syncInputsFromSettings = useCallback((nextSettings: SamcoRuntimeSettings) => {
@@ -70,37 +73,82 @@ export function useSamcoTrading(isActive: boolean) {
     inputsDirtyRef.current = false;
   }, []);
 
-  const refresh = useCallback(async () => {
-    try {
-      const [nextStatus, nextSettings, nextLedger, nextOrders, nextLogs] =
-        await Promise.all([
-          fetchSamcoStatus(),
-          fetchSamcoSettings(),
-          fetchSamcoLedger(),
-          fetchSamcoOrders(),
-          fetchSamcoLogs(logDate),
-        ]);
-      setStatus(nextStatus);
-      setSettings(nextSettings);
-      setLedger(nextLedger);
-      setOrders(nextOrders);
-      setLogs(nextLogs.records);
-      syncInputsFromSettings(nextSettings);
-      setError(null);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
+  const loadSnapshot = useCallback(async () => {
+    const [nextStatus, nextSettings, nextLedger, nextOrders, nextLogs] =
+      await Promise.all([
+        fetchSamcoStatus(),
+        fetchSamcoSettings(),
+        fetchSamcoLedger(),
+        fetchSamcoOrders(),
+        fetchSamcoLogs(logDate),
+      ]);
+    setStatus(nextStatus);
+    setSettings(nextSettings);
+    setLedger(nextLedger);
+    setOrders(nextOrders);
+    setLogs(nextLogs.records);
+    syncInputsFromSettings(nextSettings);
+    return nextOrders;
   }, [logDate, syncInputsFromSettings]);
+
+  const refresh = useCallback(
+    async (options?: { runCycle?: boolean; silent?: boolean }) => {
+      const runCycle = options?.runCycle === true;
+      const silent = options?.silent === true;
+      if (!silent) {
+        setRefreshing(true);
+        setRefreshInfo(null);
+      }
+      try {
+        if (runCycle) {
+          const cycleResult = await runSamcoTradingCycle();
+          setStatus(cycleResult.status);
+          setOrders(cycleResult.orders);
+          const [nextSettings, nextLedger, nextLogs] = await Promise.all([
+            fetchSamcoSettings(),
+            fetchSamcoLedger(),
+            fetchSamcoLogs(logDate),
+          ]);
+          setSettings(nextSettings);
+          setLedger(nextLedger);
+          setLogs(nextLogs.records);
+          syncInputsFromSettings(nextSettings);
+          if (!silent) {
+            setRefreshInfo(
+              `Orders refreshed · executed ${cycleResult.orders.executed.length} · open ${cycleResult.orders.open.length} · rejected ${cycleResult.orders.rejected.length}` +
+                (cycleResult.cycle.processed
+                  ? ` · cycle +${cycleResult.cycle.entriesPlaced} entry / +${cycleResult.cycle.exitsPlaced} exit (${cycleResult.cycle.signalSource})`
+                  : ""),
+            );
+          }
+        } else {
+          const nextOrders = await loadSnapshot();
+          if (!silent) {
+            setRefreshInfo(
+              `Orders refreshed · executed ${nextOrders.executed.length} · open ${nextOrders.open.length} · rejected ${nextOrders.rejected.length}`,
+            );
+          }
+        }
+        setError(null);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setError(message);
+      } finally {
+        setLoading(false);
+        if (!silent) {
+          setRefreshing(false);
+        }
+      }
+    },
+    [loadSnapshot, logDate, syncInputsFromSettings],
+  );
 
   useEffect(() => {
     if (!isActive) {
       inputsDirtyRef.current = false;
       return;
     }
-    void refresh();
+    void refresh({ silent: true });
   }, [isActive, refresh]);
 
   useEffect(() => {
@@ -109,7 +157,7 @@ export function useSamcoTrading(isActive: boolean) {
     }
 
     const timer = window.setInterval(() => {
-      void refresh();
+      void refresh({ silent: true });
     }, 5000);
 
     return () => window.clearInterval(timer);
@@ -278,9 +326,15 @@ export function useSamcoTrading(isActive: boolean) {
 
   const refreshSession = useCallback(async () => {
     setActionError(null);
+    setRefreshInfo(null);
     try {
-      await refreshSamcoSession();
-      await refresh();
+      const session = await refreshSamcoSession();
+      await refresh({ silent: true });
+      setRefreshInfo(
+        session.connected
+          ? "Samco session connected — whoami OK. Ready for live order requests when Live is on and Dry run is off."
+          : "Session refresh returned without a connected token.",
+      );
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setActionError(message);
@@ -306,6 +360,11 @@ export function useSamcoTrading(isActive: boolean) {
     settings?.dryRun === false && settings?.liveTradingEnabled
       ? "LIVE"
       : "SIMULATED";
+
+  const ordersReachSamco =
+    Boolean(status?.connected) &&
+    settings?.dryRun === false &&
+    settings?.liveTradingEnabled === true;
 
   return {
     status,
@@ -333,10 +392,13 @@ export function useSamcoTrading(isActive: boolean) {
     ruleVariantInput,
     applyRuleVariant,
     loading,
+    refreshing,
     error,
     actionError,
+    refreshInfo,
     modeLabel,
-    refresh,
+    ordersReachSamco,
+    refresh: () => refresh({ runCycle: true }),
     setDryRun,
     setLiveTrading,
     applyDayQuantity,
