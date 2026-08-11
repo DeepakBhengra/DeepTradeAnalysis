@@ -183,6 +183,7 @@ export async function refreshSamcoSession(): Promise<{
 
 export interface SamcoCycleResponse {
   ok: boolean;
+  cleared?: boolean;
   cycle: {
     processed: boolean;
     signalSource: "dayscan" | "poll" | "none";
@@ -193,12 +194,23 @@ export interface SamcoCycleResponse {
     scanErrors: number;
   };
   orders: SamcoOrdersResponse;
+  logs?: SamcoLogsResponse;
   status: SamcoAuthStatus;
 }
 
 /** Process one trading cycle and return fresh order buckets + auth status. */
-export async function runSamcoTradingCycle(): Promise<SamcoCycleResponse> {
-  return samcoFetch<SamcoCycleResponse>("/api/samco/cycle", { method: "POST" });
+export async function runSamcoTradingCycle(options?: {
+  clearPrevious?: boolean;
+  logDate?: string;
+}): Promise<SamcoCycleResponse> {
+  return samcoFetch<SamcoCycleResponse>("/api/samco/cycle", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      clearPrevious: options?.clearPrevious === true,
+      logDate: options?.logDate,
+    }),
+  });
 }
 
 export async function fetchSamcoLedger(): Promise<SamcoLedger> {

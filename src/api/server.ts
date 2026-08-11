@@ -19,7 +19,10 @@ import {
   getSamcoLiveTradingEnabled,
   setSamcoLiveTradingEnabled,
 } from "../samco/samcoLiveTrading.js";
-import { loadPositionLedger } from "../samco/positionLedger.js";
+import {
+  loadPositionLedger,
+  resetPositionLedger,
+} from "../samco/positionLedger.js";
 import {
   getSamcoRuntimeSettings,
   setSamcoDayQuantity,
@@ -37,6 +40,7 @@ import {
   exportSamcoTradeLogsCsv,
   exportSamcoTradeLogsJson,
   getSamcoTradeLogs,
+  resetSamcoTradeLogs,
 } from "../samco/samcoTradeLog.js";
 import {
   loadPostMortemReport,
@@ -217,14 +221,30 @@ app.post("/api/samco/session/refresh", async (_req, res) => {
   }
 });
 
-/** Run one Samco trading cycle (Day Scan snapshot / poll), then return order buckets. */
-app.post("/api/samco/cycle", async (_req, res) => {
+/**
+ * Run one Samco trading cycle (Day Scan snapshot / poll), then return order buckets.
+ * When clearPrevious=true (Refresh data), wipe ledger + trade logs first so open /
+ * executed / rejected panels and trade logs start empty.
+ */
+app.post("/api/samco/cycle", async (req, res) => {
   try {
+    const clearPrevious = req.body?.clearPrevious === true;
+    const logDate =
+      typeof req.body?.logDate === "string" && req.body.logDate.trim().length > 0
+        ? req.body.logDate.trim()
+        : getIstTimeParts(new Date()).dateKey;
+
+    if (clearPrevious) {
+      resetPositionLedger();
+      resetSamcoTradeLogs();
+    }
+
     const cycle = await processLiveTradingCycle();
     const ledger = loadPositionLedger();
     const buckets = buildSamcoOrdersFromLedger(ledger);
     res.json({
       ok: true,
+      cleared: clearPrevious,
       cycle: {
         processed: cycle.processed,
         signalSource: cycle.signalSource,
@@ -238,6 +258,10 @@ app.post("/api/samco/cycle", async (_req, res) => {
         ...buckets,
         updatedAt: ledger.updatedAt,
         signalSource: getDayScanSignalSourceSummary(),
+      },
+      logs: {
+        dateKey: logDate,
+        records: getSamcoTradeLogs(logDate),
       },
       status: await getSamcoAuthStatus(),
     });

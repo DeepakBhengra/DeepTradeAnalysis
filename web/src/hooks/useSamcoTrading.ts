@@ -98,16 +98,43 @@ export function useSamcoTrading(isActive: boolean) {
       if (!silent) {
         setRefreshing(true);
         setRefreshInfo(null);
+        // Clear panels immediately so previous open/executed/rejected + trade logs disappear.
+        setOrders({
+          open: [],
+          executed: [],
+          rejected: [],
+          updatedAt: new Date().toISOString(),
+          signalSource: {
+            date: null,
+            variant: null,
+            tradeCount: 0,
+            runAt: null,
+          },
+        });
+        setLogs([]);
+        setLedger({
+          version: 1,
+          updatedAt: new Date().toISOString(),
+          entries: [],
+        });
       }
       try {
         if (runCycle) {
-          const cycleResult = await runSamcoTradingCycle();
+          const cycleResult = await runSamcoTradingCycle({
+            clearPrevious: !silent,
+            logDate,
+          });
           setStatus(cycleResult.status);
           setOrders(cycleResult.orders);
+          if (cycleResult.logs) {
+            setLogs(cycleResult.logs.records);
+          }
           const [nextSettings, nextLedger, nextLogs] = await Promise.all([
             fetchSamcoSettings(),
             fetchSamcoLedger(),
-            fetchSamcoLogs(logDate),
+            cycleResult.logs
+              ? Promise.resolve(cycleResult.logs)
+              : fetchSamcoLogs(logDate),
           ]);
           setSettings(nextSettings);
           setLedger(nextLedger);
@@ -115,7 +142,7 @@ export function useSamcoTrading(isActive: boolean) {
           syncInputsFromSettings(nextSettings);
           if (!silent) {
             setRefreshInfo(
-              `Orders refreshed · executed ${cycleResult.orders.executed.length} · open ${cycleResult.orders.open.length} · rejected ${cycleResult.orders.rejected.length}` +
+              `Cleared previous orders + trade logs · executed ${cycleResult.orders.executed.length} · open ${cycleResult.orders.open.length} · rejected ${cycleResult.orders.rejected.length}` +
                 (cycleResult.cycle.processed
                   ? ` · cycle +${cycleResult.cycle.entriesPlaced} entry / +${cycleResult.cycle.exitsPlaced} exit (${cycleResult.cycle.signalSource})`
                   : ""),
