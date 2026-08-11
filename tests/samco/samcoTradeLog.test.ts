@@ -44,6 +44,9 @@ describe("samcoTradeLog", () => {
       expect(csv).toContain("timestamp,dateKey,level,message,signalKey,dryRun,action");
       expect(csv).toContain("Dry-run entry BUY PNB qty=100 (deepak).");
       expect(csv).toContain("true");
+
+      tradeLog.resetSamcoTradeLogs();
+      expect(tradeLog.getSamcoTradeLogs("2026-06-29")).toHaveLength(0);
     } finally {
       process.chdir(originalCwd);
     }
