@@ -146,7 +146,7 @@ export function DeepakDayScanWidget({
     let cancelled = false;
     void (async () => {
       try {
-        await pushDayScanSignalsToSamco({
+        const pushResult = await pushDayScanSignalsToSamco({
           date: data.date,
           variant,
           runAt: data.runAt,
@@ -167,8 +167,11 @@ export function DeepakDayScanWidget({
           })),
         });
         if (!cancelled) {
+          const applied = pushResult.materialize;
           setSamcoPushInfo(
-            `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}).`,
+            applied
+              ? `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}) · applied ${applied.entriesPlaced} entr${applied.entriesPlaced === 1 ? "y" : "ies"} / ${applied.exitsPlaced} exit(s) (${applied.mode}).`
+              : `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}).`,
           );
         }
       } catch (pushError) {

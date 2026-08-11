@@ -10,6 +10,7 @@ interface SamcoOrdersPanelsProps {
     variant: string | null;
     tradeCount: number;
     runAt: string | null;
+    isToday?: boolean;
   } | null;
 }
 
@@ -125,7 +126,9 @@ export function SamcoOrdersPanels({
         <p className="m-0 text-[10px] text-kite-muted">
           Day Scan signal feed:{" "}
           {signalSource.date
-            ? `${signalSource.variant ?? "—"} · ${signalSource.date} · ${signalSource.tradeCount} trade(s)`
+            ? `${signalSource.variant ?? "—"} · ${signalSource.date}${
+                signalSource.isToday === false ? " (historical)" : ""
+              } · ${signalSource.tradeCount} trade(s)`
             : "none yet — run Day Scan (supported variant) to push BUY/SELL/exit signals here"}
           {updatedLabel ? ` · ledger ${updatedLabel}` : ""}
         </p>

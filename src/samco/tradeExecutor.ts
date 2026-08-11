@@ -432,13 +432,15 @@ export async function processDayScanSignalSnapshot(
     }>;
   },
   latestCandleTimeIst: string | null,
+  options?: { mode?: "current_candle" | "full" },
 ): Promise<ProcessDecisionResult> {
+  const mode = options?.mode ?? "current_candle";
   const logs: TradeExecutorLog[] = [];
   let entriesPlaced = 0;
   let exitsPlaced = 0;
   let ledger = loadPositionLedger();
 
-  if (!latestCandleTimeIst) {
+  if (mode === "current_candle" && !latestCandleTimeIst) {
     return { entriesPlaced: 0, exitsPlaced: 0, eodSquareOffs: 0, logs };
   }
 
@@ -457,12 +459,15 @@ export async function processDayScanSignalSnapshot(
     };
     const existing = findLedgerEntry(ledger, signalKey);
 
-    // Only take entry signals from the current closed candle — never past timings.
-    if (
+    const shouldPlaceEntry =
       !existing &&
-      trade.exitTimeIst == null &&
-      trade.entryTimeIst === latestCandleTimeIst
-    ) {
+      (mode === "full"
+        ? true
+        : // Live incremental: only open (no exit yet) entries at the current candle.
+          trade.exitTimeIst == null &&
+          trade.entryTimeIst === latestCandleTimeIst);
+
+    if (shouldPlaceEntry) {
       const signal: DeepakTradeSignal = {
         side: trade.side,
         scenarioKey: `${snapshot.strategy}-${trade.tradingSymbol}`,
@@ -508,14 +513,14 @@ export async function processDayScanSignalSnapshot(
       }
     }
 
-    // Only take exit signals from the current closed candle — never past timings.
     const openEntry = findLedgerEntry(ledger, signalKey);
-    if (
+    const shouldPlaceExit =
       openEntry &&
       (openEntry.status === "open" || openEntry.status === "closing") &&
       trade.exitTimeIst != null &&
-      trade.exitTimeIst === latestCandleTimeIst
-    ) {
+      (mode === "full" || trade.exitTimeIst === latestCandleTimeIst);
+
+    if (shouldPlaceExit && openEntry) {
       try {
         const closed = await squareOffLedgerEntry(
           {

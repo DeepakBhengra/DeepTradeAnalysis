@@ -182,7 +182,11 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
               <li>
                 Day Scan feed:{" "}
                 {orders?.signalSource?.date
-                  ? `${orders.signalSource.variant} · ${orders.signalSource.date} · ${orders.signalSource.tradeCount} trade(s)`
+                  ? `${orders.signalSource.variant} · ${orders.signalSource.date}${
+                      orders.signalSource.isToday === false
+                        ? " (historical — full day applied in dry-run)"
+                        : ""
+                    } · ${orders.signalSource.tradeCount} trade(s)`
                   : "none — run Deepak Day Scan with Deeppro1 to push signals"}
               </li>
               <li>

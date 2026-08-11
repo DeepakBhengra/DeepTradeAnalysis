@@ -104,6 +104,7 @@ export interface SamcoOrdersResponse {
     variant: string | null;
     tradeCount: number;
     runAt: string | null;
+    isToday?: boolean;
   };
 }
 
@@ -240,7 +241,16 @@ export async function pushDayScanSignalsToSamco(body: {
     exitReason?: string | null;
     stopLossHit?: boolean;
   }>;
-}): Promise<{ ok: boolean; snapshot: unknown; settings?: SamcoRuntimeSettings }> {
+}): Promise<{
+  ok: boolean;
+  snapshot: unknown;
+  materialize?: {
+    mode: "full" | "current_candle";
+    entriesPlaced: number;
+    exitsPlaced: number;
+  };
+  settings?: SamcoRuntimeSettings;
+}> {
   return samcoFetch("/api/samco/day-scan-signals", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
