@@ -99,6 +99,10 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
     appendSamcoTradeLogs(dayScanResult.logs, {
       dryRun: dryRun || !liveEnabled,
     });
+  } else if (dryRun) {
+    // Dry-run without a same-day Day Scan feed stays idle so Refresh data clear
+    // is not immediately refilled by the background poll watchlist scan.
+    return result;
   } else {
     const cycle = await runSamcoDayScanCycle();
     result.signalSource = "poll";

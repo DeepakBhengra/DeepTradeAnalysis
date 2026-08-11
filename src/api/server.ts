@@ -33,6 +33,7 @@ import {
   setSamcoRuleVariant,
 } from "../samco/samcoRuntimeSettings.js";
 import {
+  clearSamcoDayScanSignalSnapshot,
   getDayScanSignalSourceSummary,
   ingestDayScanTrades,
   latestClosedSessionCandleIst,
@@ -228,9 +229,8 @@ app.post("/api/samco/session/refresh", async (_req, res) => {
 
 /**
  * Run one Samco trading cycle (Day Scan snapshot / poll), then return order buckets.
- * When clearPrevious=true (Refresh data), wipe ledger + trade logs first so open /
- * executed / rejected panels and trade logs start empty, then re-materialize the
- * full ingested Day Scan snapshot (any session date) when present.
+ * When clearPrevious=true (Refresh data), wipe ledger + trade logs + Day Scan feed
+ * and return empty panels — do not rematerialize (that was making clear look broken).
  */
 app.post("/api/samco/cycle", async (req, res) => {
   try {
@@ -243,6 +243,34 @@ app.post("/api/samco/cycle", async (req, res) => {
     if (clearPrevious) {
       resetPositionLedger();
       resetSamcoTradeLogs();
+      clearSamcoDayScanSignalSnapshot();
+
+      const ledger = loadPositionLedger();
+      const buckets = buildSamcoOrdersFromLedger(ledger);
+      res.json({
+        ok: true,
+        cleared: true,
+        cycle: {
+          processed: false,
+          signalSource: "none",
+          entriesPlaced: 0,
+          exitsPlaced: 0,
+          eodSquareOff: false,
+          stocksScanned: 0,
+          scanErrors: 0,
+        },
+        orders: {
+          ...buckets,
+          updatedAt: ledger.updatedAt,
+          signalSource: getDayScanSignalSourceSummary(),
+        },
+        logs: {
+          dateKey: logDate,
+          records: [],
+        },
+        status: await getSamcoAuthStatus(),
+      });
+      return;
     }
 
     const today = getIstTimeParts(new Date()).dateKey;
@@ -259,12 +287,11 @@ app.post("/api/samco/cycle", async (req, res) => {
       scanErrors: 0,
     };
 
-    // After a clear (or whenever a non-today / dry-run Day Scan feed exists), apply
-    // the full snapshot so historical Day Scan runs show up as orders + logs.
+    // Dry-run / historical / live-off: apply the full Day Scan snapshot when present.
     const shouldMaterializeFull =
       snapshot != null &&
       snapshot.variant === getSamcoRuleVariant() &&
-      (clearPrevious || snapshot.date !== today || dryRun || !liveEnabled);
+      (snapshot.date !== today || dryRun || !liveEnabled);
 
     if (shouldMaterializeFull && snapshot) {
       const materialize = await processDayScanSignalSnapshot(snapshot, null, {
@@ -302,7 +329,7 @@ app.post("/api/samco/cycle", async (req, res) => {
     const buckets = buildSamcoOrdersFromLedger(ledger);
     res.json({
       ok: true,
-      cleared: clearPrevious,
+      cleared: false,
       cycle,
       orders: {
         ...buckets,

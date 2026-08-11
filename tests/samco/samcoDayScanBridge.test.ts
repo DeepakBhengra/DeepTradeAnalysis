@@ -152,15 +152,20 @@ describe("ingestDayScanTrades", () => {
         },
       ],
     });
-    const { getDayScanSignalSourceSummary } = await import(
-      "../../src/samco/samcoDayScanBridge.js"
-    );
+    const { getDayScanSignalSourceSummary, clearSamcoDayScanSignalSnapshot } =
+      await import("../../src/samco/samcoDayScanBridge.js");
     const summary = getDayScanSignalSourceSummary(
       new Date("2026-08-11T22:00:00+05:30"),
     );
     expect(summary.date).toBe("2026-08-04");
     expect(summary.tradeCount).toBe(1);
     expect(summary.isToday).toBe(false);
+
+    clearSamcoDayScanSignalSnapshot();
+    expect(loadSamcoDayScanSignalSnapshot()).toBeNull();
+    expect(
+      getDayScanSignalSourceSummary(new Date("2026-08-11T22:00:00+05:30")).date,
+    ).toBeNull();
   });
 
   it("rejects unsupported Day Scan variants", () => {
