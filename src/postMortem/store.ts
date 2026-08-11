@@ -26,7 +26,7 @@ export const DEEPPRO_SIGNAL_DAYS_RULES_REVISION = 10;
  * Bump when Deeppro1 detection thresholds change so Post-Mortem recomputes
  * signal-day indexes instead of serving a stale cache.
  */
-export const DEEPPRO1_SIGNAL_DAYS_RULES_REVISION = 3;
+export const DEEPPRO1_SIGNAL_DAYS_RULES_REVISION = 4;
 
 /**
  * Bump when RulePNB detection thresholds change so Post-Mortem recomputes

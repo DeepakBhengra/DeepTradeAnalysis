@@ -22,10 +22,11 @@ const {
 } = __deeppro1Testables;
 
 describe("Deeppro1 config", () => {
-  it("uses chart-aligned SMI (10,3,3), 0.45% target, 0.3% breakeven arm, and 13:30 entry deadline", () => {
+  it("uses chart-aligned SMI (10,3,3), 0.45% target, 0.3% breakeven arm, 11:45 entry cutoff, 15:00 force exit", () => {
     expect(config.deeppro1.squareOffPct).toBe(0.45);
     expect(config.deeppro1.breakevenArmPct).toBe(0.3);
-    expect(config.deeppro1.entryDeadlineIst).toBe("13:30");
+    expect(config.deeppro1.entryDeadlineIst).toBe("11:45");
+    expect(config.deeppro1.forceExitIst).toBe("15:00");
     expect(config.deeppro1.smi).toEqual({
       lengthK: 10,
       lengthD: 3,
@@ -37,13 +38,19 @@ describe("Deeppro1 config", () => {
 });
 
 describe("Deeppro1 entry deadline", () => {
-  const { isAtOrBeforeEntryDeadline } = __deeppro1Testables;
+  const { isAtOrBeforeEntryDeadline, isAtOrAfterForceExit } = __deeppro1Testables;
 
-  it("allows entries at or before 13:30 and blocks later candles", () => {
-    expect(isAtOrBeforeEntryDeadline("13:30", "13:30")).toBe(true);
-    expect(isAtOrBeforeEntryDeadline("13:15", "13:30")).toBe(true);
-    expect(isAtOrBeforeEntryDeadline("13:45", "13:30")).toBe(false);
-    expect(isAtOrBeforeEntryDeadline("14:00", "13:30")).toBe(false);
+  it("allows entries at or before 11:45 and blocks later candles", () => {
+    expect(isAtOrBeforeEntryDeadline("11:45", "11:45")).toBe(true);
+    expect(isAtOrBeforeEntryDeadline("11:30", "11:45")).toBe(true);
+    expect(isAtOrBeforeEntryDeadline("12:00", "11:45")).toBe(false);
+    expect(isAtOrBeforeEntryDeadline("13:30", "11:45")).toBe(false);
+  });
+
+  it("treats 15:00 and later as force-exit window", () => {
+    expect(isAtOrAfterForceExit("14:45", "15:00")).toBe(false);
+    expect(isAtOrAfterForceExit("15:00", "15:00")).toBe(true);
+    expect(isAtOrAfterForceExit("15:15", "15:00")).toBe(true);
   });
 });
 
@@ -358,5 +365,84 @@ describe("Deeppro1 HINDUNILVR 2026-08-05 chart alignment", () => {
     expect(times).not.toContain("10:15:SELL");
     expect(times).not.toContain("11:00:BUY");
     expect(times).toContain("11:45:SELL");
+    expect(day.signals.every((signal) => signal.timeIst <= "11:45")).toBe(true);
+    expect(day.signals.every((signal) => signal.exit != null)).toBe(true);
+  });
+});
+
+describe("Deeppro1 position management", () => {
+  function sessionBars(dateKey: string, closes: number[]): Candle[] {
+    return closes.map((close, bar) => {
+      const minute = 15 + bar * 15;
+      const h = 9 + Math.floor(minute / 60);
+      const m = minute % 60;
+      return istCandle(dateKey, h, m, close, close + 0.2, close - 0.2, close);
+    });
+  }
+
+  function risingWarmup(): Candle[] {
+    const prior: Candle[] = [];
+    for (let d = 1; d <= 8; d++) {
+      const day = `2026-03-0${d}`;
+      const closes = Array.from({ length: 25 }, (_, i) => 1000 + d * 20 + i * 3);
+      prior.push(...sessionBars(day, closes));
+    }
+    return prior;
+  }
+
+  it("forces a 15:00 exit when still open without target/breakeven/flip", () => {
+    // Rise into mid-morning, one pull that prints SELL, then freeze at entry mid
+    // so neither 0.45% target nor an opposite flip fires before 15:00.
+    const path: number[] = [];
+    for (let i = 0; i < 9; i++) path.push(1240 + i * 2);
+    path.push(1230); // 11:30 SELL
+    for (let i = 0; i < 15; i++) path.push(1230);
+    const day = evaluateDeeppro1Day(
+      buildIndicatorSnapshots([...risingWarmup(), ...sessionBars("2026-03-10", path)]),
+      "2026-03-10",
+    );
+    expect(day.signals.length).toBeGreaterThan(0);
+    expect(day.signals.every((s) => s.timeIst <= "11:45")).toBe(true);
+    const eodExits = day.signals.filter((s) => s.exit?.exitReason === "eod");
+    expect(eodExits.length).toBeGreaterThan(0);
+    expect(eodExits.every((s) => s.exit?.timeIst === "15:00")).toBe(true);
+  });
+
+  it("flip-exits an open side on opposite cross and opens the new side before 11:45", () => {
+    // Long downtrend → morning bounce prints BUY → freeze under 0.45% → reverse prints SELL flip.
+    const prior: Candle[] = [];
+    for (let d = 1; d <= 8; d++) {
+      prior.push(
+        ...sessionBars(
+          `2026-03-0${d}`,
+          Array.from({ length: 25 }, (_, i) => 1500 - d * 30 - i * 4),
+        ),
+      );
+    }
+    const path = [
+      800, 810, 820, 820, 820, 820, 800, 780, 760, 740, 720, 720, 720, 720, 720,
+      720, 720, 720, 720, 720, 720, 720, 720, 720, 720,
+    ];
+    const day = evaluateDeeppro1Day(
+      buildIndicatorSnapshots([...prior, ...sessionBars("2026-03-10", path)]),
+      "2026-03-10",
+    );
+    const flips = day.signals.filter((s) => s.exit?.exitReason === "flip");
+    expect(flips.length).toBeGreaterThan(0);
+    for (const cur of flips) {
+      expect(cur.exit?.timeIst).toBeTruthy();
+      if (cur.exit!.timeIst <= "11:45") {
+        const spawned = day.signals.find(
+          (s) => s.timeIst === cur.exit!.timeIst && s.side !== cur.side,
+        );
+        expect(spawned).toBeTruthy();
+        expect(spawned!.price).toBe(cur.exit!.price);
+      } else {
+        const spawned = day.signals.find(
+          (s) => s.timeIst === cur.exit!.timeIst && s.side !== cur.side,
+        );
+        expect(spawned).toBeUndefined();
+      }
+    }
   });
 });

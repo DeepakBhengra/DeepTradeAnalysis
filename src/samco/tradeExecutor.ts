@@ -528,7 +528,11 @@ export async function processDayScanSignalSnapshot(
             ? "deepak2_stop"
             : trade.exitReason === "breakeven"
               ? "breakeven"
-              : "target",
+              : trade.exitReason === "flip"
+                ? "flip"
+                : trade.exitReason === "eod"
+                  ? "eod"
+                  : "target",
           resolved,
           logs,
         );

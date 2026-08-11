@@ -121,7 +121,7 @@ async function scanSymbol(
 
 /**
  * Day Scan for Deeppro1 — evaluates the full sector watchlist.
- * SMI black↔red cross + same-day exits (0.45% target, or breakeven after 0.3% arm).
+ * SMI black↔red cross + same-day exits (0.45% target, 0.3%→breakeven, opposite flip, 15:00 force).
  */
 export async function buildDeeppro1DayScanPayload(input: {
   date: string;

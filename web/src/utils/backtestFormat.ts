@@ -70,7 +70,7 @@ export function formatDayScanStrategy(
 export function formatExitType(input: {
   exitTimeIst?: string | null;
   targetHit?: boolean;
-  exitReason?: "target" | "deepak2_stop" | "breakeven" | null;
+  exitReason?: "target" | "deepak2_stop" | "breakeven" | "flip" | "eod" | null;
   stopLossHit?: boolean;
 }): string {
   if (input.exitReason === "deepak2_stop" || input.stopLossHit) {
@@ -78,6 +78,12 @@ export function formatExitType(input: {
   }
   if (input.exitReason === "breakeven") {
     return "Breakeven";
+  }
+  if (input.exitReason === "flip") {
+    return "Flip";
+  }
+  if (input.exitReason === "eod") {
+    return "15:00 Exit";
   }
   if (input.exitReason === "target" || input.targetHit) {
     return "Target";

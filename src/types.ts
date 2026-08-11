@@ -120,7 +120,12 @@ export interface DeepakScenarioEvent {
   bbMatchType?: DeepakBbMatchType;
 }
 
-export type DeepakExitReason = "target" | "deepak2_stop" | "breakeven";
+export type DeepakExitReason =
+  | "target"
+  | "deepak2_stop"
+  | "breakeven"
+  | "flip"
+  | "eod";
 
 export interface DeepakExitSignal {
   timeIst: string;
@@ -349,7 +354,7 @@ export interface RuleSunpharma1ScanResult {
  */
 export type Deeppro1ScenarioKey = "sell_smi_down_cross" | "buy_smi_up_cross";
 
-export type Deeppro1ExitReason = "target" | "breakeven";
+export type Deeppro1ExitReason = "target" | "breakeven" | "flip" | "eod";
 
 export interface Deeppro1Exit {
   timeIst: string;
