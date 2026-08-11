@@ -139,6 +139,30 @@ describe("ingestDayScanTrades", () => {
     expect(loadSamcoDayScanSignalSnapshot()?.trades).toHaveLength(1);
   });
 
+  it("summarizes historical Day Scan feeds (not only today)", async () => {
+    ingestDayScanTrades({
+      date: "2026-08-04",
+      variant: "deeppro1",
+      trades: [
+        {
+          tradingSymbol: "TCS",
+          side: "BUY",
+          entryTimeIst: "10:15",
+          entryPrice: 3500,
+        },
+      ],
+    });
+    const { getDayScanSignalSourceSummary } = await import(
+      "../../src/samco/samcoDayScanBridge.js"
+    );
+    const summary = getDayScanSignalSourceSummary(
+      new Date("2026-08-11T22:00:00+05:30"),
+    );
+    expect(summary.date).toBe("2026-08-04");
+    expect(summary.tradeCount).toBe(1);
+    expect(summary.isToday).toBe(false);
+  });
+
   it("rejects unsupported Day Scan variants", () => {
     expect(() =>
       ingestDayScanTrades({ date: "2026-06-29", variant: "rulePnb", trades: [] }),

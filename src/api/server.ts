@@ -24,7 +24,9 @@ import {
   resetPositionLedger,
 } from "../samco/positionLedger.js";
 import {
+  getSamcoDryRun,
   getSamcoRuntimeSettings,
+  getSamcoRuleVariant,
   setSamcoDayQuantity,
   setSamcoDryRun,
   setSamcoEntryPriceRange,
@@ -33,15 +35,18 @@ import {
 import {
   getDayScanSignalSourceSummary,
   ingestDayScanTrades,
+  latestClosedSessionCandleIst,
   loadSamcoDayScanSignalSnapshot,
 } from "../samco/samcoDayScanBridge.js";
 import { buildSamcoOrdersFromLedger } from "../samco/samcoOrders.js";
 import {
+  appendSamcoTradeLogs,
   exportSamcoTradeLogsCsv,
   exportSamcoTradeLogsJson,
   getSamcoTradeLogs,
   resetSamcoTradeLogs,
 } from "../samco/samcoTradeLog.js";
+import { processDayScanSignalSnapshot } from "../samco/tradeExecutor.js";
 import {
   loadPostMortemReport,
   loadSignalDaysIndex,
@@ -224,7 +229,8 @@ app.post("/api/samco/session/refresh", async (_req, res) => {
 /**
  * Run one Samco trading cycle (Day Scan snapshot / poll), then return order buckets.
  * When clearPrevious=true (Refresh data), wipe ledger + trade logs first so open /
- * executed / rejected panels and trade logs start empty.
+ * executed / rejected panels and trade logs start empty, then re-materialize the
+ * full ingested Day Scan snapshot (any session date) when present.
  */
 app.post("/api/samco/cycle", async (req, res) => {
   try {
@@ -239,21 +245,65 @@ app.post("/api/samco/cycle", async (req, res) => {
       resetSamcoTradeLogs();
     }
 
-    const cycle = await processLiveTradingCycle();
+    const today = getIstTimeParts(new Date()).dateKey;
+    const snapshot = loadSamcoDayScanSignalSnapshot();
+    const dryRun = getSamcoDryRun();
+    const liveEnabled = getSamcoLiveTradingEnabled();
+    let cycle = {
+      processed: false,
+      signalSource: "none" as "dayscan" | "poll" | "none",
+      entriesPlaced: 0,
+      exitsPlaced: 0,
+      eodSquareOff: false,
+      stocksScanned: 0,
+      scanErrors: 0,
+    };
+
+    // After a clear (or whenever a non-today / dry-run Day Scan feed exists), apply
+    // the full snapshot so historical Day Scan runs show up as orders + logs.
+    const shouldMaterializeFull =
+      snapshot != null &&
+      snapshot.variant === getSamcoRuleVariant() &&
+      (clearPrevious || snapshot.date !== today || dryRun || !liveEnabled);
+
+    if (shouldMaterializeFull && snapshot) {
+      const materialize = await processDayScanSignalSnapshot(snapshot, null, {
+        mode: "full",
+      });
+      appendSamcoTradeLogs(materialize.logs, {
+        dryRun: dryRun || !liveEnabled,
+      });
+      cycle = {
+        processed:
+          materialize.entriesPlaced > 0 || materialize.exitsPlaced > 0,
+        signalSource: "dayscan",
+        entriesPlaced: materialize.entriesPlaced,
+        exitsPlaced: materialize.exitsPlaced,
+        eodSquareOff: false,
+        stocksScanned: new Set(
+          snapshot.trades.map((trade) => trade.tradingSymbol),
+        ).size,
+        scanErrors: 0,
+      };
+    } else {
+      const live = await processLiveTradingCycle();
+      cycle = {
+        processed: live.processed,
+        signalSource: live.signalSource,
+        entriesPlaced: live.entriesPlaced,
+        exitsPlaced: live.exitsPlaced,
+        eodSquareOff: live.eodSquareOff,
+        stocksScanned: live.stocksScanned,
+        scanErrors: live.scanErrors,
+      };
+    }
+
     const ledger = loadPositionLedger();
     const buckets = buildSamcoOrdersFromLedger(ledger);
     res.json({
       ok: true,
       cleared: clearPrevious,
-      cycle: {
-        processed: cycle.processed,
-        signalSource: cycle.signalSource,
-        entriesPlaced: cycle.entriesPlaced,
-        exitsPlaced: cycle.exitsPlaced,
-        eodSquareOff: cycle.eodSquareOff,
-        stocksScanned: cycle.stocksScanned,
-        scanErrors: cycle.scanErrors,
-      },
+      cycle,
       orders: {
         ...buckets,
         updatedAt: ledger.updatedAt,
@@ -313,7 +363,7 @@ app.get("/api/samco/day-scan-signals", (_req, res) => {
   }
 });
 
-app.post("/api/samco/day-scan-signals", (req, res) => {
+app.post("/api/samco/day-scan-signals", async (req, res) => {
   try {
     const date = typeof req.body?.date === "string" ? req.body.date : "";
     const variant = typeof req.body?.variant === "string" ? req.body.variant : "";
@@ -331,9 +381,35 @@ app.post("/api/samco/day-scan-signals", (req, res) => {
     // Keep Samco rule variant aligned with the Day Scan run that feeds it.
     setSamcoRuleVariant(snapshot.variant);
 
+    const today = getIstTimeParts(new Date()).dateKey;
+    const dryRun = getSamcoDryRun();
+    const liveEnabled = getSamcoLiveTradingEnabled();
+    // Historical Day Scan, dry-run, or live-off: materialize the full day so
+    // Open/Executed/Rejected + trade logs populate immediately after push.
+    // Live same-day keeps current-candle gating via the trading poll.
+    const useFull = snapshot.date !== today || dryRun || !liveEnabled;
+    let applied;
+    if (useFull) {
+      applied = await processDayScanSignalSnapshot(snapshot, null, {
+        mode: "full",
+      });
+    } else {
+      applied = await processDayScanSignalSnapshot(
+        snapshot,
+        latestClosedSessionCandleIst(),
+        { mode: "current_candle" },
+      );
+    }
+    appendSamcoTradeLogs(applied.logs, { dryRun: dryRun || !liveEnabled });
+
     res.json({
       ok: true,
       snapshot,
+      materialize: {
+        mode: useFull ? "full" : "current_candle",
+        entriesPlaced: applied.entriesPlaced,
+        exitsPlaced: applied.exitsPlaced,
+      },
       settings: {
         ...getSamcoRuntimeSettings(),
         liveTradingEnabled: getSamcoLiveTradingEnabled(),

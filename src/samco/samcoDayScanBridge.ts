@@ -183,16 +183,19 @@ export function getDayScanSignalSourceSummary(now = new Date()): {
   variant: string | null;
   tradeCount: number;
   runAt: string | null;
+  /** True when the ingested Day Scan date is today's IST session. */
+  isToday: boolean;
 } {
   const snapshot = loadSamcoDayScanSignalSnapshot();
   const today = getIstTimeParts(now).dateKey;
-  if (!snapshot || snapshot.date !== today) {
-    return { date: null, variant: null, tradeCount: 0, runAt: null };
+  if (!snapshot) {
+    return { date: null, variant: null, tradeCount: 0, runAt: null, isToday: false };
   }
   return {
     date: snapshot.date,
     variant: snapshot.variant,
     tradeCount: snapshot.trades.length,
     runAt: snapshot.runAt,
+    isToday: snapshot.date === today,
   };
 }

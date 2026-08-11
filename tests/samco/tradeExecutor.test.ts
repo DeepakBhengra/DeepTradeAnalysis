@@ -419,4 +419,47 @@ describe("tradeExecutor", () => {
     );
     expect(currentExit.exitsPlaced).toBe(1);
   });
+
+  it("Day Scan full mode materializes completed historical trades with exits", async () => {
+    const { resetPositionLedger, processDayScanSignalSnapshot } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    const result = await processDayScanSignalSnapshot(
+      {
+        strategy: "deeppro1",
+        trades: [
+          {
+            tradingSymbol: "TCS",
+            stockName: "TCS",
+            side: "SELL",
+            scenarioNumber: 1,
+            entryTimeIst: "10:15",
+            entryPrice: 3500,
+            exitTimeIst: "11:00",
+            exitPrice: 3480,
+            targetHit: true,
+            exitReason: "target",
+          },
+          {
+            tradingSymbol: "INFY",
+            stockName: "INFY",
+            side: "BUY",
+            scenarioNumber: 1,
+            entryTimeIst: "09:45",
+            entryPrice: 1600,
+            exitTimeIst: "15:00",
+            exitPrice: 1600,
+            targetHit: false,
+            exitReason: "eod",
+          },
+        ],
+      },
+      null,
+      { mode: "full" },
+    );
+
+    expect(result.entriesPlaced).toBe(2);
+    expect(result.exitsPlaced).toBe(2);
+  });
 });
