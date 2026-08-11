@@ -1,4 +1,5 @@
 import type { SamcoOrderView } from "../api/samco";
+import { downloadSamcoExecutedOrdersCsv } from "../utils/samcoExecutedOrdersCsv";
 
 interface SamcoOrdersPanelsProps {
   open: SamcoOrderView[];
@@ -32,23 +33,45 @@ function formatUpdatedAt(value?: string | null): string | null {
   return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 }
 
+function todayIstDateKey(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 function OrdersTable({
   title,
   emptyLabel,
   rows,
   scrollable,
+  onDownloadCsv,
 }: {
   title: string;
   emptyLabel: string;
   rows: SamcoOrderView[];
   scrollable?: boolean;
+  onDownloadCsv?: () => void;
 }) {
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
-      <h3 className="m-0 text-xs font-semibold uppercase tracking-wide text-kite-muted">
-        {title}{" "}
-        <span className="font-normal normal-case text-kite-text">({rows.length})</span>
-      </h3>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="m-0 text-xs font-semibold uppercase tracking-wide text-kite-muted">
+          {title}{" "}
+          <span className="font-normal normal-case text-kite-text">({rows.length})</span>
+        </h3>
+        {onDownloadCsv && rows.length > 0 && (
+          <button
+            type="button"
+            onClick={onDownloadCsv}
+            className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-[10px] font-medium text-kite-text hover:bg-kite-surface"
+          >
+            Download CSV
+          </button>
+        )}
+      </div>
 
       <div
         className={`mt-3 overflow-x-auto ${scrollable ? "max-h-96 overflow-y-auto" : ""}`}
@@ -120,6 +143,15 @@ export function SamcoOrdersPanels({
   signalSource,
 }: SamcoOrdersPanelsProps) {
   const updatedLabel = formatUpdatedAt(updatedAt);
+  const feedDate = signalSource?.date ?? todayIstDateKey();
+
+  const handleDownloadExecutedCsv = () => {
+    downloadSamcoExecutedOrdersCsv(
+      executed,
+      `samco-executed-orders-${feedDate}.csv`,
+    );
+  };
+
   return (
     <div className="flex flex-col gap-3">
       {signalSource && (
@@ -143,6 +175,7 @@ export function SamcoOrdersPanels({
         emptyLabel="No executed orders yet."
         rows={executed}
         scrollable
+        onDownloadCsv={handleDownloadExecutedCsv}
       />
       <OrdersTable
         title="Rejected orders"
