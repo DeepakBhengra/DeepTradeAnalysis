@@ -45,6 +45,7 @@ import {
   saveSignalDaysIndex,
 } from "../postMortem/store.js";
 import { getIstTimeParts } from "../utils/marketTime.js";
+import { processLiveTradingCycle } from "../engine/liveTradingLoop.js";
 import { startSamcoTradingPoll } from "./samcoPoll.js";
 import {
   assertKiteCredentials,
@@ -209,6 +210,36 @@ app.post("/api/samco/session/refresh", async (_req, res) => {
     res.json({
       connected: true,
       sessionTokenPresent: sessionToken.length > 0,
+    });
+  } catch (error) {
+    const message = formatUnknownError(error);
+    res.status(500).json({ error: message });
+  }
+});
+
+/** Run one Samco trading cycle (Day Scan snapshot / poll), then return order buckets. */
+app.post("/api/samco/cycle", async (_req, res) => {
+  try {
+    const cycle = await processLiveTradingCycle();
+    const ledger = loadPositionLedger();
+    const buckets = buildSamcoOrdersFromLedger(ledger);
+    res.json({
+      ok: true,
+      cycle: {
+        processed: cycle.processed,
+        signalSource: cycle.signalSource,
+        entriesPlaced: cycle.entriesPlaced,
+        exitsPlaced: cycle.exitsPlaced,
+        eodSquareOff: cycle.eodSquareOff,
+        stocksScanned: cycle.stocksScanned,
+        scanErrors: cycle.scanErrors,
+      },
+      orders: {
+        ...buckets,
+        updatedAt: ledger.updatedAt,
+        signalSource: getDayScanSignalSourceSummary(),
+      },
+      status: await getSamcoAuthStatus(),
     });
   } catch (error) {
     const message = formatUnknownError(error);

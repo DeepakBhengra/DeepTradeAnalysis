@@ -48,9 +48,12 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
     ruleVariantInput,
     applyRuleVariant,
     loading,
+    refreshing,
     error,
     actionError,
+    refreshInfo,
     modeLabel,
+    ordersReachSamco,
     refresh,
     setDryRun,
     setLiveTrading,
@@ -131,7 +134,11 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           <div className="mt-3 grid gap-1 text-xs text-kite-muted sm:grid-cols-2 lg:grid-cols-4">
             <p className="m-0">
               Session:{" "}
-              <span className="text-kite-text">
+              <span
+                className={
+                  status?.connected ? "text-kite-green" : "text-kite-red"
+                }
+              >
                 {loading ? "..." : status?.connected ? "Connected" : "Not connected"}
               </span>
             </p>
@@ -149,6 +156,47 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             <p className="m-0">
               Rule: <span className="text-kite-text">{ruleVariantLabel}</span>
             </p>
+            <p className="m-0">
+              Order API:{" "}
+              <span
+                className={
+                  ordersReachSamco ? "text-kite-green" : "text-kite-orange"
+                }
+              >
+                {ordersReachSamco
+                  ? "Live — placeOrder enabled"
+                  : "Simulated — no Samco placeOrder"}
+              </span>
+            </p>
+          </div>
+
+          <div className="mt-3 rounded-sm border border-kite-border bg-kite-bg p-2 text-[11px] text-kite-muted">
+            <p className="m-0 font-medium text-kite-text">Signal → Samco checklist</p>
+            <ul className="mt-1 list-disc space-y-0.5 pl-4">
+              <li>
+                Session connected:{" "}
+                {status?.connected
+                  ? "yes"
+                  : "no — click Refresh session (needs SAMCO_API_KEY / SAMCO_API_SECRET)"}
+              </li>
+              <li>
+                Day Scan feed:{" "}
+                {orders?.signalSource?.date
+                  ? `${orders.signalSource.variant} · ${orders.signalSource.date} · ${orders.signalSource.tradeCount} trade(s)`
+                  : "none — run Deepak Day Scan with Deeppro1 to push signals"}
+              </li>
+              <li>
+                Mode:{" "}
+                {ordersReachSamco
+                  ? "LIVE — real MIS orders go to Samco"
+                  : "SIMULATED — dry-run or live off; ledger updates locally only"}
+              </li>
+              <li>
+                Confirm reach: Trade logs show{" "}
+                <span className="text-kite-text">Entry filled … (order NNN)</span> with
+                a Samco order number in Executed Detail (not “Dry-run entry”).
+              </li>
+            </ul>
           </div>
 
           <div className="mt-3 flex flex-wrap gap-2">
@@ -162,12 +210,16 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             <button
               type="button"
               onClick={() => void refresh()}
-              className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-3 py-1.5 text-xs font-medium text-kite-text hover:bg-kite-surface"
+              disabled={refreshing}
+              className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-3 py-1.5 text-xs font-medium text-kite-text hover:bg-kite-surface disabled:opacity-50"
             >
-              Refresh data
+              {refreshing ? "Refreshing orders…" : "Refresh data"}
             </button>
           </div>
 
+          {refreshInfo && (
+            <p className="mt-3 text-xs text-kite-text">{refreshInfo}</p>
+          )}
           {error && (
             <p className="mt-3 text-xs text-kite-red">{error}</p>
           )}
@@ -330,6 +382,7 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           open={orders?.open ?? []}
           executed={orders?.executed ?? []}
           rejected={orders?.rejected ?? []}
+          updatedAt={orders?.updatedAt}
           signalSource={orders?.signalSource}
         />
 
