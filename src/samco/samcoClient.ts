@@ -22,6 +22,43 @@ export interface SamcoApiErrorBody {
   status?: string;
   statusMessage?: string;
   message?: string;
+  rejectionReason?: string;
+  error?: string;
+  errorMessage?: string;
+}
+
+export function formatSamcoApiErrorMessage(
+  statusCode: number,
+  body: SamcoApiErrorBody | string,
+): string {
+  if (typeof body === "string") {
+    const trimmed = body.trim();
+    return trimmed || `Samco API error (${statusCode})`;
+  }
+
+  const parts = [
+    body.statusMessage,
+    body.rejectionReason,
+    body.message,
+    body.errorMessage,
+    body.error,
+  ].filter(
+    (part): part is string => typeof part === "string" && part.trim().length > 0,
+  );
+  if (parts.length > 0) {
+    return parts.join(" — ");
+  }
+
+  try {
+    const json = JSON.stringify(body);
+    if (json && json !== "{}") {
+      return `Samco API error (${statusCode}): ${json}`;
+    }
+  } catch {
+    // ignore serialization failures
+  }
+
+  return `Samco API error (${statusCode})`;
 }
 
 export class SamcoApiError extends Error {
@@ -29,11 +66,7 @@ export class SamcoApiError extends Error {
   readonly body: SamcoApiErrorBody | string;
 
   constructor(statusCode: number, body: SamcoApiErrorBody | string) {
-    const message =
-      typeof body === "string"
-        ? body
-        : body.statusMessage ?? body.message ?? `Samco API error (${statusCode})`;
-    super(message);
+    super(formatSamcoApiErrorMessage(statusCode, body));
     this.name = "SamcoApiError";
     this.statusCode = statusCode;
     this.body = body;
