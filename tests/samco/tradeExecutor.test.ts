@@ -633,4 +633,89 @@ describe("tradeExecutor", () => {
     expect(result.entriesPlaced).toBe(0);
     expect(result.exitsPlaced).toBe(0);
   });
+
+  it("Day Scan full rescan skips already-applied entries (no repeat buys)", async () => {
+    const { resetPositionLedger, processDayScanSignalSnapshot, loadPositionLedger } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    const snapshot = {
+      strategy: "deeppro1" as const,
+      trades: [
+        {
+          tradingSymbol: "ASIANPAINT",
+          stockName: "ASIANPAINT",
+          side: "BUY" as const,
+          scenarioNumber: 1,
+          entryTimeIst: "09:45",
+          entryPrice: 2734.45,
+          exitTimeIst: null,
+          exitPrice: null,
+          targetHit: false,
+        },
+        {
+          tradingSymbol: "TCS",
+          stockName: "TCS",
+          side: "SELL" as const,
+          scenarioNumber: 1,
+          entryTimeIst: "10:15",
+          entryPrice: 3500,
+          exitTimeIst: "11:00",
+          exitPrice: 3480,
+          targetHit: true,
+          exitReason: "target",
+        },
+      ],
+    };
+
+    const first = await processDayScanSignalSnapshot(snapshot, null, {
+      mode: "full",
+    });
+    expect(first.entriesPlaced).toBe(2);
+    expect(first.exitsPlaced).toBe(1);
+    expect(first.entriesSkipped).toBe(0);
+
+    const second = await processDayScanSignalSnapshot(snapshot, null, {
+      mode: "full",
+    });
+    expect(second.entriesPlaced).toBe(0);
+    expect(second.exitsPlaced).toBe(0);
+    expect(second.entriesSkipped).toBe(2);
+    expect(second.logs).toEqual([]);
+
+    const ledger = loadPositionLedger();
+    expect(ledger.entries).toHaveLength(2);
+  });
+
+  it("overlapping Day Scan full applies place each signal only once", async () => {
+    const { resetPositionLedger, processDayScanSignalSnapshot, loadPositionLedger } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    const snapshot = {
+      strategy: "deeppro1" as const,
+      trades: [
+        {
+          tradingSymbol: "HDFCAMC",
+          stockName: "HDFCAMC",
+          side: "BUY" as const,
+          scenarioNumber: 1,
+          entryTimeIst: "09:15",
+          entryPrice: 2510.35,
+          exitTimeIst: null,
+          exitPrice: null,
+          targetHit: false,
+        },
+      ],
+    };
+
+    const [a, b] = await Promise.all([
+      processDayScanSignalSnapshot(snapshot, null, { mode: "full" }),
+      processDayScanSignalSnapshot(snapshot, null, { mode: "full" }),
+    ]);
+
+    expect(a.entriesPlaced + b.entriesPlaced).toBe(1);
+    expect(a.entriesSkipped + b.entriesSkipped).toBe(1);
+    expect(loadPositionLedger().entries).toHaveLength(1);
+  });
 });

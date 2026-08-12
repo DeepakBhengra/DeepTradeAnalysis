@@ -16,6 +16,7 @@ import {
 } from "./samcoOrderType.js";
 import { getSamcoLiveTradingEnabled } from "./samcoLiveTrading.js";
 import { getSamcoDryRun, getSamcoEffectiveQuantity, getSamcoEntryPriceRange } from "./samcoRuntimeSettings.js";
+import { withSamcoMaterializeLock } from "./samcoMaterializeLock.js";
 import {
   findLedgerEntry,
   getOpenLedgerEntries,
@@ -41,6 +42,8 @@ export interface ProcessDecisionResult {
   entriesPlaced: number;
   exitsPlaced: number;
   eodSquareOffs: number;
+  /** Entries that matched timing but already existed in the ledger (rescan skip). */
+  entriesSkipped: number;
   logs: TradeExecutorLog[];
 }
 
@@ -94,6 +97,34 @@ function buildPlaceOrderRequest(
   };
 
   return request;
+}
+
+/** Persist a pending claim before calling Samco so a rescan cannot double-place. */
+function claimPendingEntry(
+  ledger: PositionLedger,
+  draft: Omit<LedgerEntry, "status" | "orderNumber"> & {
+    orderNumber?: string | null;
+  },
+): { ledger: PositionLedger; claimed: boolean } {
+  if (findLedgerEntry(ledger, draft.signalKey)) {
+    return { ledger, claimed: false };
+  }
+  const next = upsertLedgerEntry(ledger, {
+    ...draft,
+    orderNumber: draft.orderNumber ?? null,
+    status: "pending",
+  });
+  savePositionLedger(next);
+  return { ledger: next, claimed: true };
+}
+
+function persistLedgerEntry(
+  ledger: PositionLedger,
+  entry: LedgerEntry,
+): PositionLedger {
+  const next = upsertLedgerEntry(ledger, entry);
+  savePositionLedger(next);
+  return next;
 }
 
 async function placeEntryOrder(
@@ -317,7 +348,13 @@ export async function forceEodSquareOff(
   }
 
   savePositionLedger(ledger);
-  return { entriesPlaced: 0, exitsPlaced: 0, eodSquareOffs, logs };
+  return {
+    entriesPlaced: 0,
+    exitsPlaced: 0,
+    eodSquareOffs,
+    entriesSkipped: 0,
+    logs,
+  };
 }
 
 export async function processDecisionResult(
@@ -326,42 +363,29 @@ export async function processDecisionResult(
   latestCandleTimeIst: string,
   options?: TradeExecutorOptions,
 ): Promise<ProcessDecisionResult> {
-  const resolved = { ...defaultOptions(), ...options };
-  const logs: TradeExecutorLog[] = [];
-  let ledger = loadPositionLedger();
-  let entriesPlaced = 0;
-  let exitsPlaced = 0;
+  return withSamcoMaterializeLock(async () => {
+    const resolved = { ...defaultOptions(), ...options };
+    const logs: TradeExecutorLog[] = [];
+    let ledger = loadPositionLedger();
+    let entriesPlaced = 0;
+    let exitsPlaced = 0;
+    let entriesSkipped = 0;
 
-  for (const signal of result.signals) {
-    const signalKey = buildSignalKey({
-      strategy,
-      tradingSymbol: resolved.tradingSymbol,
-      entryTimeIst: signal.timeIst,
-      scenarioNumber: signal.scenarioNumber,
-    });
-    const existing = findLedgerEntry(ledger, signalKey);
+    for (const signal of result.signals) {
+      const signalKey = buildSignalKey({
+        strategy,
+        tradingSymbol: resolved.tradingSymbol,
+        entryTimeIst: signal.timeIst,
+        scenarioNumber: signal.scenarioNumber,
+      });
+      const existing = findLedgerEntry(ledger, signalKey);
+      const timingOk =
+        signal.timeIst === latestCandleTimeIst && signal.exit == null;
 
-    if (
-      !existing &&
-      signal.timeIst === latestCandleTimeIst &&
-      signal.exit == null
-    ) {
-      try {
-        const entry = await placeEntryOrder(signal, strategy, resolved, logs);
-        if (entry) {
-          ledger = upsertLedgerEntry(ledger, entry);
-          if (entry.status !== "failed") {
-            entriesPlaced += 1;
-          }
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        logs.push({
-          level: "error",
-          message: `Entry failed: ${message}`,
-          signalKey,
-        });
-        ledger = upsertLedgerEntry(ledger, {
+      if (existing && timingOk) {
+        entriesSkipped += 1;
+      } else if (!existing && timingOk) {
+        const claim = claimPendingEntry(ledger, {
           signalKey,
           strategy,
           tradingSymbol: resolved.tradingSymbol,
@@ -372,49 +396,96 @@ export async function processDecisionResult(
           entryPrice: signal.price,
           limitPrice: signal.price,
           entryTimeIst: signal.timeIst,
-          orderNumber: null,
-          status: "failed",
-          lastError: message,
-          rejectedReason: message,
           source: resolved.source,
         });
+        ledger = claim.ledger;
+        if (!claim.claimed) {
+          entriesSkipped += 1;
+        } else {
+          try {
+            const entry = await placeEntryOrder(
+              signal,
+              strategy,
+              resolved,
+              logs,
+            );
+            if (entry) {
+              ledger = persistLedgerEntry(ledger, entry);
+              if (entry.status !== "failed") {
+                entriesPlaced += 1;
+              }
+            }
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            logs.push({
+              level: "error",
+              message: `Entry failed: ${message}`,
+              signalKey,
+            });
+            ledger = persistLedgerEntry(ledger, {
+              signalKey,
+              strategy,
+              tradingSymbol: resolved.tradingSymbol,
+              stockName: resolved.stockName || resolved.tradingSymbol,
+              exchange: resolved.exchange,
+              side: signal.side,
+              quantity: getSamcoEffectiveQuantity(),
+              entryPrice: signal.price,
+              limitPrice: signal.price,
+              entryTimeIst: signal.timeIst,
+              orderNumber: null,
+              status: "failed",
+              lastError: message,
+              rejectedReason: message,
+              source: resolved.source,
+            });
+          }
+        }
+      }
+
+      const openEntry = findLedgerEntry(ledger, signalKey);
+      if (
+        openEntry &&
+        (openEntry.status === "open" || openEntry.status === "closing") &&
+        shouldExitSignal(signal) &&
+        signal.exit?.timeIst === latestCandleTimeIst
+      ) {
+        try {
+          const closed = await squareOffLedgerEntry(
+            openEntry,
+            signal.exit?.exitReason ?? "target",
+            resolved,
+            logs,
+          );
+          ledger = persistLedgerEntry(ledger, closed);
+          exitsPlaced += 1;
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          logs.push({
+            level: "error",
+            message: `Exit failed: ${message}`,
+            signalKey,
+          });
+          ledger = persistLedgerEntry(ledger, {
+            ...openEntry,
+            status: "failed",
+            lastError: message,
+          });
+        }
       }
     }
 
-    const openEntry = findLedgerEntry(ledger, signalKey);
-    if (
-      openEntry &&
-      (openEntry.status === "open" || openEntry.status === "closing") &&
-      shouldExitSignal(signal) &&
-      signal.exit?.timeIst === latestCandleTimeIst
-    ) {
-      try {
-        const closed = await squareOffLedgerEntry(
-          openEntry,
-          signal.exit?.exitReason ?? "target",
-          resolved,
-          logs,
-        );
-        ledger = upsertLedgerEntry(ledger, closed);
-        exitsPlaced += 1;
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        logs.push({
-          level: "error",
-          message: `Exit failed: ${message}`,
-          signalKey,
-        });
-        ledger = upsertLedgerEntry(ledger, {
-          ...openEntry,
-          status: "failed",
-          lastError: message,
-        });
-      }
-    }
-  }
-
-  savePositionLedger(ledger);
-  return { entriesPlaced, exitsPlaced, eodSquareOffs: 0, logs };
+    savePositionLedger(ledger);
+    return {
+      entriesPlaced,
+      exitsPlaced,
+      eodSquareOffs: 0,
+      entriesSkipped,
+      logs,
+    };
+  });
 }
 
 export async function processDayScanSignalSnapshot(
@@ -437,75 +508,62 @@ export async function processDayScanSignalSnapshot(
   latestCandleTimeIst: string | null,
   options?: { mode?: "current_candle" | "full" | "catch_up" },
 ): Promise<ProcessDecisionResult> {
-  const mode = options?.mode ?? "current_candle";
-  const logs: TradeExecutorLog[] = [];
-  let entriesPlaced = 0;
-  let exitsPlaced = 0;
-  let ledger = loadPositionLedger();
+  return withSamcoMaterializeLock(async () => {
+    const mode = options?.mode ?? "current_candle";
+    const logs: TradeExecutorLog[] = [];
+    let entriesPlaced = 0;
+    let exitsPlaced = 0;
+    let entriesSkipped = 0;
+    // Reload inside the lock so overlapping Day Scan rescans see claims.
+    let ledger = loadPositionLedger();
 
-  if (
-    (mode === "current_candle" || mode === "catch_up") &&
-    !latestCandleTimeIst
-  ) {
-    return { entriesPlaced: 0, exitsPlaced: 0, eodSquareOffs: 0, logs };
-  }
-
-  const latestMinutes =
-    latestCandleTimeIst != null ? parseHmToMinutes(latestCandleTimeIst) : null;
-
-  for (const trade of snapshot.trades) {
-    const signalKey = buildSignalKey({
-      strategy: snapshot.strategy,
-      tradingSymbol: trade.tradingSymbol,
-      entryTimeIst: trade.entryTimeIst,
-      scenarioNumber: trade.scenarioNumber,
-    });
-    const resolved = {
-      ...defaultOptions(),
-      tradingSymbol: trade.tradingSymbol,
-      stockName: trade.stockName,
-      source: "dayscan" as const,
-    };
-    const existing = findLedgerEntry(ledger, signalKey);
-    const entryMinutes = parseHmToMinutes(trade.entryTimeIst);
-
-    const shouldPlaceEntry =
-      !existing &&
-      (mode === "full"
-        ? true
-        : mode === "catch_up"
-          ? latestMinutes != null && entryMinutes <= latestMinutes
-          : // Live single-candle: only open (no exit yet) entries at the current candle.
-            trade.exitTimeIst == null &&
-            trade.entryTimeIst === latestCandleTimeIst);
-
-    if (shouldPlaceEntry) {
-      const signal: DeepakTradeSignal = {
-        side: trade.side,
-        scenarioKey: `${snapshot.strategy}-${trade.tradingSymbol}`,
-        scenarioNumber: trade.scenarioNumber,
-        timeIst: trade.entryTimeIst,
-        price: trade.entryPrice,
-        bbMatchType: "close",
-        profitTarget: 0,
-        exit: null,
+    if (
+      (mode === "current_candle" || mode === "catch_up") &&
+      !latestCandleTimeIst
+    ) {
+      return {
+        entriesPlaced: 0,
+        exitsPlaced: 0,
+        eodSquareOffs: 0,
+        entriesSkipped: 0,
+        logs,
       };
-      try {
-        const entry = await placeEntryOrder(signal, snapshot.strategy, resolved, logs);
-        if (entry) {
-          ledger = upsertLedgerEntry(ledger, entry);
-          if (entry.status !== "failed") {
-            entriesPlaced += 1;
-          }
-        }
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        logs.push({
-          level: "error",
-          message: `Day Scan entry failed: ${message}`,
-          signalKey,
-        });
-        ledger = upsertLedgerEntry(ledger, {
+    }
+
+    const latestMinutes =
+      latestCandleTimeIst != null
+        ? parseHmToMinutes(latestCandleTimeIst)
+        : null;
+
+    for (const trade of snapshot.trades) {
+      const signalKey = buildSignalKey({
+        strategy: snapshot.strategy,
+        tradingSymbol: trade.tradingSymbol,
+        entryTimeIst: trade.entryTimeIst,
+        scenarioNumber: trade.scenarioNumber,
+      });
+      const resolved = {
+        ...defaultOptions(),
+        tradingSymbol: trade.tradingSymbol,
+        stockName: trade.stockName,
+        source: "dayscan" as const,
+      };
+      const existing = findLedgerEntry(ledger, signalKey);
+      const entryMinutes = parseHmToMinutes(trade.entryTimeIst);
+
+      const timingOk =
+        mode === "full"
+          ? true
+          : mode === "catch_up"
+            ? latestMinutes != null && entryMinutes <= latestMinutes
+            : // Live single-candle: only open (no exit yet) entries at the current candle.
+              trade.exitTimeIst == null &&
+              trade.entryTimeIst === latestCandleTimeIst;
+
+      if (existing && timingOk) {
+        entriesSkipped += 1;
+      } else if (!existing && timingOk) {
+        const claim = claimPendingEntry(ledger, {
           signalKey,
           strategy: snapshot.strategy,
           tradingSymbol: trade.tradingSymbol,
@@ -516,72 +574,131 @@ export async function processDayScanSignalSnapshot(
           entryPrice: trade.entryPrice,
           limitPrice: trade.entryPrice,
           entryTimeIst: trade.entryTimeIst,
-          orderNumber: null,
-          status: "failed",
-          lastError: message,
-          rejectedReason: message,
           source: "dayscan",
         });
+        ledger = claim.ledger;
+        if (!claim.claimed) {
+          entriesSkipped += 1;
+        } else {
+          const signal: DeepakTradeSignal = {
+            side: trade.side,
+            scenarioKey: `${snapshot.strategy}-${trade.tradingSymbol}`,
+            scenarioNumber: trade.scenarioNumber,
+            timeIst: trade.entryTimeIst,
+            price: trade.entryPrice,
+            bbMatchType: "close",
+            profitTarget: 0,
+            exit: null,
+          };
+          try {
+            const entry = await placeEntryOrder(
+              signal,
+              snapshot.strategy,
+              resolved,
+              logs,
+            );
+            if (entry) {
+              ledger = persistLedgerEntry(ledger, entry);
+              if (entry.status !== "failed") {
+                entriesPlaced += 1;
+              }
+            }
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : String(error);
+            logs.push({
+              level: "error",
+              message: `Day Scan entry failed: ${message}`,
+              signalKey,
+            });
+            ledger = persistLedgerEntry(ledger, {
+              signalKey,
+              strategy: snapshot.strategy,
+              tradingSymbol: trade.tradingSymbol,
+              stockName: trade.stockName,
+              exchange: resolved.exchange,
+              side: trade.side,
+              quantity: getSamcoEffectiveQuantity(),
+              entryPrice: trade.entryPrice,
+              limitPrice: trade.entryPrice,
+              entryTimeIst: trade.entryTimeIst,
+              orderNumber: null,
+              status: "failed",
+              lastError: message,
+              rejectedReason: message,
+              source: "dayscan",
+            });
+          }
+        }
       }
-    }
 
-    const openEntry = findLedgerEntry(ledger, signalKey);
-    const exitMinutes =
-      trade.exitTimeIst != null ? parseHmToMinutes(trade.exitTimeIst) : null;
-    const shouldPlaceExit =
-      openEntry &&
-      (openEntry.status === "open" || openEntry.status === "closing") &&
-      trade.exitTimeIst != null &&
-      (mode === "full"
-        ? true
-        : mode === "catch_up"
-          ? latestMinutes != null &&
-            exitMinutes != null &&
-            exitMinutes <= latestMinutes
-          : trade.exitTimeIst === latestCandleTimeIst);
+      const openEntry = findLedgerEntry(ledger, signalKey);
+      const exitMinutes =
+        trade.exitTimeIst != null
+          ? parseHmToMinutes(trade.exitTimeIst)
+          : null;
+      const shouldPlaceExit =
+        openEntry &&
+        (openEntry.status === "open" || openEntry.status === "closing") &&
+        trade.exitTimeIst != null &&
+        (mode === "full"
+          ? true
+          : mode === "catch_up"
+            ? latestMinutes != null &&
+              exitMinutes != null &&
+              exitMinutes <= latestMinutes
+            : trade.exitTimeIst === latestCandleTimeIst);
 
-    if (shouldPlaceExit && openEntry) {
-      try {
-        const closed = await squareOffLedgerEntry(
-          {
+      if (shouldPlaceExit && openEntry) {
+        try {
+          const closed = await squareOffLedgerEntry(
+            {
+              ...openEntry,
+              exitTimeIst: trade.exitTimeIst,
+              exitPrice: trade.exitPrice,
+              exitLimitPrice: trade.exitPrice,
+            },
+            trade.exitReason === "deepak2_stop"
+              ? "deepak2_stop"
+              : trade.exitReason === "breakeven"
+                ? "breakeven"
+                : trade.exitReason === "flip"
+                  ? "flip"
+                  : trade.exitReason === "eod"
+                    ? "eod"
+                    : "target",
+            resolved,
+            logs,
+          );
+          ledger = persistLedgerEntry(ledger, closed);
+          exitsPlaced += 1;
+        } catch (error) {
+          const message =
+            error instanceof Error ? error.message : String(error);
+          logs.push({
+            level: "error",
+            message: `Day Scan exit failed: ${message}`,
+            signalKey,
+          });
+          ledger = persistLedgerEntry(ledger, {
             ...openEntry,
-            exitTimeIst: trade.exitTimeIst,
-            exitPrice: trade.exitPrice,
-            exitLimitPrice: trade.exitPrice,
-          },
-          trade.exitReason === "deepak2_stop"
-            ? "deepak2_stop"
-            : trade.exitReason === "breakeven"
-              ? "breakeven"
-              : trade.exitReason === "flip"
-                ? "flip"
-                : trade.exitReason === "eod"
-                  ? "eod"
-                  : "target",
-          resolved,
-          logs,
-        );
-        ledger = upsertLedgerEntry(ledger, closed);
-        exitsPlaced += 1;
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        logs.push({
-          level: "error",
-          message: `Day Scan exit failed: ${message}`,
-          signalKey,
-        });
-        ledger = upsertLedgerEntry(ledger, {
-          ...openEntry,
-          status: "failed",
-          lastError: message,
-          rejectedReason: message,
-        });
+            status: "failed",
+            lastError: message,
+            rejectedReason: message,
+          });
+        }
       }
     }
-  }
 
-  savePositionLedger(ledger);
-  return { entriesPlaced, exitsPlaced, eodSquareOffs: 0, logs };
+    savePositionLedger(ledger);
+    return {
+      entriesPlaced,
+      exitsPlaced,
+      eodSquareOffs: 0,
+      entriesSkipped,
+      logs,
+    };
+  });
 }
 
 export async function reconcilePendingEntries(
