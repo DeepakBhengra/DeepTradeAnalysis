@@ -8,14 +8,32 @@ const PLACEHOLDER_TOKENS = new Set([
   "your_samco_session_token",
 ]);
 
-let runtimeSessionToken: string | undefined;
+/**
+ * Once we set/clear at runtime, never fall back to the startup
+ * `config.samco.sessionToken` (that value is frozen at process boot).
+ */
+let runtimeTokenOverride = false;
+let runtimeSessionToken = "";
 
-function normalizeToken(token: string | undefined): string {
+export interface SamcoSessionMeta {
+  accountID?: string;
+  accountName?: string;
+  srcIp?: string;
+  primaryIp?: string;
+  secondaryIp?: string;
+}
+
+let lastSessionMeta: SamcoSessionMeta = {};
+
+function normalizeToken(token: string | undefined | null): string {
   return token?.trim() ?? "";
 }
 
 export function getSamcoSessionToken(): string {
-  return normalizeToken(runtimeSessionToken ?? config.samco.sessionToken);
+  if (runtimeTokenOverride) {
+    return normalizeToken(runtimeSessionToken);
+  }
+  return normalizeToken(config.samco.sessionToken);
 }
 
 export function hasValidSamcoSessionToken(): boolean {
@@ -25,14 +43,31 @@ export function hasValidSamcoSessionToken(): boolean {
 
 export function setSamcoSessionToken(token: string): void {
   const normalized = normalizeToken(token);
+  runtimeTokenOverride = true;
   runtimeSessionToken = normalized;
   process.env.SAMCO_SESSION_TOKEN = normalized;
 }
 
 /** Drop a stale/invalid session so the next ensure regenerates from API keys. */
 export function clearSamcoSessionToken(): void {
-  runtimeSessionToken = undefined;
+  runtimeTokenOverride = true;
+  runtimeSessionToken = "";
   process.env.SAMCO_SESSION_TOKEN = "";
+  lastSessionMeta = {};
+}
+
+export function setSamcoSessionMeta(meta: SamcoSessionMeta): void {
+  lastSessionMeta = {
+    accountID: meta.accountID,
+    accountName: meta.accountName,
+    srcIp: meta.srcIp,
+    primaryIp: meta.primaryIp,
+    secondaryIp: meta.secondaryIp,
+  };
+}
+
+export function getSamcoSessionMeta(): SamcoSessionMeta {
+  return { ...lastSessionMeta };
 }
 
 export function persistSamcoSessionTokenToEnv(token: string): void {
