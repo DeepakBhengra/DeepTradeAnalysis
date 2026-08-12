@@ -15,6 +15,7 @@ import type {
   DeepakDayScanTrade,
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
+import { withOpenTradeMarkPrices } from "../utils/sessionMarkPrice.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
@@ -81,12 +82,16 @@ async function scanSymbol(
     const { trades } = runDeepak2Backtest(snapshots, date, date);
 
     return {
-      trades: trades.map((trade) => ({
-        ...trade,
-        symbol: dashboardSymbol.symbol,
-        tradingSymbol: dashboardSymbol.tradingSymbol,
-        sector: entry.sector,
-      })),
+      trades: withOpenTradeMarkPrices(
+        trades.map((trade) => ({
+          ...trade,
+          symbol: dashboardSymbol.symbol,
+          tradingSymbol: dashboardSymbol.tradingSymbol,
+          sector: entry.sector,
+        })),
+        snapshots,
+        date,
+      ),
       error: null,
     };
   } catch (error) {

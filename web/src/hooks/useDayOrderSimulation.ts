@@ -7,9 +7,11 @@ import { catchUpDayOrderPortfolio } from "../utils/dayOrderCatchUp";
 import {
   computeDayOrderPnL,
   createInitialDayOrderPortfolio,
+  marksMapFromSimulation,
   processDayOrderTick,
   validateDayOrderRunSettings,
 } from "../utils/dayOrderEngine";
+import type { DayScanSimulationMark } from "../types/backtest";
 
 interface UseDayOrderSimulationResult {
   orderDate: string;
@@ -17,6 +19,7 @@ interface UseDayOrderSimulationResult {
   status: DayOrderSimStatus;
   portfolio: DayOrderPortfolio;
   pnl: ReturnType<typeof computeDayOrderPnL>;
+  marks: DayScanSimulationMark[];
   canStart: boolean;
   startBlockedReason: string | null;
   dateMismatch: boolean;
@@ -242,7 +245,10 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     }
   }, [scanStatus, catchingUp]);
 
-  const pnl = computeDayOrderPnL(portfolio);
+  const pnl = computeDayOrderPnL(
+    portfolio,
+    marksMapFromSimulation(data?.marks),
+  );
 
   return {
     orderDate,
@@ -250,6 +256,7 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     status,
     portfolio,
     pnl,
+    marks: data?.marks ?? [],
     canStart,
     startBlockedReason,
     dateMismatch,

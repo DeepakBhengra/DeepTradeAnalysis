@@ -8,8 +8,11 @@ import type {
 import { DAY_ORDER_INITIAL_CASH, ORDER_QUANTITY } from "../types/dayOrder";
 import {
   createInitialDayOrderPortfolio,
+  computeDayOrderPnL,
+  dayOrderFillDisplayPnL,
   entrySignalKey,
   exitSignalKey,
+  marksMapFromSimulation,
   processDayOrderTick,
   validateDayOrderRunSettings,
 } from "./dayOrderEngine";
@@ -340,5 +343,29 @@ describe("dayOrderEngine", () => {
 
     expect(second.openPositions).toHaveLength(1);
     expect(second.fills.filter((fill) => fill.kind === "entry")).toHaveLength(1);
+  });
+
+  it("marks open entry unrealized PnL from simulation mid prices", () => {
+    const signal = makeSignal({
+      entryPrice: 500,
+      entryTimeIst: "09:30",
+      tradingSymbol: "RELIANCE",
+    });
+    const portfolio = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([signal], [], 0, "09:30"),
+    );
+    const marks = marksMapFromSimulation([
+      { tradingSymbol: "RELIANCE", price: 510 },
+    ]);
+    const pnl = computeDayOrderPnL(portfolio, marks);
+    const entryFill = portfolio.fills.find((fill) => fill.kind === "entry")!;
+    const openKeys = new Set(portfolio.openPositions.map((p) => p.signalKey));
+
+    expect(pnl.unrealizedPnL).toBe(10 * ORDER_QUANTITY);
+    expect(dayOrderFillDisplayPnL(entryFill, openKeys, marks)).toBe(
+      10 * ORDER_QUANTITY,
+    );
+    expect(dayOrderFillDisplayPnL(entryFill, openKeys, null)).toBeNull();
   });
 });

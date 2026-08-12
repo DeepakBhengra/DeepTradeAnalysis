@@ -50,6 +50,8 @@ export interface DeepakDayScanTrade extends DeepakBacktestTrade {
   tradingSymbol: string;
   sector: string;
   confidenceFactors?: string[];
+  /** Last session mid while still open — for unrealized P&L. */
+  markPrice?: number | null;
 }
 
 export interface DeepakDayScanError {
@@ -147,6 +149,12 @@ export interface DayScanSimulationSummary {
   errorCount: number;
 }
 
+export interface DayScanSimulationMark {
+  tradingSymbol: string;
+  price: number;
+  timeIst: string;
+}
+
 export interface DayScanSimulationPayload {
   date: string;
   simulation: {
@@ -156,6 +164,7 @@ export interface DayScanSimulationPayload {
   };
   entries: DayScanSimulationSignal[];
   exits: DayScanSimulationExit[];
+  marks?: DayScanSimulationMark[];
   errors: DeepakDayScanError[];
   summary: DayScanSimulationSummary;
 }

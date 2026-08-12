@@ -503,6 +503,7 @@ export async function processDayScanSignalSnapshot(
       targetHit: boolean;
       exitReason?: string | null;
       stopLossHit?: boolean;
+      markPrice?: number | null;
     }>;
   },
   latestCandleTimeIst: string | null,
@@ -562,6 +563,18 @@ export async function processDayScanSignalSnapshot(
 
       if (existing && timingOk) {
         entriesSkipped += 1;
+        if (
+          (existing.status === "open" ||
+            existing.status === "closing" ||
+            existing.status === "pending") &&
+          typeof trade.markPrice === "number" &&
+          Number.isFinite(trade.markPrice)
+        ) {
+          ledger = persistLedgerEntry(ledger, {
+            ...existing,
+            markPrice: trade.markPrice,
+          });
+        }
       } else if (!existing && timingOk) {
         const claim = claimPendingEntry(ledger, {
           signalKey,
@@ -575,6 +588,10 @@ export async function processDayScanSignalSnapshot(
           limitPrice: trade.entryPrice,
           entryTimeIst: trade.entryTimeIst,
           source: "dayscan",
+          markPrice:
+            typeof trade.markPrice === "number" && Number.isFinite(trade.markPrice)
+              ? trade.markPrice
+              : null,
         });
         ledger = claim.ledger;
         if (!claim.claimed) {
@@ -598,7 +615,14 @@ export async function processDayScanSignalSnapshot(
               logs,
             );
             if (entry) {
-              ledger = persistLedgerEntry(ledger, entry);
+              ledger = persistLedgerEntry(ledger, {
+                ...entry,
+                markPrice:
+                  typeof trade.markPrice === "number" &&
+                  Number.isFinite(trade.markPrice)
+                    ? trade.markPrice
+                    : entry.markPrice ?? null,
+              });
               if (entry.status !== "failed") {
                 entriesPlaced += 1;
               }
@@ -630,6 +654,19 @@ export async function processDayScanSignalSnapshot(
             });
           }
         }
+      } else if (
+        existing &&
+        (existing.status === "open" ||
+          existing.status === "closing" ||
+          existing.status === "pending") &&
+        typeof trade.markPrice === "number" &&
+        Number.isFinite(trade.markPrice)
+      ) {
+        // Refresh mark even when entry timing gate skipped (e.g. already applied).
+        ledger = persistLedgerEntry(ledger, {
+          ...existing,
+          markPrice: trade.markPrice,
+        });
       }
 
       const openEntry = findLedgerEntry(ledger, signalKey);

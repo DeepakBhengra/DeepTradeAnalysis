@@ -206,6 +206,7 @@ export function DeepakDayScanWidget({
             targetHit: trade.targetHit,
             exitReason: trade.exitReason ?? null,
             stopLossHit: trade.stopLossHit,
+            markPrice: trade.markPrice ?? null,
           })),
         });
         if (!cancelled) {

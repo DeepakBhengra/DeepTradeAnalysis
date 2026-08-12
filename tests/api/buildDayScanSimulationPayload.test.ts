@@ -147,6 +147,14 @@ describe("buildDayScanSimulationPayload", () => {
     expect(payload.simulation.simulatedTimeIst).toBe("09:15");
     expect(payload.simulation.sessionCandleCount).toBe(24);
     expect(payload.summary.stocksScanned).toBe(SECTOR_WATCHLIST.length);
+    expect(payload.marks.length).toBeGreaterThan(0);
+    expect(payload.marks[0]).toEqual(
+      expect.objectContaining({
+        tradingSymbol: expect.any(String),
+        price: expect.any(Number),
+        timeIst: "09:15",
+      }),
+    );
   });
 
   it("reveals entry signals only when simulated time reaches entry time", async () => {

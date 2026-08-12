@@ -18,6 +18,7 @@ import type {
   DeepakDayScanTrade,
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
+import { withOpenTradeMarkPrices } from "../utils/sessionMarkPrice.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
@@ -84,27 +85,31 @@ async function scanSymbol(
     const day = evaluateDeeppro1Day(snapshots, date);
 
     return {
-      trades: day.signals.map((signal) => {
-        const tradeSignal = deeppro1SignalToTradeSignal(signal);
-        return {
-          date,
-          side: tradeSignal.side,
-          scenarioNumber: tradeSignal.scenarioNumber,
-          scenarioKey: tradeSignal.scenarioKey,
-          entryTimeIst: tradeSignal.timeIst,
-          entryPrice: tradeSignal.price,
-          exitTimeIst: tradeSignal.exit?.timeIst ?? null,
-          exitPrice: tradeSignal.exit?.price ?? null,
-          targetHit: tradeSignal.exit?.targetHit ?? false,
-          profit: tradeSignal.exit?.profit ?? null,
-          profitTarget: tradeSignal.profitTarget,
-          bbMatchType: tradeSignal.bbMatchType,
-          exitReason: tradeSignal.exit?.exitReason ?? null,
-          symbol: dashboardSymbol.symbol,
-          tradingSymbol: dashboardSymbol.tradingSymbol,
-          sector: entry.sector,
-        };
-      }),
+      trades: withOpenTradeMarkPrices(
+        day.signals.map((signal) => {
+          const tradeSignal = deeppro1SignalToTradeSignal(signal);
+          return {
+            date,
+            side: tradeSignal.side,
+            scenarioNumber: tradeSignal.scenarioNumber,
+            scenarioKey: tradeSignal.scenarioKey,
+            entryTimeIst: tradeSignal.timeIst,
+            entryPrice: tradeSignal.price,
+            exitTimeIst: tradeSignal.exit?.timeIst ?? null,
+            exitPrice: tradeSignal.exit?.price ?? null,
+            targetHit: tradeSignal.exit?.targetHit ?? false,
+            profit: tradeSignal.exit?.profit ?? null,
+            profitTarget: tradeSignal.profitTarget,
+            bbMatchType: tradeSignal.bbMatchType,
+            exitReason: tradeSignal.exit?.exitReason ?? null,
+            symbol: dashboardSymbol.symbol,
+            tradingSymbol: dashboardSymbol.tradingSymbol,
+            sector: entry.sector,
+          };
+        }),
+        snapshots,
+        date,
+      ),
       error: null,
     };
   } catch (error) {

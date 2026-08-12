@@ -34,7 +34,7 @@ describe("samcoPnL", () => {
     expect(computeSamcoTradeRealizedPnL("SELL", 100, 101, 10)).toBeCloseTo(-10);
   });
 
-  it("summarizes closed trades and ignores open/failed", () => {
+  it("summarizes closed trades and ignores open without mark / failed", () => {
     const summary = buildSamcoPnLSummary([
       entry({
         tradingSymbol: "TCS",
@@ -75,15 +75,66 @@ describe("samcoPnL", () => {
     ]);
 
     expect(summary.closedTradeCount).toBe(2);
-    expect(summary.openPositionCount).toBe(1);
-    expect(summary.totalQuantity).toBe(20);
+    expect(summary.openPositionCount).toBe(0);
+    expect(summary.totalQuantityClosed).toBe(20);
+    expect(summary.totalUnrealizedPnL).toBe(0);
     // TCS: (3510-3500)*10 = 100; INFY short: (1600-1590)*10 = 100
     expect(summary.totalRealizedPnL).toBeCloseTo(200);
+    expect(summary.totalPnL).toBeCloseTo(200);
     expect(summary.winners).toBe(2);
     expect(summary.losers).toBe(0);
     expect(summary.closedTrades.map((trade) => trade.tradingSymbol)).toEqual([
       "TCS",
       "INFY",
     ]);
+  });
+
+  it("includes unrealized PnL for open positions with mark price", () => {
+    const summary = buildSamcoPnLSummary([
+      entry({
+        tradingSymbol: "TITAN",
+        side: "BUY",
+        status: "open",
+        entryPrice: 4000,
+        markPrice: 3980,
+        quantity: 100,
+        exitPrice: null,
+        exitTimeIst: null,
+        signalKey: "deeppro1-TITAN-10:00-1",
+      }),
+      entry({
+        tradingSymbol: "JSWSTEEL",
+        side: "SELL",
+        status: "open",
+        entryPrice: 900,
+        markPrice: 905,
+        quantity: 100,
+        exitPrice: null,
+        exitTimeIst: null,
+        signalKey: "deeppro1-JSWSTEEL-10:00-1",
+      }),
+      entry({
+        tradingSymbol: "TCS",
+        side: "BUY",
+        status: "closed",
+        entryPrice: 3500,
+        exitPrice: 3510,
+        quantity: 10,
+        exitTimeIst: "11:00",
+      }),
+    ]);
+
+    expect(summary.openPositionCount).toBe(2);
+    expect(summary.totalQuantityOpen).toBe(200);
+    // TITAN long: (3980-4000)*100 = -2000; JSW short: (900-905)*100 = -500
+    expect(summary.totalUnrealizedPnL).toBeCloseTo(-2500);
+    expect(summary.totalRealizedPnL).toBeCloseTo(100);
+    expect(summary.totalPnL).toBeCloseTo(-2400);
+    expect(summary.openTrades.map((trade) => trade.tradingSymbol)).toEqual([
+      "JSWSTEEL",
+      "TITAN",
+    ]);
+    expect(summary.openTrades[0].status).toBe("open");
+    expect(summary.openTrades[0].markOrExitPrice).toBe(905);
   });
 });

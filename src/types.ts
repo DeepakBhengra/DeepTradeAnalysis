@@ -604,6 +604,11 @@ export interface DeepakDayScanTrade extends DeepakBacktestTrade {
   tradingSymbol: string;
   sector: string;
   confidenceFactors?: string[];
+  /**
+   * Last same-day session mid while the trade is still open (exitTimeIst null).
+   * Used for unrealized P&L in Day Order / Samco.
+   */
+  markPrice?: number | null;
 }
 
 export interface DeepakDayScanError {
@@ -688,6 +693,13 @@ export interface DayScanSimulationSummary {
   errorCount: number;
 }
 
+export interface DayScanSimulationMark {
+  tradingSymbol: string;
+  /** Mid (high+low)/2 at simulatedTimeIst. */
+  price: number;
+  timeIst: string;
+}
+
 export interface DayScanSimulationPayload {
   date: string;
   simulation: {
@@ -697,6 +709,8 @@ export interface DayScanSimulationPayload {
   };
   entries: DayScanSimulationSignal[];
   exits: DayScanSimulationExit[];
+  /** Per-symbol mark at the current simulated candle (for open unrealized P&L). */
+  marks: DayScanSimulationMark[];
   errors: DeepakDayScanError[];
   summary: DayScanSimulationSummary;
 }

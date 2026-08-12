@@ -55,22 +55,87 @@ function deployedCapital(positions: DayOrderOpenPosition[]): number {
   );
 }
 
-export function computeDayOrderPnL(portfolio: DayOrderPortfolio): DayOrderPnLSummary {
+export function computeDayOrderPositionPnL(
+  side: DayOrderOpenPosition["side"],
+  entryPrice: number,
+  markPrice: number,
+  quantity: number,
+): number {
+  if (side === "BUY") {
+    return (markPrice - entryPrice) * quantity;
+  }
+  return (entryPrice - markPrice) * quantity;
+}
+
+export function computeDayOrderPnL(
+  portfolio: DayOrderPortfolio,
+  marks?: ReadonlyMap<string, number> | Record<string, number> | null,
+): DayOrderPnLSummary {
   const deployed = deployedCapital(portfolio.openPositions);
-  const equity = portfolio.cash + deployed;
-  const unrealizedPnL = 0;
-  const totalPnL = equity - DAY_ORDER_INITIAL_CASH;
+  let unrealizedPnL = 0;
+
+  for (const position of portfolio.openPositions) {
+    const mark =
+      marks == null
+        ? undefined
+        : marks instanceof Map
+          ? marks.get(position.tradingSymbol)
+          : marks[position.tradingSymbol];
+    if (typeof mark === "number" && Number.isFinite(mark)) {
+      unrealizedPnL += computeDayOrderPositionPnL(
+        position.side,
+        position.entryPrice,
+        mark,
+        position.quantity,
+      );
+    }
+  }
+
+  const equity = portfolio.cash + deployed + unrealizedPnL;
+  const realizedPnL = portfolio.realizedPnL;
+  const totalPnL = realizedPnL + unrealizedPnL;
 
   return {
     cash: portfolio.cash,
     deployedCapital: deployed,
     equity,
     unrealizedPnL,
-    realizedPnL: portfolio.realizedPnL,
+    realizedPnL,
     totalPnL,
     returnPct:
       DAY_ORDER_INITIAL_CASH > 0 ? (totalPnL / DAY_ORDER_INITIAL_CASH) * 100 : 0,
   };
+}
+
+export function marksMapFromSimulation(
+  marks: Array<{ tradingSymbol: string; price: number }> | undefined | null,
+): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const mark of marks ?? []) {
+    if (Number.isFinite(mark.price)) {
+      map.set(mark.tradingSymbol, mark.price);
+    }
+  }
+  return map;
+}
+
+/** Display P&L for an order-history row (exit realized, or open-entry unrealized). */
+export function dayOrderFillDisplayPnL(
+  fill: DayOrderFill,
+  openSignalKeys: ReadonlySet<string>,
+  marks?: ReadonlyMap<string, number> | null,
+): number | null {
+  if (fill.kind === "exit") {
+    return fill.realizedPnL;
+  }
+  if (!openSignalKeys.has(fill.signalKey)) {
+    return null;
+  }
+  const mark = marks?.get(fill.tradingSymbol);
+  if (typeof mark !== "number" || !Number.isFinite(mark)) {
+    return null;
+  }
+  return computeDayOrderPositionPnL(fill.side, fill.price, mark, fill.quantity);
 }
 
 function createEntryFill(

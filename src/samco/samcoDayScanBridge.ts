@@ -28,6 +28,8 @@ export interface SamcoDayScanTradeSignal {
   targetHit: boolean;
   exitReason?: string | null;
   stopLossHit?: boolean;
+  /** Last session mid while still open — for unrealized P&L. */
+  markPrice?: number | null;
 }
 
 export interface SamcoDayScanSignalSnapshot {
@@ -145,6 +147,10 @@ export function ingestDayScanTrades(input: {
     targetHit: trade.targetHit === true,
     exitReason: trade.exitReason ?? null,
     stopLossHit: trade.stopLossHit === true,
+    markPrice:
+      typeof trade.markPrice === "number" && Number.isFinite(trade.markPrice)
+        ? trade.markPrice
+        : null,
   }));
 
   const snapshot: SamcoDayScanSignalSnapshot = {

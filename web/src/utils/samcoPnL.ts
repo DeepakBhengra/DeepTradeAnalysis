@@ -1,6 +1,6 @@
 import type { SamcoLedgerEntry } from "../api/samco";
 
-export interface SamcoClosedTradePnL {
+export interface SamcoTradePnLRow {
   signalKey: string;
   tradingSymbol: string;
   stockName: string;
@@ -8,20 +8,26 @@ export interface SamcoClosedTradePnL {
   side: "BUY" | "SELL";
   quantity: number;
   entryPrice: number;
-  exitPrice: number;
+  /** Exit price when closed; mark price when open. */
+  markOrExitPrice: number;
   entryTimeIst: string;
   exitTimeIst: string | null;
   exitReason?: string;
-  /** Realized PnL in ₹ for this closed trade (qty applied). */
-  realizedPnL: number;
+  status: "closed" | "open";
+  /** Realized (closed) or unrealized (open) PnL for this trade. */
+  pnl: number;
 }
 
 export interface SamcoPnLSummary {
-  closedTrades: SamcoClosedTradePnL[];
+  closedTrades: SamcoTradePnLRow[];
+  openTrades: SamcoTradePnLRow[];
   closedTradeCount: number;
   openPositionCount: number;
-  totalQuantity: number;
+  totalQuantityClosed: number;
+  totalQuantityOpen: number;
   totalRealizedPnL: number;
+  totalUnrealizedPnL: number;
+  totalPnL: number;
   winners: number;
   losers: number;
 }
@@ -65,37 +71,65 @@ function resolveEntryPrice(entry: SamcoLedgerEntry): number | null {
   return null;
 }
 
+function resolveMarkPrice(entry: SamcoLedgerEntry): number | null {
+  if (typeof entry.markPrice === "number" && Number.isFinite(entry.markPrice)) {
+    return entry.markPrice;
+  }
+  return null;
+}
+
 export function buildSamcoPnLSummary(
   entries: SamcoLedgerEntry[],
 ): SamcoPnLSummary {
-  const closedTrades: SamcoClosedTradePnL[] = [];
-  let openPositionCount = 0;
+  const closedTrades: SamcoTradePnLRow[] = [];
+  const openTrades: SamcoTradePnLRow[] = [];
 
   for (const entry of entries) {
+    const entryPrice = resolveEntryPrice(entry);
+    if (entryPrice == null) {
+      continue;
+    }
+
     if (
       entry.status === "open" ||
       entry.status === "closing" ||
       entry.status === "pending"
     ) {
-      openPositionCount += 1;
+      const markPrice = resolveMarkPrice(entry);
+      if (markPrice == null) {
+        continue;
+      }
+      openTrades.push({
+        signalKey: entry.signalKey,
+        tradingSymbol: entry.tradingSymbol,
+        stockName: entry.stockName || entry.tradingSymbol,
+        strategy: entry.strategy,
+        side: entry.side,
+        quantity: entry.quantity,
+        entryPrice,
+        markOrExitPrice: markPrice,
+        entryTimeIst: entry.entryTimeIst,
+        exitTimeIst: null,
+        exitReason: undefined,
+        status: "open",
+        pnl: computeSamcoTradeRealizedPnL(
+          entry.side,
+          entryPrice,
+          markPrice,
+          entry.quantity,
+        ),
+      });
       continue;
     }
+
     if (entry.status !== "closed") {
       continue;
     }
 
-    const entryPrice = resolveEntryPrice(entry);
     const exitPrice = resolveExitPrice(entry);
-    if (entryPrice == null || exitPrice == null) {
+    if (exitPrice == null) {
       continue;
     }
-
-    const realizedPnL = computeSamcoTradeRealizedPnL(
-      entry.side,
-      entryPrice,
-      exitPrice,
-      entry.quantity,
-    );
 
     closedTrades.push({
       signalKey: entry.signalKey,
@@ -105,11 +139,17 @@ export function buildSamcoPnLSummary(
       side: entry.side,
       quantity: entry.quantity,
       entryPrice,
-      exitPrice,
+      markOrExitPrice: exitPrice,
       entryTimeIst: entry.entryTimeIst,
       exitTimeIst: entry.exitTimeIst ?? null,
       exitReason: entry.exitReason,
-      realizedPnL,
+      status: "closed",
+      pnl: computeSamcoTradeRealizedPnL(
+        entry.side,
+        entryPrice,
+        exitPrice,
+        entry.quantity,
+      ),
     });
   }
 
@@ -120,17 +160,24 @@ export function buildSamcoPnLSummary(
     }
     return left.tradingSymbol.localeCompare(right.tradingSymbol);
   });
+  openTrades.sort((left, right) =>
+    left.tradingSymbol.localeCompare(right.tradingSymbol),
+  );
+
+  const totalRealizedPnL = closedTrades.reduce((sum, trade) => sum + trade.pnl, 0);
+  const totalUnrealizedPnL = openTrades.reduce((sum, trade) => sum + trade.pnl, 0);
 
   return {
     closedTrades,
+    openTrades,
     closedTradeCount: closedTrades.length,
-    openPositionCount,
-    totalQuantity: closedTrades.reduce((sum, trade) => sum + trade.quantity, 0),
-    totalRealizedPnL: closedTrades.reduce(
-      (sum, trade) => sum + trade.realizedPnL,
-      0,
-    ),
-    winners: closedTrades.filter((trade) => trade.realizedPnL > 0).length,
-    losers: closedTrades.filter((trade) => trade.realizedPnL < 0).length,
+    openPositionCount: openTrades.length,
+    totalQuantityClosed: closedTrades.reduce((sum, trade) => sum + trade.quantity, 0),
+    totalQuantityOpen: openTrades.reduce((sum, trade) => sum + trade.quantity, 0),
+    totalRealizedPnL,
+    totalUnrealizedPnL,
+    totalPnL: totalRealizedPnL + totalUnrealizedPnL,
+    winners: closedTrades.filter((trade) => trade.pnl > 0).length,
+    losers: closedTrades.filter((trade) => trade.pnl < 0).length,
   };
 }
