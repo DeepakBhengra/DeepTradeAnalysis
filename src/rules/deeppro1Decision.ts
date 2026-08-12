@@ -228,7 +228,7 @@ function finalizeSignal(
   open: OpenDeeppro1,
   dateKey: string,
   squareOffPct: number,
-  exit: Deeppro1Exit,
+  exit: Deeppro1Exit | null,
   breakevenArmPct: number,
 ): Deeppro1Signal {
   return {
@@ -245,7 +245,9 @@ function finalizeSignal(
     rsi: open.rsi,
     squareOffPct,
     exit,
-    reasons: [...open.entryReasons, exitReasonText(exit, squareOffPct, breakevenArmPct)],
+    reasons: exit
+      ? [...open.entryReasons, exitReasonText(exit, squareOffPct, breakevenArmPct)]
+      : [...open.entryReasons],
   };
 }
 
@@ -418,7 +420,11 @@ export function evaluateDeeppro1Day(
     }
   }
 
-  // Safety: still open with no 15:00 bar in the series — close on last same-day session bar.
+  // Safety for still-open positions after the candle loop:
+  // - If the last same-day session bar is at/after forceExitIst (15:00), force EOD.
+  // - Otherwise leave exit=null (partial/truncated day used by Day Scan Simulator).
+  //   Early fake EODs on mid-day frames were locking Day Order Simulator into the
+  //   wrong exit time/price vs full-day Day Scan.
   if (open) {
     for (let i = snapshots.length - 1; i >= 0; i--) {
       const snap = snapshots[i];
@@ -430,12 +436,18 @@ export function evaluateDeeppro1Day(
         continue;
       }
       const timeIst = formatIstTime(snap.timestamp);
-      const mid = midPrice(snap);
-      const movePct = favourableMovePct(open.side, open.price, mid);
-      const exit = buildExit(timeIst, mid, movePct, squareOffPct, "eod");
-      signals.push(
-        finalizeSignal(open, dateKey, squareOffPct, exit, breakevenArmPct),
-      );
+      if (isAtOrAfterForceExit(timeIst, forceExitIst)) {
+        const mid = midPrice(snap);
+        const movePct = favourableMovePct(open.side, open.price, mid);
+        const exit = buildExit(timeIst, mid, movePct, squareOffPct, "eod");
+        signals.push(
+          finalizeSignal(open, dateKey, squareOffPct, exit, breakevenArmPct),
+        );
+      } else {
+        signals.push(
+          finalizeSignal(open, dateKey, squareOffPct, null, breakevenArmPct),
+        );
+      }
       open = null;
       break;
     }

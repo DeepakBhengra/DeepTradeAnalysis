@@ -408,6 +408,76 @@ describe("Deeppro1 position management", () => {
     expect(eodExits.every((s) => s.exit?.timeIst === "15:00")).toBe(true);
   });
 
+  it("does not fake EOD on mid-day truncated candles (simulator parity)", () => {
+    // Same open SELL as the 15:00 force-exit case, but stop the series before 15:00.
+    // Day Scan Simulator truncates candles per session index; premature safety EOD
+    // would lock Day Order Simulator into the wrong exit time/price vs full-day Day Scan.
+    const path: number[] = [];
+    for (let i = 0; i < 9; i++) path.push(1240 + i * 2);
+    path.push(1230); // 11:30 SELL
+    // Through 12:00 only (9:15 + 11*15m = 12:00) — still before forceExitIst.
+    for (let i = 0; i < 1; i++) path.push(1230);
+    const truncatedBars = sessionBars("2026-03-10", path);
+    expect(truncatedBars[truncatedBars.length - 1]).toBeTruthy();
+
+    const truncated = evaluateDeeppro1Day(
+      buildIndicatorSnapshots([...risingWarmup(), ...truncatedBars]),
+      "2026-03-10",
+    );
+    const openSignals = truncated.signals.filter((s) => s.exit == null);
+    expect(openSignals.length).toBeGreaterThan(0);
+    expect(
+      truncated.signals.some(
+        (s) => s.exit?.exitReason === "eod" && s.exit.timeIst < "15:00",
+      ),
+    ).toBe(false);
+
+    // Extend through 15:00 — same entry should now get a real 15:00 EOD exit.
+    while (path.length < 25) path.push(1230);
+    const full = evaluateDeeppro1Day(
+      buildIndicatorSnapshots([...risingWarmup(), ...sessionBars("2026-03-10", path)]),
+      "2026-03-10",
+    );
+    const eod = full.signals.find((s) => s.exit?.exitReason === "eod");
+    expect(eod?.exit?.timeIst).toBe("15:00");
+    expect(openSignals[0]?.timeIst).toBe(eod?.timeIst);
+    expect(openSignals[0]?.price).toBe(eod?.price);
+  });
+
+  it("keeps the later true exit when truncated mid-day then evaluated full-day", () => {
+    // Entry mid-morning, then a delayed favourable move that hits 0.45% after noon.
+    // Truncation before the target must not invent an early exit; full day must hit target.
+    const path: number[] = [];
+    for (let i = 0; i < 9; i++) path.push(1240 + i * 2);
+    path.push(1230); // ~11:30 SELL entry mid 1230
+    // Hold flat through late morning / early afternoon (no target yet).
+    for (let i = 0; i < 6; i++) path.push(1230);
+    const beforeTarget = [...path];
+    // Drop enough for SELL target (≥0.45%): 1230 * 0.9955 ≈ 1224.465
+    path.push(1220);
+
+    const truncated = evaluateDeeppro1Day(
+      buildIndicatorSnapshots([
+        ...risingWarmup(),
+        ...sessionBars("2026-03-10", beforeTarget),
+      ]),
+      "2026-03-10",
+    );
+    const stillOpen = truncated.signals.filter((s) => s.side === "SELL" && s.exit == null);
+    expect(stillOpen.length).toBeGreaterThan(0);
+
+    const full = evaluateDeeppro1Day(
+      buildIndicatorSnapshots([...risingWarmup(), ...sessionBars("2026-03-10", path)]),
+      "2026-03-10",
+    );
+    const sell = full.signals.find((s) => s.side === "SELL" && s.exit != null);
+    expect(sell?.exit?.exitReason).toBe("target");
+    expect(sell?.exit?.timeIst).toBeTruthy();
+    expect(sell!.exit!.timeIst > "11:45").toBe(true);
+    expect(stillOpen[0]?.timeIst).toBe(sell?.timeIst);
+    expect(stillOpen[0]?.price).toBe(sell?.price);
+  });
+
   it("flip-exits an open side on opposite cross and opens the new side before 11:45", () => {
     // Long downtrend → morning bounce prints BUY → freeze under 0.45% → reverse prints SELL flip.
     const prior: Candle[] = [];
