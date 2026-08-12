@@ -416,7 +416,10 @@ app.post("/api/samco/day-scan-signals", async (req, res) => {
     const applied = await processDayScanSignalSnapshot(snapshot, null, {
       mode: "full",
     });
-    appendSamcoTradeLogs(applied.logs, { dryRun: dryRun || !liveEnabled });
+    // Rescans that only skip already-applied keys produce no new trade-log rows.
+    if (applied.logs.length > 0) {
+      appendSamcoTradeLogs(applied.logs, { dryRun: dryRun || !liveEnabled });
+    }
 
     res.json({
       ok: true,
@@ -425,6 +428,7 @@ app.post("/api/samco/day-scan-signals", async (req, res) => {
         mode: "full",
         entriesPlaced: applied.entriesPlaced,
         exitsPlaced: applied.exitsPlaced,
+        entriesSkipped: applied.entriesSkipped,
       },
       settings: {
         ...getSamcoRuntimeSettings(),

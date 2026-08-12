@@ -248,6 +248,7 @@ export async function pushDayScanSignalsToSamco(body: {
     mode: "full" | "current_candle" | "catch_up";
     entriesPlaced: number;
     exitsPlaced: number;
+    entriesSkipped?: number;
   };
   settings?: SamcoRuntimeSettings;
 }> {

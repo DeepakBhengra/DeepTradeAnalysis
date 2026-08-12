@@ -168,9 +168,13 @@ export function DeepakDayScanWidget({
         });
         if (!cancelled) {
           const applied = pushResult.materialize;
+          const skipped =
+            applied?.entriesSkipped && applied.entriesSkipped > 0
+              ? ` · skipped ${applied.entriesSkipped} already-applied`
+              : "";
           setSamcoPushInfo(
             applied
-              ? `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}) · applied ${applied.entriesPlaced} entr${applied.entriesPlaced === 1 ? "y" : "ies"} / ${applied.exitsPlaced} exit(s) (${applied.mode}).`
+              ? `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}) · applied ${applied.entriesPlaced} entr${applied.entriesPlaced === 1 ? "y" : "ies"} / ${applied.exitsPlaced} exit(s) (${applied.mode})${skipped}.`
               : `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}).`,
           );
         }
