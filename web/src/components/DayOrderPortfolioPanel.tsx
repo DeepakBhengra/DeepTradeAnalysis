@@ -20,6 +20,8 @@ interface DayOrderPortfolioPanelProps {
   date: string;
   /** Current-candle mids from Day Scan Simulator (open unrealized P&L). */
   marks?: DayScanSimulationMark[];
+  /** Voluntary exit of an open position at the current mark. */
+  onExitPosition?: (signalKey: string) => void;
 }
 
 function pnlClass(value: number): string {
@@ -56,6 +58,7 @@ export function DayOrderPortfolioPanel({
   pnl,
   date,
   marks = [],
+  onExitPosition,
 }: DayOrderPortfolioPanelProps) {
   const { openPositions, fills, skippedEntryKeys } = portfolio;
   const entryFills = fills.filter((fill) => fill.kind === "entry");
@@ -106,7 +109,8 @@ export function DayOrderPortfolioPanel({
                   <th className="pb-2 pr-2 font-medium">Entry</th>
                   <th className="pb-2 pr-2 font-medium">Mark</th>
                   <th className="pb-2 pr-2 font-medium">Entry IST</th>
-                  <th className="pb-2 font-medium">Unrealized P&amp;L</th>
+                  <th className="pb-2 pr-2 font-medium">Unrealized P&amp;L</th>
+                  <th className="pb-2 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -133,6 +137,9 @@ export function DayOrderPortfolioPanel({
                           marksMap,
                         )
                       : null;
+                  const canExit = typeof onExitPosition === "function";
+                  const exitUsesMark =
+                    typeof mark === "number" && Number.isFinite(mark);
                   return (
                     <tr key={position.signalKey} className="border-b border-kite-border">
                       <td className="py-2 pr-2 font-medium">{position.tradingSymbol}</td>
@@ -145,11 +152,26 @@ export function DayOrderPortfolioPanel({
                       </td>
                       <td className="py-2 pr-2">{position.entryTimeIst}</td>
                       <td
-                        className={`py-2 tabular-nums ${
+                        className={`py-2 pr-2 tabular-nums ${
                           unrealized == null ? "text-kite-muted" : pnlClass(unrealized)
                         }`}
                       >
                         {unrealized == null ? "—" : formatPnL(unrealized)}
+                      </td>
+                      <td className="py-2">
+                        <button
+                          type="button"
+                          disabled={!canExit}
+                          onClick={() => onExitPosition?.(position.signalKey)}
+                          className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-[10px] font-medium text-kite-text disabled:cursor-not-allowed disabled:opacity-50"
+                          title={
+                            exitUsesMark
+                              ? "Exit at current mark mid"
+                              : "Exit at entry (mark unavailable)"
+                          }
+                        >
+                          Exit
+                        </button>
                       </td>
                     </tr>
                   );

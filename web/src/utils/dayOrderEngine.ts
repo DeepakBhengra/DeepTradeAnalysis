@@ -197,6 +197,62 @@ function computeRealizedPnL(position: DayOrderOpenPosition, exitPrice: number): 
   return (position.entryPrice - exitPrice) * position.quantity;
 }
 
+/**
+ * Voluntarily close one open position at a mark/mid price (no reverse entry).
+ * Returns the unchanged portfolio when the position or mark is missing.
+ */
+export function closeDayOrderPositionAtMark(
+  portfolio: DayOrderPortfolio,
+  signalKey: string,
+  markPrice: number,
+  timeIst: string,
+  sessionIndex: number,
+): DayOrderPortfolio {
+  if (!Number.isFinite(markPrice)) {
+    return portfolio;
+  }
+
+  const position = portfolio.openPositions.find(
+    (row) => row.signalKey === signalKey,
+  );
+  if (!position) {
+    return portfolio;
+  }
+
+  const pnl = computeRealizedPnL(position, markPrice);
+  const marginReleased = requiredCapital(position.entryPrice, position.quantity);
+  const exitProceeds =
+    position.side === "BUY"
+      ? markPrice * position.quantity
+      : marginReleased + pnl;
+  const exitSide = oppositeSide(position.side);
+
+  const exitFill: DayOrderFill = {
+    id: createFillId(),
+    kind: "exit",
+    signalKey: position.signalKey,
+    tradingSymbol: position.tradingSymbol,
+    symbol: position.symbol,
+    strategy: position.strategy,
+    side: exitSide,
+    quantity: position.quantity,
+    price: markPrice,
+    timeIst,
+    sessionIndex,
+    realizedPnL: pnl,
+  };
+
+  return {
+    cash: portfolio.cash + exitProceeds,
+    openPositions: portfolio.openPositions.filter(
+      (row) => row.signalKey !== signalKey,
+    ),
+    fills: [...portfolio.fills, exitFill],
+    realizedPnL: portfolio.realizedPnL + pnl,
+    skippedEntryKeys: portfolio.skippedEntryKeys,
+  };
+}
+
 function processExits(
   portfolio: DayOrderPortfolio,
   exits: DayScanSimulationExit[],

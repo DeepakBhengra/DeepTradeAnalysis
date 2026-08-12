@@ -67,6 +67,8 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
     applyTradingParams,
     refreshSession,
     downloadLogs,
+    squareOffPosition,
+    exitingSignalKey,
   } = useSamcoTrading(isActive);
 
   const [pendingLiveEnable, setPendingLiveEnable] = useState(false);
@@ -110,6 +112,22 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
   const confirmLiveEnable = async () => {
     await setLiveTrading(true, true);
     setPendingLiveEnable(false);
+  };
+
+  const handleExitPosition = (signalKey: string) => {
+    const entry = ledger?.entries.find((row) => row.signalKey === signalKey);
+    const label = entry
+      ? `${entry.tradingSymbol} ${entry.side} × ${entry.quantity}`
+      : signalKey;
+    if (ordersReachSamco) {
+      const confirmed = window.confirm(
+        `Exit ${label} now? This will send a live square-off to Samco.`,
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+    void squareOffPosition(signalKey);
   };
 
   return (
@@ -445,9 +463,15 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           rejected={orders?.rejected ?? []}
           updatedAt={orders?.updatedAt}
           signalSource={orders?.signalSource}
+          exitingSignalKey={exitingSignalKey}
+          onExitPosition={handleExitPosition}
         />
 
-        <SamcoPnLPanel entries={ledger?.entries ?? []} />
+        <SamcoPnLPanel
+          entries={ledger?.entries ?? []}
+          exitingSignalKey={exitingSignalKey}
+          onExitPosition={handleExitPosition}
+        />
 
         <section className="border border-kite-border bg-kite-surface p-3">
           <div className="flex flex-wrap items-end justify-between gap-3">

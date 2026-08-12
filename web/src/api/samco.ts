@@ -225,6 +225,19 @@ export async function fetchSamcoLedger(): Promise<SamcoLedger> {
   return samcoFetch<SamcoLedger>("/api/samco/ledger");
 }
 
+export async function squareOffSamcoLedgerEntry(signalKey: string): Promise<{
+  ok: boolean;
+  exitsPlaced: number;
+  ledger: SamcoLedger;
+  orders: SamcoOrdersResponse;
+  status: SamcoAuthStatus;
+}> {
+  return samcoFetch(
+    `/api/samco/ledger/${encodeURIComponent(signalKey)}/square-off`,
+    { method: "POST" },
+  );
+}
+
 export async function fetchSamcoOrders(): Promise<SamcoOrdersResponse> {
   return samcoFetch<SamcoOrdersResponse>("/api/samco/orders");
 }

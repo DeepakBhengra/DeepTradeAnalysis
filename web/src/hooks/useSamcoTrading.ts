@@ -9,6 +9,7 @@ import {
   refreshSamcoSession,
   runSamcoTradingCycle,
   setSamcoLiveTrading,
+  squareOffSamcoLedgerEntry,
   updateSamcoSettings,
   type SamcoAuthStatus,
   type SamcoLedger,
@@ -448,6 +449,31 @@ export function useSamcoTrading(isActive: boolean) {
     [logDate],
   );
 
+  const [exitingSignalKey, setExitingSignalKey] = useState<string | null>(null);
+
+  const squareOffPosition = useCallback(
+    async (signalKey: string) => {
+      setActionError(null);
+      setRefreshInfo(null);
+      setExitingSignalKey(signalKey);
+      try {
+        const result = await squareOffSamcoLedgerEntry(signalKey);
+        setLedger(result.ledger);
+        setOrders(result.orders);
+        setStatus(result.status);
+        setRefreshInfo(`Manual exit placed for ${signalKey}.`);
+        await refresh({ silent: true });
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setActionError(message);
+        throw err;
+      } finally {
+        setExitingSignalKey(null);
+      }
+    },
+    [refresh],
+  );
+
   const modeLabel =
     settings?.dryRun === false && settings?.liveTradingEnabled
       ? "LIVE"
@@ -495,6 +521,7 @@ export function useSamcoTrading(isActive: boolean) {
     refreshInfo,
     modeLabel,
     ordersReachSamco,
+    exitingSignalKey,
     refresh: () => refresh({ runCycle: true }),
     setDryRun,
     setLiveTrading,
@@ -504,5 +531,6 @@ export function useSamcoTrading(isActive: boolean) {
     applyTradingParams,
     refreshSession,
     downloadLogs,
+    squareOffPosition,
   };
 }

@@ -8,6 +8,7 @@ import type {
 import { DAY_ORDER_INITIAL_CASH, ORDER_QUANTITY } from "../types/dayOrder";
 import {
   createInitialDayOrderPortfolio,
+  closeDayOrderPositionAtMark,
   computeDayOrderPnL,
   dayOrderFillDisplayPnL,
   entrySignalKey,
@@ -433,5 +434,35 @@ describe("dayOrderEngine", () => {
     expect(after.openPositions).toHaveLength(1);
     expect(after.openPositions[0].side).toBe("BUY");
     expect(after.fills.filter((fill) => fill.kind === "exit")).toHaveLength(0);
+  });
+
+  it("voluntarily closes an open position at mark without reverse", () => {
+    const signal = makeSignal({
+      entryPrice: 1000,
+      entryTimeIst: "09:30",
+      tradingSymbol: "TCS",
+      side: "BUY",
+    });
+    const opened = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([signal], [], 0, "09:30"),
+    );
+    const signalKey = opened.openPositions[0].signalKey;
+    const closed = closeDayOrderPositionAtMark(
+      opened,
+      signalKey,
+      1030,
+      "10:15",
+      2,
+    );
+
+    expect(closed.openPositions).toHaveLength(0);
+    expect(closed.fills.filter((fill) => fill.kind === "exit")).toHaveLength(1);
+    expect(closed.fills.at(-1)?.price).toBe(1030);
+    expect(closed.fills.at(-1)?.realizedPnL).toBe(30 * ORDER_QUANTITY);
+    expect(closed.realizedPnL).toBe(30 * ORDER_QUANTITY);
+    expect(closed.openPositions.every((p) => !p.signalKey.includes("-sl-rev"))).toBe(
+      true,
+    );
   });
 });

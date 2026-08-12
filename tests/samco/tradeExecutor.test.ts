@@ -720,4 +720,50 @@ describe("tradeExecutor", () => {
     expect(a.entriesSkipped + b.entriesSkipped).toBe(1);
     expect(loadPositionLedger().entries).toHaveLength(1);
   });
+
+  it("squareOffLedgerBySignalKey closes an open position with manual reason", async () => {
+    const {
+      resetPositionLedger,
+      processDayScanSignalSnapshot,
+      squareOffLedgerBySignalKey,
+      loadPositionLedger,
+    } = await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    await processDayScanSignalSnapshot(
+      {
+        strategy: "deeppro1" as const,
+        trades: [
+          {
+            tradingSymbol: "SIEMENS",
+            stockName: "SIEMENS",
+            side: "SELL" as const,
+            scenarioNumber: 1,
+            entryTimeIst: "10:30",
+            entryPrice: 3200,
+            exitTimeIst: null,
+            exitPrice: null,
+            targetHit: false,
+            markPrice: 3168.3,
+          },
+        ],
+      },
+      null,
+      { mode: "full" },
+    );
+
+    const open = loadPositionLedger().entries.find((row) => row.status === "open");
+    expect(open).toBeTruthy();
+    const signalKey = open!.signalKey;
+
+    const result = await squareOffLedgerBySignalKey(signalKey);
+    expect(result.exitsPlaced).toBe(1);
+
+    const closed = loadPositionLedger().entries.find(
+      (row) => row.signalKey === signalKey,
+    );
+    expect(closed?.status).toBe("closed");
+    expect(closed?.exitReason).toBe("manual");
+    expect(closed?.exitPrice).toBe(3168.3);
+  });
 });

@@ -13,6 +13,8 @@ interface SamcoOrdersPanelsProps {
     runAt: string | null;
     isToday?: boolean;
   } | null;
+  onExitPosition?: (signalKey: string) => void;
+  exitingSignalKey?: string | null;
 }
 
 function formatPrice(value: number | null): string {
@@ -48,13 +50,20 @@ function OrdersTable({
   rows,
   scrollable,
   onDownloadCsv,
+  onExitPosition,
+  exitingSignalKey,
 }: {
   title: string;
   emptyLabel: string;
   rows: SamcoOrderView[];
   scrollable?: boolean;
   onDownloadCsv?: () => void;
+  onExitPosition?: (signalKey: string) => void;
+  exitingSignalKey?: string | null;
 }) {
+  const showExit = typeof onExitPosition === "function";
+  const colSpan = showExit ? 10 : 9;
+
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -88,45 +97,70 @@ function OrdersTable({
               <th className="py-2 pr-3 font-medium">Strategy</th>
               <th className="py-2 pr-3 font-medium">Status</th>
               <th className="py-2 pr-3 font-medium">Detail</th>
+              {showExit && <th className="py-2 font-medium">Action</th>}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={9} className="py-3 text-kite-muted">
+                <td colSpan={colSpan} className="py-3 text-kite-muted">
                   {emptyLabel}
                 </td>
               </tr>
             ) : (
-              rows.map((row, index) => (
-                <tr
-                  key={`${row.id}:${row.orderNumber ?? "none"}:${index}`}
-                  className="border-b border-kite-border/60"
-                >
-                  <td className="py-2 pr-3 text-kite-text">
-                    <div className="font-medium">{row.stockName}</div>
-                    <div className="text-[10px] text-kite-muted">{row.tradingSymbol}</div>
-                  </td>
-                  <td className="py-2 pr-3 text-kite-text">{row.timing}</td>
-                  <td
-                    className={`py-2 pr-3 font-medium ${
-                      row.side === "BUY" ? "text-kite-green" : "text-kite-red"
-                    }`}
+              rows.map((row, index) => {
+                const canExit =
+                  showExit &&
+                  row.kind === "entry" &&
+                  (row.status === "open" || row.status === "closing");
+                const isExiting = exitingSignalKey === row.signalKey;
+                return (
+                  <tr
+                    key={`${row.id}:${row.orderNumber ?? "none"}:${index}`}
+                    className="border-b border-kite-border/60"
                   >
-                    {row.side}
-                  </td>
-                  <td className="py-2 pr-3 text-kite-text">{row.kind}</td>
-                  <td className="py-2 pr-3 tabular-nums text-kite-text">
-                    {formatPrice(row.limitPrice)}
-                  </td>
-                  <td className="py-2 pr-3 text-kite-text">{row.quantity}</td>
-                  <td className="py-2 pr-3 text-kite-text">{row.strategy}</td>
-                  <td className="py-2 pr-3 text-kite-text">{row.status}</td>
-                  <td className="py-2 pr-3 text-kite-muted">
-                    {row.reason ?? row.orderNumber ?? "—"}
-                  </td>
-                </tr>
-              ))
+                    <td className="py-2 pr-3 text-kite-text">
+                      <div className="font-medium">{row.stockName}</div>
+                      <div className="text-[10px] text-kite-muted">{row.tradingSymbol}</div>
+                    </td>
+                    <td className="py-2 pr-3 text-kite-text">{row.timing}</td>
+                    <td
+                      className={`py-2 pr-3 font-medium ${
+                        row.side === "BUY" ? "text-kite-green" : "text-kite-red"
+                      }`}
+                    >
+                      {row.side}
+                    </td>
+                    <td className="py-2 pr-3 text-kite-text">{row.kind}</td>
+                    <td className="py-2 pr-3 tabular-nums text-kite-text">
+                      {formatPrice(row.limitPrice)}
+                    </td>
+                    <td className="py-2 pr-3 text-kite-text">{row.quantity}</td>
+                    <td className="py-2 pr-3 text-kite-text">{row.strategy}</td>
+                    <td className="py-2 pr-3 text-kite-text">{row.status}</td>
+                    <td className="py-2 pr-3 text-kite-muted">
+                      {row.reason ?? row.orderNumber ?? "—"}
+                    </td>
+                    {showExit && (
+                      <td className="py-2">
+                        {canExit ? (
+                          <button
+                            type="button"
+                            disabled={isExiting || Boolean(exitingSignalKey)}
+                            onClick={() => onExitPosition?.(row.signalKey)}
+                            className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-[10px] font-medium text-kite-text disabled:cursor-not-allowed disabled:opacity-50"
+                            title="Exit position at mark (or entry if mark unavailable)"
+                          >
+                            {isExiting ? "Exiting…" : "Exit"}
+                          </button>
+                        ) : (
+                          <span className="text-kite-muted">—</span>
+                        )}
+                      </td>
+                    )}
+                  </tr>
+                );
+              })
             )}
           </tbody>
         </table>
@@ -141,6 +175,8 @@ export function SamcoOrdersPanels({
   rejected,
   updatedAt,
   signalSource,
+  onExitPosition,
+  exitingSignalKey = null,
 }: SamcoOrdersPanelsProps) {
   const updatedLabel = formatUpdatedAt(updatedAt);
   const feedDate = signalSource?.date ?? todayIstDateKey();
@@ -169,6 +205,8 @@ export function SamcoOrdersPanels({
         title="Open orders"
         emptyLabel="No open orders."
         rows={open}
+        onExitPosition={onExitPosition}
+        exitingSignalKey={exitingSignalKey}
       />
       <OrdersTable
         title="Executed orders"
