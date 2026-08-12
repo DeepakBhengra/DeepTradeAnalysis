@@ -5,6 +5,7 @@ import {
   persistSamcoSessionTokenToEnv,
   setSamcoSessionToken,
 } from "./samcoTokenStore.js";
+import { assertSamcoEgressIpForLiveOrders } from "./samcoStaticIp.js";
 
 export type SamcoFetch = typeof fetch;
 
@@ -265,6 +266,7 @@ export async function placeSamcoOrder(
   request: SamcoPlaceOrderRequest,
 ): Promise<SamcoPlaceOrderResponse> {
   await ensureSamcoSessionToken();
+  await assertSamcoEgressIpForLiveOrders();
   return samcoRequest<SamcoPlaceOrderResponse>("POST", "/order/placeOrder", {
     body: request,
   });
@@ -292,6 +294,7 @@ export async function squareOffSamcoPositions(
   requests: SamcoSquareOffRequestItem[],
 ): Promise<SamcoSquareOffResponse> {
   await ensureSamcoSessionToken();
+  await assertSamcoEgressIpForLiveOrders();
   return samcoRequest<SamcoSquareOffResponse>("POST", "/position/squareOff", {
     body: { positionSquareOffRequestList: requests },
   });

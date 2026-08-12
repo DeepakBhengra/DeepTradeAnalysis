@@ -13,6 +13,9 @@ export interface SamcoAuthStatus {
   envDefaultDryRun: boolean;
   openPositionsCount: number;
   srcIp?: string;
+  requiredStaticIp?: string;
+  staticIpMatched?: boolean;
+  staticIpMessage?: string;
 }
 
 export interface SamcoRuntimeSettings {
