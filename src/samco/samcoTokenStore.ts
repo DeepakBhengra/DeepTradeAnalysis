@@ -29,6 +29,12 @@ export function setSamcoSessionToken(token: string): void {
   process.env.SAMCO_SESSION_TOKEN = normalized;
 }
 
+/** Drop a stale/invalid session so the next ensure regenerates from API keys. */
+export function clearSamcoSessionToken(): void {
+  runtimeSessionToken = undefined;
+  process.env.SAMCO_SESSION_TOKEN = "";
+}
+
 export function persistSamcoSessionTokenToEnv(token: string): void {
   const normalized = normalizeToken(token);
   setSamcoSessionToken(normalized);

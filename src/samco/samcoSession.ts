@@ -100,9 +100,10 @@ export async function initializeSamcoSession(): Promise<void> {
   }
 
   assertSamcoApiKeys();
-  await ensureSamcoSessionToken();
 
   try {
+    // Always obtain a usable session (regenerates if the stored token is stale).
+    await ensureSamcoSessionToken();
     const whoAmI = await getSamcoWhoAmI();
     const srcIp = whoAmI.srcIp ?? whoAmI.primaryIp;
     const requiredStaticIp = getSamcoRequiredStaticIp();
@@ -117,12 +118,22 @@ export async function initializeSamcoSession(): Promise<void> {
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.warn(`Samco IP/session check failed: ${message}`);
+    console.warn(
+      `Samco IP/session check failed: ${message}. ` +
+        `Set SAMCO_API_KEY / SAMCO_API_SECRET and click Refresh session in Samco Trading.`,
+    );
   }
 }
 
 export async function refreshSamcoSession(): Promise<string> {
   assertSamcoApiKeys();
   const session = await refreshSamcoSessionToken();
+  // Confirm the new session works (also surfaces IP for static-IP checks).
+  try {
+    await getSamcoWhoAmI();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Samco session refreshed but whoami failed: ${message}`);
+  }
   return session.sessionToken ?? getSamcoSessionToken();
 }
