@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { pushDayScanSignalsToSamco } from "../api/samco";
 import { DayScanProgressBanner } from "../components/DayScanProgressBanner";
@@ -15,6 +15,12 @@ import {
   type DayScanRuleVariant,
 } from "../hooks/useVariantDayScan";
 import {
+  DEFAULT_DAY_SCAN_ENTRY_PRICE_MAX,
+  DEFAULT_DAY_SCAN_ENTRY_PRICE_MIN,
+  filterDayScanPayloadByEntryPrice,
+  parseDayScanEntryPriceInput,
+} from "../utils/dayScanEntryPriceFilter";
+import {
   FAVOURABLE_RULE_LABEL,
   FAVOURABLE_RULE_SYMBOL,
   isFavourableSymbolRuleVariant,
@@ -25,6 +31,8 @@ import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
 const DEFAULT_DATE = "2026-05-11";
 const VARIANT_STORAGE_KEY = "deepak-dayscan-variant";
+const ENTRY_MIN_STORAGE_KEY = "deepak-dayscan-entry-price-min";
+const ENTRY_MAX_STORAGE_KEY = "deepak-dayscan-entry-price-max";
 
 const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deepak: "deepak-day-scan",
@@ -45,6 +53,15 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
 function readStoredVariant(): DayScanRuleVariant {
   const stored = readLocalStorage(VARIANT_STORAGE_KEY);
   return isDayScanRuleVariant(stored) ? stored : "deepak";
+}
+
+function readStoredPrice(key: string, fallback: number): string {
+  const stored = readLocalStorage(key);
+  if (stored == null || stored.trim() === "") {
+    return String(fallback);
+  }
+  const parsed = Number(stored);
+  return Number.isFinite(parsed) ? String(parsed) : String(fallback);
 }
 
 function isSingleSymbolDayScanVariant(variant: DayScanRuleVariant): boolean {
@@ -129,6 +146,12 @@ export function DeepakDayScanWidget({
 }: DeepakDayScanWidgetProps) {
   const [date, setDate] = useState(DEFAULT_DATE);
   const [variant, setVariant] = useState<DayScanRuleVariant>(readStoredVariant);
+  const [entryPriceMinInput, setEntryPriceMinInput] = useState(() =>
+    readStoredPrice(ENTRY_MIN_STORAGE_KEY, DEFAULT_DAY_SCAN_ENTRY_PRICE_MIN),
+  );
+  const [entryPriceMaxInput, setEntryPriceMaxInput] = useState(() =>
+    readStoredPrice(ENTRY_MAX_STORAGE_KEY, DEFAULT_DAY_SCAN_ENTRY_PRICE_MAX),
+  );
   const [watchlistExpanded, setWatchlistExpanded] = useState(false);
   const [hasStarted, setHasStarted] = useState(false);
   const { data, loading, loadingElapsedSec, error, info, run, stop, reset } =
@@ -137,9 +160,28 @@ export function DeepakDayScanWidget({
   const [samcoPushInfo, setSamcoPushInfo] = useState<string | null>(null);
 
   const variantLabel = DAY_SCAN_RULE_VARIANT_LABEL[variant];
+  const entryPriceMin = parseDayScanEntryPriceInput(
+    entryPriceMinInput,
+    DEFAULT_DAY_SCAN_ENTRY_PRICE_MIN,
+  );
+  const entryPriceMax = parseDayScanEntryPriceInput(
+    entryPriceMaxInput,
+    DEFAULT_DAY_SCAN_ENTRY_PRICE_MAX,
+  );
+
+  const filteredData = useMemo(() => {
+    if (!data) {
+      return null;
+    }
+    return filterDayScanPayloadByEntryPrice(data, entryPriceMin, entryPriceMax);
+  }, [data, entryPriceMin, entryPriceMax]);
+
+  const filteredOutCount = data
+    ? data.trades.length - (filteredData?.trades.length ?? 0)
+    : 0;
 
   useEffect(() => {
-    if (!data || !isSamcoRuleVariant(variant)) {
+    if (!filteredData || !isSamcoRuleVariant(variant)) {
       return;
     }
 
@@ -147,10 +189,10 @@ export function DeepakDayScanWidget({
     void (async () => {
       try {
         const pushResult = await pushDayScanSignalsToSamco({
-          date: data.date,
+          date: filteredData.date,
           variant,
-          runAt: data.runAt,
-          trades: data.trades.map((trade) => ({
+          runAt: filteredData.runAt,
+          trades: filteredData.trades.map((trade) => ({
             tradingSymbol: trade.tradingSymbol,
             symbol: trade.symbol,
             sector: trade.sector,
@@ -172,10 +214,14 @@ export function DeepakDayScanWidget({
             applied?.entriesSkipped && applied.entriesSkipped > 0
               ? ` · skipped ${applied.entriesSkipped} already-applied`
               : "";
+          const rangeNote =
+            filteredOutCount > 0
+              ? ` · ${filteredOutCount} outside ₹${entryPriceMin}–₹${entryPriceMax}`
+              : "";
           setSamcoPushInfo(
             applied
-              ? `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}) · applied ${applied.entriesPlaced} entr${applied.entriesPlaced === 1 ? "y" : "ies"} / ${applied.exitsPlaced} exit(s) (${applied.mode})${skipped}.`
-              : `Pushed ${data.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}).`,
+              ? `Pushed ${filteredData.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}) · applied ${applied.entriesPlaced} entr${applied.entriesPlaced === 1 ? "y" : "ies"} / ${applied.exitsPlaced} exit(s) (${applied.mode})${skipped}${rangeNote}.`
+              : `Pushed ${filteredData.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel})${rangeNote}.`,
           );
         }
       } catch (pushError) {
@@ -190,7 +236,14 @@ export function DeepakDayScanWidget({
     return () => {
       cancelled = true;
     };
-  }, [data, variant, variantLabel]);
+  }, [
+    filteredData,
+    variant,
+    variantLabel,
+    filteredOutCount,
+    entryPriceMin,
+    entryPriceMax,
+  ]);
 
   const handleVariantChange = (next: DayScanRuleVariant) => {
     if (next === variant) {
@@ -201,6 +254,16 @@ export function DeepakDayScanWidget({
     hasRunRef.current = false;
     setHasStarted(false);
     reset();
+  };
+
+  const handleEntryPriceMinChange = (value: string) => {
+    setEntryPriceMinInput(value);
+    writeLocalStorage(ENTRY_MIN_STORAGE_KEY, value);
+  };
+
+  const handleEntryPriceMaxChange = (value: string) => {
+    setEntryPriceMaxInput(value);
+    writeLocalStorage(ENTRY_MAX_STORAGE_KEY, value);
   };
 
   const handleRun = () => {
@@ -239,6 +302,10 @@ export function DeepakDayScanWidget({
           onStop={stop}
           ruleVariant={variant}
           onRuleVariantChange={handleVariantChange}
+          entryPriceMin={entryPriceMinInput}
+          entryPriceMax={entryPriceMaxInput}
+          onEntryPriceMinChange={handleEntryPriceMinChange}
+          onEntryPriceMaxChange={handleEntryPriceMaxChange}
           description={descriptionForVariant(variant)}
         />
 
@@ -250,7 +317,9 @@ export function DeepakDayScanWidget({
         )}
         <DeepakRulesPanel variant={rulesPanelVariant(variant)} />
 
-        {loading && <DayScanProgressBanner date={date} elapsedSeconds={loadingElapsedSec} />}
+        {loading && (
+          <DayScanProgressBanner date={date} elapsedSeconds={loadingElapsedSec} />
+        )}
 
         {info && (
           <section className="border border-kite-border bg-kite-surface p-3 text-xs text-kite-muted">
@@ -277,9 +346,9 @@ export function DeepakDayScanWidget({
           </section>
         )}
 
-        {data && (
+        {filteredData && (
           <SectorBacktestResultsTable
-            payload={data}
+            payload={filteredData}
             csvFilePrefix={CSV_PREFIX[variant]}
             showStopSummary={variant === "watchParty"}
           />
