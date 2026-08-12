@@ -15,12 +15,18 @@ export interface DayOrderRunSettings {
   quantity: number;
   minEntryPrice: number;
   maxEntryPrice: number;
+  /**
+   * Adverse move % vs entry that forces an exit + reverse.
+   * null / 0 / blank = disabled.
+   */
+  stopLossPct: number | null;
 }
 
 export const DEFAULT_DAY_ORDER_RUN_SETTINGS: DayOrderRunSettings = {
   quantity: ORDER_QUANTITY,
   minEntryPrice: MIN_ENTRY_PRICE,
   maxEntryPrice: MAX_ENTRY_PRICE,
+  stopLossPct: null,
 };
 
 export type DayOrderFillKind = "entry" | "exit";

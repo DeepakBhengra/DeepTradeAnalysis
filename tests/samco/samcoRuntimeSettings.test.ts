@@ -227,6 +227,29 @@ describe("samcoRuntimeSettings", () => {
       const { getSamcoRuntimeSettings } = await loadRuntimeSettingsModule();
       const settings = getSamcoRuntimeSettings(new Date("2026-06-29T10:00:00+05:30"));
       expect(settings.ruleVariant).toBe("deepak+deepak2");
+      expect(settings.stopLossPct).toBeNull();
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
+  it("stores stop-loss pct and treats zero as off", async () => {
+    const originalCwd = process.cwd();
+
+    try {
+      process.chdir(tempDir);
+      const { setSamcoStopLossPct, getSamcoStopLossPct, getSamcoRuntimeSettings } =
+        await loadRuntimeSettingsModule();
+
+      const updated = setSamcoStopLossPct(0.75, new Date("2026-06-29T06:00:00+05:30"));
+      expect(updated.stopLossPct).toBe(0.75);
+      expect(getSamcoStopLossPct(new Date("2026-06-29T10:00:00+05:30"))).toBe(0.75);
+
+      const cleared = setSamcoStopLossPct(0, new Date("2026-06-29T11:00:00+05:30"));
+      expect(cleared.stopLossPct).toBeNull();
+      expect(
+        getSamcoRuntimeSettings(new Date("2026-06-29T11:00:00+05:30")).stopLossPct,
+      ).toBeNull();
     } finally {
       process.chdir(originalCwd);
     }

@@ -158,6 +158,7 @@ describe("useDayOrderSimulation", () => {
         quantity: 40,
         minEntryPrice: 0,
         maxEntryPrice: 1900,
+        stopLossPct: null,
       });
     });
 
@@ -180,6 +181,7 @@ describe("useDayOrderSimulation", () => {
         quantity: 0,
         minEntryPrice: 0,
         maxEntryPrice: 1900,
+        stopLossPct: null,
       });
     });
 

@@ -26,6 +26,8 @@ export interface SamcoRuntimeSettings {
   entryPriceMin: number;
   entryPriceMax: number;
   ruleVariant: string;
+  /** null when stop-loss is off. */
+  stopLossPct: number | null;
   envDefaultQuantity: number;
   envDefaultDryRun: boolean;
   envDefaultEntryPriceMin: number;
@@ -159,6 +161,7 @@ export async function updateSamcoSettings(body: {
   entryPriceMin?: number;
   entryPriceMax?: number;
   ruleVariant?: string;
+  stopLossPct?: number | null;
   confirmLive?: boolean;
 }): Promise<SamcoRuntimeSettings> {
   return samcoFetch<SamcoRuntimeSettings>("/api/samco/settings", {

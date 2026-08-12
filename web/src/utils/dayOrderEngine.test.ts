@@ -264,7 +264,7 @@ describe("dayOrderEngine", () => {
     const portfolio = processDayOrderTick(
       createInitialDayOrderPortfolio(),
       makePayload([signal], [], 0, "09:30"),
-      { quantity: 25, minEntryPrice: 0, maxEntryPrice: 1900 },
+      { quantity: 25, minEntryPrice: 0, maxEntryPrice: 1900, stopLossPct: null },
     );
 
     expect(portfolio.openPositions[0]?.quantity).toBe(25);
@@ -276,7 +276,7 @@ describe("dayOrderEngine", () => {
     const portfolio = processDayOrderTick(
       createInitialDayOrderPortfolio(),
       makePayload([signal], [], 0, "09:30"),
-      { quantity: 100, minEntryPrice: 500, maxEntryPrice: 1900 },
+      { quantity: 100, minEntryPrice: 500, maxEntryPrice: 1900, stopLossPct: null },
     );
 
     expect(portfolio.openPositions).toHaveLength(0);
@@ -288,7 +288,7 @@ describe("dayOrderEngine", () => {
     const portfolio = processDayOrderTick(
       createInitialDayOrderPortfolio(),
       makePayload([signal], [], 0, "09:30"),
-      { quantity: 10, minEntryPrice: 0, maxEntryPrice: 3000 },
+      { quantity: 10, minEntryPrice: 0, maxEntryPrice: 3000, stopLossPct: null },
     );
 
     expect(portfolio.openPositions).toHaveLength(1);
@@ -301,6 +301,7 @@ describe("dayOrderEngine", () => {
         quantity: 100,
         minEntryPrice: 0,
         maxEntryPrice: 1900,
+        stopLossPct: null,
       }),
     ).toBeNull();
     expect(
@@ -308,6 +309,7 @@ describe("dayOrderEngine", () => {
         quantity: 0,
         minEntryPrice: 0,
         maxEntryPrice: 1900,
+        stopLossPct: null,
       }),
     ).toMatch(/Quantity/);
     expect(
@@ -315,6 +317,7 @@ describe("dayOrderEngine", () => {
         quantity: 100,
         minEntryPrice: 2000,
         maxEntryPrice: 1900,
+        stopLossPct: null,
       }),
     ).toMatch(/Min entry price cannot be greater/);
   });
@@ -367,5 +370,68 @@ describe("dayOrderEngine", () => {
       10 * ORDER_QUANTITY,
     );
     expect(dayOrderFillDisplayPnL(entryFill, openKeys, null)).toBeNull();
+  });
+
+  it("exits and reverses when stop-loss % is hit against the mark", () => {
+    const signal = makeSignal({
+      entryPrice: 1000,
+      entryTimeIst: "09:30",
+      tradingSymbol: "TCS",
+      side: "BUY",
+    });
+    const opened = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([signal], [], 0, "09:30"),
+    );
+
+    const afterStop = processDayOrderTick(
+      opened,
+      {
+        ...makePayload([signal], [], 1, "09:45"),
+        marks: [{ tradingSymbol: "TCS", price: 990, timeIst: "09:45" }],
+      },
+      {
+        quantity: ORDER_QUANTITY,
+        minEntryPrice: 0,
+        maxEntryPrice: 5000,
+        stopLossPct: 1,
+      },
+    );
+
+    expect(afterStop.openPositions).toHaveLength(1);
+    expect(afterStop.openPositions[0].side).toBe("SELL");
+    expect(afterStop.openPositions[0].entryPrice).toBe(990);
+    expect(afterStop.openPositions[0].signalKey).toContain("-sl-rev");
+    expect(afterStop.fills.filter((fill) => fill.kind === "exit")).toHaveLength(1);
+    expect(afterStop.realizedPnL).toBe(-10 * ORDER_QUANTITY);
+  });
+
+  it("does not apply stop-loss when pct is blank/zero", () => {
+    const signal = makeSignal({
+      entryPrice: 1000,
+      entryTimeIst: "09:30",
+      tradingSymbol: "TCS",
+    });
+    const opened = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([signal], [], 0, "09:30"),
+    );
+    const after = processDayOrderTick(
+      opened,
+      {
+        ...makePayload([signal], [], 1, "09:45"),
+        marks: [{ tradingSymbol: "TCS", price: 900, timeIst: "09:45" }],
+      },
+      {
+        quantity: ORDER_QUANTITY,
+        minEntryPrice: 0,
+        maxEntryPrice: 5000,
+        stopLossPct: null,
+      },
+    );
+
+    expect(after.openPositions).toHaveLength(1);
+    expect(after.openPositions[0].side).toBe("BUY");
+    expect(after.fills.filter((fill) => fill.kind === "exit")).toHaveLength(0);
   });
 });

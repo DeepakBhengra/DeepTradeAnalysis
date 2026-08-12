@@ -45,6 +45,7 @@ export function useSamcoTrading(isActive: boolean) {
   const [quantityInput, setQuantityInput] = useState("100");
   const [minPriceInput, setMinPriceInput] = useState("0");
   const [maxPriceInput, setMaxPriceInput] = useState("3900");
+  const [stopLossPctInput, setStopLossPctInput] = useState("");
   const [ruleVariantInput, setRuleVariantInput] = useState<SamcoRuleVariant>(
     DEFAULT_SAMCO_RULE_VARIANT,
   );
@@ -62,6 +63,9 @@ export function useSamcoTrading(isActive: boolean) {
     setQuantityInput(String(nextSettings.effectiveQuantity));
     setMinPriceInput(String(nextSettings.entryPriceMin));
     setMaxPriceInput(String(nextSettings.entryPriceMax));
+    setStopLossPctInput(
+      nextSettings.stopLossPct == null ? "" : String(nextSettings.stopLossPct),
+    );
     setRuleVariantInput(resolveRuleVariant(nextSettings.ruleVariant));
   }, []);
 
@@ -259,6 +263,9 @@ export function useSamcoTrading(isActive: boolean) {
       setQuantityInput(String(next.effectiveQuantity));
       setMinPriceInput(String(next.entryPriceMin));
       setMaxPriceInput(String(next.entryPriceMax));
+      setStopLossPctInput(
+        next.stopLossPct == null ? "" : String(next.stopLossPct),
+      );
       setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -283,6 +290,9 @@ export function useSamcoTrading(isActive: boolean) {
       setMinPriceInput(String(next.entryPriceMin));
       setMaxPriceInput(String(next.entryPriceMax));
       setQuantityInput(String(next.effectiveQuantity));
+      setStopLossPctInput(
+        next.stopLossPct == null ? "" : String(next.stopLossPct),
+      );
       setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -290,6 +300,33 @@ export function useSamcoTrading(isActive: boolean) {
       throw err;
     }
   }, [minPriceInput, maxPriceInput, clearInputsDirty]);
+
+  const applyStopLossPct = useCallback(async () => {
+    const raw = stopLossPctInput.trim();
+    const stopLossPct = raw === "" || raw === "0" ? null : Number(raw);
+    if (stopLossPct != null && (!Number.isFinite(stopLossPct) || stopLossPct < 0)) {
+      setActionError("Stop-loss % must be blank, 0 (off), or a positive number.");
+      return;
+    }
+
+    setActionError(null);
+    try {
+      const next = await updateSamcoSettings({ stopLossPct });
+      setSettings(next);
+      clearInputsDirty();
+      setStopLossPctInput(
+        next.stopLossPct == null ? "" : String(next.stopLossPct),
+      );
+      setQuantityInput(String(next.effectiveQuantity));
+      setMinPriceInput(String(next.entryPriceMin));
+      setMaxPriceInput(String(next.entryPriceMax));
+      setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      setActionError(message);
+      throw err;
+    }
+  }, [stopLossPctInput, clearInputsDirty]);
 
   const applyRuleVariant = useCallback(
     async (nextVariant: SamcoRuleVariant) => {
@@ -304,6 +341,9 @@ export function useSamcoTrading(isActive: boolean) {
         setQuantityInput(String(next.effectiveQuantity));
         setMinPriceInput(String(next.entryPriceMin));
         setMaxPriceInput(String(next.entryPriceMax));
+        setStopLossPctInput(
+          next.stopLossPct == null ? "" : String(next.stopLossPct),
+        );
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setActionError(message);
@@ -317,12 +357,19 @@ export function useSamcoTrading(isActive: boolean) {
     const quantity = Number(quantityInput);
     const entryPriceMin = Number(minPriceInput);
     const entryPriceMax = Number(maxPriceInput);
+    const stopLossRaw = stopLossPctInput.trim();
+    const stopLossPct =
+      stopLossRaw === "" || stopLossRaw === "0" ? null : Number(stopLossRaw);
     if (!Number.isInteger(quantity) || quantity < 1) {
       setActionError("Quantity must be a positive integer.");
       return;
     }
     if (!Number.isFinite(entryPriceMin) || !Number.isFinite(entryPriceMax)) {
       setActionError("Entry price min and max must be valid numbers.");
+      return;
+    }
+    if (stopLossPct != null && (!Number.isFinite(stopLossPct) || stopLossPct < 0)) {
+      setActionError("Stop-loss % must be blank, 0 (off), or a positive number.");
       return;
     }
 
@@ -333,19 +380,30 @@ export function useSamcoTrading(isActive: boolean) {
         entryPriceMin,
         entryPriceMax,
         ruleVariant: ruleVariantInput,
+        stopLossPct,
       });
       setSettings(next);
       clearInputsDirty();
       setQuantityInput(String(next.effectiveQuantity));
       setMinPriceInput(String(next.entryPriceMin));
       setMaxPriceInput(String(next.entryPriceMax));
+      setStopLossPctInput(
+        next.stopLossPct == null ? "" : String(next.stopLossPct),
+      );
       setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setActionError(message);
       throw err;
     }
-  }, [quantityInput, minPriceInput, maxPriceInput, ruleVariantInput, clearInputsDirty]);
+  }, [
+    quantityInput,
+    minPriceInput,
+    maxPriceInput,
+    stopLossPctInput,
+    ruleVariantInput,
+    clearInputsDirty,
+  ]);
 
   const refreshSession = useCallback(async () => {
     setActionError(null);
@@ -423,6 +481,11 @@ export function useSamcoTrading(isActive: boolean) {
       markInputsDirty();
       setMaxPriceInput(value);
     },
+    stopLossPctInput,
+    setStopLossPctInput: (value: string) => {
+      markInputsDirty();
+      setStopLossPctInput(value);
+    },
     ruleVariantInput,
     applyRuleVariant,
     loading,
@@ -437,6 +500,7 @@ export function useSamcoTrading(isActive: boolean) {
     setLiveTrading,
     applyDayQuantity,
     applyEntryPriceRange,
+    applyStopLossPct,
     applyTradingParams,
     refreshSession,
     downloadLogs,

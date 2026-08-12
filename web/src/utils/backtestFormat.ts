@@ -70,9 +70,19 @@ export function formatDayScanStrategy(
 export function formatExitType(input: {
   exitTimeIst?: string | null;
   targetHit?: boolean;
-  exitReason?: "target" | "deepak2_stop" | "breakeven" | "flip" | "eod" | null;
+  exitReason?:
+    | "target"
+    | "deepak2_stop"
+    | "breakeven"
+    | "flip"
+    | "eod"
+    | "stop_loss"
+    | null;
   stopLossHit?: boolean;
 }): string {
+  if (input.exitReason === "stop_loss") {
+    return "Stop-loss %";
+  }
   if (input.exitReason === "deepak2_stop" || input.stopLossHit) {
     return "Stop Loss";
   }

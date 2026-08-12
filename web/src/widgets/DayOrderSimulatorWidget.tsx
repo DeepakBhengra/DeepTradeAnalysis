@@ -81,6 +81,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
   const [maxEntryPriceText, setMaxEntryPriceText] = useState(
     () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).maxEntryPriceText,
   );
+  const [stopLossPctText, setStopLossPctText] = useState(
+    () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).stopLossPctText,
+  );
 
   const isRunning = status === "running" || catchingUp;
   const scanBusy = scanStatus === "playing" || scanStatus === "loading";
@@ -90,6 +93,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
     quantityText: string;
     minEntryPriceText: string;
     maxEntryPriceText: string;
+    stopLossPctText: string;
   }) => {
     setRunSettings(parseDayOrderRunSettingsInput(next));
   };
@@ -168,6 +172,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
                     quantityText,
                     minEntryPriceText: value,
                     maxEntryPriceText,
+                    stopLossPctText,
                   });
                 }}
                 className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
@@ -193,6 +198,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
                     quantityText,
                     minEntryPriceText,
                     maxEntryPriceText: value,
+                    stopLossPctText,
                   });
                 }}
                 className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
@@ -218,9 +224,37 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
                     quantityText: value,
                     minEntryPriceText,
                     maxEntryPriceText,
+                    stopLossPctText,
                   });
                 }}
                 className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayorder-sim-stop-loss"
+            >
+              Stop-loss % (blank/0 = off)
+              <input
+                id="dayorder-sim-stop-loss"
+                type="number"
+                min={0}
+                step={0.1}
+                inputMode="decimal"
+                disabled={inputsDisabled}
+                value={stopLossPctText}
+                placeholder="off"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setStopLossPctText(value);
+                  applyDraftSettings({
+                    quantityText,
+                    minEntryPriceText,
+                    maxEntryPriceText,
+                    stopLossPctText: value,
+                  });
+                }}
+                className="w-36 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               />
             </label>
           </div>
@@ -294,8 +328,10 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
 
           <p className="m-0 mt-2 text-xs text-kite-muted">
             Auto paper-trades Day Scan entry/exit signals for the selected rule variant with
-            ₹1,00,00,000 capital. Set quantity and entry price range for this date run before Start
-            (locked while running). Defaults: {ORDER_QUANTITY} qty, ₹{formatInr(MIN_ENTRY_PRICE)}–₹
+            ₹1,00,00,000 capital. Set quantity, entry price range, and optional stop-loss % for this
+            date run before Start (locked while running). When stop-loss % is set, open positions
+            that lose that much vs entry exit at the candle mid and reverse side. Blank or 0 =
+            no stop-loss. Defaults: {ORDER_QUANTITY} qty, ₹{formatInr(MIN_ENTRY_PRICE)}–₹
             {formatInr(MAX_ENTRY_PRICE)}. Starts automatically when Day Scan Simulator starts and
             catches up from 09:15. Order history is a column table of every fill (scroll for
             morning 09:15 square-offs).

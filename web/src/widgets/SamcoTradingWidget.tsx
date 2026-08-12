@@ -47,6 +47,8 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
     setMinPriceInput,
     maxPriceInput,
     setMaxPriceInput,
+    stopLossPctInput,
+    setStopLossPctInput,
     ruleVariantInput,
     applyRuleVariant,
     loading,
@@ -61,6 +63,7 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
     setLiveTrading,
     applyDayQuantity,
     applyEntryPriceRange,
+    applyStopLossPct,
     applyTradingParams,
     refreshSession,
     downloadLogs,
@@ -362,6 +365,29 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
               >
                 Apply qty
               </button>
+            </div>
+
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="flex flex-col gap-1 text-xs text-kite-muted">
+                Stop-loss % (blank/0 = off)
+                <input
+                  type="number"
+                  min={0}
+                  step={0.1}
+                  value={stopLossPctInput}
+                  placeholder="off"
+                  onChange={(event) => setStopLossPctInput(event.target.value)}
+                  className="w-36 rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-xs text-kite-text"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => void applyStopLossPct()}
+                disabled={loading}
+                className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-3 py-1.5 text-xs font-medium text-kite-text hover:bg-kite-surface disabled:opacity-50"
+              >
+                Apply SL
+              </button>
               <button
                 type="button"
                 onClick={() => void applyTradingParams()}
@@ -377,11 +403,15 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             Settings date: {settings?.dateKey ?? "—"} · Rule: {ruleVariantLabel} · Saved
             entry range: ₹{settings?.entryPriceMin ?? "—"}–₹
             {settings?.entryPriceMax ?? "—"} · Saved qty:{" "}
-            {settings?.effectiveQuantity ?? "—"} · Env defaults: ₹
-            {settings?.envDefaultEntryPriceMin ?? "—"}–₹
+            {settings?.effectiveQuantity ?? "—"} · Stop-loss:{" "}
+            {settings?.stopLossPct == null
+              ? "off"
+              : `${settings.stopLossPct}%`}{" "}
+            · Env defaults: ₹{settings?.envDefaultEntryPriceMin ?? "—"}–₹
             {settings?.envDefaultEntryPriceMax ?? "—"}, qty{" "}
-            {settings?.envDefaultQuantity ?? "—"} · Click Apply to save price/qty edits;
-            rule variant saves on change
+            {settings?.envDefaultQuantity ?? "—"} · Click Apply to save price/qty/SL
+            edits; rule variant saves on change. When SL hits, position exits at mark
+            and reverses side while the selected rule keeps running.
           </p>
         </section>
 
