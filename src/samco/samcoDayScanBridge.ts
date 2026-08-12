@@ -123,6 +123,8 @@ export function ingestDayScanTrades(input: {
     side: "BUY" | "SELL";
     entryTimeIst: string;
     entryPrice: number;
+    stopLossHit?: boolean;
+    markPrice?: number | null;
   }>;
 }): SamcoDayScanSignalSnapshot {
   const strategy = dayScanVariantToSamcoStrategy(input.variant);
