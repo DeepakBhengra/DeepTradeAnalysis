@@ -77,9 +77,17 @@ export function formatExitType(input: {
     | "flip"
     | "eod"
     | "stop_loss"
+    | "manual"
+    | "price_filter"
     | null;
   stopLossHit?: boolean;
 }): string {
+  if (input.exitReason === "manual") {
+    return "Manual";
+  }
+  if (input.exitReason === "price_filter") {
+    return "Price filter";
+  }
   if (input.exitReason === "stop_loss") {
     return "Stop-loss %";
   }

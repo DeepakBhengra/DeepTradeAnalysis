@@ -34,7 +34,7 @@ describe("samcoPnL", () => {
     expect(computeSamcoTradeRealizedPnL("SELL", 100, 101, 10)).toBeCloseTo(-10);
   });
 
-  it("summarizes closed trades and ignores open without mark / failed", () => {
+  it("summarizes closed trades, includes open without mark, ignores failed", () => {
     const summary = buildSamcoPnLSummary([
       entry({
         tradingSymbol: "TCS",
@@ -75,7 +75,9 @@ describe("samcoPnL", () => {
     ]);
 
     expect(summary.closedTradeCount).toBe(2);
-    expect(summary.openPositionCount).toBe(0);
+    expect(summary.openPositionCount).toBe(1);
+    expect(summary.openTrades[0].tradingSymbol).toBe("RELIANCE");
+    expect(summary.openTrades[0].canManualExit).toBe(true);
     expect(summary.totalQuantityClosed).toBe(20);
     expect(summary.totalUnrealizedPnL).toBe(0);
     // TCS: (3510-3500)*10 = 100; INFY short: (1600-1590)*10 = 100
@@ -136,5 +138,27 @@ describe("samcoPnL", () => {
     ]);
     expect(summary.openTrades[0].status).toBe("open");
     expect(summary.openTrades[0].markOrExitPrice).toBe(905);
+  });
+
+  it("includes open positions without mark using entry for display", () => {
+    const summary = buildSamcoPnLSummary([
+      entry({
+        tradingSymbol: "INFY",
+        side: "BUY",
+        status: "open",
+        entryPrice: 1500,
+        markPrice: null,
+        quantity: 50,
+        exitPrice: null,
+        exitTimeIst: null,
+        signalKey: "deeppro1-INFY-10:00-1",
+      }),
+    ]);
+
+    expect(summary.openPositionCount).toBe(1);
+    expect(summary.openTrades[0].markOrExitPrice).toBe(1500);
+    expect(summary.openTrades[0].pnl).toBe(0);
+    expect(summary.openTrades[0].canManualExit).toBe(true);
+    expect(summary.totalUnrealizedPnL).toBe(0);
   });
 });

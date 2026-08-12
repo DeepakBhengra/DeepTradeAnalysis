@@ -16,6 +16,8 @@ export interface SamcoTradePnLRow {
   status: "closed" | "open";
   /** Realized (closed) or unrealized (open) PnL for this trade. */
   pnl: number;
+  /** True when the position can be voluntarily square-off'd (open/closing). */
+  canManualExit?: boolean;
 }
 
 export interface SamcoPnLSummary {
@@ -96,9 +98,7 @@ export function buildSamcoPnLSummary(
       entry.status === "pending"
     ) {
       const markPrice = resolveMarkPrice(entry);
-      if (markPrice == null) {
-        continue;
-      }
+      const markOrEntry = markPrice ?? entryPrice;
       openTrades.push({
         signalKey: entry.signalKey,
         tradingSymbol: entry.tradingSymbol,
@@ -107,17 +107,21 @@ export function buildSamcoPnLSummary(
         side: entry.side,
         quantity: entry.quantity,
         entryPrice,
-        markOrExitPrice: markPrice,
+        markOrExitPrice: markOrEntry,
         entryTimeIst: entry.entryTimeIst,
         exitTimeIst: null,
         exitReason: undefined,
         status: "open",
-        pnl: computeSamcoTradeRealizedPnL(
-          entry.side,
-          entryPrice,
-          markPrice,
-          entry.quantity,
-        ),
+        canManualExit: entry.status === "open" || entry.status === "closing",
+        pnl:
+          markPrice == null
+            ? 0
+            : computeSamcoTradeRealizedPnL(
+                entry.side,
+                entryPrice,
+                markPrice,
+                entry.quantity,
+              ),
       });
       continue;
     }

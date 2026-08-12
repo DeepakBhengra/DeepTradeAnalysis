@@ -360,11 +360,94 @@ export async function forceEodSquareOff(
   savePositionLedger(ledger);
   return {
     entriesPlaced: 0,
-    exitsPlaced: 0,
+    exitsPlaced: eodSquareOffs,
     eodSquareOffs,
     entriesSkipped: 0,
     logs,
   };
+}
+
+/**
+ * Voluntarily square off one open/closing ledger position by signal key.
+ * Uses markPrice when available; otherwise falls back to entry/limit price.
+ */
+export async function squareOffLedgerBySignalKey(
+  signalKey: string,
+  options?: TradeExecutorOptions,
+): Promise<ProcessDecisionResult> {
+  const resolved = { ...defaultOptions(), ...options };
+  const logs: TradeExecutorLog[] = [];
+
+  return withSamcoMaterializeLock(async () => {
+    let ledger = loadPositionLedger();
+    const entry = findLedgerEntry(ledger, signalKey);
+    if (!entry) {
+      throw new Error(`No ledger entry found for signalKey ${signalKey}.`);
+    }
+    if (entry.status !== "open" && entry.status !== "closing") {
+      throw new Error(
+        `Ledger entry ${signalKey} is ${entry.status}; only open/closing positions can be exited.`,
+      );
+    }
+
+    const markOrEntry =
+      typeof entry.markPrice === "number" && Number.isFinite(entry.markPrice)
+        ? entry.markPrice
+        : typeof entry.entryPrice === "number" && Number.isFinite(entry.entryPrice)
+          ? entry.entryPrice
+          : typeof entry.limitPrice === "number" && Number.isFinite(entry.limitPrice)
+            ? entry.limitPrice
+            : null;
+
+    const nowIst = formatIstTime(new Date());
+    try {
+      const closed = await squareOffLedgerEntry(
+        {
+          ...entry,
+          exitPrice: markOrEntry,
+          exitLimitPrice: markOrEntry,
+          exitTimeIst: nowIst,
+        },
+        "manual",
+        {
+          ...resolved,
+          tradingSymbol: entry.tradingSymbol,
+          exchange: entry.exchange,
+          stockName: entry.stockName || entry.tradingSymbol,
+          source: entry.source === "dayscan" ? "dayscan" : "poll",
+        },
+        logs,
+      );
+      ledger = persistLedgerEntry(ledger, closed);
+      logs.push({
+        level: "info",
+        message: `Manual exit ${entry.tradingSymbol} @ ${markOrEntry ?? "n/a"}.`,
+        signalKey: entry.signalKey,
+      });
+      savePositionLedger(ledger);
+      return {
+        entriesPlaced: 0,
+        exitsPlaced: 1,
+        eodSquareOffs: 0,
+        entriesSkipped: 0,
+        logs,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      logs.push({
+        level: "error",
+        message: `Manual exit failed: ${message}`,
+        signalKey: entry.signalKey,
+      });
+      ledger = persistLedgerEntry(ledger, {
+        ...entry,
+        status: "failed",
+        lastError: message,
+      });
+      savePositionLedger(ledger);
+      throw error;
+    }
+  });
 }
 
 export async function processDecisionResult(

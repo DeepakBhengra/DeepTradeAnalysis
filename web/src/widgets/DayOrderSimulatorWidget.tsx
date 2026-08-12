@@ -70,6 +70,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
     settingsError,
     start,
     stop,
+    closePosition,
   } = useDayOrderSimulation();
 
   const [quantityText, setQuantityText] = useState(
@@ -343,6 +344,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
           pnl={pnl}
           date={orderDate}
           marks={marks}
+          onExitPosition={closePosition}
         />
       </main>
     </div>

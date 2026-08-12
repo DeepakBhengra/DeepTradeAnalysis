@@ -50,6 +50,7 @@ import {
 import {
   applyConfiguredStopLossAndReverse,
   processDayScanSignalSnapshot,
+  squareOffLedgerBySignalKey,
 } from "../samco/tradeExecutor.js";
 import {
   loadPostMortemReport,
@@ -373,6 +374,46 @@ app.get("/api/samco/positions", async (_req, res) => {
 
 app.get("/api/samco/ledger", (_req, res) => {
   res.json(loadPositionLedger());
+});
+
+app.post("/api/samco/ledger/:signalKey/square-off", async (req, res) => {
+  try {
+    const signalKey = decodeURIComponent(req.params.signalKey ?? "").trim();
+    if (!signalKey) {
+      res.status(400).json({ error: "signalKey is required." });
+      return;
+    }
+
+    const result = await squareOffLedgerBySignalKey(signalKey);
+    const dryRun = getSamcoDryRun();
+    const liveEnabled = getSamcoLiveTradingEnabled();
+    if (result.logs.length > 0) {
+      appendSamcoTradeLogs(result.logs, { dryRun: dryRun || !liveEnabled });
+    }
+
+    const ledger = loadPositionLedger();
+    const buckets = buildSamcoOrdersFromLedger(ledger);
+    res.json({
+      ok: true,
+      exitsPlaced: result.exitsPlaced,
+      logs: result.logs,
+      ledger,
+      orders: {
+        ...buckets,
+        updatedAt: ledger.updatedAt,
+        signalSource: getDayScanSignalSourceSummary(),
+      },
+      status: await getSamcoAuthStatus(),
+    });
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const status =
+      message.includes("No ledger entry") ||
+      message.includes("only open/closing")
+        ? 400
+        : 500;
+    res.status(status).json({ error: message });
+  }
 });
 
 app.get("/api/samco/orders", (_req, res) => {

@@ -5,6 +5,7 @@ import type { DayOrderPortfolio, DayOrderRunSettings, DayOrderSimStatus } from "
 import { DEFAULT_DAY_ORDER_RUN_SETTINGS } from "../types/dayOrder";
 import { catchUpDayOrderPortfolio } from "../utils/dayOrderCatchUp";
 import {
+  closeDayOrderPositionAtMark,
   computeDayOrderPnL,
   createInitialDayOrderPortfolio,
   marksMapFromSimulation,
@@ -29,6 +30,8 @@ interface UseDayOrderSimulationResult {
   settingsError: string | null;
   start: () => void;
   stop: () => void;
+  /** Voluntarily exit an open position at the current mark mid. */
+  closePosition: (signalKey: string) => boolean;
 }
 
 function getStartBlockedReason(
@@ -250,6 +253,42 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     marksMapFromSimulation(data?.marks),
   );
 
+  const closePosition = useCallback((signalKey: string): boolean => {
+    const marksMap = marksMapFromSimulation(dataRef.current?.marks);
+    let closed = false;
+    setPortfolio((current) => {
+      const position = current.openPositions.find(
+        (row) => row.signalKey === signalKey,
+      );
+      if (!position) {
+        return current;
+      }
+      const mark = marksMap.get(position.tradingSymbol);
+      const exitPrice =
+        typeof mark === "number" && Number.isFinite(mark)
+          ? mark
+          : position.entryPrice;
+      if (!Number.isFinite(exitPrice)) {
+        return current;
+      }
+      const timeIst =
+        dataRef.current?.simulation.simulatedTimeIst ?? position.entryTimeIst;
+      const sessionIdx =
+        dataRef.current?.simulation.sessionIndex ??
+        processedSessionIndexRef.current ??
+        0;
+      closed = true;
+      return closeDayOrderPositionAtMark(
+        current,
+        signalKey,
+        exitPrice,
+        timeIst,
+        sessionIdx,
+      );
+    });
+    return closed;
+  }, []);
+
   return {
     orderDate,
     setOrderDate,
@@ -266,5 +305,6 @@ export function useDayOrderSimulation(): UseDayOrderSimulationResult {
     settingsError,
     start,
     stop,
+    closePosition,
   };
 }

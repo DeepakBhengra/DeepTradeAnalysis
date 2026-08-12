@@ -1,4 +1,5 @@
 import type { SamcoLedgerEntry } from "../api/samco";
+import { formatExitType } from "../utils/backtestFormat";
 import { formatCurrency, formatPnL } from "../utils/paperTrading";
 import {
   buildSamcoPnLSummary,
@@ -38,15 +39,23 @@ function TradeRows({
   trades,
   emptyLabel,
   showExitColumns,
+  onExitPosition,
+  exitingSignalKey,
+  canExitOpen,
 }: {
   trades: SamcoTradePnLRow[];
   emptyLabel: string;
   showExitColumns: boolean;
+  onExitPosition?: (signalKey: string) => void;
+  exitingSignalKey?: string | null;
+  canExitOpen?: boolean;
 }) {
+  const colSpan = showExitColumns ? 9 : canExitOpen ? 10 : 9;
+
   if (trades.length === 0) {
     return (
       <tr>
-        <td colSpan={9} className="py-3 text-kite-muted">
+        <td colSpan={colSpan} className="py-3 text-kite-muted">
           {emptyLabel}
         </td>
       </tr>
@@ -55,60 +64,106 @@ function TradeRows({
 
   return (
     <>
-      {trades.map((trade) => (
-        <tr key={`${trade.status}-${trade.signalKey}`} className="border-b border-kite-border/60">
-          <td className="py-2 pr-3 text-kite-text">
-            <div className="font-medium">{trade.tradingSymbol}</div>
-            <div className="text-[10px] text-kite-muted">{trade.stockName}</div>
-          </td>
-          <td
-            className={`py-2 pr-3 font-medium ${
-              trade.side === "BUY" ? "text-kite-green" : "text-kite-red"
-            }`}
-          >
-            {trade.side}
-          </td>
-          <td className="py-2 pr-3 tabular-nums text-kite-text">{trade.quantity}</td>
-          <td className="py-2 pr-3 tabular-nums text-kite-text">
-            {formatCurrency(trade.entryPrice)}
-          </td>
-          <td className="py-2 pr-3 tabular-nums text-kite-text">
-            {formatCurrency(trade.markOrExitPrice)}
-            {!showExitColumns && (
-              <div className="text-[10px] text-kite-muted">mark</div>
+      {trades.map((trade) => {
+        const isExiting = exitingSignalKey === trade.signalKey;
+        const showExitAction =
+          !showExitColumns &&
+          canExitOpen &&
+          typeof onExitPosition === "function";
+        const exitEnabled = Boolean(trade.canManualExit) && !isExiting && !exitingSignalKey;
+        return (
+          <tr key={`${trade.status}-${trade.signalKey}`} className="border-b border-kite-border/60">
+            <td className="py-2 pr-3 text-kite-text">
+              <div className="font-medium">{trade.tradingSymbol}</div>
+              <div className="text-[10px] text-kite-muted">{trade.stockName}</div>
+            </td>
+            <td
+              className={`py-2 pr-3 font-medium ${
+                trade.side === "BUY" ? "text-kite-green" : "text-kite-red"
+              }`}
+            >
+              {trade.side}
+            </td>
+            <td className="py-2 pr-3 tabular-nums text-kite-text">{trade.quantity}</td>
+            <td className="py-2 pr-3 tabular-nums text-kite-text">
+              {formatCurrency(trade.entryPrice)}
+            </td>
+            <td className="py-2 pr-3 tabular-nums text-kite-text">
+              {formatCurrency(trade.markOrExitPrice)}
+              {!showExitColumns && (
+                <div className="text-[10px] text-kite-muted">mark</div>
+              )}
+            </td>
+            <td className="py-2 pr-3 text-kite-text">{trade.entryTimeIst}</td>
+            <td className="py-2 pr-3 text-kite-text">
+              {showExitColumns ? trade.exitTimeIst ?? "—" : "—"}
+            </td>
+            <td className="py-2 pr-3 text-kite-muted">
+              {showExitColumns
+                ? trade.exitReason
+                  ? formatExitType({
+                      exitReason: trade.exitReason as
+                        | "target"
+                        | "deepak2_stop"
+                        | "breakeven"
+                        | "flip"
+                        | "eod"
+                        | "stop_loss"
+                        | "manual"
+                        | "price_filter"
+                        | null,
+                      exitTimeIst: trade.exitTimeIst,
+                    })
+                  : "—"
+                : trade.status === "open"
+                  ? "open"
+                  : "—"}
+            </td>
+            <td
+              className={`py-2 pr-3 font-medium tabular-nums ${pnlClass(trade.pnl)}`}
+            >
+              {formatPnL(trade.pnl)}
+              {!showExitColumns && (
+                <div className="text-[10px] font-normal text-kite-muted">unrealized</div>
+              )}
+            </td>
+            {showExitAction && (
+              <td className="py-2">
+                <button
+                  type="button"
+                  disabled={!exitEnabled}
+                  onClick={() => onExitPosition?.(trade.signalKey)}
+                  className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-[10px] font-medium text-kite-text disabled:cursor-not-allowed disabled:opacity-50"
+                  title={
+                    trade.canManualExit
+                      ? "Exit position at mark (or entry if mark unavailable)"
+                      : "Position is still pending entry"
+                  }
+                >
+                  {isExiting ? "Exiting…" : "Exit"}
+                </button>
+              </td>
             )}
-          </td>
-          <td className="py-2 pr-3 text-kite-text">{trade.entryTimeIst}</td>
-          <td className="py-2 pr-3 text-kite-text">
-            {showExitColumns ? trade.exitTimeIst ?? "—" : "—"}
-          </td>
-          <td className="py-2 pr-3 text-kite-muted">
-            {showExitColumns
-              ? trade.exitReason ?? "—"
-              : trade.status === "open"
-                ? "open"
-                : "—"}
-          </td>
-          <td
-            className={`py-2 pr-3 font-medium tabular-nums ${pnlClass(trade.pnl)}`}
-          >
-            {formatPnL(trade.pnl)}
-            {!showExitColumns && (
-              <div className="text-[10px] font-normal text-kite-muted">unrealized</div>
-            )}
-          </td>
-        </tr>
-      ))}
+          </tr>
+        );
+      })}
     </>
   );
 }
 
 interface SamcoPnLPanelProps {
   entries: SamcoLedgerEntry[];
+  onExitPosition?: (signalKey: string) => void;
+  exitingSignalKey?: string | null;
 }
 
-export function SamcoPnLPanel({ entries }: SamcoPnLPanelProps) {
+export function SamcoPnLPanel({
+  entries,
+  onExitPosition,
+  exitingSignalKey = null,
+}: SamcoPnLPanelProps) {
   const summary = buildSamcoPnLSummary(entries);
+  const canExitOpen = typeof onExitPosition === "function";
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -171,13 +226,19 @@ export function SamcoPnLPanel({ entries }: SamcoPnLPanelProps) {
                   <th className="py-2 pr-3 font-medium">Exit time</th>
                   <th className="py-2 pr-3 font-medium">Status</th>
                   <th className="py-2 pr-3 font-medium">P&amp;L</th>
+                  {canExitOpen && (
+                    <th className="py-2 font-medium">Action</th>
+                  )}
                 </tr>
               </thead>
               <tbody>
                 <TradeRows
                   trades={summary.openTrades}
-                  emptyLabel="No open positions with a mark price."
+                  emptyLabel="No open positions."
                   showExitColumns={false}
+                  onExitPosition={onExitPosition}
+                  exitingSignalKey={exitingSignalKey}
+                  canExitOpen={canExitOpen}
                 />
               </tbody>
             </table>
