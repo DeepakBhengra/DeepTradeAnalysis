@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 
 import { config } from "../config.js";
 import { getIstTimeParts } from "../utils/marketTime.js";
+import { normalizeStopLossPct } from "../utils/stopLossPct.js";
 import {
   DEFAULT_SAMCO_RULE_VARIANT,
   parseSamcoRuleVariant,
@@ -21,6 +22,8 @@ export interface SamcoRuntimeSettingsFile {
   entryPriceMin?: number;
   entryPriceMax?: number;
   ruleVariant?: SamcoRuleVariant;
+  /** Adverse loss % vs entry; omit/null/0 = disabled. */
+  stopLossPct?: number | null;
 }
 
 export interface SamcoRuntimeSettingsView {
@@ -31,6 +34,8 @@ export interface SamcoRuntimeSettingsView {
   entryPriceMin: number;
   entryPriceMax: number;
   ruleVariant: SamcoRuleVariant;
+  /** null when stop-loss is off. */
+  stopLossPct: number | null;
   envDefaultQuantity: number;
   envDefaultDryRun: boolean;
   envDefaultEntryPriceMin: number;
@@ -64,6 +69,12 @@ function resolveRuleVariant(
   return parseSamcoRuleVariant(stored?.ruleVariant);
 }
 
+function resolveStopLossPct(
+  stored: Pick<SamcoRuntimeSettingsFile, "stopLossPct"> | null,
+): number | null {
+  return normalizeStopLossPct(stored?.stopLossPct ?? null);
+}
+
 function createDefaultSettings(now = new Date()): SamcoRuntimeSettingsFile {
   const { min, max } = envEntryPriceDefaults();
   return {
@@ -73,6 +84,7 @@ function createDefaultSettings(now = new Date()): SamcoRuntimeSettingsFile {
     entryPriceMin: min,
     entryPriceMax: max,
     ruleVariant: DEFAULT_SAMCO_RULE_VARIANT,
+    stopLossPct: null,
   };
 }
 
@@ -130,6 +142,7 @@ function normalizeForToday(
 
   const { min, max } = resolveEntryPriceRange(stored);
   const ruleVariant = resolveRuleVariant(stored);
+  const stopLossPct = resolveStopLossPct(stored);
 
   if (stored.dateKey !== currentDateKey) {
     return {
@@ -139,6 +152,7 @@ function normalizeForToday(
       entryPriceMin: min,
       entryPriceMax: max,
       ruleVariant,
+      stopLossPct,
     };
   }
 
@@ -147,6 +161,7 @@ function normalizeForToday(
     entryPriceMin: min,
     entryPriceMax: max,
     ruleVariant,
+    stopLossPct,
   };
 }
 
@@ -162,6 +177,7 @@ function toView(normalized: SamcoRuntimeSettingsFile): SamcoRuntimeSettingsView 
     entryPriceMin: min,
     entryPriceMax: max,
     ruleVariant: resolveRuleVariant(normalized),
+    stopLossPct: resolveStopLossPct(normalized),
     envDefaultQuantity: config.samco.defaultQuantity,
     envDefaultDryRun: config.samco.dryRun,
     envDefaultEntryPriceMin: envDefaults.min,
@@ -212,6 +228,37 @@ export function getSamcoEntryPriceRange(now = new Date()): SamcoEntryPriceRange 
 
 export function getSamcoRuleVariant(now = new Date()): SamcoRuleVariant {
   return getSamcoRuntimeSettings(now).ruleVariant;
+}
+
+export function getSamcoStopLossPct(now = new Date()): number | null {
+  return getSamcoRuntimeSettings(now).stopLossPct;
+}
+
+export function validateSamcoStopLossPct(value: number | null): void {
+  if (value == null) {
+    return;
+  }
+  if (!Number.isFinite(value) || value < 0) {
+    throw new Error("Stop-loss % must be blank, 0 (off), or a positive number.");
+  }
+  if (value > 100) {
+    throw new Error("Stop-loss % cannot exceed 100.");
+  }
+}
+
+export function setSamcoStopLossPct(
+  value: number | null,
+  now = new Date(),
+): SamcoRuntimeSettingsView {
+  validateSamcoStopLossPct(value);
+  const current = normalizeForToday(readSettingsFile(), now);
+  const next: SamcoRuntimeSettingsFile = {
+    ...current,
+    dateKey: todayDateKey(now),
+    stopLossPct: normalizeStopLossPct(value),
+  };
+  writeSettingsFile(next);
+  return getSamcoRuntimeSettings(now);
 }
 
 export function setSamcoDryRun(enabled: boolean, now = new Date()): SamcoRuntimeSettingsView {

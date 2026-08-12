@@ -5,20 +5,30 @@ import {
   MIN_ENTRY_PRICE,
   ORDER_QUANTITY,
 } from "../types/dayOrder";
+import { normalizeStopLossPct } from "./stopLossPct";
 
 export function parseDayOrderRunSettingsInput(input: {
   quantityText: string;
   minEntryPriceText: string;
   maxEntryPriceText: string;
+  stopLossPctText: string;
 }): DayOrderRunSettings {
   const quantity = Number.parseInt(input.quantityText.trim(), 10);
   const minEntryPrice = Number(input.minEntryPriceText.trim());
   const maxEntryPrice = Number(input.maxEntryPriceText.trim());
+  const stopLossRaw = input.stopLossPctText.trim();
+  const stopLossParsed =
+    stopLossRaw === "" ? null : Number(stopLossRaw);
 
   return {
     quantity: Number.isFinite(quantity) ? quantity : Number.NaN,
     minEntryPrice: Number.isFinite(minEntryPrice) ? minEntryPrice : Number.NaN,
     maxEntryPrice: Number.isFinite(maxEntryPrice) ? maxEntryPrice : Number.NaN,
+    stopLossPct: normalizeStopLossPct(
+      stopLossParsed == null || !Number.isFinite(stopLossParsed)
+        ? null
+        : stopLossParsed,
+    ),
   };
 }
 
@@ -26,11 +36,14 @@ export function formatDayOrderRunSettings(settings: DayOrderRunSettings): {
   quantityText: string;
   minEntryPriceText: string;
   maxEntryPriceText: string;
+  stopLossPctText: string;
 } {
   return {
     quantityText: String(settings.quantity),
     minEntryPriceText: String(settings.minEntryPrice),
     maxEntryPriceText: String(settings.maxEntryPrice),
+    stopLossPctText:
+      settings.stopLossPct == null ? "" : String(settings.stopLossPct),
   };
 }
 
@@ -42,4 +55,5 @@ export const DAY_ORDER_SETTINGS_DEFAULTS = {
   quantity: ORDER_QUANTITY,
   minEntryPrice: MIN_ENTRY_PRICE,
   maxEntryPrice: MAX_ENTRY_PRICE,
+  stopLossPct: null as number | null,
 } as const;

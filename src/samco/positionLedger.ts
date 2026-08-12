@@ -26,7 +26,7 @@ export interface LedgerEntry {
   entryTimeIst: string;
   orderNumber: string | null;
   status: LedgerPositionStatus;
-  exitReason?: DeepakExitReason | "eod" | "price_filter";
+  exitReason?: DeepakExitReason | "eod" | "price_filter" | "stop_loss";
   exitTimeIst?: string | null;
   exitPrice?: number | null;
   exitLimitPrice?: number | null;

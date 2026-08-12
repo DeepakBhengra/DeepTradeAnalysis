@@ -31,6 +31,7 @@ import {
   setSamcoDryRun,
   setSamcoEntryPriceRange,
   setSamcoRuleVariant,
+  setSamcoStopLossPct,
 } from "../samco/samcoRuntimeSettings.js";
 import {
   clearSamcoDayScanSignalSnapshot,
@@ -46,7 +47,10 @@ import {
   getSamcoTradeLogs,
   resetSamcoTradeLogs,
 } from "../samco/samcoTradeLog.js";
-import { processDayScanSignalSnapshot } from "../samco/tradeExecutor.js";
+import {
+  applyConfiguredStopLossAndReverse,
+  processDayScanSignalSnapshot,
+} from "../samco/tradeExecutor.js";
 import {
   loadPostMortemReport,
   loadSignalDaysIndex,
@@ -300,12 +304,21 @@ app.post("/api/samco/cycle", async (req, res) => {
       appendSamcoTradeLogs(materialize.logs, {
         dryRun: dryRun || !liveEnabled,
       });
+      const stopLoss = await applyConfiguredStopLossAndReverse();
+      if (stopLoss.logs.length > 0) {
+        appendSamcoTradeLogs(stopLoss.logs, {
+          dryRun: dryRun || !liveEnabled,
+        });
+      }
       cycle = {
         processed:
-          materialize.entriesPlaced > 0 || materialize.exitsPlaced > 0,
+          materialize.entriesPlaced > 0 ||
+          materialize.exitsPlaced > 0 ||
+          stopLoss.entriesPlaced > 0 ||
+          stopLoss.exitsPlaced > 0,
         signalSource: "dayscan",
-        entriesPlaced: materialize.entriesPlaced,
-        exitsPlaced: materialize.exitsPlaced,
+        entriesPlaced: materialize.entriesPlaced + stopLoss.entriesPlaced,
+        exitsPlaced: materialize.exitsPlaced + stopLoss.exitsPlaced,
         eodSquareOff: false,
         stocksScanned: new Set(
           snapshot.trades.map((trade) => trade.tradingSymbol),
@@ -421,13 +434,18 @@ app.post("/api/samco/day-scan-signals", async (req, res) => {
       appendSamcoTradeLogs(applied.logs, { dryRun: dryRun || !liveEnabled });
     }
 
+    const stopLoss = await applyConfiguredStopLossAndReverse();
+    if (stopLoss.logs.length > 0) {
+      appendSamcoTradeLogs(stopLoss.logs, { dryRun: dryRun || !liveEnabled });
+    }
+
     res.json({
       ok: true,
       snapshot,
       materialize: {
         mode: "full",
-        entriesPlaced: applied.entriesPlaced,
-        exitsPlaced: applied.exitsPlaced,
+        entriesPlaced: applied.entriesPlaced + stopLoss.entriesPlaced,
+        exitsPlaced: applied.exitsPlaced + stopLoss.exitsPlaced,
         entriesSkipped: applied.entriesSkipped,
       },
       settings: {
@@ -461,6 +479,7 @@ app.patch("/api/samco/settings", (req, res) => {
     const entryPriceMin = req.body?.entryPriceMin;
     const entryPriceMax = req.body?.entryPriceMax;
     const ruleVariant = req.body?.ruleVariant;
+    const stopLossPct = req.body?.stopLossPct;
     const confirmLive = req.body?.confirmLive === true;
 
     if (dryRun !== undefined && typeof dryRun !== "boolean") {
@@ -485,6 +504,17 @@ app.patch("/api/samco/settings", (req, res) => {
 
     if (ruleVariant !== undefined && typeof ruleVariant !== "string") {
       res.status(400).json({ error: "ruleVariant must be a string when provided." });
+      return;
+    }
+
+    if (
+      stopLossPct !== undefined &&
+      stopLossPct !== null &&
+      typeof stopLossPct !== "number"
+    ) {
+      res.status(400).json({
+        error: "stopLossPct must be a number or null when provided.",
+      });
       return;
     }
 
@@ -525,6 +555,10 @@ app.patch("/api/samco/settings", (req, res) => {
       setSamcoRuleVariant(ruleVariant);
     }
 
+    if (stopLossPct === null || typeof stopLossPct === "number") {
+      setSamcoStopLossPct(stopLossPct);
+    }
+
     res.json({
       ...getSamcoRuntimeSettings(),
       liveTradingEnabled: getSamcoLiveTradingEnabled(),
@@ -534,6 +568,7 @@ app.patch("/api/samco/settings", (req, res) => {
     const status =
       message.includes("Quantity must") ||
       message.includes("Entry price") ||
+      message.includes("Stop-loss") ||
       message.includes("Invalid ruleVariant")
         ? 400
         : 500;

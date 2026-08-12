@@ -14,6 +14,12 @@ import {
   DAY_ORDER_INITIAL_CASH,
   DEFAULT_DAY_ORDER_RUN_SETTINGS,
 } from "../types/dayOrder";
+import {
+  isStopLossHit,
+  normalizeStopLossPct,
+  oppositeSide,
+  stopLossReverseSignalKey,
+} from "./stopLossPct";
 
 let fillIdCounter = 0;
 
@@ -334,6 +340,130 @@ function processEntries(
   return next;
 }
 
+/**
+ * Exit open positions that hit the configured adverse loss %, then open the
+ * opposite side at the mark so trading continues in reverse.
+ */
+function processStopLossExitsAndReverses(
+  portfolio: DayOrderPortfolio,
+  marks: ReadonlyMap<string, number>,
+  sessionIndex: number,
+  simulatedTimeIst: string,
+  settings: DayOrderRunSettings,
+): DayOrderPortfolio {
+  const stopLossPct = normalizeStopLossPct(settings.stopLossPct);
+  if (stopLossPct == null) {
+    return portfolio;
+  }
+
+  let next = portfolio;
+  const openSnapshot = [...next.openPositions];
+
+  for (const position of openSnapshot) {
+    const stillOpen = next.openPositions.some(
+      (row) => row.signalKey === position.signalKey,
+    );
+    if (!stillOpen) {
+      continue;
+    }
+
+    const mark = marks.get(position.tradingSymbol);
+    if (typeof mark !== "number" || !Number.isFinite(mark)) {
+      continue;
+    }
+
+    if (
+      !isStopLossHit(position.side, position.entryPrice, mark, stopLossPct)
+    ) {
+      continue;
+    }
+
+    const pnl = computeRealizedPnL(position, mark);
+    const marginReleased = requiredCapital(position.entryPrice, position.quantity);
+    const exitProceeds =
+      position.side === "BUY" ? mark * position.quantity : marginReleased + pnl;
+    const exitSide = oppositeSide(position.side);
+
+    const exitFill: DayOrderFill = {
+      id: createFillId(),
+      kind: "exit",
+      signalKey: position.signalKey,
+      tradingSymbol: position.tradingSymbol,
+      symbol: position.symbol,
+      strategy: position.strategy,
+      side: exitSide,
+      quantity: position.quantity,
+      price: mark,
+      timeIst: simulatedTimeIst,
+      sessionIndex,
+      realizedPnL: pnl,
+    };
+
+    next = {
+      cash: next.cash + exitProceeds,
+      openPositions: next.openPositions.filter(
+        (row) => row.signalKey !== position.signalKey,
+      ),
+      fills: [...next.fills, exitFill],
+      realizedPnL: next.realizedPnL + pnl,
+      skippedEntryKeys: next.skippedEntryKeys,
+    };
+
+    const reverseKey = stopLossReverseSignalKey(position.signalKey);
+    const reverseAlreadyOpen = next.openPositions.some(
+      (row) => row.signalKey === reverseKey,
+    );
+    const reverseAlreadyClosed = next.fills.some(
+      (fill) => fill.kind === "exit" && fill.signalKey === reverseKey,
+    );
+    if (reverseAlreadyOpen || reverseAlreadyClosed) {
+      continue;
+    }
+
+    if (!canOpenEntry(next, mark, settings.quantity)) {
+      continue;
+    }
+
+    const reverseSide = exitSide;
+    const margin = requiredCapital(mark, settings.quantity);
+    const reversePosition: DayOrderOpenPosition = {
+      signalKey: reverseKey,
+      tradingSymbol: position.tradingSymbol,
+      symbol: position.symbol,
+      strategy: position.strategy,
+      side: reverseSide,
+      quantity: settings.quantity,
+      entryPrice: mark,
+      entryTimeIst: simulatedTimeIst,
+    };
+
+    const reverseFill: DayOrderFill = {
+      id: createFillId(),
+      kind: "entry",
+      signalKey: reverseKey,
+      tradingSymbol: position.tradingSymbol,
+      symbol: position.symbol,
+      strategy: position.strategy,
+      side: reverseSide,
+      quantity: settings.quantity,
+      price: mark,
+      timeIst: simulatedTimeIst,
+      sessionIndex,
+      realizedPnL: null,
+    };
+
+    next = {
+      cash: next.cash - margin,
+      openPositions: [...next.openPositions, reversePosition],
+      fills: [...next.fills, reverseFill],
+      realizedPnL: next.realizedPnL,
+      skippedEntryKeys: next.skippedEntryKeys,
+    };
+  }
+
+  return next;
+}
+
 export function processDayOrderTick(
   portfolio: DayOrderPortfolio,
   payload: DayScanSimulationPayload,
@@ -342,8 +472,15 @@ export function processDayOrderTick(
   const sessionIndex = payload.simulation.sessionIndex;
   const simulatedTimeIst = payload.simulation.simulatedTimeIst;
   const afterExits = processExits(portfolio, payload.exits, sessionIndex);
-  return processEntries(
+  const afterStopLoss = processStopLossExitsAndReverses(
     afterExits,
+    marksMapFromSimulation(payload.marks),
+    sessionIndex,
+    simulatedTimeIst,
+    settings,
+  );
+  return processEntries(
+    afterStopLoss,
     payload.entries,
     sessionIndex,
     simulatedTimeIst,
@@ -364,6 +501,12 @@ export function validateDayOrderRunSettings(settings: DayOrderRunSettings): stri
   }
   if (settings.minEntryPrice > settings.maxEntryPrice) {
     return "Min entry price cannot be greater than max entry price.";
+  }
+  if (
+    settings.stopLossPct != null &&
+    (!Number.isFinite(settings.stopLossPct) || settings.stopLossPct < 0)
+  ) {
+    return "Stop-loss % must be blank, 0 (off), or a positive number.";
   }
   return null;
 }
