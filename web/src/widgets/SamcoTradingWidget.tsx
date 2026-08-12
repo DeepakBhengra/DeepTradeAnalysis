@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
 import { SamcoOrdersPanels } from "../components/SamcoOrdersPanels";
+import { SamcoPnLPanel } from "../components/SamcoPnLPanel";
 import { useSamcoTrading } from "../hooks/useSamcoTrading";
 import {
   SAMCO_RULE_VARIANT_LABEL,
@@ -35,6 +36,7 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
   const {
     status,
     settings,
+    ledger,
     orders,
     logs,
     logDate,
@@ -414,6 +416,8 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           updatedAt={orders?.updatedAt}
           signalSource={orders?.signalSource}
         />
+
+        <SamcoPnLPanel entries={ledger?.entries ?? []} />
 
         <section className="border border-kite-border bg-kite-surface p-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
