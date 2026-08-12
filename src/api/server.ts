@@ -36,7 +36,6 @@ import {
   clearSamcoDayScanSignalSnapshot,
   getDayScanSignalSourceSummary,
   ingestDayScanTrades,
-  latestClosedSessionCandleIst,
   loadSamcoDayScanSignalSnapshot,
 } from "../samco/samcoDayScanBridge.js";
 import { buildSamcoOrdersFromLedger } from "../samco/samcoOrders.js";
@@ -287,7 +286,8 @@ app.post("/api/samco/cycle", async (req, res) => {
       scanErrors: 0,
     };
 
-    // Dry-run / historical / live-off: apply the full Day Scan snapshot when present.
+    // Dry-run / historical / live-off: rematerialize the full Day Scan snapshot.
+    // Live same-day: processLiveTradingCycle uses catch_up on the Day Scan feed.
     const shouldMaterializeFull =
       snapshot != null &&
       snapshot.variant === getSamcoRuleVariant() &&
@@ -408,32 +408,21 @@ app.post("/api/samco/day-scan-signals", async (req, res) => {
     // Keep Samco rule variant aligned with the Day Scan run that feeds it.
     setSamcoRuleVariant(snapshot.variant);
 
-    const today = getIstTimeParts(new Date()).dateKey;
     const dryRun = getSamcoDryRun();
     const liveEnabled = getSamcoLiveTradingEnabled();
-    // Historical Day Scan, dry-run, or live-off: materialize the full day so
-    // Open/Executed/Rejected + trade logs populate immediately after push.
-    // Live same-day keeps current-candle gating via the trading poll.
-    const useFull = snapshot.date !== today || dryRun || !liveEnabled;
-    let applied;
-    if (useFull) {
-      applied = await processDayScanSignalSnapshot(snapshot, null, {
-        mode: "full",
-      });
-    } else {
-      applied = await processDayScanSignalSnapshot(
-        snapshot,
-        latestClosedSessionCandleIst(),
-        { mode: "current_candle" },
-      );
-    }
+    // Explicit Day Scan Run always full-applies the pushed trades into the ledger
+    // (and placeOrder when LIVE). Re-runs are idempotent by signal key.
+    // Live poll uses catch-up for incremental same-day updates between scans.
+    const applied = await processDayScanSignalSnapshot(snapshot, null, {
+      mode: "full",
+    });
     appendSamcoTradeLogs(applied.logs, { dryRun: dryRun || !liveEnabled });
 
     res.json({
       ok: true,
       snapshot,
       materialize: {
-        mode: useFull ? "full" : "current_candle",
+        mode: "full",
         entriesPlaced: applied.entriesPlaced,
         exitsPlaced: applied.exitsPlaced,
       },

@@ -245,7 +245,7 @@ export async function pushDayScanSignalsToSamco(body: {
   ok: boolean;
   snapshot: unknown;
   materialize?: {
-    mode: "full" | "current_candle";
+    mode: "full" | "current_candle" | "catch_up";
     entriesPlaced: number;
     exitsPlaced: number;
   };
