@@ -12,6 +12,10 @@ interface DayScanRunControlsProps {
   description: ReactNode;
   ruleVariant?: DayScanRuleVariant;
   onRuleVariantChange?: (variant: DayScanRuleVariant) => void;
+  entryPriceMin?: string;
+  entryPriceMax?: string;
+  onEntryPriceMinChange?: (value: string) => void;
+  onEntryPriceMaxChange?: (value: string) => void;
   /** Prefix for input ids when multiple day-scan control blocks are mounted. */
   idPrefix?: string;
 }
@@ -25,10 +29,21 @@ export function DayScanRunControls({
   description,
   ruleVariant,
   onRuleVariantChange,
+  entryPriceMin,
+  entryPriceMax,
+  onEntryPriceMinChange,
+  onEntryPriceMaxChange,
   idPrefix = "dayscan",
 }: DayScanRunControlsProps) {
   const dateId = `${idPrefix}-session-date`;
   const variantId = `${idPrefix}-rule-variant`;
+  const minPriceId = `${idPrefix}-entry-price-min`;
+  const maxPriceId = `${idPrefix}-entry-price-max`;
+  const showPriceRange =
+    entryPriceMin != null &&
+    entryPriceMax != null &&
+    onEntryPriceMinChange != null &&
+    onEntryPriceMaxChange != null;
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -64,6 +79,42 @@ export function DayScanRunControls({
             </select>
           </label>
         )}
+        {showPriceRange && (
+          <>
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor={minPriceId}
+            >
+              Entry min ₹
+              <input
+                id={minPriceId}
+                type="number"
+                min={0}
+                step="0.01"
+                value={entryPriceMin}
+                onChange={(event) => onEntryPriceMinChange(event.target.value)}
+                disabled={loading}
+                className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-sm text-kite-text disabled:opacity-50"
+              />
+            </label>
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor={maxPriceId}
+            >
+              Entry max ₹
+              <input
+                id={maxPriceId}
+                type="number"
+                min={0}
+                step="0.01"
+                value={entryPriceMax}
+                onChange={(event) => onEntryPriceMaxChange(event.target.value)}
+                disabled={loading}
+                className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-sm text-kite-text disabled:opacity-50"
+              />
+            </label>
+          </>
+        )}
         <button
           type="button"
           onClick={onRun}
@@ -82,6 +133,12 @@ export function DayScanRunControls({
         </button>
       </div>
       <p className="m-0 mt-2 text-xs text-kite-muted">{description}</p>
+      {showPriceRange && (
+        <p className="m-0 mt-1 text-[11px] text-kite-muted">
+          Results and Samco push only include trades with entry price in ₹{entryPriceMin}–
+          ₹{entryPriceMax}.
+        </p>
+      )}
     </section>
   );
 }
