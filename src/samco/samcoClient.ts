@@ -1,5 +1,6 @@
 import { config } from "../config.js";
 import {
+  clearSamcoSessionToken,
   getSamcoSessionToken,
   hasValidSamcoSessionToken,
   persistSamcoSessionTokenToEnv,
@@ -72,6 +73,48 @@ export class SamcoApiError extends Error {
     this.statusCode = statusCode;
     this.body = body;
   }
+}
+
+/** True when Samco rejected the call because the trading session is missing/expired. */
+export function isSamcoSessionAuthError(error: unknown): boolean {
+  const message =
+    error instanceof Error ? error.message : typeof error === "string" ? error : "";
+  const normalized = message.toLowerCase();
+  if (
+    normalized.includes("trading session is missing") ||
+    normalized.includes("session is missing") ||
+    normalized.includes("invalid session") ||
+    normalized.includes("session expired") ||
+    normalized.includes("generate a fresh session") ||
+    (normalized.includes("session token") && normalized.includes("expired"))
+  ) {
+    return true;
+  }
+
+  if (error instanceof SamcoApiError) {
+    if (error.statusCode === 401 || error.statusCode === 403) {
+      return true;
+    }
+    const bodyMessage =
+      typeof error.body === "string"
+        ? error.body
+        : [
+            error.body.statusMessage,
+            error.body.message,
+            error.body.errorMessage,
+            error.body.error,
+          ]
+            .filter((part): part is string => typeof part === "string")
+            .join(" ");
+    const bodyNormalized = bodyMessage.toLowerCase();
+    return (
+      bodyNormalized.includes("trading session is missing") ||
+      bodyNormalized.includes("unauthorized") ||
+      bodyNormalized.includes("generate a fresh session")
+    );
+  }
+
+  return normalized.includes("unauthorized");
 }
 
 export interface SamcoSessionTokenResponse {
@@ -223,6 +266,32 @@ async function samcoRequest<T>(
   return payload;
 }
 
+/**
+ * Authenticated Samco call: ensure a token exists, and on session-missing /
+ * Unauthorized clear the stale token, regenerate once, then retry.
+ */
+async function samcoAuthedRequest<T>(
+  method: "GET" | "POST",
+  path: string,
+  options?: {
+    body?: unknown;
+    query?: Record<string, string>;
+  },
+): Promise<T> {
+  await ensureSamcoSessionToken();
+  try {
+    return await samcoRequest<T>(method, path, options);
+  } catch (error) {
+    if (!isSamcoSessionAuthError(error)) {
+      throw error;
+    }
+
+    clearSamcoSessionToken();
+    await generateSamcoSessionToken();
+    return samcoRequest<T>(method, path, options);
+  }
+}
+
 export async function generateSamcoSessionToken(): Promise<SamcoSessionTokenResponse> {
   const payload = await samcoRequest<SamcoSessionTokenResponse>(
     "POST",
@@ -254,20 +323,19 @@ export async function ensureSamcoSessionToken(): Promise<string> {
 }
 
 export async function refreshSamcoSessionToken(): Promise<SamcoSessionTokenResponse> {
+  clearSamcoSessionToken();
   return generateSamcoSessionToken();
 }
 
 export async function getSamcoWhoAmI(): Promise<SamcoWhoAmIResponse> {
-  await ensureSamcoSessionToken();
-  return samcoRequest<SamcoWhoAmIResponse>("GET", "/ip/whoami");
+  return samcoAuthedRequest<SamcoWhoAmIResponse>("GET", "/ip/whoami");
 }
 
 export async function placeSamcoOrder(
   request: SamcoPlaceOrderRequest,
 ): Promise<SamcoPlaceOrderResponse> {
-  await ensureSamcoSessionToken();
   await assertSamcoEgressIpForLiveOrders();
-  return samcoRequest<SamcoPlaceOrderResponse>("POST", "/order/placeOrder", {
+  return samcoAuthedRequest<SamcoPlaceOrderResponse>("POST", "/order/placeOrder", {
     body: request,
   });
 }
@@ -275,8 +343,7 @@ export async function placeSamcoOrder(
 export async function getSamcoOrderStatus(
   orderNumber: string,
 ): Promise<SamcoOrderStatusResponse> {
-  await ensureSamcoSessionToken();
-  return samcoRequest<SamcoOrderStatusResponse>("GET", "/order/getOrderStatus", {
+  return samcoAuthedRequest<SamcoOrderStatusResponse>("GET", "/order/getOrderStatus", {
     query: { orderNumber },
   });
 }
@@ -284,8 +351,7 @@ export async function getSamcoOrderStatus(
 export async function getSamcoPositions(
   positionType = "DAY",
 ): Promise<SamcoPositionsResponse> {
-  await ensureSamcoSessionToken();
-  return samcoRequest<SamcoPositionsResponse>("GET", "/position/getPositions", {
+  return samcoAuthedRequest<SamcoPositionsResponse>("GET", "/position/getPositions", {
     query: { positionType },
   });
 }
@@ -293,9 +359,8 @@ export async function getSamcoPositions(
 export async function squareOffSamcoPositions(
   requests: SamcoSquareOffRequestItem[],
 ): Promise<SamcoSquareOffResponse> {
-  await ensureSamcoSessionToken();
   await assertSamcoEgressIpForLiveOrders();
-  return samcoRequest<SamcoSquareOffResponse>("POST", "/position/squareOff", {
+  return samcoAuthedRequest<SamcoSquareOffResponse>("POST", "/position/squareOff", {
     body: { positionSquareOffRequestList: requests },
   });
 }
