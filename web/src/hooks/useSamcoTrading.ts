@@ -353,11 +353,22 @@ export function useSamcoTrading(isActive: boolean) {
     try {
       const session = await refreshSamcoSession();
       await refresh({ silent: true });
-      setRefreshInfo(
-        session.connected
-          ? "Samco session connected — whoami OK. Ready for live order requests when Live is on and Dry run is off."
-          : "Session refresh returned without a connected token.",
-      );
+      const status = await fetchSamcoStatus();
+      setStatus(status);
+      if (!session.connected && !status.connected) {
+        setRefreshInfo("Session refresh returned without a connected token.");
+      } else if (status.requiredStaticIp && status.staticIpMatched === false) {
+        setRefreshInfo(
+          status.staticIpMessage ??
+            `Session connected, but egress IP ${status.srcIp ?? "unknown"} does not match required ${status.requiredStaticIp}. Live orders are blocked.`,
+        );
+      } else {
+        setRefreshInfo(
+          status.requiredStaticIp
+            ? `Samco session connected — egress IP ${status.srcIp ?? "ok"} matches ${status.requiredStaticIp}. Ready for live orders when Live is on and Dry run is off.`
+            : "Samco session connected — whoami OK. Ready for live order requests when Live is on and Dry run is off.",
+        );
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setActionError(message);

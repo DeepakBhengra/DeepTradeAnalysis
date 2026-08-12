@@ -61,6 +61,8 @@ describe("tradeExecutor", () => {
     process.env.SAMCO_ENTRY_PRICE_MIN = "0";
     process.env.SAMCO_ENTRY_PRICE_MAX = "3900";
     delete process.env.SAMCO_ORDER_TYPE;
+    // Unit tests call live placeOrder against mocks; disable egress IP gate.
+    process.env.SAMCO_REQUIRED_STATIC_IP = "";
   });
 
   afterEach(() => {
