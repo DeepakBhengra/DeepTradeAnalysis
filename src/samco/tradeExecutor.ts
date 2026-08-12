@@ -432,7 +432,7 @@ export async function processDayScanSignalSnapshot(
     }>;
   },
   latestCandleTimeIst: string | null,
-  options?: { mode?: "current_candle" | "full" },
+  options?: { mode?: "current_candle" | "full" | "catch_up" },
 ): Promise<ProcessDecisionResult> {
   const mode = options?.mode ?? "current_candle";
   const logs: TradeExecutorLog[] = [];
@@ -440,9 +440,15 @@ export async function processDayScanSignalSnapshot(
   let exitsPlaced = 0;
   let ledger = loadPositionLedger();
 
-  if (mode === "current_candle" && !latestCandleTimeIst) {
+  if (
+    (mode === "current_candle" || mode === "catch_up") &&
+    !latestCandleTimeIst
+  ) {
     return { entriesPlaced: 0, exitsPlaced: 0, eodSquareOffs: 0, logs };
   }
+
+  const latestMinutes =
+    latestCandleTimeIst != null ? parseHmToMinutes(latestCandleTimeIst) : null;
 
   for (const trade of snapshot.trades) {
     const signalKey = buildSignalKey({
@@ -458,14 +464,17 @@ export async function processDayScanSignalSnapshot(
       source: "dayscan" as const,
     };
     const existing = findLedgerEntry(ledger, signalKey);
+    const entryMinutes = parseHmToMinutes(trade.entryTimeIst);
 
     const shouldPlaceEntry =
       !existing &&
       (mode === "full"
         ? true
-        : // Live incremental: only open (no exit yet) entries at the current candle.
-          trade.exitTimeIst == null &&
-          trade.entryTimeIst === latestCandleTimeIst);
+        : mode === "catch_up"
+          ? latestMinutes != null && entryMinutes <= latestMinutes
+          : // Live single-candle: only open (no exit yet) entries at the current candle.
+            trade.exitTimeIst == null &&
+            trade.entryTimeIst === latestCandleTimeIst);
 
     if (shouldPlaceEntry) {
       const signal: DeepakTradeSignal = {
@@ -514,11 +523,19 @@ export async function processDayScanSignalSnapshot(
     }
 
     const openEntry = findLedgerEntry(ledger, signalKey);
+    const exitMinutes =
+      trade.exitTimeIst != null ? parseHmToMinutes(trade.exitTimeIst) : null;
     const shouldPlaceExit =
       openEntry &&
       (openEntry.status === "open" || openEntry.status === "closing") &&
       trade.exitTimeIst != null &&
-      (mode === "full" || trade.exitTimeIst === latestCandleTimeIst);
+      (mode === "full"
+        ? true
+        : mode === "catch_up"
+          ? latestMinutes != null &&
+            exitMinutes != null &&
+            exitMinutes <= latestMinutes
+          : trade.exitTimeIst === latestCandleTimeIst);
 
     if (shouldPlaceExit && openEntry) {
       try {

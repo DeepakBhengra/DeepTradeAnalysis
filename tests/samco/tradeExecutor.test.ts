@@ -462,4 +462,93 @@ describe("tradeExecutor", () => {
     expect(result.entriesPlaced).toBe(2);
     expect(result.exitsPlaced).toBe(2);
   });
+
+  it("Day Scan catch_up places completed trades through the latest closed candle", async () => {
+    const { resetPositionLedger, processDayScanSignalSnapshot } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    const trades = [
+      {
+        tradingSymbol: "TCS",
+        stockName: "TCS",
+        side: "SELL" as const,
+        scenarioNumber: 1,
+        entryTimeIst: "10:15",
+        entryPrice: 3500,
+        exitTimeIst: "11:00",
+        exitPrice: 3480,
+        targetHit: true,
+        exitReason: "target",
+      },
+      {
+        tradingSymbol: "INFY",
+        stockName: "INFY",
+        side: "BUY" as const,
+        scenarioNumber: 1,
+        entryTimeIst: "11:30",
+        entryPrice: 1600,
+        exitTimeIst: null,
+        exitPrice: null,
+        targetHit: false,
+      },
+    ];
+
+    // current_candle skips completed entry+exit pairs even when entry candle matches.
+    const currentOnly = await processDayScanSignalSnapshot(
+      { strategy: "deeppro1", trades },
+      "10:15",
+      { mode: "current_candle" },
+    );
+    expect(currentOnly.entriesPlaced).toBe(0);
+    expect(currentOnly.exitsPlaced).toBe(0);
+
+    resetPositionLedger();
+
+    const midMorning = await processDayScanSignalSnapshot(
+      { strategy: "deeppro1", trades },
+      "11:15",
+      { mode: "catch_up" },
+    );
+    expect(midMorning.entriesPlaced).toBe(1);
+    expect(midMorning.exitsPlaced).toBe(1);
+
+    const later = await processDayScanSignalSnapshot(
+      { strategy: "deeppro1", trades },
+      "11:30",
+      { mode: "catch_up" },
+    );
+    expect(later.entriesPlaced).toBe(1);
+    expect(later.exitsPlaced).toBe(0);
+  });
+
+  it("Day Scan catch_up places nothing when there is no closed candle yet", async () => {
+    const { resetPositionLedger, processDayScanSignalSnapshot } =
+      await loadTradeExecutorModules();
+    resetPositionLedger();
+
+    const result = await processDayScanSignalSnapshot(
+      {
+        strategy: "deeppro1",
+        trades: [
+          {
+            tradingSymbol: "TCS",
+            stockName: "TCS",
+            side: "BUY",
+            scenarioNumber: 1,
+            entryTimeIst: "09:30",
+            entryPrice: 3500,
+            exitTimeIst: null,
+            exitPrice: null,
+            targetHit: false,
+          },
+        ],
+      },
+      null,
+      { mode: "catch_up" },
+    );
+
+    expect(result.entriesPlaced).toBe(0);
+    expect(result.exitsPlaced).toBe(0);
+  });
 });

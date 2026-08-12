@@ -85,9 +85,12 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
     dayScanSnapshot.variant === getSamcoRuleVariant()
   ) {
     // Prefer Day Scan widget signals when today's ingest matches the Samco rule variant.
+    // Catch-up applies all entries/exits at or before the latest closed candle
+    // (completed Day Scan rows include exits — current_candle-only would skip them).
     const dayScanResult = await processDayScanSignalSnapshot(
       dayScanSnapshot,
       latestCandle,
+      { mode: dryRun || !liveEnabled ? "full" : "catch_up" },
     );
     result.signalSource = "dayscan";
     result.stocksScanned = new Set(
