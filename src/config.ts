@@ -264,7 +264,8 @@ export const config = {
     sessionToken: readEnv("SAMCO_SESSION_TOKEN"),
     baseUrl: readEnv("SAMCO_BASE_URL") || "https://tradeapi.samco.in",
     productType: readEnv("SAMCO_PRODUCT_TYPE") || "MIS",
-    orderType: readEnv("SAMCO_ORDER_TYPE") || "MKT",
+    // Samco /order/placeOrder only documents L (limit) and SL (stop-limit).
+    orderType: readEnv("SAMCO_ORDER_TYPE") || "L",
     defaultQuantity: readEnvNumber("SAMCO_DEFAULT_QUANTITY", 100),
     entryPriceMin: readEnvNumber("SAMCO_ENTRY_PRICE_MIN", 0),
     entryPriceMax: readSamcoEntryPriceMaxDefault(),

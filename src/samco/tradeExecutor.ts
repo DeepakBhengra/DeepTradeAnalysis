@@ -10,6 +10,10 @@ import {
   waitForSamcoOrderFill,
   type SamcoPlaceOrderRequest,
 } from "./samcoClient.js";
+import {
+  formatSamcoLimitPrice,
+  resolveSamcoPlaceOrderType,
+} from "./samcoOrderType.js";
 import { getSamcoLiveTradingEnabled } from "./samcoLiveTrading.js";
 import { getSamcoDryRun, getSamcoEffectiveQuantity, getSamcoEntryPriceRange } from "./samcoRuntimeSettings.js";
 import {
@@ -74,21 +78,20 @@ function buildPlaceOrderRequest(
   signal: DeepakTradeSignal,
   options: Required<TradeExecutorOptions>,
 ): SamcoPlaceOrderRequest {
+  // Samco placeOrder accepts only L / SL (not MKT). Price is mandatory for both.
+  const orderType = resolveSamcoPlaceOrderType(config.samco.orderType);
   const request: SamcoPlaceOrderRequest = {
     symbolName: options.tradingSymbol,
     exchange: options.exchange,
     transactionType: signal.side,
-    orderType: config.samco.orderType,
+    orderType,
     quantity: String(getSamcoEffectiveQuantity()),
     disclosedQuantity: "",
     orderValidity: "DAY",
     productType: config.samco.productType,
     afterMarketOrderFlag: "NO",
+    price: formatSamcoLimitPrice(signal.price),
   };
-
-  if (config.samco.orderType === "L") {
-    request.price = signal.price.toFixed(2);
-  }
 
   return request;
 }

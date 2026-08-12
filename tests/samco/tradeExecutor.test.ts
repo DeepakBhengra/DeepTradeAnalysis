@@ -60,6 +60,7 @@ describe("tradeExecutor", () => {
     process.env.SAMCO_API_SECRET = "";
     process.env.SAMCO_ENTRY_PRICE_MIN = "0";
     process.env.SAMCO_ENTRY_PRICE_MAX = "3900";
+    delete process.env.SAMCO_ORDER_TYPE;
   });
 
   afterEach(() => {
@@ -193,9 +194,90 @@ describe("tradeExecutor", () => {
     );
 
     expect(result.entriesPlaced).toBe(1);
-    expect(
-      fetchMock.mock.calls.some(([url]) => String(url).includes("/order/placeOrder")),
-    ).toBe(true);
+    const placeCall = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes("/order/placeOrder"),
+    );
+    expect(placeCall).toBeTruthy();
+    const placeInit = placeCall?.[1] as RequestInit | undefined;
+    const placeBody = JSON.parse(String(placeInit?.body ?? "{}")) as {
+      orderType?: string;
+      price?: string;
+      symbolName?: string;
+    };
+    // Samco placeOrder only accepts L/SL and requires price.
+    expect(placeBody.orderType).toBe("L");
+    expect(placeBody.price).toBe("120.00");
+  });
+
+  it("maps legacy SAMCO_ORDER_TYPE=MKT to limit with price", async () => {
+    process.env.SAMCO_API_KEY = "key";
+    process.env.SAMCO_API_SECRET = "secret";
+    process.env.SAMCO_DRY_RUN = "false";
+    process.env.SAMCO_ORDER_TYPE = "MKT";
+
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+
+      if (url.includes("/session/token")) {
+        return new Response(
+          JSON.stringify({
+            status: "Success",
+            sessionToken: "session-abc",
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.includes("/order/placeOrder")) {
+        const body = JSON.parse(String(init?.body ?? "{}")) as {
+          orderType?: string;
+          price?: string;
+        };
+        expect(body.orderType).toBe("L");
+        expect(body.price).toBe("2734.45");
+        return new Response(
+          JSON.stringify({
+            status: "Success",
+            orderNumber: "999",
+          }),
+          { status: 200 },
+        );
+      }
+
+      if (url.includes("/order/getOrderStatus")) {
+        return new Response(
+          JSON.stringify({
+            status: "Success",
+            orderStatus: "EXECUTED",
+            orderDetails: {
+              filledQuantity: "100",
+              avgExecutionPrice: "2734.45",
+            },
+          }),
+          { status: 200 },
+        );
+      }
+
+      return new Response(JSON.stringify({ status: "Success" }), { status: 200 });
+    });
+
+    const { setSamcoFetch, resetPositionLedger, processDecisionResult } =
+      await loadTradeExecutorModules();
+    setSamcoFetch(fetchMock as typeof fetch);
+    resetPositionLedger();
+
+    const result = await processDecisionResult(
+      "deeppro1",
+      buildDecision([buildSignal({ price: 2734.45, timeIst: "09:45" })]),
+      "09:45",
+      {
+        dryRun: false,
+        liveTradingEnabled: true,
+        tradingSymbol: "ASIANPAINT",
+      },
+    );
+
+    expect(result.entriesPlaced).toBe(1);
   });
 
   it("skips entries above configured max entry price", async () => {
