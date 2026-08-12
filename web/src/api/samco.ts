@@ -72,6 +72,7 @@ export interface SamcoLedgerEntry {
   lastError?: string;
   rejectedReason?: string;
   source?: string;
+  markPrice?: number | null;
 }
 
 export interface SamcoLedger {
@@ -243,6 +244,8 @@ export async function pushDayScanSignalsToSamco(body: {
     targetHit?: boolean;
     exitReason?: string | null;
     stopLossHit?: boolean;
+    /** Session mid while still open — unrealized P&L mark. */
+    markPrice?: number | null;
   }>;
 }): Promise<{
   ok: boolean;

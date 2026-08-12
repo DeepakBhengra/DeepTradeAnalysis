@@ -36,6 +36,8 @@ export interface LedgerEntry {
   lastError?: string;
   rejectedReason?: string;
   source?: "dayscan" | "poll";
+  /** Last known mid while open — for unrealized P&L. */
+  markPrice?: number | null;
 }
 
 export interface PositionLedger {

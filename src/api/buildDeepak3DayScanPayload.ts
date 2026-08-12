@@ -17,6 +17,7 @@ import type {
   IndicatorSnapshot,
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
+import { lastSameDaySessionMark } from "../utils/sessionMarkPrice.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
@@ -205,15 +206,27 @@ export async function buildDeepak3DayScanPayload(input: {
 
   const scan = scanDeepak3Decisions(scanEntries, input.date);
   const trades: DeepakDayScanTrade[] = [];
+  const snapshotsBySymbol = new Map(
+    scanEntries.map((entry) => [entry.tradingSymbol, entry.snapshots] as const),
+  );
 
   for (let index = 0; index < scan.results.length; index++) {
     const result = scan.results[index];
     const tradingSymbol = scan.tradingSymbols[index];
     const sector = scan.sectors[index];
     const symbol = symbolByTradingSymbol.get(tradingSymbol) ?? `NSE:${tradingSymbol}`;
+    const openMark = lastSameDaySessionMark(
+      snapshotsBySymbol.get(tradingSymbol) ?? [],
+      input.date,
+    );
 
     for (const signal of result.signals) {
-      trades.push(signalToTrade(input.date, signal, symbol, tradingSymbol, sector));
+      const trade = signalToTrade(input.date, signal, symbol, tradingSymbol, sector);
+      trades.push({
+        ...trade,
+        markPrice:
+          trade.exitTimeIst == null ? openMark?.price ?? null : null,
+      });
     }
   }
 

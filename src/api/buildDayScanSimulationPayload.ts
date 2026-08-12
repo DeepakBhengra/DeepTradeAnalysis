@@ -26,6 +26,7 @@ import {
 } from "../symbols/sectorWatchlist.js";
 import type {
   DayScanSimulationExit,
+  DayScanSimulationMark,
   DayScanSimulationPayload,
   DayScanSimulationSignal,
   DayScanSimulationSummary,
@@ -34,6 +35,7 @@ import type {
   DeepakTradeSignal,
 } from "../types.js";
 import { formatIstTime, isValidAnalysisDate } from "../utils/marketTime.js";
+import { candleMidPrice } from "../utils/sessionMarkPrice.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import {
   DayScanSimulationCache,
@@ -379,6 +381,28 @@ async function computeDayScanSimulationFrame(input: {
       ),
   );
 
+  const marks: DayScanSimulationMark[] = [];
+  for (const entry of watchlist) {
+    const candles = cache.getCandles(date, entry.tradingSymbol);
+    if (!candles || candles.length === 0) {
+      continue;
+    }
+    const sessionCandles = cache.getSessionCandlesForSymbol(
+      date,
+      entry.tradingSymbol,
+    );
+    const visibleSession = (sessionCandles ?? []).slice(0, sessionIndex + 1);
+    const latest = visibleSession[visibleSession.length - 1];
+    if (!latest) {
+      continue;
+    }
+    marks.push({
+      tradingSymbol: entry.tradingSymbol,
+      price: candleMidPrice(latest),
+      timeIst: formatIstTime(latest.timestamp),
+    });
+  }
+
   return {
     date,
     simulation: {
@@ -388,6 +412,7 @@ async function computeDayScanSimulationFrame(input: {
     },
     entries,
     exits,
+    marks,
     errors,
     summary: buildSummary(entries, exits, errors, watchlist.length),
   };

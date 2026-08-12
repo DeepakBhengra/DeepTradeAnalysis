@@ -1,7 +1,12 @@
 import type { DayOrderFill, DayOrderPortfolio, DayOrderPnLSummary } from "../types/dayOrder";
 import { DAY_ORDER_INITIAL_CASH } from "../types/dayOrder";
+import type { DayScanSimulationMark } from "../types/backtest";
 import { formatDayScanStrategy } from "../utils/backtestFormat";
 import { downloadDayOrderHistoryCsv } from "../utils/dayOrderHistoryCsv";
+import {
+  dayOrderFillDisplayPnL,
+  marksMapFromSimulation,
+} from "../utils/dayOrderEngine";
 import { formatCurrency, formatPnL } from "../utils/paperTrading";
 
 function sideClass(side: DayOrderFill["side"]): string {
@@ -13,6 +18,8 @@ interface DayOrderPortfolioPanelProps {
   pnl: DayOrderPnLSummary;
   /** IST analysis date (YYYY-MM-DD) used for the CSV filename. */
   date: string;
+  /** Current-candle mids from Day Scan Simulator (open unrealized P&L). */
+  marks?: DayScanSimulationMark[];
 }
 
 function pnlClass(value: number): string {
@@ -48,11 +55,14 @@ export function DayOrderPortfolioPanel({
   portfolio,
   pnl,
   date,
+  marks = [],
 }: DayOrderPortfolioPanelProps) {
   const { openPositions, fills, skippedEntryKeys } = portfolio;
   const entryFills = fills.filter((fill) => fill.kind === "entry");
   const exitFills = fills.filter((fill) => fill.kind === "exit");
   const historyFills = [...fills].reverse();
+  const marksMap = marksMapFromSimulation(marks);
+  const openSignalKeys = new Set(openPositions.map((position) => position.signalKey));
 
   const handleDownloadCsv = () => {
     if (fills.length === 0) {
@@ -86,7 +96,7 @@ export function DayOrderPortfolioPanel({
           <p className="mt-3 mb-0 text-xs text-kite-muted">No open positions.</p>
         ) : (
           <div className="mt-3 overflow-x-auto">
-            <table className="w-full min-w-[640px] border-collapse text-xs">
+            <table className="w-full min-w-[720px] border-collapse text-xs">
               <thead>
                 <tr className="border-b border-kite-border text-left text-kite-muted">
                   <th className="pb-2 pr-2 font-medium">Stock</th>
@@ -94,20 +104,56 @@ export function DayOrderPortfolioPanel({
                   <th className="pb-2 pr-2 font-medium">Side</th>
                   <th className="pb-2 pr-2 font-medium">Qty</th>
                   <th className="pb-2 pr-2 font-medium">Entry</th>
-                  <th className="pb-2 font-medium">Entry IST</th>
+                  <th className="pb-2 pr-2 font-medium">Mark</th>
+                  <th className="pb-2 pr-2 font-medium">Entry IST</th>
+                  <th className="pb-2 font-medium">Unrealized P&amp;L</th>
                 </tr>
               </thead>
               <tbody>
-                {openPositions.map((position) => (
-                  <tr key={position.signalKey} className="border-b border-kite-border">
-                    <td className="py-2 pr-2 font-medium">{position.tradingSymbol}</td>
-                    <td className="py-2 pr-2">{formatDayScanStrategy(position.strategy)}</td>
-                    <td className="py-2 pr-2">{position.side}</td>
-                    <td className="py-2 pr-2 tabular-nums">{position.quantity}</td>
-                    <td className="py-2 pr-2 tabular-nums">{position.entryPrice.toFixed(2)}</td>
-                    <td className="py-2">{position.entryTimeIst}</td>
-                  </tr>
-                ))}
+                {openPositions.map((position) => {
+                  const mark = marksMap.get(position.tradingSymbol);
+                  const unrealized =
+                    typeof mark === "number"
+                      ? dayOrderFillDisplayPnL(
+                          {
+                            id: position.signalKey,
+                            kind: "entry",
+                            signalKey: position.signalKey,
+                            tradingSymbol: position.tradingSymbol,
+                            symbol: position.symbol,
+                            strategy: position.strategy,
+                            side: position.side,
+                            quantity: position.quantity,
+                            price: position.entryPrice,
+                            timeIst: position.entryTimeIst,
+                            sessionIndex: 0,
+                            realizedPnL: null,
+                          },
+                          openSignalKeys,
+                          marksMap,
+                        )
+                      : null;
+                  return (
+                    <tr key={position.signalKey} className="border-b border-kite-border">
+                      <td className="py-2 pr-2 font-medium">{position.tradingSymbol}</td>
+                      <td className="py-2 pr-2">{formatDayScanStrategy(position.strategy)}</td>
+                      <td className="py-2 pr-2">{position.side}</td>
+                      <td className="py-2 pr-2 tabular-nums">{position.quantity}</td>
+                      <td className="py-2 pr-2 tabular-nums">{position.entryPrice.toFixed(2)}</td>
+                      <td className="py-2 pr-2 tabular-nums">
+                        {typeof mark === "number" ? mark.toFixed(2) : "—"}
+                      </td>
+                      <td className="py-2 pr-2">{position.entryTimeIst}</td>
+                      <td
+                        className={`py-2 tabular-nums ${
+                          unrealized == null ? "text-kite-muted" : pnlClass(unrealized)
+                        }`}
+                      >
+                        {unrealized == null ? "—" : formatPnL(unrealized)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -183,7 +229,13 @@ export function DayOrderPortfolioPanel({
                 </tr>
               </thead>
               <tbody>
-                {historyFills.map((fill) => (
+                {historyFills.map((fill) => {
+                  const displayPnL = dayOrderFillDisplayPnL(
+                    fill,
+                    openSignalKeys,
+                    marksMap,
+                  );
+                  return (
                   <tr key={fill.id} className="border-b border-kite-border">
                     <td className="py-2 pr-2 capitalize text-kite-text">
                       {fill.kind}
@@ -208,15 +260,14 @@ export function DayOrderPortfolioPanel({
                     </td>
                     <td
                       className={`py-2 tabular-nums ${
-                        fill.realizedPnL == null
-                          ? "text-kite-muted"
-                          : pnlClass(fill.realizedPnL)
+                        displayPnL == null ? "text-kite-muted" : pnlClass(displayPnL)
                       }`}
                     >
-                      {fill.realizedPnL == null ? "—" : formatPnL(fill.realizedPnL)}
+                      {displayPnL == null ? "—" : formatPnL(displayPnL)}
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>

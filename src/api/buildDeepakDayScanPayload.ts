@@ -16,6 +16,7 @@ import type {
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
 import { isValidAnalysisDate } from "../utils/marketTime.js";
+import { withOpenTradeMarkPrices } from "../utils/sessionMarkPrice.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
 export function validateDayScanDate(date: string): string | null {
@@ -87,12 +88,16 @@ async function scanSymbol(
     const { trades } = runDeepakBacktest(snapshots, date, date);
 
     return {
-      trades: trades.map((trade) => ({
-        ...trade,
-        symbol: dashboardSymbol.symbol,
-        tradingSymbol: dashboardSymbol.tradingSymbol,
-        sector: entry.sector,
-      })),
+      trades: withOpenTradeMarkPrices(
+        trades.map((trade) => ({
+          ...trade,
+          symbol: dashboardSymbol.symbol,
+          tradingSymbol: dashboardSymbol.tradingSymbol,
+          sector: entry.sector,
+        })),
+        snapshots,
+        date,
+      ),
       error: null,
     };
   } catch (error) {

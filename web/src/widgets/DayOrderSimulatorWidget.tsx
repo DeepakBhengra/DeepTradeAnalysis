@@ -60,6 +60,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
     status,
     portfolio,
     pnl,
+    marks,
     canStart,
     startBlockedReason,
     dateMismatch,
@@ -301,7 +302,12 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
           </p>
         </section>
 
-        <DayOrderPortfolioPanel portfolio={portfolio} pnl={pnl} date={orderDate} />
+        <DayOrderPortfolioPanel
+          portfolio={portfolio}
+          pnl={pnl}
+          date={orderDate}
+          marks={marks}
+        />
       </main>
     </div>
   );
