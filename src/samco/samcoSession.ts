@@ -13,6 +13,7 @@ import {
   isSamcoStaticIpEnforced,
 } from "./samcoStaticIp.js";
 import {
+  getSamcoSessionMeta,
   getSamcoSessionToken,
   hasValidSamcoSessionToken,
 } from "./samcoTokenStore.js";
@@ -41,10 +42,25 @@ export interface SamcoAuthStatus {
   staticIpMessage?: string;
 }
 
+function applyIpStatus(
+  status: SamcoAuthStatus,
+  srcIp: string | undefined,
+  requiredStaticIp: string,
+): void {
+  status.srcIp = srcIp;
+  status.staticIpMatched = doesSamcoStaticIpMatch(srcIp, requiredStaticIp);
+  if (!status.staticIpMatched && isSamcoStaticIpEnforced()) {
+    status.staticIpMessage = formatSamcoStaticIpMismatch(srcIp, requiredStaticIp);
+  } else {
+    status.staticIpMessage = undefined;
+  }
+}
+
 export async function getSamcoAuthStatus(): Promise<SamcoAuthStatus> {
   const ledger = loadPositionLedger();
   const runtime = getSamcoRuntimeSettings();
   const requiredStaticIp = getSamcoRequiredStaticIp();
+  const sessionMeta = getSamcoSessionMeta();
   const status: SamcoAuthStatus = {
     connected: hasValidSamcoSessionToken(),
     sessionTokenPresent: hasValidSamcoSessionToken(),
@@ -59,6 +75,7 @@ export async function getSamcoAuthStatus(): Promise<SamcoAuthStatus> {
     envDefaultQuantity: runtime.envDefaultQuantity,
     envDefaultDryRun: runtime.envDefaultDryRun,
     openPositionsCount: getOpenLedgerEntries(ledger).length,
+    accountID: sessionMeta.accountID,
     requiredStaticIp,
     staticIpMatched: !isSamcoStaticIpEnforced(),
   };
@@ -74,20 +91,33 @@ export async function getSamcoAuthStatus(): Promise<SamcoAuthStatus> {
   try {
     const whoAmI = await getSamcoWhoAmI();
     status.connected = true;
-    status.srcIp = whoAmI.srcIp ?? whoAmI.primaryIp;
-    status.staticIpMatched = doesSamcoStaticIpMatch(status.srcIp, requiredStaticIp);
-    if (!status.staticIpMatched && isSamcoStaticIpEnforced()) {
-      status.staticIpMessage = formatSamcoStaticIpMismatch(
-        status.srcIp,
+    status.accountID = status.accountID ?? sessionMeta.accountID;
+    applyIpStatus(
+      status,
+      whoAmI.srcIp ?? whoAmI.primaryIp ?? sessionMeta.srcIp,
+      requiredStaticIp,
+    );
+  } catch {
+    // Session token from /session/token is enough to be "connected".
+    // whoami may fail on some hosts; fall back to IP from the login response.
+    if (hasValidSamcoSessionToken()) {
+      status.connected = true;
+      applyIpStatus(
+        status,
+        sessionMeta.srcIp ?? sessionMeta.primaryIp,
         requiredStaticIp,
       );
-    }
-  } catch {
-    status.connected = false;
-    status.staticIpMatched = !isSamcoStaticIpEnforced();
-    if (isSamcoStaticIpEnforced()) {
-      status.staticIpMatched = false;
-      status.staticIpMessage = `Could not verify egress IP via Samco whoami (required ${requiredStaticIp}).`;
+      if (!status.srcIp && isSamcoStaticIpEnforced()) {
+        status.staticIpMatched = false;
+        status.staticIpMessage = `Could not verify egress IP via Samco whoami (required ${requiredStaticIp}). Click Refresh session.`;
+      }
+    } else {
+      status.connected = false;
+      status.staticIpMatched = !isSamcoStaticIpEnforced();
+      if (isSamcoStaticIpEnforced()) {
+        status.staticIpMatched = false;
+        status.staticIpMessage = `Could not verify egress IP via Samco whoami (required ${requiredStaticIp}).`;
+      }
     }
   }
 
@@ -102,10 +132,24 @@ export async function initializeSamcoSession(): Promise<void> {
   assertSamcoApiKeys();
 
   try {
-    // Always obtain a usable session (regenerates if the stored token is stale).
-    await ensureSamcoSessionToken();
-    const whoAmI = await getSamcoWhoAmI();
-    const srcIp = whoAmI.srcIp ?? whoAmI.primaryIp;
+    const token = await ensureSamcoSessionToken();
+    if (!token) {
+      throw new Error("Samco session token was empty after generation.");
+    }
+
+    const meta = getSamcoSessionMeta();
+    let srcIp = meta.srcIp ?? meta.primaryIp;
+    try {
+      const whoAmI = await getSamcoWhoAmI();
+      srcIp = whoAmI.srcIp ?? whoAmI.primaryIp ?? srcIp;
+    } catch (whoAmIError) {
+      const message =
+        whoAmIError instanceof Error ? whoAmIError.message : String(whoAmIError);
+      console.warn(
+        `Samco whoami after login failed (${message}); using session/token IP metadata.`,
+      );
+    }
+
     const requiredStaticIp = getSamcoRequiredStaticIp();
     console.log(
       `Samco session ready (IP: ${srcIp ?? "unknown"}, required: ${requiredStaticIp || "any"}, token: ${getSamcoSessionToken().slice(0, 8)}...)`,
@@ -120,7 +164,8 @@ export async function initializeSamcoSession(): Promise<void> {
     const message = error instanceof Error ? error.message : String(error);
     console.warn(
       `Samco IP/session check failed: ${message}. ` +
-        `Set SAMCO_API_KEY / SAMCO_API_SECRET and click Refresh session in Samco Trading.`,
+        `Use AES-encrypted SAMCO_API_KEY / SAMCO_API_SECRET from the Samco Trade API dashboard, ` +
+        `sign in once on the Samco mobile app if prompted, then click Refresh session.`,
     );
   }
 }
@@ -128,12 +173,28 @@ export async function initializeSamcoSession(): Promise<void> {
 export async function refreshSamcoSession(): Promise<string> {
   assertSamcoApiKeys();
   const session = await refreshSamcoSessionToken();
-  // Confirm the new session works (also surfaces IP for static-IP checks).
+  const token = session.sessionToken ?? getSamcoSessionToken();
+  if (!token) {
+    throw new Error("Samco refresh did not return a session token.");
+  }
+
+  // Prefer whoami for live IP, but do not fail refresh when whoami is flaky —
+  // POST /session/token already proved the credentials and returns srcIp.
   try {
     await getSamcoWhoAmI();
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(`Samco session refreshed but whoami failed: ${message}`);
+    const meta = getSamcoSessionMeta();
+    if (meta.srcIp || meta.primaryIp) {
+      console.warn(
+        `Samco whoami failed after refresh (${message}); session token is valid (IP from login: ${meta.srcIp ?? meta.primaryIp}).`,
+      );
+    } else {
+      console.warn(
+        `Samco whoami failed after refresh (${message}); session token was still issued.`,
+      );
+    }
   }
-  return session.sessionToken ?? getSamcoSessionToken();
+
+  return token;
 }

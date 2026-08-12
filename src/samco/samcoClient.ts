@@ -4,6 +4,7 @@ import {
   getSamcoSessionToken,
   hasValidSamcoSessionToken,
   persistSamcoSessionTokenToEnv,
+  setSamcoSessionMeta,
   setSamcoSessionToken,
 } from "./samcoTokenStore.js";
 import { assertSamcoEgressIpForLiveOrders } from "./samcoStaticIp.js";
@@ -121,8 +122,14 @@ export interface SamcoSessionTokenResponse {
   status?: string;
   statusMessage?: string;
   sessionToken?: string;
+  /** Some legacy/oauth responses use access_token / accessToken. */
+  accessToken?: string;
+  access_token?: string;
   accountID?: string;
   accountName?: string;
+  srcIp?: string;
+  primaryIp?: string;
+  secondaryIp?: string;
 }
 
 export interface SamcoWhoAmIResponse {
@@ -228,7 +235,10 @@ async function samcoRequest<T>(
   options?: {
     body?: unknown;
     query?: Record<string, string>;
+    /** Explicit token; empty string forces omitting x-session-token. */
     sessionToken?: string;
+    /** When true, never attach x-session-token (e.g. POST /session/token). */
+    omitSessionToken?: boolean;
   },
 ): Promise<T> {
   const url = new URL(path, config.samco.baseUrl);
@@ -243,9 +253,14 @@ async function samcoRequest<T>(
     "Content-Type": "application/json",
   };
 
-  const token = options?.sessionToken ?? getSamcoSessionToken();
-  if (token) {
-    headers["x-session-token"] = token;
+  if (!options?.omitSessionToken) {
+    const token =
+      options?.sessionToken !== undefined
+        ? options.sessionToken.trim()
+        : getSamcoSessionToken();
+    if (token) {
+      headers["x-session-token"] = token;
+    }
   }
 
   const response = await samcoFetch(url.toString(), {
@@ -287,16 +302,39 @@ async function samcoAuthedRequest<T>(
     }
 
     clearSamcoSessionToken();
-    await generateSamcoSessionToken();
-    return samcoRequest<T>(method, path, options);
+    const refreshed = await generateSamcoSessionToken();
+    const token = resolveSessionTokenFromPayload(refreshed);
+    return samcoRequest<T>(method, path, {
+      ...options,
+      sessionToken: token,
+    });
   }
 }
 
+function resolveSessionTokenFromPayload(
+  payload: SamcoSessionTokenResponse,
+): string {
+  const token =
+    payload.sessionToken?.trim() ||
+    payload.accessToken?.trim() ||
+    payload.access_token?.trim() ||
+    "";
+  if (!token) {
+    throw new Error(
+      "Samco session token response did not include sessionToken/accessToken.",
+    );
+  }
+  return token;
+}
+
 export async function generateSamcoSessionToken(): Promise<SamcoSessionTokenResponse> {
+  // Never send a stale x-session-token on login — it can make Samco reject
+  // the request as "Trading session is missing".
   const payload = await samcoRequest<SamcoSessionTokenResponse>(
     "POST",
     "/session/token",
     {
+      omitSessionToken: true,
       body: {
         apiKey: config.samco.apiKey,
         apiSecret: config.samco.apiSecret,
@@ -304,13 +342,17 @@ export async function generateSamcoSessionToken(): Promise<SamcoSessionTokenResp
     },
   );
 
-  if (!payload.sessionToken) {
-    throw new Error("Samco session token response did not include sessionToken.");
-  }
-
-  setSamcoSessionToken(payload.sessionToken);
-  persistSamcoSessionTokenToEnv(payload.sessionToken);
-  return payload;
+  const sessionToken = resolveSessionTokenFromPayload(payload);
+  setSamcoSessionToken(sessionToken);
+  persistSamcoSessionTokenToEnv(sessionToken);
+  setSamcoSessionMeta({
+    accountID: payload.accountID,
+    accountName: payload.accountName,
+    srcIp: payload.srcIp,
+    primaryIp: payload.primaryIp,
+    secondaryIp: payload.secondaryIp,
+  });
+  return { ...payload, sessionToken };
 }
 
 export async function ensureSamcoSessionToken(): Promise<string> {
@@ -319,7 +361,7 @@ export async function ensureSamcoSessionToken(): Promise<string> {
   }
 
   const session = await generateSamcoSessionToken();
-  return session.sessionToken ?? "";
+  return resolveSessionTokenFromPayload(session);
 }
 
 export async function refreshSamcoSessionToken(): Promise<SamcoSessionTokenResponse> {
