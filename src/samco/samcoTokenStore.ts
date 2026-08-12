@@ -74,6 +74,11 @@ export function persistSamcoSessionTokenToEnv(token: string): void {
   const normalized = normalizeToken(token);
   setSamcoSessionToken(normalized);
 
+  // Never rewrite the developer's .env during unit tests.
+  if (process.env.VITEST || process.env.SAMCO_DISABLE_ENV_PERSIST === "1") {
+    return;
+  }
+
   const envPath = resolve(process.cwd(), ".env");
   const line = `SAMCO_SESSION_TOKEN=${normalized}`;
 
