@@ -343,6 +343,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
           portfolio={portfolio}
           pnl={pnl}
           date={orderDate}
+          ruleVariant={ruleVariant}
+          ruleVariantLabel={ruleVariantLabel}
+          runSettings={runSettings}
           marks={marks}
           onExitPosition={closePosition}
         />
