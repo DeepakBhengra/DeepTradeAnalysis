@@ -1,8 +1,16 @@
-import type { DayOrderFill, DayOrderPortfolio, DayOrderPnLSummary } from "../types/dayOrder";
+import type {
+  DayOrderFill,
+  DayOrderPortfolio,
+  DayOrderPnLSummary,
+  DayOrderRunSettings,
+} from "../types/dayOrder";
 import { DAY_ORDER_INITIAL_CASH } from "../types/dayOrder";
 import type { DayScanSimulationMark } from "../types/backtest";
 import { formatDayScanStrategy, formatExitType } from "../utils/backtestFormat";
-import { downloadDayOrderHistoryCsv } from "../utils/dayOrderHistoryCsv";
+import {
+  buildDayOrderExportSettings,
+  downloadDayOrderHistoryWorkbook,
+} from "../utils/dayOrderHistoryCsv";
 import {
   dayOrderFillDisplayPnL,
   marksMapFromSimulation,
@@ -28,8 +36,11 @@ function formatDayOrderExitType(fill: DayOrderFill): string {
 interface DayOrderPortfolioPanelProps {
   portfolio: DayOrderPortfolio;
   pnl: DayOrderPnLSummary;
-  /** IST analysis date (YYYY-MM-DD) used for the CSV filename. */
+  /** IST analysis date (YYYY-MM-DD) used for the export filename. */
   date: string;
+  ruleVariant: string;
+  ruleVariantLabel: string;
+  runSettings: DayOrderRunSettings;
   /** Current-candle mids from Day Scan Simulator (open unrealized P&L). */
   marks?: DayScanSimulationMark[];
   /** Voluntary exit of an open position at the current mark. */
@@ -69,6 +80,9 @@ export function DayOrderPortfolioPanel({
   portfolio,
   pnl,
   date,
+  ruleVariant,
+  ruleVariantLabel,
+  runSettings,
   marks = [],
   onExitPosition,
 }: DayOrderPortfolioPanelProps) {
@@ -79,11 +93,19 @@ export function DayOrderPortfolioPanel({
   const marksMap = marksMapFromSimulation(marks);
   const openSignalKeys = new Set(openPositions.map((position) => position.signalKey));
 
-  const handleDownloadCsv = () => {
+  const handleDownloadWorkbook = () => {
     if (fills.length === 0) {
       return;
     }
-    downloadDayOrderHistoryCsv({ fills, date });
+    downloadDayOrderHistoryWorkbook({
+      fills,
+      settings: buildDayOrderExportSettings(
+        date,
+        ruleVariant,
+        ruleVariantLabel,
+        runSettings,
+      ),
+    });
   };
 
   return (
@@ -232,10 +254,11 @@ export function DayOrderPortfolioPanel({
               <>
                 <button
                   type="button"
-                  onClick={handleDownloadCsv}
+                  onClick={handleDownloadWorkbook}
                   className="cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2 py-1 text-[10px] font-medium text-kite-text"
+                  title="Excel workbook with Settings + Order History sheets"
                 >
-                  Download CSV
+                  Download Excel
                 </button>
                 <p className="m-0 text-[10px] text-kite-muted">
                   {fills.length} fill{fills.length === 1 ? "" : "s"} · newest first · scroll for

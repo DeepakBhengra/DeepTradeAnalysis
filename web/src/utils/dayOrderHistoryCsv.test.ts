@@ -2,8 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import type { DayOrderFill } from "../types/dayOrder";
 import {
+  buildDayOrderExportSettings,
   buildDayOrderHistoryCsv,
   buildDayOrderHistoryCsvFilename,
+  buildDayOrderHistoryExportFilename,
+  buildDayOrderHistoryWorkbookXml,
+  buildDayOrderSettingsCsv,
 } from "./dayOrderHistoryCsv";
 
 function makeFill(overrides: Partial<DayOrderFill> = {}): DayOrderFill {
@@ -23,6 +27,18 @@ function makeFill(overrides: Partial<DayOrderFill> = {}): DayOrderFill {
     ...overrides,
   };
 }
+
+const sampleSettings = buildDayOrderExportSettings(
+  "2026-05-29",
+  "deeppro1",
+  "Deeppro1",
+  {
+    quantity: 1000,
+    minEntryPrice: 0,
+    maxEntryPrice: 1900,
+    stopLossPct: 0.15,
+  },
+);
 
 describe("buildDayOrderHistoryCsv", () => {
   it("emits header-only CSV when there are no fills", () => {
@@ -87,6 +103,67 @@ describe("buildDayOrderHistoryCsv", () => {
     const lines = csv.trimEnd().split("\r\n");
     expect(lines[1]).toContain(",09:15,");
     expect(lines[2]).toContain(",11:45,");
+  });
+});
+
+describe("buildDayOrderSettingsCsv", () => {
+  it("includes date, rule, qty, price range, and SL%", () => {
+    const csv = buildDayOrderSettingsCsv(sampleSettings);
+    expect(csv).toContain("Date,2026-05-29");
+    expect(csv).toContain("Rule variant,Deeppro1");
+    expect(csv).toContain("Quantity,1000");
+    expect(csv).toContain("Min entry price,0");
+    expect(csv).toContain("Max entry price,1900");
+    expect(csv).toContain("Stop-loss %,0.15");
+  });
+
+  it("labels blank SL as off", () => {
+    const csv = buildDayOrderSettingsCsv({
+      ...sampleSettings,
+      stopLossPct: null,
+    });
+    expect(csv).toContain("Stop-loss %,off");
+  });
+});
+
+describe("buildDayOrderHistoryWorkbookXml", () => {
+  it("includes Settings and Order History worksheets", () => {
+    const xml = buildDayOrderHistoryWorkbookXml(
+      [
+        makeFill({
+          kind: "exit",
+          side: "SELL",
+          exitReason: "stop_loss",
+          realizedPnL: -50,
+          timeIst: "10:00",
+        }),
+      ],
+      sampleSettings,
+    );
+    expect(xml).toContain('ss:Name="Settings"');
+    expect(xml).toContain('ss:Name="Order History"');
+    expect(xml).toContain("2026-05-29");
+    expect(xml).toContain("Stop-loss %");
+    expect(xml).toContain("0.15");
+    expect(xml).toContain("Stop-loss %");
+    expect(xml).toContain("RELIANCE");
+  });
+});
+
+describe("buildDayOrderHistoryExportFilename", () => {
+  it("embeds date, rule, qty, range, and SL in the filename", () => {
+    expect(buildDayOrderHistoryExportFilename(sampleSettings)).toBe(
+      "day-order_2026-05-29_Deeppro1_qty1000_range0-1900_sl0.15.xls",
+    );
+  });
+
+  it("uses sl-off when stop-loss is disabled", () => {
+    expect(
+      buildDayOrderHistoryExportFilename({
+        ...sampleSettings,
+        stopLossPct: null,
+      }),
+    ).toBe("day-order_2026-05-29_Deeppro1_qty1000_range0-1900_sl-off.xls");
   });
 });
 
