@@ -331,8 +331,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
             Auto paper-trades Day Scan entry/exit signals for the selected rule variant with
             ₹1,00,00,000 capital. Set quantity, entry price range, and optional stop-loss % for this
             date run before Start (locked while running). When stop-loss % is set, open positions
-            that lose that much vs entry exit at the candle mid and reverse side. Blank or 0 =
-            no stop-loss. Defaults: {ORDER_QUANTITY} qty, ₹{formatInr(MIN_ENTRY_PRICE)}–₹
+            that lose that much vs entry exit at the candle mid; reverse entry only if time is
+            ≤ 11:45 IST. Blank or 0 = no stop-loss. Defaults: {ORDER_QUANTITY} qty, ₹
+            {formatInr(MIN_ENTRY_PRICE)}–₹
             {formatInr(MAX_ENTRY_PRICE)}. Starts automatically when Day Scan Simulator starts and
             catches up from 09:15. Order history is a column table of every fill (scroll for
             morning 09:15 square-offs).

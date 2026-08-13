@@ -37,8 +37,10 @@ import {
   type SamcoStrategy,
 } from "./signalKeys.js";
 import {
+  canOpenStopLossReverseEntry,
   isStopLossHit,
   normalizeStopLossPct,
+  STOP_LOSS_REVERSE_ENTRY_DEADLINE_IST,
   stopLossReverseSignalKey,
 } from "../utils/stopLossPct.js";
 
@@ -835,7 +837,7 @@ export async function processDayScanSignalSnapshot(
 
 /**
  * For open ledger rows with a mark price, exit when adverse move ≥ configured
- * stop-loss %, then open the opposite side at the mark.
+ * stop-loss %. Reverse entry is only placed when IST time is ≤ 11:45.
  */
 export async function applyConfiguredStopLossAndReverse(
   options?: TradeExecutorOptions,
@@ -906,6 +908,15 @@ export async function applyConfiguredStopLossAndReverse(
           message: `Stop-loss ${stopLossPct}% hit on ${entry.tradingSymbol} (entry ${entryPrice} → mark ${markPrice}); squared off.`,
           signalKey: entry.signalKey,
         });
+
+        if (!canOpenStopLossReverseEntry(nowIst)) {
+          logs.push({
+            level: "info",
+            message: `Stop-loss reverse skipped for ${entry.tradingSymbol}: time ${nowIst} is after ${STOP_LOSS_REVERSE_ENTRY_DEADLINE_IST} IST.`,
+            signalKey: entry.signalKey,
+          });
+          continue;
+        }
 
         const reverseKey = stopLossReverseSignalKey(entry.signalKey);
         if (findLedgerEntry(ledger, reverseKey)) {
