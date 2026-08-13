@@ -1,4 +1,4 @@
-import type { DayScanStrategy } from "./backtest";
+import type { DayScanStrategy, DeepakExitReason } from "./backtest";
 import type { OrderSide } from "./paperTrading";
 
 /** Paper capital for Day Order Simulator (₹1 crore). */
@@ -16,7 +16,7 @@ export interface DayOrderRunSettings {
   minEntryPrice: number;
   maxEntryPrice: number;
   /**
-   * Adverse move % vs entry that forces an exit + reverse.
+   * Adverse move % vs entry that forces an exit (no reverse).
    * null / 0 / blank = disabled.
    */
   stopLossPct: number | null;
@@ -30,6 +30,12 @@ export const DEFAULT_DAY_ORDER_RUN_SETTINGS: DayOrderRunSettings = {
 };
 
 export type DayOrderFillKind = "entry" | "exit";
+
+/** Why an exit fill closed — strategy reason, stop-loss %, or manual. */
+export type DayOrderExitReason =
+  | DeepakExitReason
+  | "stop_loss"
+  | "manual";
 
 export interface DayOrderOpenPosition {
   signalKey: string;
@@ -55,6 +61,10 @@ export interface DayOrderFill {
   timeIst: string;
   sessionIndex: number;
   realizedPnL: number | null;
+  /** Set on exit fills; omitted/null on entries. */
+  exitReason?: DayOrderExitReason | null;
+  targetHit?: boolean;
+  stopLossHit?: boolean;
 }
 
 export interface DayOrderPortfolio {
