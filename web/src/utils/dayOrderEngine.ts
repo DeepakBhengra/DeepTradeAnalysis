@@ -18,6 +18,7 @@ import {
   isStopLossHit,
   normalizeStopLossPct,
   oppositeSide,
+  canOpenStopLossReverseEntry,
   stopLossReverseSignalKey,
 } from "./stopLossPct";
 
@@ -398,7 +399,7 @@ function processEntries(
 
 /**
  * Exit open positions that hit the configured adverse loss %, then open the
- * opposite side at the mark so trading continues in reverse.
+ * opposite side at the mark when time is ≤ 11:45 IST (no reverse after that).
  */
 function processStopLossExitsAndReverses(
   portfolio: DayOrderPortfolio,
@@ -414,6 +415,7 @@ function processStopLossExitsAndReverses(
 
   let next = portfolio;
   const openSnapshot = [...next.openPositions];
+  const allowReverseEntry = canOpenStopLossReverseEntry(simulatedTimeIst);
 
   for (const position of openSnapshot) {
     const stillOpen = next.openPositions.some(
@@ -464,6 +466,10 @@ function processStopLossExitsAndReverses(
       realizedPnL: next.realizedPnL + pnl,
       skippedEntryKeys: next.skippedEntryKeys,
     };
+
+    if (!allowReverseEntry) {
+      continue;
+    }
 
     const reverseKey = stopLossReverseSignalKey(position.signalKey);
     const reverseAlreadyOpen = next.openPositions.some(
