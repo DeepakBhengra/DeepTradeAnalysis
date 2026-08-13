@@ -429,7 +429,7 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             {settings?.envDefaultEntryPriceMax ?? "—"}, qty{" "}
             {settings?.envDefaultQuantity ?? "—"} · Click Apply to save price/qty/SL
             edits; rule variant saves on change. When SL hits, position exits at mark
-            and reverses side only if time is ≤ 11:45 IST.
+            with no reverse entry.
           </p>
         </section>
 
