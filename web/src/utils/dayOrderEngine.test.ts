@@ -63,6 +63,8 @@ function makeExit(
     profit: 20,
     profitTarget: signal.profitTarget,
     bbMatchType: signal.bbMatchType,
+    exitReason: "target",
+    stopLossHit: false,
     ...overrides,
   };
 }
@@ -404,6 +406,7 @@ describe("dayOrderEngine", () => {
     expect(afterStop.fills.filter((fill) => fill.kind === "entry")).toHaveLength(1);
     expect(afterStop.fills.at(-1)?.kind).toBe("exit");
     expect(afterStop.fills.at(-1)?.price).toBe(990);
+    expect(afterStop.fills.at(-1)?.exitReason).toBe("stop_loss");
     expect(afterStop.realizedPnL).toBe(-10 * ORDER_QUANTITY);
   });
 
@@ -460,6 +463,7 @@ describe("dayOrderEngine", () => {
     expect(closed.fills.filter((fill) => fill.kind === "exit")).toHaveLength(1);
     expect(closed.fills.at(-1)?.price).toBe(1030);
     expect(closed.fills.at(-1)?.realizedPnL).toBe(30 * ORDER_QUANTITY);
+    expect(closed.fills.at(-1)?.exitReason).toBe("manual");
     expect(closed.realizedPnL).toBe(30 * ORDER_QUANTITY);
     expect(closed.openPositions.every((p) => !p.signalKey.includes("-sl-rev"))).toBe(
       true,

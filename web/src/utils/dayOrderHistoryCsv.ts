@@ -1,5 +1,5 @@
 import type { DayOrderFill } from "../types/dayOrder";
-import { formatDayScanStrategy } from "./backtestFormat";
+import { formatDayScanStrategy, formatExitType } from "./backtestFormat";
 
 const CSV_HEADERS = [
   "Type",
@@ -8,6 +8,7 @@ const CSV_HEADERS = [
   "Stock",
   "Price",
   "Strategy",
+  "Exit Type",
   "Time (IST)",
   "P&L",
 ] as const;
@@ -26,6 +27,19 @@ function formatPnLCell(value: number | null): string {
   return value.toFixed(2);
 }
 
+function formatExitTypeCell(fill: DayOrderFill): string {
+  if (fill.kind !== "exit") {
+    return "";
+  }
+  const label = formatExitType({
+    exitReason: fill.exitReason ?? null,
+    targetHit: fill.targetHit,
+    stopLossHit: fill.stopLossHit,
+    exitTimeIst: fill.timeIst,
+  });
+  return label === "—" ? "" : label;
+}
+
 function fillToRow(fill: DayOrderFill): string[] {
   return [
     fill.kind,
@@ -34,6 +48,7 @@ function fillToRow(fill: DayOrderFill): string[] {
     fill.tradingSymbol,
     fill.price.toFixed(2),
     formatDayScanStrategy(fill.strategy),
+    formatExitTypeCell(fill),
     fill.timeIst,
     formatPnLCell(fill.realizedPnL),
   ];

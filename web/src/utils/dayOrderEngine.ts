@@ -186,6 +186,9 @@ function createExitFill(
     timeIst: exit.exitTimeIst,
     sessionIndex,
     realizedPnL,
+    exitReason: exit.exitReason,
+    targetHit: exit.targetHit,
+    stopLossHit: exit.stopLossHit,
   };
 }
 
@@ -239,6 +242,7 @@ export function closeDayOrderPositionAtMark(
     timeIst,
     sessionIndex,
     realizedPnL: pnl,
+    exitReason: "manual",
   };
 
   return {
@@ -452,6 +456,7 @@ function processStopLossExits(
       timeIst: simulatedTimeIst,
       sessionIndex,
       realizedPnL: pnl,
+      exitReason: "stop_loss",
     };
 
     next = {

@@ -27,20 +27,20 @@ function makeFill(overrides: Partial<DayOrderFill> = {}): DayOrderFill {
 describe("buildDayOrderHistoryCsv", () => {
   it("emits header-only CSV when there are no fills", () => {
     expect(buildDayOrderHistoryCsv([])).toBe(
-      "Type,Side,Qty,Stock,Price,Strategy,Time (IST),P&L\r\n",
+      "Type,Side,Qty,Stock,Price,Strategy,Exit Type,Time (IST),P&L\r\n",
     );
   });
 
-  it("maps fill columns and leaves entry P&L blank", () => {
+  it("maps fill columns and leaves entry exit type and P&L blank", () => {
     const csv = buildDayOrderHistoryCsv([makeFill()]);
     const lines = csv.trimEnd().split("\r\n");
     expect(lines).toHaveLength(2);
     expect(lines[1]).toBe(
-      "entry,BUY,100,RELIANCE,1290.45,Deeppro1,09:15,",
+      "entry,BUY,100,RELIANCE,1290.45,Deeppro1,,09:15,",
     );
   });
 
-  it("includes exit P&L and formats strategy labels", () => {
+  it("includes exit type and P&L for exit fills", () => {
     const csv = buildDayOrderHistoryCsv([
       makeFill({
         id: "fill-2",
@@ -49,18 +49,40 @@ describe("buildDayOrderHistoryCsv", () => {
         price: 1295.1,
         timeIst: "11:45",
         realizedPnL: 465,
+        exitReason: "target",
+        targetHit: true,
       }),
     ]);
     const lines = csv.trimEnd().split("\r\n");
     expect(lines[1]).toBe(
-      "exit,SELL,100,RELIANCE,1295.10,Deeppro1,11:45,465.00",
+      "exit,SELL,100,RELIANCE,1295.10,Deeppro1,Target,11:45,465.00",
     );
+  });
+
+  it("labels stop-loss % exits", () => {
+    const csv = buildDayOrderHistoryCsv([
+      makeFill({
+        kind: "exit",
+        side: "SELL",
+        exitReason: "stop_loss",
+        realizedPnL: -100,
+        timeIst: "10:15",
+      }),
+    ]);
+    expect(csv).toContain(",Stop-loss %,10:15,");
   });
 
   it("keeps chronological order (oldest first)", () => {
     const csv = buildDayOrderHistoryCsv([
       makeFill({ id: "a", timeIst: "09:15" }),
-      makeFill({ id: "b", timeIst: "11:45", kind: "exit", side: "SELL", realizedPnL: 10 }),
+      makeFill({
+        id: "b",
+        timeIst: "11:45",
+        kind: "exit",
+        side: "SELL",
+        realizedPnL: 10,
+        exitReason: "eod",
+      }),
     ]);
     const lines = csv.trimEnd().split("\r\n");
     expect(lines[1]).toContain(",09:15,");

@@ -1,7 +1,7 @@
 import type { DayOrderFill, DayOrderPortfolio, DayOrderPnLSummary } from "../types/dayOrder";
 import { DAY_ORDER_INITIAL_CASH } from "../types/dayOrder";
 import type { DayScanSimulationMark } from "../types/backtest";
-import { formatDayScanStrategy } from "../utils/backtestFormat";
+import { formatDayScanStrategy, formatExitType } from "../utils/backtestFormat";
 import { downloadDayOrderHistoryCsv } from "../utils/dayOrderHistoryCsv";
 import {
   dayOrderFillDisplayPnL,
@@ -11,6 +11,18 @@ import { formatCurrency, formatPnL } from "../utils/paperTrading";
 
 function sideClass(side: DayOrderFill["side"]): string {
   return side === "BUY" ? "text-kite-green" : "text-kite-red";
+}
+
+function formatDayOrderExitType(fill: DayOrderFill): string {
+  if (fill.kind !== "exit") {
+    return "—";
+  }
+  return formatExitType({
+    exitReason: fill.exitReason ?? null,
+    targetHit: fill.targetHit,
+    stopLossHit: fill.stopLossHit,
+    exitTimeIst: fill.timeIst,
+  });
 }
 
 interface DayOrderPortfolioPanelProps {
@@ -237,7 +249,7 @@ export function DayOrderPortfolioPanel({
           <p className="mt-3 mb-0 text-xs text-kite-muted">No filled orders yet.</p>
         ) : (
           <div className="mt-3 max-h-[28rem] overflow-auto">
-            <table className="w-full min-w-[720px] border-collapse text-xs">
+            <table className="w-full min-w-[800px] border-collapse text-xs">
               <thead className="sticky top-0 bg-kite-surface">
                 <tr className="border-b border-kite-border text-left text-kite-muted">
                   <th className="pb-2 pr-2 font-medium">Type</th>
@@ -246,6 +258,7 @@ export function DayOrderPortfolioPanel({
                   <th className="pb-2 pr-2 font-medium">Stock</th>
                   <th className="pb-2 pr-2 font-medium">Price</th>
                   <th className="pb-2 pr-2 font-medium">Strategy</th>
+                  <th className="pb-2 pr-2 font-medium">Exit Type</th>
                   <th className="pb-2 pr-2 font-medium">Time (IST)</th>
                   <th className="pb-2 font-medium">P&amp;L</th>
                 </tr>
@@ -276,6 +289,9 @@ export function DayOrderPortfolioPanel({
                     </td>
                     <td className="py-2 pr-2 text-kite-text">
                       {formatDayScanStrategy(fill.strategy)}
+                    </td>
+                    <td className="py-2 pr-2 text-kite-text">
+                      {formatDayOrderExitType(fill)}
                     </td>
                     <td className="py-2 pr-2 tabular-nums text-kite-text">
                       {fill.timeIst}
