@@ -373,7 +373,7 @@ describe("dayOrderEngine", () => {
     expect(dayOrderFillDisplayPnL(entryFill, openKeys, null)).toBeNull();
   });
 
-  it("exits and reverses when stop-loss % is hit against the mark", () => {
+  it("exits without reverse when stop-loss % is hit against the mark", () => {
     const signal = makeSignal({
       entryPrice: 1000,
       entryTimeIst: "09:30",
@@ -399,75 +399,12 @@ describe("dayOrderEngine", () => {
       },
     );
 
-    expect(afterStop.openPositions).toHaveLength(1);
-    expect(afterStop.openPositions[0].side).toBe("SELL");
-    expect(afterStop.openPositions[0].entryPrice).toBe(990);
-    expect(afterStop.openPositions[0].signalKey).toContain("-sl-rev");
-    expect(afterStop.fills.filter((fill) => fill.kind === "exit")).toHaveLength(1);
-    expect(afterStop.realizedPnL).toBe(-10 * ORDER_QUANTITY);
-  });
-
-  it("exits on stop-loss after 11:45 but does not reverse-enter", () => {
-    const signal = makeSignal({
-      entryPrice: 1000,
-      entryTimeIst: "09:30",
-      tradingSymbol: "TCS",
-      side: "BUY",
-    });
-    const opened = processDayOrderTick(
-      createInitialDayOrderPortfolio(),
-      makePayload([signal], [], 0, "09:30"),
-    );
-
-    const afterStop = processDayOrderTick(
-      opened,
-      {
-        ...makePayload([signal], [], 10, "12:00"),
-        marks: [{ tradingSymbol: "TCS", price: 990, timeIst: "12:00" }],
-      },
-      {
-        quantity: ORDER_QUANTITY,
-        minEntryPrice: 0,
-        maxEntryPrice: 5000,
-        stopLossPct: 1,
-      },
-    );
-
     expect(afterStop.openPositions).toHaveLength(0);
     expect(afterStop.fills.filter((fill) => fill.kind === "exit")).toHaveLength(1);
     expect(afterStop.fills.filter((fill) => fill.kind === "entry")).toHaveLength(1);
+    expect(afterStop.fills.at(-1)?.kind).toBe("exit");
+    expect(afterStop.fills.at(-1)?.price).toBe(990);
     expect(afterStop.realizedPnL).toBe(-10 * ORDER_QUANTITY);
-  });
-
-  it("still reverses on stop-loss at exactly 11:45", () => {
-    const signal = makeSignal({
-      entryPrice: 1000,
-      entryTimeIst: "09:30",
-      tradingSymbol: "TCS",
-      side: "BUY",
-    });
-    const opened = processDayOrderTick(
-      createInitialDayOrderPortfolio(),
-      makePayload([signal], [], 0, "09:30"),
-    );
-
-    const afterStop = processDayOrderTick(
-      opened,
-      {
-        ...makePayload([signal], [], 8, "11:45"),
-        marks: [{ tradingSymbol: "TCS", price: 990, timeIst: "11:45" }],
-      },
-      {
-        quantity: ORDER_QUANTITY,
-        minEntryPrice: 0,
-        maxEntryPrice: 5000,
-        stopLossPct: 1,
-      },
-    );
-
-    expect(afterStop.openPositions).toHaveLength(1);
-    expect(afterStop.openPositions[0].side).toBe("SELL");
-    expect(afterStop.openPositions[0].signalKey).toContain("-sl-rev");
   });
 
   it("does not apply stop-loss when pct is blank/zero", () => {

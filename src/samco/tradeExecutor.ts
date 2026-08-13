@@ -37,11 +37,8 @@ import {
   type SamcoStrategy,
 } from "./signalKeys.js";
 import {
-  canOpenStopLossReverseEntry,
   isStopLossHit,
   normalizeStopLossPct,
-  STOP_LOSS_REVERSE_ENTRY_DEADLINE_IST,
-  stopLossReverseSignalKey,
 } from "../utils/stopLossPct.js";
 
 export interface TradeExecutorLog {
@@ -837,15 +834,14 @@ export async function processDayScanSignalSnapshot(
 
 /**
  * For open ledger rows with a mark price, exit when adverse move ≥ configured
- * stop-loss %. Reverse entry is only placed when IST time is ≤ 11:45.
+ * stop-loss %. Does not open a reverse BUY/SELL — stays flat until the next signal.
  */
-export async function applyConfiguredStopLossAndReverse(
+export async function applyConfiguredStopLoss(
   options?: TradeExecutorOptions,
 ): Promise<ProcessDecisionResult> {
   const resolved = { ...defaultOptions(), ...options };
   const stopLossPct = normalizeStopLossPct(getSamcoStopLossPct());
   const logs: TradeExecutorLog[] = [];
-  let entriesPlaced = 0;
   let exitsPlaced = 0;
 
   if (stopLossPct == null) {
@@ -905,106 +901,9 @@ export async function applyConfiguredStopLossAndReverse(
         exitsPlaced += 1;
         logs.push({
           level: "info",
-          message: `Stop-loss ${stopLossPct}% hit on ${entry.tradingSymbol} (entry ${entryPrice} → mark ${markPrice}); squared off.`,
+          message: `Stop-loss ${stopLossPct}% hit on ${entry.tradingSymbol} (entry ${entryPrice} → mark ${markPrice}); squared off (no reverse).`,
           signalKey: entry.signalKey,
         });
-
-        if (!canOpenStopLossReverseEntry(nowIst)) {
-          logs.push({
-            level: "info",
-            message: `Stop-loss reverse skipped for ${entry.tradingSymbol}: time ${nowIst} is after ${STOP_LOSS_REVERSE_ENTRY_DEADLINE_IST} IST.`,
-            signalKey: entry.signalKey,
-          });
-          continue;
-        }
-
-        const reverseKey = stopLossReverseSignalKey(entry.signalKey);
-        if (findLedgerEntry(ledger, reverseKey)) {
-          continue;
-        }
-
-        const reverseSide = oppositeTransactionType(entry.side);
-        const claim = claimPendingEntry(ledger, {
-          signalKey: reverseKey,
-          strategy: entry.strategy,
-          tradingSymbol: entry.tradingSymbol,
-          stockName: entry.stockName || entry.tradingSymbol,
-          exchange: entry.exchange,
-          side: reverseSide,
-          quantity: getSamcoEffectiveQuantity(),
-          entryPrice: markPrice,
-          limitPrice: markPrice,
-          entryTimeIst: nowIst,
-          source: entry.source === "dayscan" ? "dayscan" : "poll",
-          markPrice,
-        });
-        ledger = claim.ledger;
-        if (!claim.claimed) {
-          continue;
-        }
-
-        const reverseSignal: DeepakTradeSignal = {
-          side: reverseSide,
-          scenarioKey: `${entry.strategy}-sl-rev`,
-          scenarioNumber: 99,
-          timeIst: nowIst,
-          price: markPrice,
-          bbMatchType: "close",
-          profitTarget: 0,
-          exit: null,
-        };
-
-        try {
-          // Reverse continues the trade book; skip the entry-price filter.
-          const placed = await placeReverseEntryOrder(
-            reverseSignal,
-            entry.strategy,
-            reverseKey,
-            {
-              ...resolved,
-              tradingSymbol: entry.tradingSymbol,
-              exchange: entry.exchange,
-              stockName: entry.stockName || entry.tradingSymbol,
-              source: entry.source === "dayscan" ? "dayscan" : "poll",
-            },
-            logs,
-          );
-          if (placed) {
-            ledger = persistLedgerEntry(ledger, {
-              ...placed,
-              signalKey: reverseKey,
-              markPrice,
-            });
-            entriesPlaced += 1;
-            logs.push({
-              level: "info",
-              message: `Stop-loss reverse ${reverseSide} ${entry.tradingSymbol} @ ${markPrice}.`,
-              signalKey: reverseKey,
-            });
-          } else {
-            ledger = persistLedgerEntry(ledger, {
-              ...findLedgerEntry(ledger, reverseKey)!,
-              status: "failed",
-              lastError: "Reverse entry was not placed.",
-            });
-          }
-        } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
-          logs.push({
-            level: "error",
-            message: `Stop-loss reverse failed: ${message}`,
-            signalKey: reverseKey,
-          });
-          const pending = findLedgerEntry(ledger, reverseKey);
-          if (pending) {
-            ledger = persistLedgerEntry(ledger, {
-              ...pending,
-              status: "failed",
-              lastError: message,
-              rejectedReason: message,
-            });
-          }
-        }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         logs.push({
@@ -1022,7 +921,7 @@ export async function applyConfiguredStopLossAndReverse(
 
     savePositionLedger(ledger);
     return {
-      entriesPlaced,
+      entriesPlaced: 0,
       exitsPlaced,
       eodSquareOffs: 0,
       entriesSkipped: 0,
@@ -1031,83 +930,8 @@ export async function applyConfiguredStopLossAndReverse(
   });
 }
 
-/** Place a reverse entry using an explicit signal key (skips entry-price filter). */
-async function placeReverseEntryOrder(
-  signal: DeepakTradeSignal,
-  strategy: SamcoStrategy,
-  signalKey: string,
-  options: Required<TradeExecutorOptions>,
-  logs: TradeExecutorLog[],
-): Promise<LedgerEntry | null> {
-  const request = buildPlaceOrderRequest(signal, options);
-
-  if (options.dryRun || !options.liveTradingEnabled) {
-    logs.push({
-      level: "info",
-      message: `Dry-run reverse entry ${signal.side} ${options.tradingSymbol} qty=${request.quantity} (${strategy}).`,
-      signalKey,
-    });
-    return {
-      signalKey,
-      strategy,
-      tradingSymbol: options.tradingSymbol,
-      stockName: options.stockName || options.tradingSymbol,
-      exchange: options.exchange,
-      side: signal.side,
-      quantity: getSamcoEffectiveQuantity(),
-      entryPrice: signal.price,
-      limitPrice: signal.price,
-      entryTimeIst: signal.timeIst,
-      orderNumber: null,
-      status: "open",
-      source: options.source,
-      markPrice: signal.price,
-    };
-  }
-
-  const placed = await placeSamcoOrder(request);
-  const orderNumber = placed.orderNumber;
-  if (!orderNumber) {
-    throw new Error("Samco reverse place order succeeded without orderNumber.");
-  }
-
-  const fillStatus = await waitForSamcoOrderFill(orderNumber);
-  if (!isSamcoOrderFilled(fillStatus.orderStatus)) {
-    throw new Error(
-      `Samco reverse entry order ${orderNumber} ended in status ${fillStatus.orderStatus ?? "unknown"}.`,
-    );
-  }
-
-  const filledQty = Number(fillStatus.orderDetails?.filledQuantity ?? request.quantity);
-  const entryPrice = Number(
-    fillStatus.orderDetails?.avgExecutionPrice ??
-      fillStatus.orderDetails?.orderPrice ??
-      signal.price,
-  );
-
-  logs.push({
-    level: "info",
-    message: `Reverse entry filled ${signal.side} ${options.tradingSymbol} @ ${entryPrice} (order ${orderNumber}).`,
-    signalKey,
-  });
-
-  return {
-    signalKey,
-    strategy,
-    tradingSymbol: options.tradingSymbol,
-    stockName: options.stockName || options.tradingSymbol,
-    exchange: options.exchange,
-    side: signal.side,
-    quantity: Number.isFinite(filledQty) ? filledQty : getSamcoEffectiveQuantity(),
-    entryPrice: Number.isFinite(entryPrice) ? entryPrice : signal.price,
-    limitPrice: signal.price,
-    entryTimeIst: signal.timeIst,
-    orderNumber,
-    status: "open",
-    source: options.source,
-    markPrice: Number.isFinite(entryPrice) ? entryPrice : signal.price,
-  };
-}
+/** @deprecated Use applyConfiguredStopLoss — reverse entries are no longer placed. */
+export const applyConfiguredStopLossAndReverse = applyConfiguredStopLoss;
 
 export async function reconcilePendingEntries(
   options?: TradeExecutorOptions,

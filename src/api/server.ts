@@ -48,7 +48,7 @@ import {
   resetSamcoTradeLogs,
 } from "../samco/samcoTradeLog.js";
 import {
-  applyConfiguredStopLossAndReverse,
+  applyConfiguredStopLoss,
   processDayScanSignalSnapshot,
   squareOffLedgerBySignalKey,
 } from "../samco/tradeExecutor.js";
@@ -305,7 +305,7 @@ app.post("/api/samco/cycle", async (req, res) => {
       appendSamcoTradeLogs(materialize.logs, {
         dryRun: dryRun || !liveEnabled,
       });
-      const stopLoss = await applyConfiguredStopLossAndReverse();
+      const stopLoss = await applyConfiguredStopLoss();
       if (stopLoss.logs.length > 0) {
         appendSamcoTradeLogs(stopLoss.logs, {
           dryRun: dryRun || !liveEnabled,
@@ -475,7 +475,7 @@ app.post("/api/samco/day-scan-signals", async (req, res) => {
       appendSamcoTradeLogs(applied.logs, { dryRun: dryRun || !liveEnabled });
     }
 
-    const stopLoss = await applyConfiguredStopLossAndReverse();
+    const stopLoss = await applyConfiguredStopLoss();
     if (stopLoss.logs.length > 0) {
       appendSamcoTradeLogs(stopLoss.logs, { dryRun: dryRun || !liveEnabled });
     }

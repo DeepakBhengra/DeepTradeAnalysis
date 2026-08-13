@@ -18,8 +18,6 @@ import {
   isStopLossHit,
   normalizeStopLossPct,
   oppositeSide,
-  canOpenStopLossReverseEntry,
-  stopLossReverseSignalKey,
 } from "./stopLossPct";
 
 let fillIdCounter = 0;
@@ -398,10 +396,10 @@ function processEntries(
 }
 
 /**
- * Exit open positions that hit the configured adverse loss %, then open the
- * opposite side at the mark when time is ≤ 11:45 IST (no reverse after that).
+ * Exit open positions that hit the configured adverse loss % at the mark.
+ * No reverse entry — flat until the next strategy signal.
  */
-function processStopLossExitsAndReverses(
+function processStopLossExits(
   portfolio: DayOrderPortfolio,
   marks: ReadonlyMap<string, number>,
   sessionIndex: number,
@@ -415,7 +413,6 @@ function processStopLossExitsAndReverses(
 
   let next = portfolio;
   const openSnapshot = [...next.openPositions];
-  const allowReverseEntry = canOpenStopLossReverseEntry(simulatedTimeIst);
 
   for (const position of openSnapshot) {
     const stillOpen = next.openPositions.some(
@@ -466,61 +463,6 @@ function processStopLossExitsAndReverses(
       realizedPnL: next.realizedPnL + pnl,
       skippedEntryKeys: next.skippedEntryKeys,
     };
-
-    if (!allowReverseEntry) {
-      continue;
-    }
-
-    const reverseKey = stopLossReverseSignalKey(position.signalKey);
-    const reverseAlreadyOpen = next.openPositions.some(
-      (row) => row.signalKey === reverseKey,
-    );
-    const reverseAlreadyClosed = next.fills.some(
-      (fill) => fill.kind === "exit" && fill.signalKey === reverseKey,
-    );
-    if (reverseAlreadyOpen || reverseAlreadyClosed) {
-      continue;
-    }
-
-    if (!canOpenEntry(next, mark, settings.quantity)) {
-      continue;
-    }
-
-    const reverseSide = exitSide;
-    const margin = requiredCapital(mark, settings.quantity);
-    const reversePosition: DayOrderOpenPosition = {
-      signalKey: reverseKey,
-      tradingSymbol: position.tradingSymbol,
-      symbol: position.symbol,
-      strategy: position.strategy,
-      side: reverseSide,
-      quantity: settings.quantity,
-      entryPrice: mark,
-      entryTimeIst: simulatedTimeIst,
-    };
-
-    const reverseFill: DayOrderFill = {
-      id: createFillId(),
-      kind: "entry",
-      signalKey: reverseKey,
-      tradingSymbol: position.tradingSymbol,
-      symbol: position.symbol,
-      strategy: position.strategy,
-      side: reverseSide,
-      quantity: settings.quantity,
-      price: mark,
-      timeIst: simulatedTimeIst,
-      sessionIndex,
-      realizedPnL: null,
-    };
-
-    next = {
-      cash: next.cash - margin,
-      openPositions: [...next.openPositions, reversePosition],
-      fills: [...next.fills, reverseFill],
-      realizedPnL: next.realizedPnL,
-      skippedEntryKeys: next.skippedEntryKeys,
-    };
   }
 
   return next;
@@ -534,7 +476,7 @@ export function processDayOrderTick(
   const sessionIndex = payload.simulation.sessionIndex;
   const simulatedTimeIst = payload.simulation.simulatedTimeIst;
   const afterExits = processExits(portfolio, payload.exits, sessionIndex);
-  const afterStopLoss = processStopLossExitsAndReverses(
+  const afterStopLoss = processStopLossExits(
     afterExits,
     marksMapFromSimulation(payload.marks),
     sessionIndex,

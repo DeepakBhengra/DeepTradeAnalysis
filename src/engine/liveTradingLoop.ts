@@ -9,7 +9,7 @@ import {
 } from "../samco/samcoDayScanBridge.js";
 import { appendSamcoTradeLogs } from "../samco/samcoTradeLog.js";
 import {
-  applyConfiguredStopLossAndReverse,
+  applyConfiguredStopLoss,
   forceEodSquareOff,
   isEodSquareOffDue,
   processDayScanSignalSnapshot,
@@ -154,7 +154,7 @@ export async function processLiveTradingCycle(): Promise<LiveTradingCycleResult>
   }
 
   if (!result.eodSquareOff) {
-    const stopLoss = await applyConfiguredStopLossAndReverse();
+    const stopLoss = await applyConfiguredStopLoss();
     result.entriesPlaced += stopLoss.entriesPlaced;
     result.exitsPlaced += stopLoss.exitsPlaced;
     logExecutorMessages(stopLoss.logs);

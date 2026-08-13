@@ -46,29 +46,3 @@ export function isStopLossHit(
 export function oppositeSide(side: "BUY" | "SELL"): "BUY" | "SELL" {
   return side === "BUY" ? "SELL" : "BUY";
 }
-
-export function stopLossReverseSignalKey(signalKey: string): string {
-  return `${signalKey}-sl-rev`;
-}
-
-/**
- * Inclusive IST deadline for opening a reverse entry after stop-loss.
- * Aligns with Deeppro1: SL still exits after this time, but no flip entry.
- */
-export const STOP_LOSS_REVERSE_ENTRY_DEADLINE_IST = "11:45";
-
-function parseHmToMinutes(timeIst: string): number {
-  const [hourText, minuteText] = timeIst.split(":");
-  return Number(hourText) * 60 + Number(minuteText);
-}
-
-/** True when a stop-loss reverse entry is allowed at this IST time (≤ 11:45). */
-export function canOpenStopLossReverseEntry(
-  timeIst: string,
-  deadlineIst: string = STOP_LOSS_REVERSE_ENTRY_DEADLINE_IST,
-): boolean {
-  if (!timeIst || !deadlineIst) {
-    return false;
-  }
-  return parseHmToMinutes(timeIst) <= parseHmToMinutes(deadlineIst);
-}
