@@ -14,6 +14,7 @@ import {
   DAY_ORDER_INITIAL_CASH,
   DEFAULT_DAY_ORDER_RUN_SETTINGS,
 } from "../types/dayOrder";
+import { netRealizedPnLAfterBrokerageCharges } from "./brokerageCharges";
 import {
   isStopLossHit,
   normalizeStopLossPct,
@@ -192,11 +193,17 @@ function createExitFill(
   };
 }
 
+/**
+ * Realized P&L for an individual Day Order (Trade Simulator) stock exit,
+ * net of equity intraday `brokerage-charges`.
+ */
 function computeRealizedPnL(position: DayOrderOpenPosition, exitPrice: number): number {
-  if (position.side === "BUY") {
-    return (exitPrice - position.entryPrice) * position.quantity;
-  }
-  return (position.entryPrice - exitPrice) * position.quantity;
+  return netRealizedPnLAfterBrokerageCharges(
+    position.side,
+    position.entryPrice,
+    exitPrice,
+    position.quantity,
+  );
 }
 
 /**
@@ -223,10 +230,8 @@ export function closeDayOrderPositionAtMark(
 
   const pnl = computeRealizedPnL(position, markPrice);
   const marginReleased = requiredCapital(position.entryPrice, position.quantity);
-  const exitProceeds =
-    position.side === "BUY"
-      ? markPrice * position.quantity
-      : marginReleased + pnl;
+  // Release locked capital and credit net P&L (after brokerage-charges).
+  const exitProceeds = marginReleased + pnl;
   const exitSide = oppositeSide(position.side);
 
   const exitFill: DayOrderFill = {
@@ -280,10 +285,7 @@ function processExits(
     const position = next.openPositions[positionIndex];
     const pnl = computeRealizedPnL(position, exit.exitPrice);
     const marginReleased = requiredCapital(position.entryPrice, position.quantity);
-    const exitProceeds =
-      position.side === "BUY"
-        ? exit.exitPrice * position.quantity
-        : marginReleased + pnl;
+    const exitProceeds = marginReleased + pnl;
 
     const fill = createExitFill(exit, position, sessionIndex, pnl);
     const openPositions = next.openPositions.filter((_, index) => index !== positionIndex);
@@ -459,8 +461,7 @@ function processStopLossExits(
 
     const pnl = computeRealizedPnL(position, mark);
     const marginReleased = requiredCapital(position.entryPrice, position.quantity);
-    const exitProceeds =
-      position.side === "BUY" ? mark * position.quantity : marginReleased + pnl;
+    const exitProceeds = marginReleased + pnl;
     const exitSide = oppositeSide(position.side);
 
     const exitFill: DayOrderFill = {
