@@ -37,6 +37,7 @@ const sampleSettings = buildDayOrderExportSettings(
     minEntryPrice: 0,
     maxEntryPrice: 1900,
     stopLossPct: 0.15,
+    tradingSymbols: [],
   },
 );
 
@@ -107,7 +108,7 @@ describe("buildDayOrderHistoryCsv", () => {
 });
 
 describe("buildDayOrderSettingsCsv", () => {
-  it("includes date, rule, qty, price range, and SL%", () => {
+  it("includes date, rule, qty, price range, SL%, and stocks", () => {
     const csv = buildDayOrderSettingsCsv(sampleSettings);
     expect(csv).toContain("Date,2026-05-29");
     expect(csv).toContain("Rule variant,Deeppro1");
@@ -115,6 +116,7 @@ describe("buildDayOrderSettingsCsv", () => {
     expect(csv).toContain("Min entry price,0");
     expect(csv).toContain("Max entry price,1900");
     expect(csv).toContain("Stop-loss %,0.15");
+    expect(csv).toContain("Stocks,all");
   });
 
   it("labels blank SL as off", () => {
@@ -151,9 +153,9 @@ describe("buildDayOrderHistoryWorkbookXml", () => {
 });
 
 describe("buildDayOrderHistoryExportFilename", () => {
-  it("embeds date, rule, qty, range, and SL in the filename", () => {
+  it("embeds date, rule, qty, range, SL, and stocks in the filename", () => {
     expect(buildDayOrderHistoryExportFilename(sampleSettings)).toBe(
-      "day-order_2026-05-29_Deeppro1_qty1000_range0-1900_sl0.15.xls",
+      "day-order_2026-05-29_Deeppro1_qty1000_range0-1900_sl0.15_stocks-all.xls",
     );
   });
 
@@ -163,7 +165,20 @@ describe("buildDayOrderHistoryExportFilename", () => {
         ...sampleSettings,
         stopLossPct: null,
       }),
-    ).toBe("day-order_2026-05-29_Deeppro1_qty1000_range0-1900_sl-off.xls");
+    ).toBe(
+      "day-order_2026-05-29_Deeppro1_qty1000_range0-1900_sl-off_stocks-all.xls",
+    );
+  });
+
+  it("lists up to three stock symbols in the filename", () => {
+    expect(
+      buildDayOrderHistoryExportFilename({
+        ...sampleSettings,
+        tradingSymbols: ["RELIANCE", "TCS"],
+      }),
+    ).toBe(
+      "day-order_2026-05-29_Deeppro1_qty1000_range0-1900_sl0.15_stocksRELIANCE-TCS.xls",
+    );
   });
 });
 

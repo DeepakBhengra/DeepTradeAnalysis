@@ -20,6 +20,10 @@ export interface DayOrderRunSettings {
    * null / 0 / blank = disabled.
    */
   stopLossPct: number | null;
+  /**
+   * Uppercase NSE trading symbols to include. Empty = all stocks.
+   */
+  tradingSymbols: string[];
 }
 
 export const DEFAULT_DAY_ORDER_RUN_SETTINGS: DayOrderRunSettings = {
@@ -27,6 +31,7 @@ export const DEFAULT_DAY_ORDER_RUN_SETTINGS: DayOrderRunSettings = {
   minEntryPrice: MIN_ENTRY_PRICE,
   maxEntryPrice: MAX_ENTRY_PRICE,
   stopLossPct: null,
+  tradingSymbols: [],
 };
 
 export type DayOrderFillKind = "entry" | "exit";
