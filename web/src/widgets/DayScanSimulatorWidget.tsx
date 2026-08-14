@@ -44,6 +44,13 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
     setAnalysisDate,
     ruleVariant,
     setRuleVariant,
+    entryPriceMinInput,
+    entryPriceMaxInput,
+    setEntryPriceMinInput,
+    setEntryPriceMaxInput,
+    entryPriceMin,
+    entryPriceMax,
+    filteredOutEntryCount,
     data,
     loading,
     error,
@@ -96,6 +103,38 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
                 ))}
               </select>
             </label>
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayscan-sim-entry-price-min"
+            >
+              Entry min ₹
+              <input
+                id="dayscan-sim-entry-price-min"
+                type="number"
+                min={0}
+                step="0.01"
+                value={entryPriceMinInput}
+                disabled={busy}
+                onChange={(event) => setEntryPriceMinInput(event.target.value)}
+                className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
+            <label
+              className="flex flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayscan-sim-entry-price-max"
+            >
+              Entry max ₹
+              <input
+                id="dayscan-sim-entry-price-max"
+                type="number"
+                min={0}
+                step="0.01"
+                value={entryPriceMaxInput}
+                disabled={busy}
+                onChange={(event) => setEntryPriceMaxInput(event.target.value)}
+                className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
             <SimulationControls
               status={status}
               sessionIndex={sessionIndex}
@@ -109,6 +148,14 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
           </div>
           <p className="m-0 mt-2 text-xs text-kite-muted">
             {descriptionForVariant(ruleVariant)}
+          </p>
+          <p className="m-0 mt-1 text-[11px] text-kite-muted">
+            Only entries with price in ₹{entryPriceMin}–₹{entryPriceMax} are shown and
+            passed to Day Order Simulator
+            {filteredOutEntryCount > 0
+              ? ` · ${filteredOutEntryCount} entry signal(s) outside range hidden`
+              : ""}
+            .
           </p>
         </section>
 

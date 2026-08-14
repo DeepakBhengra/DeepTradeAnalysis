@@ -1,4 +1,8 @@
 import type {
+  DayScanSimulationExit,
+  DayScanSimulationPayload,
+  DayScanSimulationSignal,
+  DayScanSimulationSummary,
   DeepakDayScanPayload,
   DeepakDayScanSummary,
   DeepakDayScanTrade,
@@ -76,6 +80,81 @@ export function filterDayScanPayloadByEntryPrice<T extends DeepakDayScanPayload>
     ...payload,
     trades,
     summary: rebuildDayScanSummaryFromTrades(trades, payload.summary),
+  };
+}
+
+function rebuildDayScanSimulationSummary(
+  entries: DayScanSimulationSignal[],
+  exits: DayScanSimulationExit[],
+  base: DayScanSimulationSummary,
+): DayScanSimulationSummary {
+  const profits = exits
+    .map((exit) => exit.profit)
+    .filter((profit): profit is number => typeof profit === "number");
+  const openKeys = new Set(
+    entries.map(
+      (entry) =>
+        `${entry.strategy}-${entry.tradingSymbol}-${entry.entryTimeIst}-${entry.scenarioNumber}`,
+    ),
+  );
+  for (const exit of exits) {
+    openKeys.delete(
+      `${exit.strategy}-${exit.tradingSymbol}-${exit.entryTimeIst}-${exit.scenarioNumber}`,
+    );
+  }
+
+  return {
+    ...base,
+    stocksWithSignals: new Set(entries.map((entry) => entry.tradingSymbol)).size,
+    entryCount: entries.length,
+    exitCount: exits.length,
+    openPositions: openKeys.size,
+    buyCount: entries.filter((entry) => entry.side === "BUY").length,
+    sellCount: entries.filter((entry) => entry.side === "SELL").length,
+    targetsHit: exits.filter((exit) => exit.targetHit).length,
+    stopsHit: exits.filter((exit) => exit.stopLossHit).length,
+    avgProfit:
+      profits.length > 0
+        ? profits.reduce((sum, profit) => sum + profit, 0) / profits.length
+        : null,
+  };
+}
+
+/** Filter candle-by-candle Day Scan Simulator payload by entry price. */
+export function filterDayScanSimulationPayloadByEntryPrice(
+  payload: DayScanSimulationPayload,
+  min: number,
+  max: number,
+): DayScanSimulationPayload {
+  const entries = payload.entries.filter((entry) =>
+    isDayScanEntryPriceInRange(entry.entryPrice, min, max),
+  );
+  const exits = payload.exits.filter((exit) =>
+    isDayScanEntryPriceInRange(exit.entryPrice, min, max),
+  );
+
+  if (
+    entries.length === payload.entries.length &&
+    exits.length === payload.exits.length
+  ) {
+    return payload;
+  }
+
+  const allowedSymbols = new Set(entries.map((entry) => entry.tradingSymbol));
+  for (const exit of exits) {
+    allowedSymbols.add(exit.tradingSymbol);
+  }
+
+  const marks = payload.marks?.filter((mark) =>
+    allowedSymbols.has(mark.tradingSymbol),
+  );
+
+  return {
+    ...payload,
+    entries,
+    exits,
+    ...(marks ? { marks } : {}),
+    summary: rebuildDayScanSimulationSummary(entries, exits, payload.summary),
   };
 }
 
