@@ -227,7 +227,7 @@ export function DayOrderPortfolioPanel({
             valueClassName={pnlClass(pnl.unrealizedPnL)}
           />
           <MetricRow
-            label="Realized P&L"
+            label="Realized P&L (net)"
             value={formatPnL(pnl.realizedPnL)}
             valueClassName={pnlClass(pnl.realizedPnL)}
           />
@@ -241,6 +241,9 @@ export function DayOrderPortfolioPanel({
             value={`${pnl.returnPct >= 0 ? "+" : ""}${pnl.returnPct.toFixed(2)}%`}
             valueClassName={pnlClass(pnl.totalPnL)}
           />
+          <p className="m-0 pt-1 text-[10px] text-kite-muted">
+            Realized P&amp;L is after brokerage-charges on every exit.
+          </p>
         </div>
       </section>
 
@@ -272,7 +275,7 @@ export function DayOrderPortfolioPanel({
           <p className="mt-3 mb-0 text-xs text-kite-muted">No filled orders yet.</p>
         ) : (
           <div className="mt-3 max-h-[28rem] overflow-auto">
-            <table className="w-full min-w-[800px] border-collapse text-xs">
+            <table className="w-full min-w-[920px] border-collapse text-xs">
               <thead className="sticky top-0 bg-kite-surface">
                 <tr className="border-b border-kite-border text-left text-kite-muted">
                   <th className="pb-2 pr-2 font-medium">Type</th>
@@ -283,7 +286,8 @@ export function DayOrderPortfolioPanel({
                   <th className="pb-2 pr-2 font-medium">Strategy</th>
                   <th className="pb-2 pr-2 font-medium">Exit Type</th>
                   <th className="pb-2 pr-2 font-medium">Time (IST)</th>
-                  <th className="pb-2 font-medium">P&amp;L</th>
+                  <th className="pb-2 pr-2 font-medium">Charges</th>
+                  <th className="pb-2 font-medium">Net P&amp;L</th>
                 </tr>
               </thead>
               <tbody>
@@ -293,6 +297,12 @@ export function DayOrderPortfolioPanel({
                     openSignalKeys,
                     marksMap,
                   );
+                  const charges =
+                    fill.kind === "exit" &&
+                    typeof fill.brokerageCharges === "number" &&
+                    Number.isFinite(fill.brokerageCharges)
+                      ? fill.brokerageCharges
+                      : null;
                   return (
                   <tr key={fill.id} className="border-b border-kite-border">
                     <td className="py-2 pr-2 capitalize text-kite-text">
@@ -318,6 +328,13 @@ export function DayOrderPortfolioPanel({
                     </td>
                     <td className="py-2 pr-2 tabular-nums text-kite-text">
                       {fill.timeIst}
+                    </td>
+                    <td
+                      className={`py-2 pr-2 tabular-nums ${
+                        charges == null ? "text-kite-muted" : "text-kite-text"
+                      }`}
+                    >
+                      {charges == null ? "—" : formatCurrency(charges)}
                     </td>
                     <td
                       className={`py-2 tabular-nums ${

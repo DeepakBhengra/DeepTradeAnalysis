@@ -346,6 +346,12 @@ describe("dayOrderEngine", () => {
       netRealizedPnLAfterBrokerageCharges("BUY", 500, 520, ORDER_QUANTITY),
     );
     expect(closed.realizedPnL).toBeLessThan(2000);
+    const exitFill = closed.fills.find((fill) => fill.kind === "exit");
+    expect(exitFill?.brokerageCharges).toBeGreaterThan(0);
+    expect(exitFill?.grossPnL).toBe(2000);
+    expect(exitFill?.realizedPnL).toBe(
+      (exitFill?.grossPnL ?? 0) - (exitFill?.brokerageCharges ?? 0),
+    );
   });
 
   it("does not duplicate entries on repeated ticks", () => {

@@ -10,7 +10,9 @@ const ORDER_HEADERS = [
   "Strategy",
   "Exit Type",
   "Time (IST)",
-  "P&L",
+  "Charges",
+  "Gross P&L",
+  "Net P&L",
 ] as const;
 
 export interface DayOrderExportSettings {
@@ -94,6 +96,8 @@ function fillToRow(fill: DayOrderFill): string[] {
     formatDayScanStrategy(fill.strategy),
     formatExitTypeCell(fill),
     fill.timeIst,
+    formatPnLCell(fill.kind === "exit" ? (fill.brokerageCharges ?? null) : null),
+    formatPnLCell(fill.kind === "exit" ? (fill.grossPnL ?? null) : null),
     formatPnLCell(fill.realizedPnL),
   ];
 }
@@ -174,7 +178,9 @@ export function buildDayOrderHistoryWorkbookXml(
       strategy,
       exitType,
       timeIst,
-      pnl,
+      charges,
+      grossPnL,
+      netPnL,
     ] = fillToRow(fill);
     return xmlRow([
       xmlStringCell(kind),
@@ -185,7 +191,9 @@ export function buildDayOrderHistoryWorkbookXml(
       xmlStringCell(strategy),
       xmlStringCell(exitType),
       xmlStringCell(timeIst),
-      pnl === "" ? xmlStringCell("") : xmlNumberCell(Number(pnl)),
+      charges === "" ? xmlStringCell("") : xmlNumberCell(Number(charges)),
+      grossPnL === "" ? xmlStringCell("") : xmlNumberCell(Number(grossPnL)),
+      netPnL === "" ? xmlStringCell("") : xmlNumberCell(Number(netPnL)),
     ]);
   });
 

@@ -44,7 +44,7 @@ const sampleSettings = buildDayOrderExportSettings(
 describe("buildDayOrderHistoryCsv", () => {
   it("emits header-only CSV when there are no fills", () => {
     expect(buildDayOrderHistoryCsv([])).toBe(
-      "Type,Side,Qty,Stock,Price,Strategy,Exit Type,Time (IST),P&L\r\n",
+      "Type,Side,Qty,Stock,Price,Strategy,Exit Type,Time (IST),Charges,Gross P&L,Net P&L\r\n",
     );
   });
 
@@ -53,11 +53,11 @@ describe("buildDayOrderHistoryCsv", () => {
     const lines = csv.trimEnd().split("\r\n");
     expect(lines).toHaveLength(2);
     expect(lines[1]).toBe(
-      "entry,BUY,100,RELIANCE,1290.45,Deeppro1,,09:15,",
+      "entry,BUY,100,RELIANCE,1290.45,Deeppro1,,09:15,,,",
     );
   });
 
-  it("includes exit type and P&L for exit fills", () => {
+  it("includes exit type, charges, gross and net P&L for exit fills", () => {
     const csv = buildDayOrderHistoryCsv([
       makeFill({
         id: "fill-2",
@@ -66,13 +66,15 @@ describe("buildDayOrderHistoryCsv", () => {
         price: 1295.1,
         timeIst: "11:45",
         realizedPnL: 465,
+        grossPnL: 540,
+        brokerageCharges: 75,
         exitReason: "target",
         targetHit: true,
       }),
     ]);
     const lines = csv.trimEnd().split("\r\n");
     expect(lines[1]).toBe(
-      "exit,SELL,100,RELIANCE,1295.10,Deeppro1,Target,11:45,465.00",
+      "exit,SELL,100,RELIANCE,1295.10,Deeppro1,Target,11:45,75.00,540.00,465.00",
     );
   });
 
@@ -83,6 +85,8 @@ describe("buildDayOrderHistoryCsv", () => {
         side: "SELL",
         exitReason: "stop_loss",
         realizedPnL: -100,
+        brokerageCharges: 40,
+        grossPnL: -60,
         timeIst: "10:15",
       }),
     ]);
