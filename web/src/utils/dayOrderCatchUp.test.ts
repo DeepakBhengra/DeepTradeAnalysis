@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { catchUpDayOrderPortfolio } from "./dayOrderCatchUp";
 import { DAY_ORDER_INITIAL_CASH, ORDER_QUANTITY } from "../types/dayOrder";
+import { netRealizedPnLAfterBrokerageCharges } from "./brokerageCharges";
 
 const { fetchDayScanSimulationMock } = vi.hoisted(() => ({
   fetchDayScanSimulationMock: vi.fn(),
@@ -134,7 +135,10 @@ describe("catchUpDayOrderPortfolio", () => {
     expect(portfolio.fills.filter((fill) => fill.kind === "entry")).toHaveLength(1);
     expect(portfolio.fills.filter((fill) => fill.kind === "exit")).toHaveLength(1);
     expect(portfolio.openPositions).toHaveLength(0);
-    expect(portfolio.realizedPnL).toBeCloseTo(0.5 * ORDER_QUANTITY, 5);
+    expect(portfolio.realizedPnL).toBe(
+      netRealizedPnLAfterBrokerageCharges("BUY", 100, 100.5, ORDER_QUANTITY),
+    );
+    expect(portfolio.realizedPnL).toBeLessThan(0.5 * ORDER_QUANTITY);
     expect(portfolio.cash).toBeGreaterThan(DAY_ORDER_INITIAL_CASH - 100 * ORDER_QUANTITY);
   });
 

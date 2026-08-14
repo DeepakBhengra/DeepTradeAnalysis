@@ -6,6 +6,7 @@ import type {
   DayScanSimulationSignal,
 } from "../types/backtest";
 import { DAY_ORDER_INITIAL_CASH, ORDER_QUANTITY } from "../types/dayOrder";
+import { netRealizedPnLAfterBrokerageCharges } from "./brokerageCharges";
 import {
   createInitialDayOrderPortfolio,
   closeDayOrderPositionAtMark,
@@ -341,7 +342,10 @@ describe("dayOrderEngine", () => {
     );
 
     expect(closed.openPositions).toHaveLength(0);
-    expect(closed.realizedPnL).toBe(2000);
+    expect(closed.realizedPnL).toBe(
+      netRealizedPnLAfterBrokerageCharges("BUY", 500, 520, ORDER_QUANTITY),
+    );
+    expect(closed.realizedPnL).toBeLessThan(2000);
   });
 
   it("does not duplicate entries on repeated ticks", () => {
@@ -468,7 +472,10 @@ describe("dayOrderEngine", () => {
     expect(afterStop.fills.at(-1)?.kind).toBe("exit");
     expect(afterStop.fills.at(-1)?.price).toBe(990);
     expect(afterStop.fills.at(-1)?.exitReason).toBe("stop_loss");
-    expect(afterStop.realizedPnL).toBe(-10 * ORDER_QUANTITY);
+    expect(afterStop.realizedPnL).toBe(
+      netRealizedPnLAfterBrokerageCharges("BUY", 1000, 990, ORDER_QUANTITY),
+    );
+    expect(afterStop.realizedPnL).toBeLessThan(-10 * ORDER_QUANTITY);
   });
 
   it("does not apply stop-loss when pct is blank/zero", () => {
@@ -524,9 +531,13 @@ describe("dayOrderEngine", () => {
     expect(closed.openPositions).toHaveLength(0);
     expect(closed.fills.filter((fill) => fill.kind === "exit")).toHaveLength(1);
     expect(closed.fills.at(-1)?.price).toBe(1030);
-    expect(closed.fills.at(-1)?.realizedPnL).toBe(30 * ORDER_QUANTITY);
+    expect(closed.fills.at(-1)?.realizedPnL).toBe(
+      netRealizedPnLAfterBrokerageCharges("BUY", 1000, 1030, ORDER_QUANTITY),
+    );
     expect(closed.fills.at(-1)?.exitReason).toBe("manual");
-    expect(closed.realizedPnL).toBe(30 * ORDER_QUANTITY);
+    expect(closed.realizedPnL).toBe(
+      netRealizedPnLAfterBrokerageCharges("BUY", 1000, 1030, ORDER_QUANTITY),
+    );
     expect(closed.openPositions.every((p) => !p.signalKey.includes("-sl-rev"))).toBe(
       true,
     );
