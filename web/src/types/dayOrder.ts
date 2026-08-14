@@ -65,7 +65,12 @@ export interface DayOrderFill {
   price: number;
   timeIst: string;
   sessionIndex: number;
+  /** Net realized P&L after brokerage-charges (exit fills only). */
   realizedPnL: number | null;
+  /** Gross P&L before brokerage-charges (exit fills only). */
+  grossPnL?: number | null;
+  /** Total brokerage-charges deducted on this exit (exit fills only). */
+  brokerageCharges?: number | null;
   /** Set on exit fills; omitted/null on entries. */
   exitReason?: DayOrderExitReason | null;
   targetHit?: boolean;

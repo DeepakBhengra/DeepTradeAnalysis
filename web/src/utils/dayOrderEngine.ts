@@ -14,7 +14,7 @@ import {
   DAY_ORDER_INITIAL_CASH,
   DEFAULT_DAY_ORDER_RUN_SETTINGS,
 } from "../types/dayOrder";
-import { netRealizedPnLAfterBrokerageCharges } from "./brokerageCharges";
+import { brokerageCharges } from "./brokerageCharges";
 import {
   isStopLossHit,
   normalizeStopLossPct,
@@ -170,7 +170,7 @@ function createExitFill(
   exit: DayScanSimulationExit,
   position: DayOrderOpenPosition,
   sessionIndex: number,
-  realizedPnL: number,
+  exitEconomics: { realizedPnL: number; grossPnL: number; brokerageCharges: number },
 ): DayOrderFill {
   const exitSide: DayOrderFill["side"] = position.side === "BUY" ? "SELL" : "BUY";
 
@@ -186,7 +186,9 @@ function createExitFill(
     price: exit.exitPrice,
     timeIst: exit.exitTimeIst,
     sessionIndex,
-    realizedPnL,
+    realizedPnL: exitEconomics.realizedPnL,
+    grossPnL: exitEconomics.grossPnL,
+    brokerageCharges: exitEconomics.brokerageCharges,
     exitReason: exit.exitReason,
     targetHit: exit.targetHit,
     stopLossHit: exit.stopLossHit,
@@ -194,16 +196,25 @@ function createExitFill(
 }
 
 /**
- * Realized P&L for an individual Day Order (Trade Simulator) stock exit,
- * net of equity intraday `brokerage-charges`.
+ * Round-trip economics for an individual Day Order (Trade Simulator) stock exit:
+ * gross P&L, brokerage-charges, and net realized P&L.
  */
-function computeRealizedPnL(position: DayOrderOpenPosition, exitPrice: number): number {
-  return netRealizedPnLAfterBrokerageCharges(
-    position.side,
-    position.entryPrice,
-    exitPrice,
-    position.quantity,
-  );
+function computeExitEconomics(
+  position: DayOrderOpenPosition,
+  exitPrice: number,
+): { realizedPnL: number; grossPnL: number; brokerageCharges: number } {
+  const buyPrice = position.side === "BUY" ? position.entryPrice : exitPrice;
+  const sellPrice = position.side === "BUY" ? exitPrice : position.entryPrice;
+  const breakdown = brokerageCharges({
+    buyPrice,
+    sellPrice,
+    quantity: position.quantity,
+  });
+  return {
+    realizedPnL: breakdown.netProfit,
+    grossPnL: breakdown.grossProfit,
+    brokerageCharges: breakdown.totalCharges,
+  };
 }
 
 /**
@@ -228,7 +239,8 @@ export function closeDayOrderPositionAtMark(
     return portfolio;
   }
 
-  const pnl = computeRealizedPnL(position, markPrice);
+  const exitEconomics = computeExitEconomics(position, markPrice);
+  const pnl = exitEconomics.realizedPnL;
   const marginReleased = requiredCapital(position.entryPrice, position.quantity);
   // Release locked capital and credit net P&L (after brokerage-charges).
   const exitProceeds = marginReleased + pnl;
@@ -247,6 +259,8 @@ export function closeDayOrderPositionAtMark(
     timeIst,
     sessionIndex,
     realizedPnL: pnl,
+    grossPnL: exitEconomics.grossPnL,
+    brokerageCharges: exitEconomics.brokerageCharges,
     exitReason: "manual",
   };
 
@@ -283,11 +297,12 @@ function processExits(
     }
 
     const position = next.openPositions[positionIndex];
-    const pnl = computeRealizedPnL(position, exit.exitPrice);
+    const exitEconomics = computeExitEconomics(position, exit.exitPrice);
+    const pnl = exitEconomics.realizedPnL;
     const marginReleased = requiredCapital(position.entryPrice, position.quantity);
     const exitProceeds = marginReleased + pnl;
 
-    const fill = createExitFill(exit, position, sessionIndex, pnl);
+    const fill = createExitFill(exit, position, sessionIndex, exitEconomics);
     const openPositions = next.openPositions.filter((_, index) => index !== positionIndex);
 
     next = {
@@ -459,7 +474,8 @@ function processStopLossExits(
       continue;
     }
 
-    const pnl = computeRealizedPnL(position, mark);
+    const exitEconomics = computeExitEconomics(position, mark);
+    const pnl = exitEconomics.realizedPnL;
     const marginReleased = requiredCapital(position.entryPrice, position.quantity);
     const exitProceeds = marginReleased + pnl;
     const exitSide = oppositeSide(position.side);
@@ -477,6 +493,8 @@ function processStopLossExits(
       timeIst: simulatedTimeIst,
       sessionIndex,
       realizedPnL: pnl,
+      grossPnL: exitEconomics.grossPnL,
+      brokerageCharges: exitEconomics.brokerageCharges,
       exitReason: "stop_loss",
     };
 
