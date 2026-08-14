@@ -21,6 +21,7 @@ export interface DayOrderExportSettings {
   minEntryPrice: number;
   maxEntryPrice: number;
   stopLossPct: number | null;
+  tradingSymbols: string[];
 }
 
 export function buildDayOrderExportSettings(
@@ -37,6 +38,7 @@ export function buildDayOrderExportSettings(
     minEntryPrice: runSettings.minEntryPrice,
     maxEntryPrice: runSettings.maxEntryPrice,
     stopLossPct: runSettings.stopLossPct,
+    tradingSymbols: [...(runSettings.tradingSymbols ?? [])],
   };
 }
 
@@ -96,6 +98,13 @@ function fillToRow(fill: DayOrderFill): string[] {
   ];
 }
 
+function formatTradingSymbols(symbols: string[]): string {
+  if (symbols.length === 0) {
+    return "all";
+  }
+  return symbols.join(", ");
+}
+
 function settingsRows(settings: DayOrderExportSettings): Array<[string, string]> {
   return [
     ["Date", settings.date],
@@ -105,6 +114,7 @@ function settingsRows(settings: DayOrderExportSettings): Array<[string, string]>
     ["Min entry price", String(settings.minEntryPrice)],
     ["Max entry price", String(settings.maxEntryPrice)],
     ["Stop-loss %", formatStopLossPct(settings.stopLossPct)],
+    ["Stocks", formatTradingSymbols(settings.tradingSymbols ?? [])],
   ];
 }
 
@@ -211,7 +221,7 @@ function sanitizeFilenamePart(value: string): string {
     || "na";
 }
 
-/** Filename includes date, rule, qty, price range, and SL%. */
+/** Filename includes date, rule, qty, price range, SL%, and stock filter. */
 export function buildDayOrderHistoryExportFilename(
   settings: DayOrderExportSettings,
 ): string {
@@ -222,7 +232,14 @@ export function buildDayOrderHistoryExportFilename(
     settings.stopLossPct == null || settings.stopLossPct <= 0
       ? "sl-off"
       : `sl${sanitizeFilenamePart(String(settings.stopLossPct))}`;
-  return `day-order_${sanitizeFilenamePart(settings.date)}_${rule}_${qty}_${range}_${sl}.xls`;
+  const stocks = settings.tradingSymbols ?? [];
+  const stocksPart =
+    stocks.length === 0
+      ? "stocks-all"
+      : stocks.length <= 3
+        ? `stocks${stocks.map(sanitizeFilenamePart).join("-")}`
+        : `stocks${stocks.length}`;
+  return `day-order_${sanitizeFilenamePart(settings.date)}_${rule}_${qty}_${range}_${sl}_${stocksPart}.xls`;
 }
 
 /** @deprecated Prefer buildDayOrderHistoryExportFilename with full settings. */

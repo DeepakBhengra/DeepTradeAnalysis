@@ -267,7 +267,7 @@ describe("dayOrderEngine", () => {
     const portfolio = processDayOrderTick(
       createInitialDayOrderPortfolio(),
       makePayload([signal], [], 0, "09:30"),
-      { quantity: 25, minEntryPrice: 0, maxEntryPrice: 1900, stopLossPct: null },
+      { quantity: 25, minEntryPrice: 0, maxEntryPrice: 1900, stopLossPct: null, tradingSymbols: [] },
     );
 
     expect(portfolio.openPositions[0]?.quantity).toBe(25);
@@ -279,7 +279,7 @@ describe("dayOrderEngine", () => {
     const portfolio = processDayOrderTick(
       createInitialDayOrderPortfolio(),
       makePayload([signal], [], 0, "09:30"),
-      { quantity: 100, minEntryPrice: 500, maxEntryPrice: 1900, stopLossPct: null },
+      { quantity: 100, minEntryPrice: 500, maxEntryPrice: 1900, stopLossPct: null, tradingSymbols: [] },
     );
 
     expect(portfolio.openPositions).toHaveLength(0);
@@ -291,7 +291,7 @@ describe("dayOrderEngine", () => {
     const portfolio = processDayOrderTick(
       createInitialDayOrderPortfolio(),
       makePayload([signal], [], 0, "09:30"),
-      { quantity: 10, minEntryPrice: 0, maxEntryPrice: 3000, stopLossPct: null },
+      { quantity: 10, minEntryPrice: 0, maxEntryPrice: 3000, stopLossPct: null, tradingSymbols: [] },
     );
 
     expect(portfolio.openPositions).toHaveLength(1);
@@ -305,6 +305,7 @@ describe("dayOrderEngine", () => {
         minEntryPrice: 0,
         maxEntryPrice: 1900,
         stopLossPct: null,
+      tradingSymbols: [],
       }),
     ).toBeNull();
     expect(
@@ -313,6 +314,7 @@ describe("dayOrderEngine", () => {
         minEntryPrice: 0,
         maxEntryPrice: 1900,
         stopLossPct: null,
+      tradingSymbols: [],
       }),
     ).toMatch(/Quantity/);
     expect(
@@ -321,6 +323,7 @@ describe("dayOrderEngine", () => {
         minEntryPrice: 2000,
         maxEntryPrice: 1900,
         stopLossPct: null,
+      tradingSymbols: [],
       }),
     ).toMatch(/Min entry price cannot be greater/);
   });
@@ -375,6 +378,63 @@ describe("dayOrderEngine", () => {
     expect(dayOrderFillDisplayPnL(entryFill, openKeys, null)).toBeNull();
   });
 
+  it("only enters allowlisted stocks when tradingSymbols is set", () => {
+    const tcs = makeSignal({
+      entryPrice: 1000,
+      entryTimeIst: "09:30",
+      tradingSymbol: "TCS",
+    });
+    const reliance = makeSignal({
+      entryPrice: 1200,
+      entryTimeIst: "09:30",
+      tradingSymbol: "RELIANCE",
+      scenarioNumber: 2,
+      scenarioKey: "buy-2",
+    });
+    const portfolio = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([tcs, reliance], [], 0, "09:30"),
+      {
+        quantity: ORDER_QUANTITY,
+        minEntryPrice: 0,
+        maxEntryPrice: 5000,
+        stopLossPct: null,
+        tradingSymbols: ["RELIANCE"],
+      },
+    );
+
+    expect(portfolio.openPositions).toHaveLength(1);
+    expect(portfolio.openPositions[0].tradingSymbol).toBe("RELIANCE");
+  });
+
+  it("enters any stock when tradingSymbols allowlist is empty", () => {
+    const tcs = makeSignal({
+      entryPrice: 1000,
+      entryTimeIst: "09:30",
+      tradingSymbol: "TCS",
+    });
+    const reliance = makeSignal({
+      entryPrice: 1200,
+      entryTimeIst: "09:30",
+      tradingSymbol: "RELIANCE",
+      scenarioNumber: 2,
+      scenarioKey: "buy-2",
+    });
+    const portfolio = processDayOrderTick(
+      createInitialDayOrderPortfolio(),
+      makePayload([tcs, reliance], [], 0, "09:30"),
+      {
+        quantity: ORDER_QUANTITY,
+        minEntryPrice: 0,
+        maxEntryPrice: 5000,
+        stopLossPct: null,
+        tradingSymbols: [],
+      },
+    );
+
+    expect(portfolio.openPositions).toHaveLength(2);
+  });
+
   it("exits without reverse when stop-loss % is hit against the mark", () => {
     const signal = makeSignal({
       entryPrice: 1000,
@@ -398,6 +458,7 @@ describe("dayOrderEngine", () => {
         minEntryPrice: 0,
         maxEntryPrice: 5000,
         stopLossPct: 1,
+      tradingSymbols: [],
       },
     );
 
@@ -431,6 +492,7 @@ describe("dayOrderEngine", () => {
         minEntryPrice: 0,
         maxEntryPrice: 5000,
         stopLossPct: null,
+      tradingSymbols: [],
       },
     );
 

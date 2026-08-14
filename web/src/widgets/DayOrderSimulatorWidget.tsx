@@ -85,6 +85,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
   const [stopLossPctText, setStopLossPctText] = useState(
     () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).stopLossPctText,
   );
+  const [tradingSymbolsText, setTradingSymbolsText] = useState(
+    () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).tradingSymbolsText,
+  );
 
   const isRunning = status === "running" || catchingUp;
   const scanBusy = scanStatus === "playing" || scanStatus === "loading";
@@ -95,6 +98,7 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
     minEntryPriceText: string;
     maxEntryPriceText: string;
     stopLossPctText: string;
+    tradingSymbolsText: string;
   }) => {
     setRunSettings(parseDayOrderRunSettingsInput(next));
   };
@@ -258,6 +262,31 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
                 className="w-36 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               />
             </label>
+            <label
+              className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs text-kite-muted"
+              htmlFor="dayorder-sim-stocks"
+            >
+              Stocks (blank = all)
+              <input
+                id="dayorder-sim-stocks"
+                type="text"
+                disabled={inputsDisabled}
+                value={tradingSymbolsText}
+                placeholder="e.g. RELIANCE, TCS, INFY"
+                onChange={(event) => {
+                  const value = event.target.value;
+                  setTradingSymbolsText(value);
+                  applyDraftSettings({
+                    quantityText,
+                    minEntryPriceText,
+                    maxEntryPriceText,
+                    stopLossPctText,
+                    tradingSymbolsText: value,
+                  });
+                }}
+                className="w-full min-w-[220px] rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+              />
+            </label>
           </div>
 
           <div className="mt-3 grid gap-1 text-xs text-kite-muted sm:grid-cols-2 lg:grid-cols-4">
@@ -304,6 +333,14 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
                   : "—"}
               </span>
             </p>
+            <p className="m-0">
+              Stocks:{" "}
+              <span className="text-kite-text">
+                {runSettings.tradingSymbols.length === 0
+                  ? "all"
+                  : runSettings.tradingSymbols.join(", ")}
+              </span>
+            </p>
           </div>
 
           {dateMismatch && (
@@ -329,10 +366,12 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
 
           <p className="m-0 mt-2 text-xs text-kite-muted">
             Auto paper-trades Day Scan entry/exit signals for the selected rule variant with
-            ₹1,00,00,000 capital. Set quantity, entry price range, and optional stop-loss % for this
-            date run before Start (locked while running). When stop-loss % is set, open positions
-            that lose that much vs entry exit at the candle mid (no reverse entry). Blank or 0 =
-            no stop-loss. Defaults: {ORDER_QUANTITY} qty, ₹{formatInr(MIN_ENTRY_PRICE)}–₹
+            ₹1,00,00,000 capital. Set quantity, entry price range, optional stock list, and
+            optional stop-loss % for this date run before Start (locked while running). Leave
+            stocks blank to trade any symbol from the scan. When stop-loss % is set, open
+            positions that lose that much vs entry exit at the candle mid (no reverse entry).
+            Blank or 0 = no stop-loss. Defaults: {ORDER_QUANTITY} qty, ₹
+            {formatInr(MIN_ENTRY_PRICE)}–₹
             {formatInr(MAX_ENTRY_PRICE)}. Starts automatically when Day Scan Simulator starts and
             catches up from 09:15. Order history is a column table of every fill (scroll for
             morning 09:15 square-offs).

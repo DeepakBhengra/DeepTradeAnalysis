@@ -159,6 +159,7 @@ describe("useDayOrderSimulation", () => {
         minEntryPrice: 0,
         maxEntryPrice: 1900,
         stopLossPct: null,
+        tradingSymbols: [],
       });
     });
 
@@ -182,6 +183,7 @@ describe("useDayOrderSimulation", () => {
         minEntryPrice: 0,
         maxEntryPrice: 1900,
         stopLossPct: null,
+        tradingSymbols: [],
       });
     });
 

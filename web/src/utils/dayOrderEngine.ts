@@ -317,6 +317,19 @@ function isEntryPriceInRange(
   );
 }
 
+/** Empty allowlist means all symbols are eligible. */
+export function isTradingSymbolAllowed(
+  tradingSymbol: string,
+  settings: Pick<DayOrderRunSettings, "tradingSymbols">,
+): boolean {
+  const allowlist = settings.tradingSymbols ?? [];
+  if (allowlist.length === 0) {
+    return true;
+  }
+  const normalized = tradingSymbol.trim().toUpperCase();
+  return allowlist.some((symbol) => symbol === normalized);
+}
+
 function processEntries(
   portfolio: DayOrderPortfolio,
   entries: DayScanSimulationSignal[],
@@ -335,6 +348,9 @@ function processEntries(
   );
 
   for (const signal of entries) {
+    if (!isTradingSymbolAllowed(signal.tradingSymbol, settings)) {
+      continue;
+    }
     const signalKey = entrySignalKey(signal);
     if (
       signal.entryTimeIst < simulatedTimeIst &&
@@ -350,6 +366,10 @@ function processEntries(
   );
 
   for (const signal of sortedEntries) {
+    if (!isTradingSymbolAllowed(signal.tradingSymbol, settings)) {
+      continue;
+    }
+
     const signalKey = entrySignalKey(signal);
 
     if (openKeys.has(signalKey) || closedKeys.has(signalKey) || skippedKeys.has(signalKey)) {
