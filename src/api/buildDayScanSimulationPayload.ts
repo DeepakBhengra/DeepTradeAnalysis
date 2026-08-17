@@ -36,6 +36,8 @@ import type {
 } from "../types.js";
 import { formatIstTime, isValidAnalysisDate } from "../utils/marketTime.js";
 import { candleMidPrice } from "../utils/sessionMarkPrice.js";
+import { applyStopLossToDayScanSimulationPayload } from "../utils/dayScanStopLoss.js";
+import { getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import {
   DayScanSimulationCache,
@@ -476,7 +478,12 @@ export async function buildDayScanSimulationPayload(input: {
     );
   }
 
-  return payload;
+  // Overlay Samco Trading stop-loss % after cache so SL setting changes
+  // appear in EXIT SIGNAL without invalidating strategy frames.
+  return applyStopLossToDayScanSimulationPayload(
+    payload,
+    getSamcoStopLossPct(),
+  );
 }
 
 export function validateDayScanSimulationDate(date: string): string | null {

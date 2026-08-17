@@ -16,7 +16,12 @@ import type {
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
 import { isValidAnalysisDate } from "../utils/marketTime.js";
+import {
+  applyStopLossExitsToTrades,
+  sessionMarkBarsFromSnapshots,
+} from "../utils/dayScanStopLoss.js";
 import { withOpenTradeMarkPrices } from "../utils/sessionMarkPrice.js";
+import { getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
 export function validateDayScanDate(date: string): string | null {
@@ -84,19 +89,24 @@ async function scanSymbol(
         kiteRetries: config.dayScanKiteRetries,
       }),
       entry.tradingSymbol,
-    );    const snapshots = buildIndicatorSnapshots(candles);
+    );
+    const snapshots = buildIndicatorSnapshots(candles);
     const { trades } = runDeepakBacktest(snapshots, date, date);
 
     return {
-      trades: withOpenTradeMarkPrices(
-        trades.map((trade) => ({
-          ...trade,
-          symbol: dashboardSymbol.symbol,
-          tradingSymbol: dashboardSymbol.tradingSymbol,
-          sector: entry.sector,
-        })),
-        snapshots,
-        date,
+      trades: applyStopLossExitsToTrades(
+        withOpenTradeMarkPrices(
+          trades.map((trade) => ({
+            ...trade,
+            symbol: dashboardSymbol.symbol,
+            tradingSymbol: dashboardSymbol.tradingSymbol,
+            sector: entry.sector,
+          })),
+          snapshots,
+          date,
+        ),
+        sessionMarkBarsFromSnapshots(snapshots, date),
+        getSamcoStopLossPct(),
       ),
       error: null,
     };

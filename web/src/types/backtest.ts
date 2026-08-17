@@ -22,7 +22,8 @@ export type DeepakExitReason =
   | "deepak2_stop"
   | "breakeven"
   | "flip"
-  | "eod";
+  | "eod"
+  | "stop_loss";
 
 export interface DeepakBacktestSummary {
   tradingDaysScanned: number;
