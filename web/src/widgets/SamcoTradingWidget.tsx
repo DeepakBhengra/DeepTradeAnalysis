@@ -474,7 +474,10 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
           onExitPosition={handleExitPosition}
         />
 
-        <SamcoTradeAnalysisPanel entries={ledger?.entries ?? []} />
+        <SamcoTradeAnalysisPanel
+          entries={ledger?.entries ?? []}
+          dateKey={logDate}
+        />
 
         <section className="border border-kite-border bg-kite-surface p-3">
           <div className="flex flex-wrap items-end justify-between gap-3">
