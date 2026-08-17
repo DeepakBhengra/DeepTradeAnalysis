@@ -15,7 +15,12 @@ import type {
   DeepakWatchPartyDayScanTrade,
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
+import {
+  applyStopLossExitsToTrades,
+  sessionMarkBarsFromSnapshots,
+} from "../utils/dayScanStopLoss.js";
 import { withOpenTradeMarkPrices } from "../utils/sessionMarkPrice.js";
+import { getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
@@ -37,7 +42,9 @@ function buildSummary(
     buyCount: trades.filter((trade) => trade.side === "BUY").length,
     sellCount: trades.filter((trade) => trade.side === "SELL").length,
     targetsHit: trades.filter((trade) => trade.targetHit).length,
-    stopsHit: trades.filter((trade) => trade.stopLossHit).length,
+    stopsHit: trades.filter(
+      (trade) => trade.stopLossHit || trade.exitReason === "stop_loss",
+    ).length,
     targetsMissed: trades.filter((trade) => !trade.targetHit && !trade.stopLossHit).length,
     avgProfit:
       profits.length > 0
@@ -85,16 +92,20 @@ async function scanSymbol(
     const { trades } = runDeepakWatchPartyBacktest(snapshots, date, date);
 
     return {
-      trades: withOpenTradeMarkPrices(
-        trades.map((trade) => ({
-          ...trade,
-          symbol: dashboardSymbol.symbol,
-          tradingSymbol: dashboardSymbol.tradingSymbol,
-          sector: entry.sector,
-          strategy: "deepak-watch-party" as const,
-        })),
-        snapshots,
-        date,
+      trades: applyStopLossExitsToTrades(
+        withOpenTradeMarkPrices(
+          trades.map((trade) => ({
+            ...trade,
+            symbol: dashboardSymbol.symbol,
+            tradingSymbol: dashboardSymbol.tradingSymbol,
+            sector: entry.sector,
+            strategy: "deepak-watch-party" as const,
+          })),
+          snapshots,
+          date,
+        ),
+        sessionMarkBarsFromSnapshots(snapshots, date),
+        getSamcoStopLossPct(),
       ),
       error: null,
     };

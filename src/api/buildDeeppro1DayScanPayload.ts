@@ -18,7 +18,12 @@ import type {
   DeepakDayScanTrade,
 } from "../types.js";
 import { formatUnknownError } from "../utils/formatError.js";
+import {
+  applyStopLossExitsToTrades,
+  sessionMarkBarsFromSnapshots,
+} from "../utils/dayScanStopLoss.js";
 import { withOpenTradeMarkPrices } from "../utils/sessionMarkPrice.js";
+import { getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
@@ -46,6 +51,9 @@ function buildSummary(
         ? profits.reduce((sum, value) => sum + value, 0) / profits.length
         : null,
     errorCount: errors.length,
+    stopsHit: trades.filter(
+      (trade) => trade.stopLossHit || trade.exitReason === "stop_loss",
+    ).length,
   };
 }
 
@@ -85,30 +93,34 @@ async function scanSymbol(
     const day = evaluateDeeppro1Day(snapshots, date);
 
     return {
-      trades: withOpenTradeMarkPrices(
-        day.signals.map((signal) => {
-          const tradeSignal = deeppro1SignalToTradeSignal(signal);
-          return {
-            date,
-            side: tradeSignal.side,
-            scenarioNumber: tradeSignal.scenarioNumber,
-            scenarioKey: tradeSignal.scenarioKey,
-            entryTimeIst: tradeSignal.timeIst,
-            entryPrice: tradeSignal.price,
-            exitTimeIst: tradeSignal.exit?.timeIst ?? null,
-            exitPrice: tradeSignal.exit?.price ?? null,
-            targetHit: tradeSignal.exit?.targetHit ?? false,
-            profit: tradeSignal.exit?.profit ?? null,
-            profitTarget: tradeSignal.profitTarget,
-            bbMatchType: tradeSignal.bbMatchType,
-            exitReason: tradeSignal.exit?.exitReason ?? null,
-            symbol: dashboardSymbol.symbol,
-            tradingSymbol: dashboardSymbol.tradingSymbol,
-            sector: entry.sector,
-          };
-        }),
-        snapshots,
-        date,
+      trades: applyStopLossExitsToTrades(
+        withOpenTradeMarkPrices(
+          day.signals.map((signal) => {
+            const tradeSignal = deeppro1SignalToTradeSignal(signal);
+            return {
+              date,
+              side: tradeSignal.side,
+              scenarioNumber: tradeSignal.scenarioNumber,
+              scenarioKey: tradeSignal.scenarioKey,
+              entryTimeIst: tradeSignal.timeIst,
+              entryPrice: tradeSignal.price,
+              exitTimeIst: tradeSignal.exit?.timeIst ?? null,
+              exitPrice: tradeSignal.exit?.price ?? null,
+              targetHit: tradeSignal.exit?.targetHit ?? false,
+              profit: tradeSignal.exit?.profit ?? null,
+              profitTarget: tradeSignal.profitTarget,
+              bbMatchType: tradeSignal.bbMatchType,
+              exitReason: tradeSignal.exit?.exitReason ?? null,
+              symbol: dashboardSymbol.symbol,
+              tradingSymbol: dashboardSymbol.tradingSymbol,
+              sector: entry.sector,
+            };
+          }),
+          snapshots,
+          date,
+        ),
+        sessionMarkBarsFromSnapshots(snapshots, date),
+        getSamcoStopLossPct(),
       ),
       error: null,
     };

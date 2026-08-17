@@ -125,7 +125,8 @@ export type DeepakExitReason =
   | "deepak2_stop"
   | "breakeven"
   | "flip"
-  | "eod";
+  | "eod"
+  | "stop_loss";
 
 export interface DeepakExitSignal {
   timeIst: string;
@@ -609,6 +610,8 @@ export interface DeepakDayScanTrade extends DeepakBacktestTrade {
    * Used for unrealized P&L in Day Order / Samco.
    */
   markPrice?: number | null;
+  /** Set when Samco % stop-loss closes the trade during day-scan post-processing. */
+  stopLossHit?: boolean;
 }
 
 export interface DeepakDayScanError {
@@ -627,6 +630,7 @@ export interface DeepakDayScanSummary {
   targetsMissed: number;
   avgProfit: number | null;
   errorCount: number;
+  stopsHit?: number;
 }
 
 export interface DeepakDayScanPayload {
