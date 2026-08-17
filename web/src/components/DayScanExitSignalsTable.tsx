@@ -48,9 +48,9 @@ export function DayScanExitSignalsTable({
 
         <p className="m-0 text-xs text-kite-muted">
 
-          No exits yet. Exits appear when profit targets are hit or watch-party stop losses
+          No exits yet. Exits appear when profit targets are hit, Samco stop-loss %
 
-          trigger during replay.
+          triggers, or watch-party stop losses fire during replay.
 
         </p>
 

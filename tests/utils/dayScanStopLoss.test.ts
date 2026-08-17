@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 
+import type { DayScanSimulationPayload } from "../../src/types.js";
 import {
   applyStopLossExitsToTrades,
+  applyStopLossToDayScanSimulationPayload,
   sessionMarkBarsFromSnapshots,
 } from "../../src/utils/dayScanStopLoss.js";
 
@@ -85,5 +87,64 @@ describe("dayScanStopLoss", () => {
     ];
     const sessionBars = sessionMarkBarsFromSnapshots(snapshots, "2026-06-09");
     expect(sessionBars).toEqual([{ timeIst: "10:15", price: 100 }]);
+  });
+
+  it("adds stop-loss exits to a Day Scan Simulator frame via marks", () => {
+    const payload: DayScanSimulationPayload = {
+      date: "2026-06-09",
+      simulation: {
+        sessionIndex: 2,
+        sessionCandleCount: 10,
+        simulatedTimeIst: "10:15",
+      },
+      entries: [
+        {
+          date: "2026-06-09",
+          strategy: "deeppro1",
+          side: "BUY",
+          scenarioNumber: 1,
+          scenarioKey: "buy-1",
+          tradingSymbol: "PNB",
+          symbol: "Punjab National Bank",
+          sector: "Bank",
+          entryTimeIst: "10:00",
+          entryPrice: 100,
+          exitTimeIst: null,
+          exitPrice: null,
+          targetHit: false,
+          profit: null,
+          profitTarget: 0.45,
+          bbMatchType: "crossed",
+          exitReason: null,
+          stopLossHit: false,
+        },
+      ],
+      exits: [],
+      marks: [{ tradingSymbol: "PNB", price: 99.8, timeIst: "10:15" }],
+      errors: [],
+      summary: {
+        stocksScanned: 1,
+        stocksWithSignals: 1,
+        entryCount: 1,
+        exitCount: 0,
+        openPositions: 1,
+        buyCount: 1,
+        sellCount: 0,
+        targetsHit: 0,
+        stopsHit: 0,
+        avgProfit: null,
+        errorCount: 0,
+      },
+    };
+
+    const next = applyStopLossToDayScanSimulationPayload(payload, 0.15);
+    expect(next.exits).toHaveLength(1);
+    expect(next.exits[0].exitReason).toBe("stop_loss");
+    expect(next.exits[0].stopLossHit).toBe(true);
+    expect(next.exits[0].exitPrice).toBe(99.8);
+    expect(next.summary.stopsHit).toBe(1);
+    expect(next.summary.openPositions).toBe(0);
+    // Cached payload must not be mutated.
+    expect(payload.exits).toHaveLength(0);
   });
 });
