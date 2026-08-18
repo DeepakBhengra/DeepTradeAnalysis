@@ -168,23 +168,7 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             </p>
             <p className="m-0">
               IP:{" "}
-              <span
-                className={
-                  status?.staticIpMatched === false
-                    ? "text-kite-red"
-                    : "text-kite-text"
-                }
-              >
-                {status?.srcIp ?? "—"}
-                {status?.requiredStaticIp
-                  ? ` / required ${status.requiredStaticIp}`
-                  : ""}
-                {status?.staticIpMatched === false
-                  ? " (mismatch)"
-                  : status?.staticIpMatched && status?.requiredStaticIp
-                    ? " (ok)"
-                    : ""}
-              </span>
+              <span className="text-kite-text">{status?.srcIp ?? "—"}</span>
             </p>
             <p className="m-0">
               Open positions:{" "}
@@ -221,12 +205,7 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
                   : "no — click Refresh session (needs SAMCO_API_KEY / SAMCO_API_SECRET)"}
               </li>
               <li>
-                Static IP {status?.requiredStaticIp || "—"}:{" "}
-                {status?.requiredStaticIp
-                  ? status.staticIpMatched
-                    ? `yes — ${status.srcIp ?? "verified"}`
-                    : `no — ${status.staticIpMessage ?? "run API on the registered static IP host"}`
-                  : "check disabled"}
+                Reported IP: {status?.srcIp ?? "—"}
               </li>
               <li>
                 Day Scan feed:{" "}

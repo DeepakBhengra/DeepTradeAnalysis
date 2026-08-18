@@ -1,8 +1,11 @@
 import { config } from "../config.js";
 import { getSamcoWhoAmI } from "./samcoClient.js";
 
-/** Default Samco-registered static egress IP for live trading. */
-export const DEFAULT_SAMCO_REQUIRED_STATIC_IP = "223.181.63.52";
+/**
+ * Optional required egress IP when SAMCO_REQUIRED_STATIC_IP is set.
+ * Strict IP checking is off by default (empty).
+ */
+export const DEFAULT_SAMCO_REQUIRED_STATIC_IP = "";
 
 export function getSamcoRequiredStaticIp(): string {
   return (config.samco.requiredStaticIp ?? "").trim();
@@ -38,8 +41,9 @@ export function formatSamcoStaticIpMismatch(
 }
 
 /**
- * Live Samco order APIs must originate from the registered static IP.
- * No-op when SAMCO_REQUIRED_STATIC_IP is explicitly empty.
+ * Optional allowlist check when SAMCO_REQUIRED_STATIC_IP is set.
+ * No-op (always passes) when the env is empty — the default.
+ * Live placeOrder / squareOff no longer call this by default.
  */
 export async function assertSamcoEgressIpForLiveOrders(): Promise<string | undefined> {
   const requiredIp = getSamcoRequiredStaticIp();
