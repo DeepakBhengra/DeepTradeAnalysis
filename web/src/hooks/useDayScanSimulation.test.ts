@@ -131,4 +131,28 @@ describe("useDayScanSimulation", () => {
       "all",
     );
   });
+
+  it("reloadLatest jumps to the newest session candle and completes", async () => {
+    const { result } = renderHook(() => useDayScanSimulation("2026-06-09"));
+
+    await act(async () => {
+      result.current.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("playing");
+    });
+
+    await act(async () => {
+      result.current.reloadLatest();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("complete");
+    });
+
+    expect(result.current.sessionIndex).toBe(2);
+    expect(result.current.simulatedTimeIst).toBe("09:45");
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith("2026-06-09", 2, "all");
+  });
 });

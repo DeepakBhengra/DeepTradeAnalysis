@@ -62,6 +62,7 @@ export interface DayScanSimulationContextValue {
   start: () => void;
   pause: () => void;
   stop: () => void;
+  reloadLatest: () => void;
 }
 
 const DayScanSimulationContext = createContext<DayScanSimulationContextValue | null>(
@@ -143,6 +144,7 @@ export function DayScanSimulationProvider({ children }: { children: ReactNode })
     start: simulation.start,
     pause: simulation.pause,
     stop: simulation.stop,
+    reloadLatest: simulation.reloadLatest,
   };
 
   return (
