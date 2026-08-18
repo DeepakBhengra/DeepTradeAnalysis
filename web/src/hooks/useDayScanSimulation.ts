@@ -18,6 +18,8 @@ interface UseDayScanSimulationResult {
   start: () => void;
   pause: () => void;
   stop: () => void;
+  /** Re-fetch the latest available candle frame (used for IST-today auto-refresh). */
+  reloadLatest: () => void;
 }
 
 export function useDayScanSimulation(
@@ -189,6 +191,47 @@ export function useDayScanSimulation(
     })();
   }, [clearTimer, fetchAtIndex]);
 
+  /**
+   * Stop playback and jump to the newest session candle for this date/variant.
+   * Used when auto-refreshing a live (IST today) simulation.
+   */
+  const reloadLatest = useCallback(() => {
+    void (async () => {
+      clearTimer();
+      setLoading(true);
+      setError(null);
+      setStatus("loading");
+      statusRef.current = "loading";
+
+      const first = await fetchAtIndex(0);
+      if (!first) {
+        setLoading(false);
+        if (statusRef.current === "loading") {
+          setStatus("idle");
+          statusRef.current = "idle";
+        }
+        return;
+      }
+
+      const lastIndex = Math.max(0, first.simulation.sessionCandleCount - 1);
+      if (lastIndex > 0) {
+        const latest = await fetchAtIndex(lastIndex);
+        if (!latest) {
+          setLoading(false);
+          if (statusRef.current === "loading") {
+            setStatus("idle");
+            statusRef.current = "idle";
+          }
+          return;
+        }
+      }
+
+      setLoading(false);
+      setStatus("complete");
+      statusRef.current = "complete";
+    })();
+  }, [clearTimer, fetchAtIndex]);
+
   useEffect(() => {
     reset();
   }, [analysisDate, variant, reset]);
@@ -210,5 +253,6 @@ export function useDayScanSimulation(
     start,
     pause,
     stop,
+    reloadLatest,
   };
 }

@@ -1,22 +1,29 @@
+import { useMemo } from "react";
 import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
 import { DayScanEntrySignalsTable } from "../components/DayScanEntrySignalsTable";
 import { DayScanExitSignalsTable } from "../components/DayScanExitSignalsTable";
 import { SimulationControls } from "../components/SimulationControls";
 import { useDayScanSimulationContext } from "../context/DayScanSimulationContext";
 import { SECTOR_WATCHLIST_SIZE } from "../data/sectorWatchlist";
+import { useDayScanLiveRefresh } from "../hooks/useDayScanLiveRefresh";
 import {
   DAY_SCAN_SIMULATION_VARIANT_OPTIONS,
   type DayScanSimulationVariant,
 } from "../utils/dayScanSimulationVariant";
+import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST } from "../utils/istTime";
+
+/** Auto-refresh interval for Day Scan Simulator when date is IST today. */
+export const DAY_SCAN_SIMULATOR_LIVE_REFRESH_MS = 15 * 60 * 1000;
 
 interface DayScanSimulatorWidgetProps {
   isActive: boolean;
 }
 
 function descriptionForVariant(variant: DayScanSimulationVariant): string {
+  const liveNote = ` If the selected date is today, after Start the simulator auto-refreshes to the latest candle every 15 minutes until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
   const universe = `${SECTOR_WATCHLIST_SIZE} sector stocks`;
   if (variant === "all") {
-    return `Replay Deepak, Deepak-2, and Watch Party signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
+    return `Replay Deepak, Deepak-2, and Watch Party signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
   }
   if (
     variant === "rulePnb" ||
@@ -27,15 +34,15 @@ function descriptionForVariant(variant: DayScanSimulationVariant): string {
     variant === "ruleTvsmotor" ||
     variant === "rulePolicybzr"
   ) {
-    return `Replay ${DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)?.label ?? variant} signals for its locked symbol from 09:15–15:00 IST (10s per 15m candle). First Start loads market data; later candles advance from cache.`;
+    return `Replay ${DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)?.label ?? variant} signals for its locked symbol from 09:15–15:00 IST (10s per 15m candle). First Start loads market data; later candles advance from cache.${liveNote}`;
   }
   if (variant === "deeppro1") {
-    return `Replay Deeppro1 SMI black↔red crosses until 11:45 IST (exits: 0.45% target / 0.3%→breakeven / opposite flip / 15:00 force) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
+    return `Replay Deeppro1 SMI black↔red crosses until 11:45 IST (exits: 0.45% target / 0.3%→breakeven / opposite flip / 15:00 force) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
   }
   const label =
     DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)
       ?.label ?? variant;
-  return `Replay ${label} signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.`;
+  return `Replay ${label} signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
 }
 
 export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps) {
@@ -61,7 +68,29 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
     start,
     pause,
     stop,
+    reloadLatest,
   } = useDayScanSimulationContext();
+
+  const hasStarted = useMemo(
+    () =>
+      status === "playing" ||
+      status === "paused" ||
+      status === "complete" ||
+      status === "loading" ||
+      data != null,
+    [status, data],
+  );
+
+  useDayScanLiveRefresh({
+    date: analysisDate,
+    hasStarted,
+    loading,
+    isActive,
+    run: () => {
+      reloadLatest();
+    },
+    intervalMs: DAY_SCAN_SIMULATOR_LIVE_REFRESH_MS,
+  });
 
   const isInitialLoad = loading && status === "loading";
   const isTickUpdate =
