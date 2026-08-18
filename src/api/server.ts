@@ -37,6 +37,7 @@ import {
   clearSamcoDayScanSignalSnapshot,
   getDayScanSignalSourceSummary,
   ingestDayScanTrades,
+  latestClosedSessionCandleIst,
   loadSamcoDayScanSignalSnapshot,
 } from "../samco/samcoDayScanBridge.js";
 import { buildSamcoOrdersFromLedger } from "../samco/samcoOrders.js";
@@ -464,11 +465,18 @@ app.post("/api/samco/day-scan-signals", async (req, res) => {
 
     const dryRun = getSamcoDryRun();
     const liveEnabled = getSamcoLiveTradingEnabled();
-    // Explicit Day Scan Run always full-applies the pushed trades into the ledger
-    // (and placeOrder when LIVE). Re-runs are idempotent by signal key.
-    // Live poll uses catch-up for incremental same-day updates between scans.
-    const applied = await processDayScanSignalSnapshot(snapshot, null, {
-      mode: "full",
+    // Same-day (IST) pushes catch up only through the latest closed 15m candle.
+    // Already-ledgered signal keys are skipped — only new entries/exits apply.
+    // Historical dates full-apply the pushed trades (still idempotent by key).
+    const today = getIstTimeParts(new Date()).dateKey;
+    const isToday = snapshot.date === today;
+    const latestCandle = isToday ? latestClosedSessionCandleIst() : null;
+    // Same-day with a closed candle: catch_up so only signals through that
+    // candle apply. Already-ledgered keys are skipped (no duplicate orders).
+    // Before the first closed candle (or historical dates): full apply.
+    const mode = isToday && latestCandle ? "catch_up" : "full";
+    const applied = await processDayScanSignalSnapshot(snapshot, latestCandle, {
+      mode,
     });
     // Rescans that only skip already-applied keys produce no new trade-log rows.
     if (applied.logs.length > 0) {
@@ -484,7 +492,7 @@ app.post("/api/samco/day-scan-signals", async (req, res) => {
       ok: true,
       snapshot,
       materialize: {
-        mode: "full",
+        mode,
         entriesPlaced: applied.entriesPlaced + stopLoss.entriesPlaced,
         exitsPlaced: applied.exitsPlaced + stopLoss.exitsPlaced,
         entriesSkipped: applied.entriesSkipped,

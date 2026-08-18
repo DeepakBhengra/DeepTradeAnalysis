@@ -1,7 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useDayScanLiveRefresh } from "./useDayScanLiveRefresh";
+import {
+  DAY_SCAN_LIVE_REFRESH_MS,
+  useDayScanLiveRefresh,
+} from "./useDayScanLiveRefresh";
 
 describe("useDayScanLiveRefresh", () => {
   beforeEach(() => {
@@ -10,6 +13,10 @@ describe("useDayScanLiveRefresh", () => {
 
   afterEach(() => {
     vi.useRealTimers();
+  });
+
+  it("defaults to a 10-minute live refresh interval", () => {
+    expect(DAY_SCAN_LIVE_REFRESH_MS).toBe(10 * 60 * 1000);
   });
 
   it("refreshes every interval while date is today and before 15:15 IST", () => {
