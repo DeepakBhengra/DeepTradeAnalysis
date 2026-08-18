@@ -1,7 +1,10 @@
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useDayScanSimulation } from "./useDayScanSimulation";
+import {
+  SIMULATION_INTERVAL_MS,
+  useDayScanSimulation,
+} from "./useDayScanSimulation";
 
 const { fetchDayScanSimulationMock } = vi.hoisted(() => ({
   fetchDayScanSimulationMock: vi.fn(),
@@ -11,13 +14,18 @@ vi.mock("../api/client", () => ({
   fetchDayScanSimulation: fetchDayScanSimulationMock,
 }));
 
-function makePayload(sessionIndex: number) {
+function makePayload(
+  sessionIndex: number,
+  sessionCandleCount = 3,
+  date = "2026-06-09",
+) {
+  const times = ["09:15", "09:30", "09:45", "10:00", "10:15"];
   return {
-    date: "2026-06-09",
+    date,
     simulation: {
       sessionIndex,
-      sessionCandleCount: 3,
-      simulatedTimeIst: sessionIndex === 0 ? "09:15" : sessionIndex === 1 ? "09:30" : "09:45",
+      sessionCandleCount,
+      simulatedTimeIst: times[sessionIndex] ?? "09:15",
     },
     entries: [],
     exits: [],
@@ -39,10 +47,15 @@ function makePayload(sessionIndex: number) {
 
 describe("useDayScanSimulation", () => {
   beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     fetchDayScanSimulationMock.mockReset();
     fetchDayScanSimulationMock.mockImplementation(async (_date, index) =>
       makePayload(index),
     );
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it("starts in idle state and loads first candle on start", async () => {
@@ -58,7 +71,12 @@ describe("useDayScanSimulation", () => {
       expect(result.current.status).toBe("playing");
     });
 
-    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith("2026-06-09", 0, "all");
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-06-09",
+      0,
+      "all",
+      undefined,
+    );
     expect(result.current.simulatedTimeIst).toBe("09:15");
   });
 
@@ -79,6 +97,7 @@ describe("useDayScanSimulation", () => {
       "2026-06-09",
       0,
       "deeppro1",
+      undefined,
     );
   });
 
@@ -129,10 +148,11 @@ describe("useDayScanSimulation", () => {
       "2026-06-09",
       0,
       "all",
+      undefined,
     );
   });
 
-  it("reloadLatest jumps to the newest session candle and completes", async () => {
+  it("reloadLatest jumps to the newest session candle and completes on historical dates", async () => {
     const { result } = renderHook(() => useDayScanSimulation("2026-06-09"));
 
     await act(async () => {
@@ -153,6 +173,149 @@ describe("useDayScanSimulation", () => {
 
     expect(result.current.sessionIndex).toBe(2);
     expect(result.current.simulatedTimeIst).toBe("09:45");
-    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith("2026-06-09", 2, "all");
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-06-09",
+      0,
+      "all",
+      { refresh: true },
+    );
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-06-09",
+      2,
+      "all",
+      undefined,
+    );
+  });
+
+  it("does not mark complete mid-day when live candles are exhausted", async () => {
+    // 2026-08-18 13:20 IST — live window still open; feed stuck at 2 candles.
+    const now = () => new Date("2026-08-18T07:50:00.000Z");
+
+    fetchDayScanSimulationMock.mockImplementation(async (date, index) =>
+      makePayload(Math.min(index, 1), 2, date),
+    );
+
+    const { result } = renderHook(() =>
+      useDayScanSimulation("2026-08-18", "all", now),
+    );
+
+    await act(async () => {
+      result.current.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("playing");
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
+    });
+    await waitFor(() => {
+      expect(result.current.sessionIndex).toBe(1);
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("waiting");
+    });
+    expect(result.current.status).not.toBe("complete");
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-08-18",
+      0,
+      "all",
+      { refresh: true },
+    );
+  });
+
+  it("resumes playback when a live probe discovers a new candle", async () => {
+    const now = () => new Date("2026-08-18T07:50:00.000Z");
+    let candleCount = 2;
+
+    fetchDayScanSimulationMock.mockImplementation(
+      async (date, index, _variant, options) => {
+        if (options?.refresh) {
+          candleCount = 3;
+        }
+        return makePayload(
+          Math.min(index, candleCount - 1),
+          candleCount,
+          date,
+        );
+      },
+    );
+
+    const { result } = renderHook(() =>
+      useDayScanSimulation("2026-08-18", "all", now),
+    );
+
+    await act(async () => {
+      result.current.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("playing");
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
+    });
+    await waitFor(() => {
+      expect(result.current.sessionIndex).toBe(1);
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
+    });
+
+    // Immediate wait-probe force-refreshes, sees growth, resumes on candle 3.
+    await waitFor(() => {
+      expect(result.current.status).toBe("playing");
+      expect(result.current.sessionIndex).toBe(2);
+      expect(result.current.sessionCandleCount).toBe(3);
+    });
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-08-18",
+      0,
+      "all",
+      { refresh: true },
+    );
+  });
+
+  it("reloadLatest keeps waiting while the live IST window is open", async () => {
+    const now = () => new Date("2026-08-18T07:50:00.000Z"); // 13:20 IST
+    fetchDayScanSimulationMock.mockImplementation(async (date, index) =>
+      makePayload(index, 2, date),
+    );
+
+    const { result } = renderHook(() =>
+      useDayScanSimulation("2026-08-18", "all", now),
+    );
+
+    await act(async () => {
+      result.current.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("playing");
+    });
+
+    await act(async () => {
+      result.current.reloadLatest();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("waiting");
+    });
+
+    expect(result.current.sessionIndex).toBe(1);
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-08-18",
+      0,
+      "all",
+      { refresh: true },
+    );
   });
 });

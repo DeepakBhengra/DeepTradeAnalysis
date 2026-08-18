@@ -5,6 +5,7 @@ import {
   formatIstCrosshairTime,
   formatIstDateTime,
   formatIstTickMark,
+  msUntilNextQuarterHourIst,
   shouldLiveRefreshDayScan,
   todayIstDateKey,
 } from "./istTime";
@@ -22,6 +23,16 @@ describe("istTime", () => {
     expect(shouldLiveRefreshDayScan("2026-08-03", morning)).toBe(true);
     expect(shouldLiveRefreshDayScan("2026-08-03", afterClose)).toBe(false);
     expect(shouldLiveRefreshDayScan("2026-06-01", morning)).toBe(false);
+  });
+
+  it("schedules the next IST quarter-hour probe with a feed buffer", () => {
+    // 13:20:00 IST → next boundary 13:30 + 10s buffer
+    const mid = new Date("2026-08-18T07:50:00.000Z");
+    expect(msUntilNextQuarterHourIst(mid, 10_000)).toBe(10 * 60_000 + 10_000);
+
+    // Exactly on a boundary → probe soon
+    const onBoundary = new Date("2026-08-18T08:00:00.000Z"); // 13:30:00 IST
+    expect(msUntilNextQuarterHourIst(onBoundary, 10_000)).toBe(10_000);
   });
 
   it("formats chart time ticks in IST", () => {

@@ -438,4 +438,41 @@ describe("buildDayScanSimulationPayload", () => {
     expect(callsAdded).toBeLessThanOrEqual(SECTOR_WATCHLIST.length);
     expect(cache.getFrame("2026-06-09", "all", 1)).toBeDefined();
   }, 30_000);
+
+  it("refresh:true re-fetches candles so the session can grow mid-day", async () => {
+    fetchPnbCandlesMock.mockImplementation(async () =>
+      makeCandlesWithWarmup("2026-06-09", 18),
+    );
+
+    const first = await buildDayScanSimulationPayload({
+      date: "2026-06-09",
+      sessionIndex: 0,
+      cache,
+    });
+    expect(first.simulation.sessionCandleCount).toBe(18);
+    expect(fetchPnbCandlesMock).toHaveBeenCalled();
+
+    const callsAfterFirst = fetchPnbCandlesMock.mock.calls.length;
+
+    // Without refresh, cache stays at 18 even if the feed would return more.
+    fetchPnbCandlesMock.mockImplementation(async () =>
+      makeCandlesWithWarmup("2026-06-09", 19),
+    );
+    const cached = await buildDayScanSimulationPayload({
+      date: "2026-06-09",
+      sessionIndex: 0,
+      cache,
+    });
+    expect(cached.simulation.sessionCandleCount).toBe(18);
+    expect(fetchPnbCandlesMock.mock.calls.length).toBe(callsAfterFirst);
+
+    const refreshed = await buildDayScanSimulationPayload({
+      date: "2026-06-09",
+      sessionIndex: 0,
+      cache,
+      refresh: true,
+    });
+    expect(refreshed.simulation.sessionCandleCount).toBe(19);
+    expect(fetchPnbCandlesMock.mock.calls.length).toBeGreaterThan(callsAfterFirst);
+  }, 60_000);
 });

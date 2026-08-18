@@ -572,15 +572,23 @@ export async function fetchDayScanSimulation(
   date: string,
   sessionIndex: number,
   variant: string = "all",
+  options?: { refresh?: boolean },
 ): Promise<DayScanSimulationPayload> {
   const params = new URLSearchParams({
     date,
     sessionIndex: String(sessionIndex),
     variant,
   });
+  if (options?.refresh) {
+    params.set("refresh", "1");
+  }
 
   const url = `/api/backtest/day-scan/simulate?${params.toString()}`;
-  const timeoutMs = sessionIndex === 0 ? DAY_SCAN_REQUEST_TIMEOUT_MS : 120_000;
+  // Force-refresh re-prefetches the watchlist; use the long timeout.
+  const timeoutMs =
+    sessionIndex === 0 || options?.refresh
+      ? DAY_SCAN_REQUEST_TIMEOUT_MS
+      : 120_000;
 
   try {
     return await fetchJsonWithTimeout<DayScanSimulationPayload>(
