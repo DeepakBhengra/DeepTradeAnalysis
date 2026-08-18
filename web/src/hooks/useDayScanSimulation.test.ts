@@ -187,8 +187,50 @@ describe("useDayScanSimulation", () => {
     );
   });
 
-  it("waits for the next live candle instead of completing mid-session today", async () => {
-    // 2026-08-18 13:20 IST
+  it("does not mark complete mid-day when live candles are exhausted", async () => {
+    // 2026-08-18 13:20 IST — live window still open; feed stuck at 2 candles.
+    const now = () => new Date("2026-08-18T07:50:00.000Z");
+
+    fetchDayScanSimulationMock.mockImplementation(async (date, index) =>
+      makePayload(Math.min(index, 1), 2, date),
+    );
+
+    const { result } = renderHook(() =>
+      useDayScanSimulation("2026-08-18", "all", now),
+    );
+
+    await act(async () => {
+      result.current.start();
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("playing");
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
+    });
+    await waitFor(() => {
+      expect(result.current.sessionIndex).toBe(1);
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
+    });
+
+    await waitFor(() => {
+      expect(result.current.status).toBe("waiting");
+    });
+    expect(result.current.status).not.toBe("complete");
+    expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
+      "2026-08-18",
+      0,
+      "all",
+      { refresh: true },
+    );
+  });
+
+  it("resumes playback when a live probe discovers a new candle", async () => {
     const now = () => new Date("2026-08-18T07:50:00.000Z");
     let candleCount = 2;
 
@@ -217,7 +259,6 @@ describe("useDayScanSimulation", () => {
       expect(result.current.status).toBe("playing");
     });
 
-    // Advance past the last cached candle (index 0 → 1 → end).
     await act(async () => {
       await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
     });
@@ -229,16 +270,12 @@ describe("useDayScanSimulation", () => {
       await vi.advanceTimersByTimeAsync(SIMULATION_INTERVAL_MS);
     });
 
-    await waitFor(() => {
-      expect(result.current.status).toBe("waiting");
-    });
-
-    // Immediate live probe force-refreshes and should resume on the new candle.
+    // Immediate wait-probe force-refreshes, sees growth, resumes on candle 3.
     await waitFor(() => {
       expect(result.current.status).toBe("playing");
+      expect(result.current.sessionIndex).toBe(2);
+      expect(result.current.sessionCandleCount).toBe(3);
     });
-    expect(result.current.sessionIndex).toBe(2);
-    expect(result.current.sessionCandleCount).toBe(3);
     expect(fetchDayScanSimulationMock).toHaveBeenCalledWith(
       "2026-08-18",
       0,
