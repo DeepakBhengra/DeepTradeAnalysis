@@ -42,6 +42,44 @@ export function shouldLiveRefreshDayScan(
   return selectedDate === todayIstDateKey(now) && isIstBeforeHm(untilHm, now);
 }
 
+/**
+ * Milliseconds until the next IST quarter-hour boundary (:00/:15/:30/:45),
+ * plus an optional feed-lag buffer. Used to probe for the next completed
+ * 15m candle while the Day Scan Simulator is waiting live.
+ */
+export function msUntilNextQuarterHourIst(
+  now: Date = new Date(),
+  bufferMs = 10_000,
+): number {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: IST_TIMEZONE,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  const hour = Number(parts.find((part) => part.type === "hour")?.value ?? "0");
+  const minute = Number(
+    parts.find((part) => part.type === "minute")?.value ?? "0",
+  );
+  const second = Number(
+    parts.find((part) => part.type === "second")?.value ?? "0",
+  );
+  const minutesOfDay = hour * 60 + minute;
+  const rem = minutesOfDay % 15;
+
+  // Just crossed a boundary — probe soon (allow feed lag via buffer).
+  if (rem === 0 && second < 45) {
+    return Math.max(1_000, bufferMs - second * 1000);
+  }
+
+  const minutesUntilNext = rem === 0 ? 15 : 15 - rem;
+  const ms =
+    minutesUntilNext * 60_000 - second * 1000 + bufferMs;
+  return Math.max(5_000, ms);
+}
+
 function timeToDate(time: Time): Date | null {
   if (typeof time === "number") {
     return new Date(time * 1000);

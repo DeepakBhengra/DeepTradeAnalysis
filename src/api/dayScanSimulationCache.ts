@@ -65,14 +65,25 @@ export class DayScanSimulationCache {
   private computingFrames = new Map<string, Promise<DayScanSimulationPayload>>();
   private prefetchingDates = new Set<string>();
 
-  async prefetch(date: string): Promise<void> {
-    if (this.candlesByDate.has(date) && this.getSessionCandleCount(date) > 0) {
+  /**
+   * Prefetch watchlist candles for a session date.
+   * Pass `force: true` to drop the cached day and re-fetch (needed for IST-today
+   * live simulation so newly completed 15m candles appear).
+   */
+  async prefetch(date: string, options?: { force?: boolean }): Promise<void> {
+    const force = options?.force === true;
+
+    if (
+      !force &&
+      this.candlesByDate.has(date) &&
+      this.getSessionCandleCount(date) > 0
+    ) {
       return;
     }
 
     if (this.prefetchingDates.has(date)) {
       await this.waitForPrefetch(date);
-      return this.prefetch(date);
+      return this.prefetch(date, options);
     }
 
     if (this.candlesByDate.has(date)) {

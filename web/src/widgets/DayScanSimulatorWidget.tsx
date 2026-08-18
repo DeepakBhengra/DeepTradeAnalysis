@@ -20,7 +20,7 @@ interface DayScanSimulatorWidgetProps {
 }
 
 function descriptionForVariant(variant: DayScanSimulationVariant): string {
-  const liveNote = ` If the selected date is today, after Start the simulator auto-refreshes to the latest candle every 15 minutes until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
+  const liveNote = ` If the selected date is today, after Start the simulator keeps waiting for each next 15m candle (re-scanning around candle close) until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
   const universe = `${SECTOR_WATCHLIST_SIZE} sector stocks`;
   if (variant === "all") {
     return `Replay Deepak, Deepak-2, and Watch Party signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
@@ -75,6 +75,7 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
     () =>
       status === "playing" ||
       status === "paused" ||
+      status === "waiting" ||
       status === "complete" ||
       status === "loading" ||
       data != null,
@@ -94,8 +95,16 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
 
   const isInitialLoad = loading && status === "loading";
   const isTickUpdate =
-    loading && (status === "playing" || status === "paused" || status === "complete");
-  const busy = status === "playing" || status === "loading" || loading;
+    loading &&
+    (status === "playing" ||
+      status === "paused" ||
+      status === "waiting" ||
+      status === "complete");
+  const busy =
+    status === "playing" ||
+    status === "waiting" ||
+    status === "loading" ||
+    loading;
 
   return (
     <div hidden={!isActive}>
@@ -196,7 +205,9 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
 
         {isTickUpdate && !isInitialLoad && (
           <section className="border border-kite-border bg-kite-surface p-3 text-xs text-kite-muted">
-            Advancing to next candle…
+            {status === "waiting"
+              ? "Checking for the next 15m candle…"
+              : "Advancing to next candle…"}
           </section>
         )}
 

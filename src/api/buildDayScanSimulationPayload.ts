@@ -34,7 +34,7 @@ import type {
   DeepakDayScanError,
   DeepakTradeSignal,
 } from "../types.js";
-import { formatIstTime, isValidAnalysisDate } from "../utils/marketTime.js";
+import { formatIstTime, getIstTimeParts, isValidAnalysisDate } from "../utils/marketTime.js";
 import { candleMidPrice } from "../utils/sessionMarkPrice.js";
 import { applyStopLossToDayScanSimulationPayload } from "../utils/dayScanStopLoss.js";
 import { getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
@@ -425,6 +425,8 @@ export async function buildDayScanSimulationPayload(input: {
   sessionIndex: number;
   cache: DayScanSimulationCache;
   variant?: string | null;
+  /** When true, re-fetch candles for the date (live IST-today growth). */
+  refresh?: boolean;
 }): Promise<DayScanSimulationPayload> {
   const dateError = validateDayScanDate(input.date);
   if (dateError) {
@@ -437,14 +439,24 @@ export async function buildDayScanSimulationPayload(input: {
 
   const variant = parseDayScanSimulationVariant(input.variant);
 
-  await input.cache.prefetch(input.date);
+  await input.cache.prefetch(input.date, { force: input.refresh === true });
 
-  const sessionCandleCount = input.cache.getSessionCandleCount(input.date);
+  let sessionCandleCount = input.cache.getSessionCandleCount(input.date);
   if (sessionCandleCount === 0) {
     const summary =
       input.cache.getPrefetchErrorSummary(input.date) ??
       `No session candles found for ${input.date}.`;
     throw new Error(summary);
+  }
+
+  // Live today: if the client asks for a candle past the cached count, force one
+  // refresh so a newly completed 15m bar can extend the session.
+  if (input.sessionIndex >= sessionCandleCount && input.refresh !== true) {
+    const todayKey = getIstTimeParts(new Date()).dateKey;
+    if (input.date === todayKey) {
+      await input.cache.prefetch(input.date, { force: true });
+      sessionCandleCount = input.cache.getSessionCandleCount(input.date);
+    }
   }
 
   if (input.sessionIndex >= sessionCandleCount) {

@@ -1,4 +1,4 @@
-import type { SimulationStatus } from "../hooks/useDashboardSimulation";
+import type { SimulationStatus } from "../hooks/useDayScanSimulation";
 
 interface SimulationControlsProps {
   status: SimulationStatus;
@@ -22,11 +22,12 @@ export function SimulationControls({
   onStop,
 }: SimulationControlsProps) {
   const isPlaying = status === "playing";
+  const isWaiting = status === "waiting";
   const isIdle = status === "idle";
   const isComplete = status === "complete";
-  const canPause = isPlaying;
+  const canPause = isPlaying || isWaiting;
   const canStop = !isIdle;
-  const canStart = !isPlaying && !loading;
+  const canStart = !isPlaying && !isWaiting && !loading;
 
   const progressPct =
     sessionCandleCount > 0
@@ -73,10 +74,13 @@ export function SimulationControls({
           />
         </div>
       )}
+      {isWaiting && (
+        <span className="text-xs text-kite-orange">Waiting for next candle…</span>
+      )}
       {isComplete && (
         <span className="text-xs text-kite-green">Session complete</span>
       )}
-      {loading && isPlaying && (
+      {loading && (isPlaying || isWaiting) && (
         <span className="text-xs text-kite-muted">Updating…</span>
       )}
     </div>
