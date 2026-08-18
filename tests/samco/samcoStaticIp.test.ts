@@ -16,11 +16,12 @@ describe("samcoStaticIp", () => {
     }
   });
 
-  it("defaults required static IP to 223.181.63.52", async () => {
-    const { getSamcoRequiredStaticIp, DEFAULT_SAMCO_REQUIRED_STATIC_IP } =
+  it("defaults to no required static IP (strict check off)", async () => {
+    const { getSamcoRequiredStaticIp, isSamcoStaticIpEnforced, doesSamcoStaticIpMatch } =
       await import("../../src/samco/samcoStaticIp.js");
-    expect(DEFAULT_SAMCO_REQUIRED_STATIC_IP).toBe("223.181.63.52");
-    expect(getSamcoRequiredStaticIp()).toBe("223.181.63.52");
+    expect(getSamcoRequiredStaticIp()).toBe("");
+    expect(isSamcoStaticIpEnforced()).toBe(false);
+    expect(doesSamcoStaticIpMatch("52.40.244.0")).toBe(true);
   });
 
   it("allows disabling the check with an empty env value", async () => {
@@ -32,18 +33,18 @@ describe("samcoStaticIp", () => {
     expect(doesSamcoStaticIpMatch("1.2.3.4")).toBe(true);
   });
 
-  it("matches only the exact required IP", async () => {
+  it("matches only the exact required IP when env is set", async () => {
     process.env.SAMCO_REQUIRED_STATIC_IP = "223.181.63.52";
-    const { doesSamcoStaticIpMatch, formatSamcoStaticIpMismatch } = await import(
-      "../../src/samco/samcoStaticIp.js"
-    );
+    const { doesSamcoStaticIpMatch, formatSamcoStaticIpMismatch, isSamcoStaticIpEnforced } =
+      await import("../../src/samco/samcoStaticIp.js");
+    expect(isSamcoStaticIpEnforced()).toBe(true);
     expect(doesSamcoStaticIpMatch("223.181.63.52")).toBe(true);
     expect(doesSamcoStaticIpMatch("52.40.244.0")).toBe(false);
     expect(formatSamcoStaticIpMismatch("52.40.244.0")).toContain("223.181.63.52");
   });
 
-  it("blocks live placeOrder when whoami IP does not match", async () => {
-    process.env.SAMCO_REQUIRED_STATIC_IP = "223.181.63.52";
+  it("does not block live placeOrder when strict IP check is off", async () => {
+    delete process.env.SAMCO_REQUIRED_STATIC_IP;
     process.env.SAMCO_API_KEY = "key";
     process.env.SAMCO_API_SECRET = "secret";
     process.env.SAMCO_SESSION_TOKEN = "session-token";
@@ -53,6 +54,12 @@ describe("samcoStaticIp", () => {
       if (url.includes("/ip/whoami")) {
         return new Response(
           JSON.stringify({ status: "Success", srcIp: "52.40.244.0" }),
+          { status: 200 },
+        );
+      }
+      if (url.includes("/order/placeOrder")) {
+        return new Response(
+          JSON.stringify({ status: "Success", orderNumber: "123" }),
           { status: 200 },
         );
       }
@@ -76,10 +83,10 @@ describe("samcoStaticIp", () => {
         afterMarketOrderFlag: "NO",
         price: "2734.45",
       }),
-    ).rejects.toThrow(/223\.181\.63\.52/);
+    ).resolves.toMatchObject({ orderNumber: "123" });
 
     expect(
-      fetchMock.mock.calls.some(([url]) => String(url).includes("/order/placeOrder")),
+      fetchMock.mock.calls.some((call) => String(call[0]).includes("/ip/whoami")),
     ).toBe(false);
   });
 });

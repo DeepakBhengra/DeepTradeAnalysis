@@ -7,7 +7,6 @@ import {
   setSamcoSessionMeta,
   setSamcoSessionToken,
 } from "./samcoTokenStore.js";
-import { assertSamcoEgressIpForLiveOrders } from "./samcoStaticIp.js";
 
 export type SamcoFetch = typeof fetch;
 
@@ -376,7 +375,6 @@ export async function getSamcoWhoAmI(): Promise<SamcoWhoAmIResponse> {
 export async function placeSamcoOrder(
   request: SamcoPlaceOrderRequest,
 ): Promise<SamcoPlaceOrderResponse> {
-  await assertSamcoEgressIpForLiveOrders();
   return samcoAuthedRequest<SamcoPlaceOrderResponse>("POST", "/order/placeOrder", {
     body: request,
   });
@@ -401,7 +399,6 @@ export async function getSamcoPositions(
 export async function squareOffSamcoPositions(
   requests: SamcoSquareOffRequestItem[],
 ): Promise<SamcoSquareOffResponse> {
-  await assertSamcoEgressIpForLiveOrders();
   return samcoAuthedRequest<SamcoSquareOffResponse>("POST", "/position/squareOff", {
     body: { positionSquareOffRequestList: requests },
   });

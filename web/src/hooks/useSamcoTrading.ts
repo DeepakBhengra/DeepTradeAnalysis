@@ -416,16 +416,11 @@ export function useSamcoTrading(isActive: boolean) {
       setStatus(status);
       if (!session.connected && !status.connected) {
         setRefreshInfo("Session refresh returned without a connected token.");
-      } else if (status.requiredStaticIp && status.staticIpMatched === false) {
-        setRefreshInfo(
-          status.staticIpMessage ??
-            `Session connected, but egress IP ${status.srcIp ?? "unknown"} does not match required ${status.requiredStaticIp}. Live orders are blocked.`,
-        );
       } else {
         setRefreshInfo(
-          status.requiredStaticIp
-            ? `Samco session connected — egress IP ${status.srcIp ?? "ok"} matches ${status.requiredStaticIp}. Ready for live orders when Live is on and Dry run is off.`
-            : "Samco session connected — whoami OK. Ready for live order requests when Live is on and Dry run is off.",
+          `Samco session connected${
+            status.srcIp ? ` — IP ${status.srcIp}` : ""
+          }. Ready for live order requests when Live is on and Dry run is off.`,
         );
       }
     } catch (err) {

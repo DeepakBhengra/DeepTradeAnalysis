@@ -274,11 +274,9 @@ export const config = {
     eodSquareOffStart: readEnv("SAMCO_EOD_SQUARE_OFF_START") || "15:00",
     eodSquareOffEnd: readEnv("SAMCO_EOD_SQUARE_OFF_END") || "15:15",
     ledgerPath: readEnv("SAMCO_LEDGER_PATH") || "data/samco-ledger.json",
-    // Samco Trade API whitelist. Unset → 223.181.63.52. Set empty to disable check.
-    requiredStaticIp:
-      process.env.SAMCO_REQUIRED_STATIC_IP !== undefined
-        ? readEnv("SAMCO_REQUIRED_STATIC_IP")
-        : "223.181.63.52",
+    // Optional Samco egress IP allowlist. Empty (default) = no strict IP check.
+    // Set SAMCO_REQUIRED_STATIC_IP to re-enable a required IP if needed.
+    requiredStaticIp: readEnv("SAMCO_REQUIRED_STATIC_IP"),
   },
 
   bollinger: {
