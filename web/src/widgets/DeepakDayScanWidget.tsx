@@ -75,7 +75,7 @@ function isSingleSymbolDayScanVariant(variant: DayScanRuleVariant): boolean {
 function descriptionForVariant(variant: DayScanRuleVariant): string {
   const label = DAY_SCAN_RULE_VARIANT_LABEL[variant];
   const universe = `${SECTOR_WATCHLIST_SIZE} liquid NSE stocks (Bank, IT, Metal, Insurance, Automobile, Health, Energy, FMCG, Finance, Infra, Consumer, Telecom, Defence)`;
-  const liveRefresh = ` If the selected date is today, the scan auto-refreshes every 15 minutes until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
+  const liveRefresh = ` If the selected date is today, the scan auto-refreshes every 10 minutes until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST. Only new signals (not already in the Samco ledger) are applied on each push.`;
   switch (variant) {
     case "deepak2":
       return `Scans ${universe} using ${label} rules (session starts 10:15 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
@@ -221,7 +221,7 @@ export function DeepakDayScanWidget({
               : "";
           setSamcoPushInfo(
             applied
-              ? `Pushed ${filteredData.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel}) · applied ${applied.entriesPlaced} entr${applied.entriesPlaced === 1 ? "y" : "ies"} / ${applied.exitsPlaced} exit(s) (${applied.mode})${skipped}${rangeNote}.`
+              ? `Pushed Day Scan → Samco (${variantLabel}): ${applied.entriesPlaced} new entr${applied.entriesPlaced === 1 ? "y" : "ies"} / ${applied.exitsPlaced} exit(s) applied (${applied.mode})${skipped}${rangeNote}. Duplicate signal keys are not re-sent to the ledger.`
               : `Pushed ${filteredData.trades.length} Day Scan trade(s) to Samco Trading (${variantLabel})${rangeNote}.`,
           );
         }

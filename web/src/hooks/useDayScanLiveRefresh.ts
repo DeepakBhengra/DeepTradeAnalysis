@@ -5,7 +5,8 @@ import {
   shouldLiveRefreshDayScan,
 } from "../utils/istTime";
 
-const LIVE_REFRESH_MS = 15 * 60 * 1000;
+/** Auto re-scan interval while Day Scan date is IST today (before 15:15). */
+export const DAY_SCAN_LIVE_REFRESH_MS = 10 * 60 * 1000;
 
 interface UseDayScanLiveRefreshOptions {
   /** Selected Day Scan session date (YYYY-MM-DD). */
@@ -21,14 +22,14 @@ interface UseDayScanLiveRefreshOptions {
   /** Override interval for tests. */
   intervalMs?: number;
   /** Override until HH:mm IST for tests. */
-  untilHm?: string;
-  /** Override "now" for tests. */
   now?: () => Date;
+  untilHm?: string;
 }
 
 /**
  * When Day Scan date is today (IST), after the first run keep refreshing every
- * 15 minutes until 15:15 IST.
+ * 10 minutes until 15:15 IST. Each completed scan pushes to Samco; the ledger
+ * skips already-applied signal keys so only new entries/exits are placed.
  */
 export function useDayScanLiveRefresh({
   date,
@@ -36,7 +37,7 @@ export function useDayScanLiveRefresh({
   loading,
   isActive,
   run,
-  intervalMs = LIVE_REFRESH_MS,
+  intervalMs = DAY_SCAN_LIVE_REFRESH_MS,
   untilHm = DAY_SCAN_LIVE_REFRESH_UNTIL_IST,
   now = () => new Date(),
 }: UseDayScanLiveRefreshOptions): void {
