@@ -25,11 +25,10 @@ import {
   FAVOURABLE_RULE_SYMBOL,
   isFavourableSymbolRuleVariant,
 } from "../utils/favourableSymbolRule";
-import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST } from "../utils/istTime";
+import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST, todayIstDateKey } from "../utils/istTime";
 import { isSamcoRuleVariant } from "../utils/samcoRuleVariant";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
-const DEFAULT_DATE = "2026-05-11";
 const VARIANT_STORAGE_KEY = "deepak-dayscan-variant";
 const ENTRY_MIN_STORAGE_KEY = "deepak-dayscan-entry-price-min";
 const ENTRY_MAX_STORAGE_KEY = "deepak-dayscan-entry-price-max";
@@ -144,7 +143,7 @@ export function DeepakDayScanWidget({
   isActive,
   refreshTrigger = 0,
 }: DeepakDayScanWidgetProps) {
-  const [date, setDate] = useState(DEFAULT_DATE);
+  const [date, setDate] = useState(todayIstDateKey);
   const [variant, setVariant] = useState<DayScanRuleVariant>(readStoredVariant);
   const [entryPriceMinInput, setEntryPriceMinInput] = useState(() =>
     readStoredPrice(ENTRY_MIN_STORAGE_KEY, DEFAULT_DAY_SCAN_ENTRY_PRICE_MIN),

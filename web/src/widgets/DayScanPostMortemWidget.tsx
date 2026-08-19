@@ -25,11 +25,10 @@ import {
   FAVOURABLE_RULE_SYMBOL,
   isFavourableSymbolRuleVariant,
 } from "../utils/favourableSymbolRule";
+import { todayIstDateKey } from "../utils/istTime";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
-const DEFAULT_DATE = "2026-06-29";
 const VARIANT_STORAGE_KEY = "dayscan-postmortem-variant";
-const DATE_STORAGE_KEY = "dayscan-postmortem-date";
 
 const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   deepak: "dayscan-postmortem-deepak",
@@ -65,11 +64,6 @@ interface LoadedReport {
 function readStoredVariant(): DayScanRuleVariant {
   const stored = readLocalStorage(VARIANT_STORAGE_KEY);
   return isDayScanRuleVariant(stored) ? stored : "deeppro";
-}
-
-function readStoredDate(): string {
-  const stored = readLocalStorage(DATE_STORAGE_KEY)?.trim();
-  return stored && /^\d{4}-\d{2}-\d{2}$/.test(stored) ? stored : DEFAULT_DATE;
 }
 
 function descriptionForVariant(variant: DayScanRuleVariant): string {
@@ -123,7 +117,7 @@ export function DayScanPostMortemWidget({
   isActive,
   refreshTrigger = 0,
 }: DayScanPostMortemWidgetProps) {
-  const [date, setDate] = useState(readStoredDate);
+  const [date, setDate] = useState(todayIstDateKey);
   const [variant, setVariant] = useState<DayScanRuleVariant>(readStoredVariant);
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const [loaded, setLoaded] = useState<LoadedReport | null>(null);
@@ -144,7 +138,6 @@ export function DayScanPostMortemWidget({
 
   const handleDateChange = (next: string) => {
     setDate(next);
-    writeLocalStorage(DATE_STORAGE_KEY, next);
     setSelectedSymbol(null);
     setLoaded(null);
     setReportError(null);

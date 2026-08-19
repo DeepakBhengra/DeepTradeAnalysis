@@ -3,10 +3,10 @@ import { useEffect, useState } from "react";
 import { DashboardContent } from "../components/DashboardContent";
 import { StockSymbolInput } from "../components/StockSymbolInput";
 import { useDashboardData } from "../hooks/useDashboardData";
+import { todayIstDateKey } from "../utils/istTime";
 
 const DEFAULT_SYMBOL = "RELIANCE";
 const SYMBOL_STORAGE_KEY = "stock-dashboard-symbol";
-const DEFAULT_ANALYSIS_DATE = "2026-06-19";
 
 function readStoredSymbol(): string {
   const stored = localStorage.getItem(SYMBOL_STORAGE_KEY)?.trim().toUpperCase();
@@ -24,7 +24,7 @@ export function StockDashboardWidget({
 }: StockDashboardWidgetProps) {
   const [symbolInput, setSymbolInput] = useState(readStoredSymbol);
   const [activeSymbol, setActiveSymbol] = useState(readStoredSymbol);
-  const [analysisDate, setAnalysisDate] = useState<string | null>(DEFAULT_ANALYSIS_DATE);
+  const [analysisDate, setAnalysisDate] = useState<string | null>(todayIstDateKey);
   const { data, loading, error, refresh } = useDashboardData(activeSymbol, analysisDate);
 
   const handleLoad = () => {

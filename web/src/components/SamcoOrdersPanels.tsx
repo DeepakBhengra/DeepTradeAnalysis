@@ -1,5 +1,6 @@
 import type { SamcoOrderView } from "../api/samco";
 import { downloadSamcoExecutedOrdersCsv } from "../utils/samcoExecutedOrdersCsv";
+import { todayIstDateKey } from "../utils/istTime";
 
 interface SamcoOrdersPanelsProps {
   open: SamcoOrderView[];
@@ -33,15 +34,6 @@ function formatUpdatedAt(value?: string | null): string | null {
     return value;
   }
   return date.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-}
-
-function todayIstDateKey(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
 }
 
 function OrdersTable({

@@ -8,10 +8,10 @@ import { SimulationControls } from "../components/SimulationControls";
 import { StockSymbolInput } from "../components/StockSymbolInput";
 import { useDashboardSimulation } from "../hooks/useDashboardSimulation";
 import { usePaperTrading } from "../hooks/usePaperTrading";
+import { todayIstDateKey } from "../utils/istTime";
 
 const DEFAULT_SYMBOL = "RELIANCE";
 const SYMBOL_STORAGE_KEY = "order-simulator-symbol";
-const DEFAULT_ANALYSIS_DATE = "2026-06-19";
 
 function readStoredSymbol(): string {
   const stored = localStorage.getItem(SYMBOL_STORAGE_KEY)?.trim().toUpperCase();
@@ -25,7 +25,7 @@ interface OrderSimulatorWidgetProps {
 export function OrderSimulatorWidget({ isActive }: OrderSimulatorWidgetProps) {
   const [symbolInput, setSymbolInput] = useState(readStoredSymbol);
   const [activeSymbol, setActiveSymbol] = useState(readStoredSymbol);
-  const [analysisDate, setAnalysisDate] = useState(DEFAULT_ANALYSIS_DATE);
+  const [analysisDate, setAnalysisDate] = useState(todayIstDateKey);
 
   const {
     data,

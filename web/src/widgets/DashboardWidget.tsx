@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 
 import { DashboardContent } from "../components/DashboardContent";
 import { useDashboardData } from "../hooks/useDashboardData";
-
-const DEFAULT_ANALYSIS_DATE = "2026-06-19";
+import { todayIstDateKey } from "../utils/istTime";
 
 export type DashboardId = "pnb" | "niftyBank";
 
@@ -18,7 +17,7 @@ export function DashboardWidget({
   isActive,
   refreshTrigger = 0,
 }: DashboardWidgetProps) {
-  const [analysisDate, setAnalysisDate] = useState<string | null>(DEFAULT_ANALYSIS_DATE);
+  const [analysisDate, setAnalysisDate] = useState<string | null>(todayIstDateKey);
   const { data, loading, error, refresh } = useDashboardData(dashboardId, analysisDate);
 
   useEffect(() => {
