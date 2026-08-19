@@ -5,11 +5,10 @@ import { DateRangePicker } from "../components/DateRangePicker";
 import { DeepakRulesPanel } from "../components/DeepakRulesPanel";
 import { StockSymbolInput } from "../components/StockSymbolInput";
 import { useDeepak2Backtest } from "../hooks/useDeepak2Backtest";
+import { todayIstDateKey } from "../utils/istTime";
 
 const DEFAULT_SYMBOL = "RELIANCE";
 const SYMBOL_STORAGE_KEY = "deepak2-backtest-symbol";
-const DEFAULT_FROM_DATE = "2026-05-01";
-const DEFAULT_TO_DATE = "2026-06-19";
 
 function readStoredSymbol(): string {
   const stored = localStorage.getItem(SYMBOL_STORAGE_KEY)?.trim().toUpperCase();
@@ -27,8 +26,8 @@ export function Deepak2BacktestWidget({
 }: Deepak2BacktestWidgetProps) {
   const [symbolInput, setSymbolInput] = useState(readStoredSymbol);
   const [activeSymbol, setActiveSymbol] = useState(readStoredSymbol);
-  const [fromDate, setFromDate] = useState(DEFAULT_FROM_DATE);
-  const [toDate, setToDate] = useState(DEFAULT_TO_DATE);
+  const [fromDate, setFromDate] = useState(todayIstDateKey);
+  const [toDate, setToDate] = useState(todayIstDateKey);
   const { data, loading, error, run } = useDeepak2Backtest();
   const hasRunRef = useRef(false);
 

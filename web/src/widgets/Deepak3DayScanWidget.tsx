@@ -7,8 +7,7 @@ import { SectorBacktestResultsTable } from "../components/SectorBacktestResultsT
 import { SectorWatchlistPreview } from "../components/SectorWatchlistPreview";
 import { SECTOR_WATCHLIST_SIZE } from "../data/sectorWatchlist";
 import { useDeepak3DayScan } from "../hooks/useDeepak3DayScan";
-
-const DEFAULT_DATE = "2026-05-11";
+import { todayIstDateKey } from "../utils/istTime";
 
 interface Deepak3DayScanWidgetProps {
   isActive: boolean;
@@ -19,7 +18,7 @@ export function Deepak3DayScanWidget({
   isActive,
   refreshTrigger = 0,
 }: Deepak3DayScanWidgetProps) {
-  const [date, setDate] = useState(DEFAULT_DATE);
+  const [date, setDate] = useState(todayIstDateKey);
   const [watchlistExpanded, setWatchlistExpanded] = useState(false);
   const { data, loading, loadingElapsedSec, error, info, run, stop } = useDeepak3DayScan();
   const hasRunRef = useRef(false);

@@ -16,9 +16,9 @@ import {
   parseDayScanSimulationVariant,
   type DayScanSimulationVariant,
 } from "../utils/dayScanSimulationVariant";
+import { todayIstDateKey } from "../utils/istTime";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 
-const DEFAULT_ANALYSIS_DATE = "2026-05-11";
 const VARIANT_STORAGE_KEY = "dayscan-simulation-variant";
 const ENTRY_MIN_STORAGE_KEY = "dayscan-simulation-entry-price-min";
 const ENTRY_MAX_STORAGE_KEY = "dayscan-simulation-entry-price-max";
@@ -70,7 +70,7 @@ const DayScanSimulationContext = createContext<DayScanSimulationContextValue | n
 );
 
 export function DayScanSimulationProvider({ children }: { children: ReactNode }) {
-  const [analysisDate, setAnalysisDate] = useState(DEFAULT_ANALYSIS_DATE);
+  const [analysisDate, setAnalysisDate] = useState(todayIstDateKey);
   const [ruleVariant, setRuleVariantState] =
     useState<DayScanSimulationVariant>(readStoredVariant);
   const [entryPriceMinInput, setEntryPriceMinInputState] = useState(() =>

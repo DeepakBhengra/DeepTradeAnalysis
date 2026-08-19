@@ -22,15 +22,7 @@ import {
   isSamcoRuleVariant,
   type SamcoRuleVariant,
 } from "../utils/samcoRuleVariant";
-
-function todayIstDateKey(): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Kolkata",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
-}
+import { todayIstDateKey } from "../utils/istTime";
 
 function resolveRuleVariant(value: string | undefined): SamcoRuleVariant {
   return isSamcoRuleVariant(value) ? value : DEFAULT_SAMCO_RULE_VARIANT;

@@ -26,6 +26,7 @@ import {
   FAVOURABLE_RULE_SYMBOL,
   isFavourableSymbolRuleVariant,
 } from "../utils/favourableSymbolRule";
+import { todayIstDateKey } from "../utils/istTime";
 import { readLocalStorage, writeLocalStorage } from "../utils/safeStorage";
 import {
   signalDaysFromTrades,
@@ -33,8 +34,6 @@ import {
 } from "../utils/signalDaysFromTrades";
 
 const DEFAULT_SYMBOL = "POLICYBZR";
-const DEFAULT_FROM_DATE = "2026-05-01";
-const DEFAULT_TO_DATE = "2026-07-20";
 const SYMBOL_STORAGE_KEY = "deepak-postmortem-symbol";
 const VARIANT_STORAGE_KEY = "deepak-postmortem-variant";
 
@@ -168,8 +167,8 @@ export function DeepakPostMortemWidget({
   const [activeSymbol, setActiveSymbol] = useState(() =>
     initialSymbolForVariant(readStoredVariant()),
   );
-  const [fromDate, setFromDate] = useState(DEFAULT_FROM_DATE);
-  const [toDate, setToDate] = useState(DEFAULT_TO_DATE);
+  const [fromDate, setFromDate] = useState(todayIstDateKey);
+  const [toDate, setToDate] = useState(todayIstDateKey);
 
   const [signalDays, setSignalDays] = useState<SignalDayOption[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
