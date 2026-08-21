@@ -57,6 +57,48 @@ describe("getSamcoAuthStatus IP diagnostics", () => {
     }
   });
 
+  it("explains OAuth app mismatch when Samco reports PRIMARY=none", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/ip/whoami")) {
+        return new Response(
+          JSON.stringify({
+            status: "Success",
+            statusMessage:
+              "Calling IP (223.181.56.224) is NOT a registered IP. Registered: PRIMARY=none, SECONDARY=none. Order endpoints will reject this host.",
+            srcIp: "223.181.56.224",
+            primaryIp: null,
+            secondaryIp: null,
+            matches: false,
+            matchedAs: null,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response(JSON.stringify({ status: "Failure" }), { status: 500 });
+    });
+
+    const { setSamcoFetch, resetSamcoFetch } = await import(
+      "../../src/samco/samcoClient.js"
+    );
+    const { setSamcoSessionToken } = await import("../../src/samco/samcoTokenStore.js");
+    const { getSamcoAuthStatus } = await import("../../src/samco/samcoSession.js");
+
+    setSamcoSessionToken("session-token");
+    setSamcoFetch(fetchMock as typeof fetch);
+
+    try {
+      const status = await getSamcoAuthStatus();
+      expect(status.srcIp).toBe("223.181.56.224");
+      expect(status.primaryIp).toBeNull();
+      expect(status.samcoIpMatches).toBe(false);
+      expect(status.staticIpMessage).toContain("different app");
+      expect(status.staticIpMessage).toContain("SAMCO_API_KEY");
+    } finally {
+      resetSamcoFetch();
+    }
+  });
+
   it("does not treat registered primaryIp as the host srcIp", async () => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);

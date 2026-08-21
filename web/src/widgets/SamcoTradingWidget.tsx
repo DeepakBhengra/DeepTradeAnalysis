@@ -165,6 +165,9 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
               >
                 {loading ? "..." : status?.connected ? "Connected" : "Not connected"}
               </span>
+              {status?.accountID ? (
+                <span className="text-kite-muted"> · account {status.accountID}</span>
+              ) : null}
             </p>
             <p className="m-0">
               Host IP (Samco sees):{" "}
@@ -199,6 +202,33 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             {status?.staticIpMessage && (
               <p className="m-0 text-kite-orange">{status.staticIpMessage}</p>
             )}
+            {!status?.primaryIp &&
+              !status?.secondaryIp &&
+              status?.samcoIpMatches === false && (
+                <p className="m-0 text-[11px] text-kite-muted">
+                  Tip: Dashboard IP on app <span className="text-kite-text">samcodeepakapiofc</span>{" "}
+                  only applies if <span className="text-kite-text">SAMCO_API_KEY</span> is from that
+                  same app. Check{" "}
+                  <a
+                    className="text-kite-orange underline"
+                    href="https://tradeapi.samco.in/app/api-keys"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    API Keys
+                  </a>{" "}
+                  vs{" "}
+                  <a
+                    className="text-kite-orange underline"
+                    href="https://tradeapi.samco.in/app/static-ips"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Static IPs
+                  </a>
+                  .
+                </p>
+              )}
             <p className="m-0">
               Open positions:{" "}
               <span className="text-kite-text">{status?.openPositionsCount ?? 0}</span>
