@@ -165,6 +165,9 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
               >
                 {loading ? "..." : status?.connected ? "Connected" : "Not connected"}
               </span>
+              {status?.accountID ? (
+                <span className="text-kite-muted"> · account {status.accountID}</span>
+              ) : null}
             </p>
             <p className="m-0">
               Host IP (Samco sees):{" "}
@@ -199,6 +202,38 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             {status?.staticIpMessage && (
               <p className="m-0 text-kite-orange">{status.staticIpMessage}</p>
             )}
+            {!status?.primaryIp &&
+              !status?.secondaryIp &&
+              status?.samcoIpMatches === false && (
+                <p className="m-0 text-[11px] text-kite-muted">
+                  Tip: Static IPs are{" "}
+                  <span className="text-kite-text">per OAuth app</span>. The Dashboard
+                  row for app <span className="text-kite-text">samcodeepakapiofc</span>{" "}
+                  only counts if <span className="text-kite-text">SAMCO_API_KEY</span> /{" "}
+                  <span className="text-kite-text">SAMCO_API_SECRET</span> are from that
+                  exact app. Open{" "}
+                  <a
+                    className="text-kite-orange underline"
+                    href="https://tradeapi.samco.in/app/api-keys"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    API Keys
+                  </a>
+                  , copy keys for <span className="text-kite-text">samcodeepakapiofc</span>
+                  , put them in <span className="text-kite-text">.env</span>, restart the
+                  API, then Refresh session. Docs:{" "}
+                  <a
+                    className="text-kite-orange underline"
+                    href="https://docs-tradeapi.samco.in/dashboard/static-ips.html"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Static IPs
+                  </a>
+                  .
+                </p>
+              )}
             <p className="m-0">
               Open positions:{" "}
               <span className="text-kite-text">{status?.openPositionsCount ?? 0}</span>

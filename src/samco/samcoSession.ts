@@ -92,9 +92,14 @@ function applyWhoAmIStatus(
   if (!status.staticIpMatched && isSamcoStaticIpEnforced()) {
     status.staticIpMessage = formatSamcoStaticIpMismatch(srcIp, requiredStaticIp);
   } else if (status.samcoIpMatches === false) {
-    status.staticIpMessage =
+    const base =
       whoAmI.statusMessage ??
-      `Samco sees this host as ${srcIp ?? "unknown"}, but registered PRIMARY=${primaryIp ?? "none"} SECONDARY=${secondaryIp ?? "none"}. Order APIs will reject until you register this host's egress IP in the Samco Web Dashboard → Static IPs (for the same OAuth app as SAMCO_API_KEY).`;
+      `Samco sees this host as ${srcIp ?? "unknown"}, but registered PRIMARY=${primaryIp ?? "none"} SECONDARY=${secondaryIp ?? "none"}.`;
+    const appHint =
+      !primaryIp && !secondaryIp
+        ? " This session’s OAuth app has no Static IP in Samco’s API (PRIMARY=none). If the Dashboard shows an IP on app samcodeepakapiofc (or another name), that IP is on a different app than SAMCO_API_KEY / SAMCO_API_SECRET — open API Keys, copy keys from the same app where the IP is registered, update .env, then Refresh session."
+        : " Order APIs will reject until this host’s egress IP is PRIMARY or SECONDARY for the same OAuth app as SAMCO_API_KEY.";
+    status.staticIpMessage = `${base}${appHint}`;
   } else {
     status.staticIpMessage = undefined;
   }
