@@ -206,9 +206,12 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
               !status?.secondaryIp &&
               status?.samcoIpMatches === false && (
                 <p className="m-0 text-[11px] text-kite-muted">
-                  Tip: Dashboard IP on app <span className="text-kite-text">samcodeepakapiofc</span>{" "}
-                  only applies if <span className="text-kite-text">SAMCO_API_KEY</span> is from that
-                  same app. Check{" "}
+                  Tip: Static IPs are{" "}
+                  <span className="text-kite-text">per OAuth app</span>. The Dashboard
+                  row for app <span className="text-kite-text">samcodeepakapiofc</span>{" "}
+                  only counts if <span className="text-kite-text">SAMCO_API_KEY</span> /{" "}
+                  <span className="text-kite-text">SAMCO_API_SECRET</span> are from that
+                  exact app. Open{" "}
                   <a
                     className="text-kite-orange underline"
                     href="https://tradeapi.samco.in/app/api-keys"
@@ -216,11 +219,13 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
                     rel="noreferrer"
                   >
                     API Keys
-                  </a>{" "}
-                  vs{" "}
+                  </a>
+                  , copy keys for <span className="text-kite-text">samcodeepakapiofc</span>
+                  , put them in <span className="text-kite-text">.env</span>, restart the
+                  API, then Refresh session. Docs:{" "}
                   <a
                     className="text-kite-orange underline"
-                    href="https://tradeapi.samco.in/app/static-ips"
+                    href="https://docs-tradeapi.samco.in/dashboard/static-ips.html"
                     target="_blank"
                     rel="noreferrer"
                   >
