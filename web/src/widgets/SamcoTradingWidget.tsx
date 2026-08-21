@@ -167,9 +167,38 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
               </span>
             </p>
             <p className="m-0">
-              IP:{" "}
+              Host IP (Samco sees):{" "}
               <span className="text-kite-text">{status?.srcIp ?? "—"}</span>
             </p>
+            <p className="m-0">
+              Registered PRIMARY:{" "}
+              <span className="text-kite-text">{status?.primaryIp ?? "none"}</span>
+            </p>
+            <p className="m-0">
+              Registered SECONDARY:{" "}
+              <span className="text-kite-text">{status?.secondaryIp ?? "none"}</span>
+            </p>
+            <p className="m-0">
+              IP match:{" "}
+              <span
+                className={
+                  status?.samcoIpMatches === true
+                    ? "text-kite-green"
+                    : status?.samcoIpMatches === false
+                      ? "text-kite-red"
+                      : "text-kite-text"
+                }
+              >
+                {status?.samcoIpMatches === true
+                  ? `yes (${status.matchedAs ?? "registered"})`
+                  : status?.samcoIpMatches === false
+                    ? "no — order APIs will reject"
+                    : "—"}
+              </span>
+            </p>
+            {status?.staticIpMessage && (
+              <p className="m-0 text-kite-orange">{status.staticIpMessage}</p>
+            )}
             <p className="m-0">
               Open positions:{" "}
               <span className="text-kite-text">{status?.openPositionsCount ?? 0}</span>
@@ -205,7 +234,15 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
                   : "no — click Refresh session (needs SAMCO_API_KEY / SAMCO_API_SECRET)"}
               </li>
               <li>
-                Reported IP: {status?.srcIp ?? "—"}
+                Host IP Samco sees: {status?.srcIp ?? "—"}
+                {status?.primaryIp
+                  ? ` · registered PRIMARY ${status.primaryIp}`
+                  : " · no PRIMARY registered"}
+                {status?.samcoIpMatches === false
+                  ? " · MISMATCH — register this host IP in Dashboard → Static IPs for the same app as SAMCO_API_KEY"
+                  : status?.samcoIpMatches === true
+                    ? " · matched"
+                    : ""}
               </li>
               <li>
                 Day Scan feed:{" "}

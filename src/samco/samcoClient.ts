@@ -134,9 +134,12 @@ export interface SamcoSessionTokenResponse {
 export interface SamcoWhoAmIResponse {
   status?: string;
   statusMessage?: string;
-  srcIp?: string;
-  primaryIp?: string;
-  secondaryIp?: string;
+  srcIp?: string | null;
+  primaryIp?: string | null;
+  secondaryIp?: string | null;
+  /** True when srcIp equals primaryIp or secondaryIp (Samco /ip/whoami). */
+  matches?: boolean;
+  matchedAs?: "PRIMARY" | "SECONDARY" | string | null;
 }
 
 export interface SamcoPlaceOrderRequest {

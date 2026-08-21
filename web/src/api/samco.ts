@@ -12,7 +12,13 @@ export interface SamcoAuthStatus {
   envDefaultQuantity: number;
   envDefaultDryRun: boolean;
   openPositionsCount: number;
+  accountID?: string;
   srcIp?: string;
+  primaryIp?: string | null;
+  secondaryIp?: string | null;
+  samcoIpMatches?: boolean;
+  matchedAs?: string | null;
+  whoAmIMessage?: string;
   requiredStaticIp?: string;
   staticIpMatched?: boolean;
   staticIpMessage?: string;
