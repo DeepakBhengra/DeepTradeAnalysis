@@ -1,0 +1,1354 @@
+{
+  "symbol": "ICICIGI",
+  "source": "yahoo-15m-60d",
+  "from": "2026-05-13",
+  "to": "2026-08-04",
+  "tradingDays": 58,
+  "summary": {
+    "levelBuyDays": 27,
+    "blockedByGuards": 22,
+    "losingKnives": 6,
+    "losingKnivesBlocked": 6,
+    "levelSetupsPassingGuards": 5,
+    "guardedBuyDays": 33
+  },
+  "rows": [
+    {
+      "dateKey": "2026-05-13",
+      "dayLabel": "13 May",
+      "weekday": "Wed",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "14 May",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "10:30",
+        "price": 1812.45,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 2.02,
+        "eodPct": 2.02
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-15",
+      "dayLabel": "15 May",
+      "weekday": "Fri",
+      "levelSetup": {
+        "timeIst": "13:30",
+        "price": 1839.05,
+        "rsi": 39.6,
+        "smi": -45.6,
+        "prevSmi": -18.9,
+        "macdHist": -2.14,
+        "prevMacdHist": -1.68,
+        "bbLowerGapPct": 0.166,
+        "dropFromOpenPct": -0.04,
+        "nextMid": 1835.45,
+        "nextTimeIst": "13:45",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": -0.07,
+        "bestSqTimeIst": "14:30",
+        "eodPct": -0.16,
+        "losingLike29Jul": true
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-05-18",
+      "dayLabel": "18 May",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "10:15",
+        "price": 1799,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.98,
+        "eodPct": 0.6
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-19",
+      "dayLabel": "19 May",
+      "weekday": "Tue",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-20",
+      "dayLabel": "20 May",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "09:15",
+        "price": 1799.9,
+        "rsi": 30.7,
+        "smi": -57.8,
+        "prevSmi": -22.8,
+        "macdHist": -2.04,
+        "prevMacdHist": -0.2,
+        "bbLowerGapPct": 0.743,
+        "dropFromOpenPct": 0,
+        "nextMid": 1798.1,
+        "nextTimeIst": "09:30",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0.44,
+        "bestSqTimeIst": "10:45",
+        "eodPct": -1.07,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:15",
+        "price": 1803.45,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.24,
+        "eodPct": -1.26
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-21",
+      "dayLabel": "21 May",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "09:45",
+        "price": 1785.15,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.97,
+        "eodPct": 0.97
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-22",
+      "dayLabel": "22 May",
+      "weekday": "Fri",
+      "levelSetup": {
+        "timeIst": "13:45",
+        "price": 1823.25,
+        "rsi": 38.4,
+        "smi": -79.7,
+        "prevSmi": -70.5,
+        "macdHist": -3.16,
+        "prevMacdHist": -2.58,
+        "bbLowerGapPct": 0.309,
+        "dropFromOpenPct": 0.18,
+        "nextMid": 1822.05,
+        "nextTimeIst": "14:00",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0.23,
+        "bestSqTimeIst": "15:15",
+        "eodPct": 0.23,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-05-25",
+      "dayLabel": "25 May",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-26",
+      "dayLabel": "26 May",
+      "weekday": "Tue",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "10:15",
+        "price": 1855.4,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.8,
+        "eodPct": 0.38
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-27",
+      "dayLabel": "27 May",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "09:45",
+        "price": 1857.55,
+        "rsi": 30.3,
+        "smi": -42.9,
+        "prevSmi": -23.6,
+        "macdHist": -1.99,
+        "prevMacdHist": -1.47,
+        "bbLowerGapPct": 0.006,
+        "dropFromOpenPct": -0.08,
+        "nextMid": 1854.25,
+        "nextTimeIst": "10:00",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0.52,
+        "bestSqTimeIst": "11:45",
+        "eodPct": -0.36,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:45",
+        "price": 1861.5,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.31,
+        "eodPct": -0.57
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "29 May",
+      "weekday": "Fri",
+      "levelSetup": {
+        "timeIst": "10:15",
+        "price": 1839.15,
+        "rsi": 33.9,
+        "smi": -52.7,
+        "prevSmi": -72,
+        "macdHist": -2.03,
+        "prevMacdHist": -2.76,
+        "bbLowerGapPct": 0.154,
+        "dropFromOpenPct": -0.44,
+        "nextMid": 1842.65,
+        "nextTimeIst": "10:30",
+        "smiRising": true,
+        "macdRising": true,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": true,
+        "guardFailReasons": [],
+        "bestSqPct": 0.19,
+        "bestSqTimeIst": "10:30",
+        "eodPct": -2.71,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:30",
+        "price": 1842.65,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": -0.05,
+        "eodPct": -2.9
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-01",
+      "dayLabel": "1 Jun",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-02",
+      "dayLabel": "2 Jun",
+      "weekday": "Tue",
+      "levelSetup": {
+        "timeIst": "10:45",
+        "price": 1732.45,
+        "rsi": 37.4,
+        "smi": -54.1,
+        "prevSmi": -32.5,
+        "macdHist": 1.22,
+        "prevMacdHist": 1.58,
+        "bbLowerGapPct": 0.092,
+        "dropFromOpenPct": -0.32,
+        "nextMid": 1730.95,
+        "nextTimeIst": "11:00",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0.95,
+        "bestSqTimeIst": "14:45",
+        "eodPct": 0.81,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "13:00",
+        "price": 1739,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.57,
+        "eodPct": 0.43
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-03",
+      "dayLabel": "3 Jun",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "09:45",
+        "price": 1726.25,
+        "rsi": 45.1,
+        "smi": -46.6,
+        "prevSmi": -32.1,
+        "macdHist": -0.57,
+        "prevMacdHist": -0.26,
+        "bbLowerGapPct": 0.202,
+        "dropFromOpenPct": -0.39,
+        "nextMid": 1733.1,
+        "nextTimeIst": "10:00",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising"
+        ],
+        "bestSqPct": 0.91,
+        "bestSqTimeIst": "15:15",
+        "eodPct": 0.91,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:45",
+        "price": 1733.65,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.48,
+        "eodPct": 0.48
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-04",
+      "dayLabel": "4 Jun",
+      "weekday": "Thu",
+      "levelSetup": {
+        "timeIst": "13:15",
+        "price": 1733.35,
+        "rsi": 34,
+        "smi": -50.6,
+        "prevSmi": -43.8,
+        "macdHist": -0.37,
+        "prevMacdHist": -0.35,
+        "bbLowerGapPct": 0.037,
+        "dropFromOpenPct": -0.22,
+        "nextMid": 1733.7,
+        "nextTimeIst": "13:30",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising"
+        ],
+        "bestSqPct": 0.25,
+        "bestSqTimeIst": "14:30",
+        "eodPct": 0.12,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-06-05",
+      "dayLabel": "5 Jun",
+      "weekday": "Fri",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-08",
+      "dayLabel": "8 Jun",
+      "weekday": "Mon",
+      "levelSetup": {
+        "timeIst": "09:30",
+        "price": 1737.85,
+        "rsi": 37,
+        "smi": -46.1,
+        "prevSmi": -27.3,
+        "macdHist": -2.65,
+        "prevMacdHist": -1.67,
+        "bbLowerGapPct": 0.505,
+        "dropFromOpenPct": 0.04,
+        "nextMid": 1740.4,
+        "nextTimeIst": "09:45",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising"
+        ],
+        "bestSqPct": 0.81,
+        "bestSqTimeIst": "12:45",
+        "eodPct": 0.03,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:45",
+        "price": 1745.4,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.38,
+        "eodPct": -0.4
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-09",
+      "dayLabel": "9 Jun",
+      "weekday": "Tue",
+      "levelSetup": {
+        "timeIst": "13:45",
+        "price": 1772.3,
+        "rsi": 32.9,
+        "smi": -70.9,
+        "prevSmi": -58.9,
+        "macdHist": -2.59,
+        "prevMacdHist": -1.95,
+        "bbLowerGapPct": 0.551,
+        "dropFromOpenPct": 0.05,
+        "nextMid": 1773.5,
+        "nextTimeIst": "14:00",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising"
+        ],
+        "bestSqPct": 0.48,
+        "bestSqTimeIst": "14:45",
+        "eodPct": 0.17,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "10 Jun",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "10:30",
+        "price": 1761.75,
+        "rsi": 38.4,
+        "smi": -53.1,
+        "prevSmi": -28.8,
+        "macdHist": -2.95,
+        "prevMacdHist": -2.35,
+        "bbLowerGapPct": 0.13,
+        "dropFromOpenPct": -0.96,
+        "nextMid": 1757.95,
+        "nextTimeIst": "10:45",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": false,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher",
+          "open DD -0.96% < −0.8%"
+        ],
+        "bestSqPct": -0.22,
+        "bestSqTimeIst": "10:45",
+        "eodPct": -1.65,
+        "losingLike29Jul": true
+      },
+      "guardedBuy": {
+        "timeIst": "09:30",
+        "price": 1785.65,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.1,
+        "eodPct": -2.96
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-11",
+      "dayLabel": "11 Jun",
+      "weekday": "Thu",
+      "levelSetup": {
+        "timeIst": "10:15",
+        "price": 1725.75,
+        "rsi": 34.1,
+        "smi": -59.7,
+        "prevSmi": -68.9,
+        "macdHist": -0.66,
+        "prevMacdHist": -1.23,
+        "bbLowerGapPct": 0.342,
+        "dropFromOpenPct": 0.01,
+        "nextMid": 1726.95,
+        "nextTimeIst": "10:30",
+        "smiRising": true,
+        "macdRising": true,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": true,
+        "guardFailReasons": [],
+        "bestSqPct": 0.07,
+        "bestSqTimeIst": "10:30",
+        "eodPct": -0.58,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:30",
+        "price": 1726.95,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": -0.06,
+        "eodPct": -0.65
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-12",
+      "dayLabel": "12 Jun",
+      "weekday": "Fri",
+      "levelSetup": {
+        "timeIst": "09:45",
+        "price": 1684.65,
+        "rsi": 30.1,
+        "smi": -74.4,
+        "prevSmi": -75.8,
+        "macdHist": -2.32,
+        "prevMacdHist": -2.05,
+        "bbLowerGapPct": 0.557,
+        "dropFromOpenPct": -0.76,
+        "nextMid": 1686.85,
+        "nextTimeIst": "10:00",
+        "smiRising": true,
+        "macdRising": false,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "MACD hist not rising"
+        ],
+        "bestSqPct": 0.69,
+        "bestSqTimeIst": "15:15",
+        "eodPct": 0.69,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:15",
+        "price": 1691.05,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.31,
+        "eodPct": 0.31
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-15",
+      "dayLabel": "15 Jun",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-16",
+      "dayLabel": "16 Jun",
+      "weekday": "Tue",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-17",
+      "dayLabel": "17 Jun",
+      "weekday": "Wed",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "12:30",
+        "price": 1787.65,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.22,
+        "eodPct": 0.17
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-18",
+      "dayLabel": "18 Jun",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "19 Jun",
+      "weekday": "Fri",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-22",
+      "dayLabel": "22 Jun",
+      "weekday": "Mon",
+      "levelSetup": {
+        "timeIst": "12:15",
+        "price": 1872.75,
+        "rsi": 38.2,
+        "smi": -52.2,
+        "prevSmi": -32.7,
+        "macdHist": -2.74,
+        "prevMacdHist": -2.46,
+        "bbLowerGapPct": 0.668,
+        "dropFromOpenPct": -0.67,
+        "nextMid": 1871.25,
+        "nextTimeIst": "12:30",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": -0.05,
+        "bestSqTimeIst": "12:45",
+        "eodPct": -0.71,
+        "losingLike29Jul": true
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-06-23",
+      "dayLabel": "23 Jun",
+      "weekday": "Tue",
+      "levelSetup": {
+        "timeIst": "11:00",
+        "price": 1852.85,
+        "rsi": 43.3,
+        "smi": -44.5,
+        "prevSmi": -33,
+        "macdHist": -1.2,
+        "prevMacdHist": -1.23,
+        "bbLowerGapPct": 0.002,
+        "dropFromOpenPct": -0.2,
+        "nextMid": 1852.55,
+        "nextTimeIst": "11:15",
+        "smiRising": false,
+        "macdRising": true,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": -0.02,
+        "bestSqTimeIst": "11:15",
+        "eodPct": -1.04,
+        "losingLike29Jul": true
+      },
+      "guardedBuy": {
+        "timeIst": "09:30",
+        "price": 1861.95,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.07,
+        "eodPct": -1.52
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-24",
+      "dayLabel": "24 Jun",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "11:15",
+        "price": 1825.55,
+        "rsi": 45.3,
+        "smi": -45.3,
+        "prevSmi": -34,
+        "macdHist": 0.49,
+        "prevMacdHist": 0.73,
+        "bbLowerGapPct": 0.01,
+        "dropFromOpenPct": -0.83,
+        "nextMid": 1822.65,
+        "nextTimeIst": "11:30",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": false,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher",
+          "open DD -0.83% < −0.8%"
+        ],
+        "bestSqPct": 0.19,
+        "bestSqTimeIst": "13:30",
+        "eodPct": -0.29,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "13:30",
+        "price": 1829,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": -0.08,
+        "eodPct": -0.48
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-25",
+      "dayLabel": "25 Jun",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "09:30",
+        "price": 1832.15,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.19,
+        "eodPct": -0.89
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-29",
+      "dayLabel": "29 Jun",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-06-30",
+      "dayLabel": "30 Jun",
+      "weekday": "Tue",
+      "levelSetup": {
+        "timeIst": "10:00",
+        "price": 1758.55,
+        "rsi": 37.3,
+        "smi": -49.9,
+        "prevSmi": -36.2,
+        "macdHist": 0.5,
+        "prevMacdHist": 0.71,
+        "bbLowerGapPct": 0.022,
+        "dropFromOpenPct": -0.22,
+        "nextMid": 1756.4,
+        "nextTimeIst": "10:15",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0.55,
+        "bestSqTimeIst": "11:00",
+        "eodPct": -1.19,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "11:00",
+        "price": 1768.25,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": -0.3,
+        "eodPct": -1.73
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-01",
+      "dayLabel": "1 Jul",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "09:30",
+        "price": 1739.65,
+        "rsi": 40.7,
+        "smi": -52.7,
+        "prevSmi": -65.1,
+        "macdHist": -0.04,
+        "prevMacdHist": -0.32,
+        "bbLowerGapPct": 0.122,
+        "dropFromOpenPct": 0.02,
+        "nextMid": 1744.8,
+        "nextTimeIst": "09:45",
+        "smiRising": true,
+        "macdRising": true,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": true,
+        "guardFailReasons": [],
+        "bestSqPct": 1.03,
+        "bestSqTimeIst": "13:45",
+        "eodPct": 1.02,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "09:45",
+        "price": 1744.8,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.73,
+        "eodPct": 0.73
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-02",
+      "dayLabel": "2 Jul",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "10:45",
+        "price": 1758.15,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.42,
+        "eodPct": 0.22
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-03",
+      "dayLabel": "3 Jul",
+      "weekday": "Fri",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "12:00",
+        "price": 1773.35,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.06,
+        "eodPct": 0.06
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "6 Jul",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "11:00",
+        "price": 1777,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.53,
+        "eodPct": 0.53
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-07",
+      "dayLabel": "7 Jul",
+      "weekday": "Tue",
+      "levelSetup": {
+        "timeIst": "11:45",
+        "price": 1784.9,
+        "rsi": 49.4,
+        "smi": -58.1,
+        "prevSmi": -51.1,
+        "macdHist": -1.14,
+        "prevMacdHist": -1.09,
+        "bbLowerGapPct": 0.331,
+        "dropFromOpenPct": -0.38,
+        "nextMid": 1784.9,
+        "nextTimeIst": "12:00",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0.82,
+        "bestSqTimeIst": "15:15",
+        "eodPct": 0.82,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "13:00",
+        "price": 1796.2,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.19,
+        "eodPct": 0.19
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-08",
+      "dayLabel": "8 Jul",
+      "weekday": "Wed",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-09",
+      "dayLabel": "9 Jul",
+      "weekday": "Thu",
+      "levelSetup": {
+        "timeIst": "10:30",
+        "price": 1789.35,
+        "rsi": 33.7,
+        "smi": -57.4,
+        "prevSmi": -71.2,
+        "macdHist": -1.81,
+        "prevMacdHist": -2.84,
+        "bbLowerGapPct": 0.259,
+        "dropFromOpenPct": -0.72,
+        "nextMid": 1794.65,
+        "nextTimeIst": "10:45",
+        "smiRising": true,
+        "macdRising": true,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": true,
+        "guardFailReasons": [],
+        "bestSqPct": 0.43,
+        "bestSqTimeIst": "15:15",
+        "eodPct": 0.43,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "10:45",
+        "price": 1794.65,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.13,
+        "eodPct": 0.13
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-10",
+      "dayLabel": "10 Jul",
+      "weekday": "Fri",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "13:15",
+        "price": 1810.55,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 1.2,
+        "eodPct": 0.78
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-13",
+      "dayLabel": "13 Jul",
+      "weekday": "Mon",
+      "levelSetup": {
+        "timeIst": "09:30",
+        "price": 1761.5,
+        "rsi": 31.3,
+        "smi": -43.5,
+        "prevSmi": -4.8,
+        "macdHist": -5.92,
+        "prevMacdHist": -2.77,
+        "bbLowerGapPct": 1.08,
+        "dropFromOpenPct": -1.53,
+        "nextMid": 1755.5,
+        "nextTimeIst": "09:45",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": false,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher",
+          "open DD -1.53% < −0.8%"
+        ],
+        "bestSqPct": 1.53,
+        "bestSqTimeIst": "15:15",
+        "eodPct": 1.53,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "14 Jul",
+      "weekday": "Tue",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "11:45",
+        "price": 1753.45,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 2.04,
+        "eodPct": 2.04
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "15 Jul",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "13:45",
+        "price": 1809.5,
+        "rsi": 45.5,
+        "smi": -48.5,
+        "prevSmi": -62.5,
+        "macdHist": -1.81,
+        "prevMacdHist": -2.15,
+        "bbLowerGapPct": 0.694,
+        "dropFromOpenPct": 0.36,
+        "nextMid": 1811.3,
+        "nextTimeIst": "14:00",
+        "smiRising": true,
+        "macdRising": true,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": true,
+        "guardFailReasons": [],
+        "bestSqPct": 0.39,
+        "bestSqTimeIst": "14:15",
+        "eodPct": 0.36,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "14:00",
+        "price": 1811.3,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.29,
+        "eodPct": 0.26
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-16",
+      "dayLabel": "16 Jul",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-17",
+      "dayLabel": "17 Jul",
+      "weekday": "Fri",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "10:00",
+        "price": 1601.95,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.75,
+        "eodPct": 0.6
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "20 Jul",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-21",
+      "dayLabel": "21 Jul",
+      "weekday": "Tue",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "10:15",
+        "price": 1619.6,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.29,
+        "eodPct": 0.23
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-22",
+      "dayLabel": "22 Jul",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "13:30",
+        "price": 1589.5,
+        "rsi": 34.8,
+        "smi": -65.7,
+        "prevSmi": -82.2,
+        "macdHist": -0.04,
+        "prevMacdHist": -0.46,
+        "bbLowerGapPct": 0.571,
+        "dropFromOpenPct": -1.33,
+        "nextMid": 1590.7,
+        "nextTimeIst": "13:45",
+        "smiRising": true,
+        "macdRising": true,
+        "nextConfirmed": true,
+        "openDrawdownOk": false,
+        "guardOk": false,
+        "guardFailReasons": [
+          "open DD -1.33% < −0.8%"
+        ],
+        "bestSqPct": 0.08,
+        "bestSqTimeIst": "13:45",
+        "eodPct": -0.22,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "23 Jul",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "10:15",
+        "price": 1580.25,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 2.68,
+        "eodPct": 2.68
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-24",
+      "dayLabel": "24 Jul",
+      "weekday": "Fri",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-27",
+      "dayLabel": "27 Jul",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "28 Jul",
+      "weekday": "Tue",
+      "levelSetup": {
+        "timeIst": "10:00",
+        "price": 1668.25,
+        "rsi": 33.4,
+        "smi": -48.2,
+        "prevSmi": -22.9,
+        "macdHist": -2.06,
+        "prevMacdHist": -1.56,
+        "bbLowerGapPct": 0.099,
+        "dropFromOpenPct": -0.64,
+        "nextMid": 1673.25,
+        "nextTimeIst": "10:15",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": true,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising"
+        ],
+        "bestSqPct": 1.32,
+        "bestSqTimeIst": "13:00",
+        "eodPct": 1.27,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "09:30",
+        "price": 1680.1,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.61,
+        "eodPct": 0.56
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "29 Jul",
+      "weekday": "Wed",
+      "levelSetup": {
+        "timeIst": "10:15",
+        "price": 1675.95,
+        "rsi": 33.7,
+        "smi": -54.1,
+        "prevSmi": -33.8,
+        "macdHist": -1.33,
+        "prevMacdHist": -0.75,
+        "bbLowerGapPct": 0.295,
+        "dropFromOpenPct": -0.78,
+        "nextMid": 1673.3,
+        "nextTimeIst": "10:30",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": -0.16,
+        "bestSqTimeIst": "10:30",
+        "eodPct": -1.66,
+        "losingLike29Jul": true
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    },
+    {
+      "dateKey": "2026-07-30",
+      "dayLabel": "30 Jul",
+      "weekday": "Thu",
+      "levelSetup": null,
+      "guardedBuy": {
+        "timeIst": "11:30",
+        "price": 1638,
+        "scenarioKey": "buy_extended",
+        "bestSqPct": 0.5,
+        "eodPct": -0.09
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-07-31",
+      "dayLabel": "31 Jul",
+      "weekday": "Fri",
+      "levelSetup": {
+        "timeIst": "10:15",
+        "price": 1631.9,
+        "rsi": 36.7,
+        "smi": -45.5,
+        "prevSmi": -40.4,
+        "macdHist": -0.09,
+        "prevMacdHist": -0.04,
+        "bbLowerGapPct": 0.032,
+        "dropFromOpenPct": -0.27,
+        "nextMid": 1631.05,
+        "nextTimeIst": "10:30",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0.16,
+        "bestSqTimeIst": "12:15",
+        "eodPct": -0.5,
+        "losingLike29Jul": false
+      },
+      "guardedBuy": {
+        "timeIst": "11:30",
+        "price": 1633.7,
+        "scenarioKey": "buy_quality",
+        "bestSqPct": 0.05,
+        "eodPct": -0.61
+      },
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-08-03",
+      "dayLabel": "3 Aug",
+      "weekday": "Mon",
+      "levelSetup": null,
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": false
+    },
+    {
+      "dateKey": "2026-08-04",
+      "dayLabel": "4 Aug",
+      "weekday": "Tue",
+      "levelSetup": {
+        "timeIst": "10:00",
+        "price": 1646.05,
+        "rsi": 41.6,
+        "smi": -46.1,
+        "prevSmi": -26.2,
+        "macdHist": -1.8,
+        "prevMacdHist": -1.14,
+        "bbLowerGapPct": 0,
+        "dropFromOpenPct": -0.66,
+        "nextMid": 1642.25,
+        "nextTimeIst": "10:15",
+        "smiRising": false,
+        "macdRising": false,
+        "nextConfirmed": false,
+        "openDrawdownOk": true,
+        "guardOk": false,
+        "guardFailReasons": [
+          "SMI not rising",
+          "MACD hist not rising",
+          "next bar not higher"
+        ],
+        "bestSqPct": 0,
+        "bestSqTimeIst": "11:00",
+        "eodPct": -0.63,
+        "losingLike29Jul": true
+      },
+      "guardedBuy": null,
+      "guardedBlockedLevelBuy": true
+    }
+  ]
+}
