@@ -34,23 +34,67 @@ export interface SamcoAuthStatus {
   envDefaultDryRun: boolean;
   openPositionsCount: number;
   accountID?: string;
+  /** Egress IP Samco saw on the last whoami / session call. */
   srcIp?: string;
-  /** Configured Samco-registered static IP (empty = check disabled). */
+  /** Registered PRIMARY IP from Samco whoami / session (null/empty = none). */
+  primaryIp?: string | null;
+  /** Registered SECONDARY IP from Samco whoami / session. */
+  secondaryIp?: string | null;
+  /** Samco whoami `matches` — true when srcIp is PRIMARY or SECONDARY. */
+  samcoIpMatches?: boolean;
+  matchedAs?: string | null;
+  whoAmIMessage?: string;
+  /** Configured local allowlist IP (empty = local check disabled). */
   requiredStaticIp: string;
-  /** True when srcIp matches requiredStaticIp (or check disabled). */
+  /** True when srcIp matches requiredStaticIp (or local check disabled). */
   staticIpMatched: boolean;
   staticIpMessage?: string;
 }
 
-function applyIpStatus(
+function normalizeIp(value: string | null | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed && trimmed.length > 0 ? trimmed : undefined;
+}
+
+function applyWhoAmIStatus(
   status: SamcoAuthStatus,
-  srcIp: string | undefined,
-  requiredStaticIp: string,
+  whoAmI: {
+    srcIp?: string | null;
+    primaryIp?: string | null;
+    secondaryIp?: string | null;
+    matches?: boolean;
+    matchedAs?: string | null;
+    statusMessage?: string;
+  },
+  fallbackSrcIp?: string,
 ): void {
+  const srcIp = normalizeIp(whoAmI.srcIp) ?? normalizeIp(fallbackSrcIp);
+  const primaryIp = normalizeIp(whoAmI.primaryIp) ?? null;
+  const secondaryIp = normalizeIp(whoAmI.secondaryIp) ?? null;
+
   status.srcIp = srcIp;
+  status.primaryIp = primaryIp;
+  status.secondaryIp = secondaryIp;
+  status.matchedAs = whoAmI.matchedAs ?? null;
+  status.whoAmIMessage = whoAmI.statusMessage;
+
+  if (typeof whoAmI.matches === "boolean") {
+    status.samcoIpMatches = whoAmI.matches;
+  } else if (srcIp) {
+    status.samcoIpMatches =
+      srcIp === primaryIp || (secondaryIp != null && srcIp === secondaryIp);
+  } else {
+    status.samcoIpMatches = undefined;
+  }
+
+  const requiredStaticIp = status.requiredStaticIp;
   status.staticIpMatched = doesSamcoStaticIpMatch(srcIp, requiredStaticIp);
   if (!status.staticIpMatched && isSamcoStaticIpEnforced()) {
     status.staticIpMessage = formatSamcoStaticIpMismatch(srcIp, requiredStaticIp);
+  } else if (status.samcoIpMatches === false) {
+    status.staticIpMessage =
+      whoAmI.statusMessage ??
+      `Samco sees this host as ${srcIp ?? "unknown"}, but registered PRIMARY=${primaryIp ?? "none"} SECONDARY=${secondaryIp ?? "none"}. Order APIs will reject until you register this host's egress IP in the Samco Web Dashboard → Static IPs (for the same OAuth app as SAMCO_API_KEY).`;
   } else {
     status.staticIpMessage = undefined;
   }
@@ -76,6 +120,8 @@ export async function getSamcoAuthStatus(): Promise<SamcoAuthStatus> {
     envDefaultDryRun: runtime.envDefaultDryRun,
     openPositionsCount: getOpenLedgerEntries(ledger).length,
     accountID: sessionMeta.accountID,
+    primaryIp: sessionMeta.primaryIp ?? null,
+    secondaryIp: sessionMeta.secondaryIp ?? null,
     requiredStaticIp,
     staticIpMatched: !isSamcoStaticIpEnforced(),
   };
@@ -92,20 +138,20 @@ export async function getSamcoAuthStatus(): Promise<SamcoAuthStatus> {
     const whoAmI = await getSamcoWhoAmI();
     status.connected = true;
     status.accountID = status.accountID ?? sessionMeta.accountID;
-    applyIpStatus(
-      status,
-      whoAmI.srcIp ?? whoAmI.primaryIp ?? sessionMeta.srcIp,
-      requiredStaticIp,
-    );
+    applyWhoAmIStatus(status, whoAmI, sessionMeta.srcIp);
   } catch {
     // Session token from /session/token is enough to be "connected".
     // whoami may fail on some hosts; fall back to IP from the login response.
     if (hasValidSamcoSessionToken()) {
       status.connected = true;
-      applyIpStatus(
+      applyWhoAmIStatus(
         status,
-        sessionMeta.srcIp ?? sessionMeta.primaryIp,
-        requiredStaticIp,
+        {
+          srcIp: sessionMeta.srcIp,
+          primaryIp: sessionMeta.primaryIp,
+          secondaryIp: sessionMeta.secondaryIp,
+        },
+        sessionMeta.srcIp,
       );
       if (!status.srcIp && isSamcoStaticIpEnforced()) {
         status.staticIpMatched = false;
@@ -138,10 +184,14 @@ export async function initializeSamcoSession(): Promise<void> {
     }
 
     const meta = getSamcoSessionMeta();
-    let srcIp = meta.srcIp ?? meta.primaryIp;
+    // Never fall back srcIp → primaryIp; that hides a real egress mismatch.
+    let srcIp = meta.srcIp;
     try {
       const whoAmI = await getSamcoWhoAmI();
-      srcIp = whoAmI.srcIp ?? whoAmI.primaryIp ?? srcIp;
+      srcIp = whoAmI.srcIp ?? srcIp;
+      console.log(
+        `Samco whoami: srcIp=${whoAmI.srcIp ?? "unknown"} primary=${whoAmI.primaryIp ?? "none"} secondary=${whoAmI.secondaryIp ?? "none"} matches=${String(whoAmI.matches)}`,
+      );
     } catch (whoAmIError) {
       const message =
         whoAmIError instanceof Error ? whoAmIError.message : String(whoAmIError);
