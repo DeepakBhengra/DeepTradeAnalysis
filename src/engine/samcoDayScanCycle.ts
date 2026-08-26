@@ -10,6 +10,7 @@ import { evaluateDeepakWatchPartyDecision } from "../rules/deepakWatchParty.js";
 import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
 import { evaluateDeeppro1Decision } from "../rules/deeppro1Decision.js";
 import {
+  getSamcoProfitPct,
   getSamcoRuleVariant,
 } from "../samco/samcoRuntimeSettings.js";
 import {
@@ -84,7 +85,9 @@ function evaluateStrategy(
       return result ? adaptSignals(result.signals) : null;
     }
     case "deeppro1": {
-      const result = evaluateDeeppro1Decision(snapshots, dateKey);
+      const result = evaluateDeeppro1Decision(snapshots, dateKey, {
+        squareOffPct: getSamcoProfitPct(),
+      });
       return result ? adaptSignals(result.signals) : null;
     }
   }

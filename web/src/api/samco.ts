@@ -34,11 +34,14 @@ export interface SamcoRuntimeSettings {
   ruleVariant: string;
   /** null when stop-loss is off. */
   stopLossPct: number | null;
+  /** Deeppro1 mid-price profit target % (never off; default 0.45). */
+  profitPct: number;
   envDefaultQuantity: number;
   envDefaultDryRun: boolean;
   envDefaultEntryPriceMin: number;
   envDefaultEntryPriceMax: number;
   envDefaultRuleVariant: string;
+  envDefaultProfitPct: number;
   liveTradingEnabled: boolean;
 }
 
@@ -168,6 +171,7 @@ export async function updateSamcoSettings(body: {
   entryPriceMax?: number;
   ruleVariant?: string;
   stopLossPct?: number | null;
+  profitPct?: number;
   confirmLive?: boolean;
 }): Promise<SamcoRuntimeSettings> {
   return samcoFetch<SamcoRuntimeSettings>("/api/samco/settings", {

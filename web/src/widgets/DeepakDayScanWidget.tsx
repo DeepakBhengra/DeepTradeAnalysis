@@ -8,6 +8,7 @@ import { SectorBacktestResultsTable } from "../components/SectorBacktestResultsT
 import { SectorWatchlistPreview } from "../components/SectorWatchlistPreview";
 import { SECTOR_WATCHLIST_SIZE } from "../data/sectorWatchlist";
 import { useDayScanLiveRefresh } from "../hooks/useDayScanLiveRefresh";
+import { useSamcoProfitPct } from "../hooks/useSamcoProfitPct";
 import {
   DAY_SCAN_RULE_VARIANT_LABEL,
   isDayScanRuleVariant,
@@ -71,7 +72,10 @@ function isSingleSymbolDayScanVariant(variant: DayScanRuleVariant): boolean {
   );
 }
 
-function descriptionForVariant(variant: DayScanRuleVariant): string {
+function descriptionForVariant(
+  variant: DayScanRuleVariant,
+  profitPct: number,
+): string {
   const label = DAY_SCAN_RULE_VARIANT_LABEL[variant];
   const universe = `${SECTOR_WATCHLIST_SIZE} liquid NSE stocks (Bank, IT, Metal, Insurance, Automobile, Health, Energy, FMCG, Finance, Infra, Consumer, Telecom, Defence)`;
   const liveRefresh = ` If the selected date is today, the scan auto-refreshes every 10 minutes until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST. Only new signals (not already in the Samco ledger) are applied on each push.`;
@@ -85,7 +89,7 @@ function descriptionForVariant(variant: DayScanRuleVariant): string {
     case "deeppro":
       return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deeppro1":
-      return `Scans ${universe} with ${label} — SMI black↔red cross entries (Stch Mtm 10,3,3) until 11:45 IST (one open position at a time). Exits: 0.45% target, breakeven after 0.3% then return to entry, opposite-cross flip (also opens the new side if ≤ 11:45), or forced 15:00 exit. Separate from Deeppro exhaustion. May take several minutes depending on Kite response time.${liveRefresh}`;
+      return `Scans ${universe} with ${label} — SMI black↔red cross entries (Stch Mtm 10,3,3) until 11:45 IST (one open position at a time). Exits: ${profitPct}% target, breakeven after 0.3% then return to entry, opposite-cross flip (also opens the new side if ≤ 11:45), or forced 15:00 exit. Separate from Deeppro exhaustion. May take several minutes depending on Kite response time.${liveRefresh}`;
     case "rulePnb":
       return `Scans PNB only with ${label} — a separate RSI/SMI/BB proximity rule from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak or Deeppro and not applied to other stocks.${liveRefresh}`;
     case "ruleSunpharma":
@@ -155,6 +159,11 @@ export function DeepakDayScanWidget({
   const [hasStarted, setHasStarted] = useState(false);
   const { data, loading, loadingElapsedSec, error, info, run, stop, reset } =
     useVariantDayScan(variant);
+  const {
+    profitPct,
+    setProfitPct,
+    saving: profitPctSaving,
+  } = useSamcoProfitPct(isActive);
   const hasRunRef = useRef(false);
   const [samcoPushInfo, setSamcoPushInfo] = useState<string | null>(null);
 
@@ -306,7 +315,12 @@ export function DeepakDayScanWidget({
           entryPriceMax={entryPriceMaxInput}
           onEntryPriceMinChange={handleEntryPriceMinChange}
           onEntryPriceMaxChange={handleEntryPriceMaxChange}
-          description={descriptionForVariant(variant)}
+          profitPct={profitPct}
+          onProfitPctChange={(next) => {
+            void setProfitPct(next);
+          }}
+          profitPctDisabled={profitPctSaving}
+          description={descriptionForVariant(variant, profitPct)}
         />
 
         {!isSingleSymbolDayScanVariant(variant) && (

@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 
 import { config } from "../config.js";
 import { getIstTimeParts } from "../utils/marketTime.js";
+import { normalizeProfitPct } from "../utils/profitPct.js";
 import { normalizeStopLossPct } from "../utils/stopLossPct.js";
 import {
   DEFAULT_SAMCO_RULE_VARIANT,
@@ -24,6 +25,8 @@ export interface SamcoRuntimeSettingsFile {
   ruleVariant?: SamcoRuleVariant;
   /** Adverse loss % vs entry; omit/null/0 = disabled. */
   stopLossPct?: number | null;
+  /** Deeppro1 mid-price profit target %; omit → config.deeppro1.squareOffPct. */
+  profitPct?: number;
 }
 
 export interface SamcoRuntimeSettingsView {
@@ -36,11 +39,14 @@ export interface SamcoRuntimeSettingsView {
   ruleVariant: SamcoRuleVariant;
   /** null when stop-loss is off. */
   stopLossPct: number | null;
+  /** Deeppro1 mid-price profit target % (never off; default 0.45). */
+  profitPct: number;
   envDefaultQuantity: number;
   envDefaultDryRun: boolean;
   envDefaultEntryPriceMin: number;
   envDefaultEntryPriceMax: number;
   envDefaultRuleVariant: SamcoRuleVariant;
+  envDefaultProfitPct: number;
 }
 
 export interface SamcoEntryPriceRange {
@@ -75,6 +81,16 @@ function resolveStopLossPct(
   return normalizeStopLossPct(stored?.stopLossPct ?? null);
 }
 
+function envProfitPctDefault(): number {
+  return normalizeProfitPct(config.deeppro1.squareOffPct);
+}
+
+function resolveProfitPct(
+  stored: Pick<SamcoRuntimeSettingsFile, "profitPct"> | null,
+): number {
+  return normalizeProfitPct(stored?.profitPct, envProfitPctDefault());
+}
+
 function createDefaultSettings(now = new Date()): SamcoRuntimeSettingsFile {
   const { min, max } = envEntryPriceDefaults();
   return {
@@ -85,6 +101,7 @@ function createDefaultSettings(now = new Date()): SamcoRuntimeSettingsFile {
     entryPriceMax: max,
     ruleVariant: DEFAULT_SAMCO_RULE_VARIANT,
     stopLossPct: null,
+    profitPct: envProfitPctDefault(),
   };
 }
 
@@ -143,6 +160,7 @@ function normalizeForToday(
   const { min, max } = resolveEntryPriceRange(stored);
   const ruleVariant = resolveRuleVariant(stored);
   const stopLossPct = resolveStopLossPct(stored);
+  const profitPct = resolveProfitPct(stored);
 
   if (stored.dateKey !== currentDateKey) {
     return {
@@ -153,6 +171,7 @@ function normalizeForToday(
       entryPriceMax: max,
       ruleVariant,
       stopLossPct,
+      profitPct,
     };
   }
 
@@ -162,6 +181,7 @@ function normalizeForToday(
     entryPriceMax: max,
     ruleVariant,
     stopLossPct,
+    profitPct,
   };
 }
 
@@ -178,11 +198,13 @@ function toView(normalized: SamcoRuntimeSettingsFile): SamcoRuntimeSettingsView 
     entryPriceMax: max,
     ruleVariant: resolveRuleVariant(normalized),
     stopLossPct: resolveStopLossPct(normalized),
+    profitPct: resolveProfitPct(normalized),
     envDefaultQuantity: config.samco.defaultQuantity,
     envDefaultDryRun: config.samco.dryRun,
     envDefaultEntryPriceMin: envDefaults.min,
     envDefaultEntryPriceMax: envDefaults.max,
     envDefaultRuleVariant: DEFAULT_SAMCO_RULE_VARIANT,
+    envDefaultProfitPct: envProfitPctDefault(),
   };
 }
 
@@ -234,6 +256,10 @@ export function getSamcoStopLossPct(now = new Date()): number | null {
   return getSamcoRuntimeSettings(now).stopLossPct;
 }
 
+export function getSamcoProfitPct(now = new Date()): number {
+  return getSamcoRuntimeSettings(now).profitPct;
+}
+
 export function validateSamcoStopLossPct(value: number | null): void {
   if (value == null) {
     return;
@@ -243,6 +269,15 @@ export function validateSamcoStopLossPct(value: number | null): void {
   }
   if (value > 100) {
     throw new Error("Stop-loss % cannot exceed 100.");
+  }
+}
+
+export function validateSamcoProfitPct(value: number): void {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new Error("Profit % must be a positive number.");
+  }
+  if (value > 100) {
+    throw new Error("Profit % cannot exceed 100.");
   }
 }
 
@@ -256,6 +291,21 @@ export function setSamcoStopLossPct(
     ...current,
     dateKey: todayDateKey(now),
     stopLossPct: normalizeStopLossPct(value),
+  };
+  writeSettingsFile(next);
+  return getSamcoRuntimeSettings(now);
+}
+
+export function setSamcoProfitPct(
+  value: number,
+  now = new Date(),
+): SamcoRuntimeSettingsView {
+  validateSamcoProfitPct(value);
+  const current = normalizeForToday(readSettingsFile(), now);
+  const next: SamcoRuntimeSettingsFile = {
+    ...current,
+    dateKey: todayDateKey(now),
+    profitPct: normalizeProfitPct(value, envProfitPctDefault()),
   };
   writeSettingsFile(next);
   return getSamcoRuntimeSettings(now);

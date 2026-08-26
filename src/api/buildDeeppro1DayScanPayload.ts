@@ -23,7 +23,7 @@ import {
   sessionMarkBarsFromSnapshots,
 } from "../utils/dayScanStopLoss.js";
 import { withOpenTradeMarkPrices } from "../utils/sessionMarkPrice.js";
-import { getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
+import { getSamcoProfitPct, getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import { runBatchedSectorScan, withDayScanSymbolTimeout } from "./runBatchedSectorScan.js";
 
@@ -90,7 +90,9 @@ async function scanSymbol(
       entry.tradingSymbol,
     );
     const snapshots = buildIndicatorSnapshots(candles);
-    const day = evaluateDeeppro1Day(snapshots, date);
+    const day = evaluateDeeppro1Day(snapshots, date, {
+      squareOffPct: getSamcoProfitPct(),
+    });
 
     return {
       trades: applyStopLossExitsToTrades(
