@@ -2,8 +2,10 @@ import { useState } from "react";
 
 import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
 import { DayOrderPortfolioPanel } from "../components/DayOrderPortfolioPanel";
+import { Deeppro1ProfitPctSelect } from "../components/Deeppro1ProfitPctSelect";
 import { useDayScanSimulationContext } from "../context/DayScanSimulationContext";
 import { useDayOrderSimulation } from "../hooks/useDayOrderSimulation";
+import { useSamcoProfitPct } from "../hooks/useSamcoProfitPct";
 import {
   DEFAULT_DAY_ORDER_RUN_SETTINGS,
   MAX_ENTRY_PRICE,
@@ -88,6 +90,11 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
   const [tradingSymbolsText, setTradingSymbolsText] = useState(
     () => formatDayOrderRunSettings(DEFAULT_DAY_ORDER_RUN_SETTINGS).tradingSymbolsText,
   );
+  const {
+    profitPct,
+    setProfitPct,
+    saving: profitPctSaving,
+  } = useSamcoProfitPct(isActive);
 
   const isRunning = status === "running" || catchingUp;
   const scanBusy = scanStatus === "playing" || scanStatus === "loading";
@@ -262,6 +269,14 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
                 className="w-36 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               />
             </label>
+            <Deeppro1ProfitPctSelect
+              id="dayorder-sim-profit-pct"
+              value={profitPct}
+              disabled={inputsDisabled || profitPctSaving}
+              onChange={(next) => {
+                void setProfitPct(next);
+              }}
+            />
             <label
               className="flex min-w-[220px] flex-1 flex-col gap-1 text-xs text-kite-muted"
               htmlFor="dayorder-sim-stocks"
@@ -370,7 +385,9 @@ export function DayOrderSimulatorWidget({ isActive }: DayOrderSimulatorWidgetPro
             optional stop-loss % for this date run before Start (locked while running). Leave
             stocks blank to trade any symbol from the scan. When stop-loss % is set, open
             positions that lose that much vs entry exit at the candle mid (no reverse entry).
-            Blank or 0 = no stop-loss. Defaults: {ORDER_QUANTITY} qty, ₹
+            Blank or 0 = no stop-loss. Profit % is the shared Deeppro1 mid-price target (restart
+            Day Scan Simulator after changing it so exits rebuild). Defaults: {ORDER_QUANTITY}{" "}
+            qty, ₹
             {formatInr(MIN_ENTRY_PRICE)}–₹
             {formatInr(MAX_ENTRY_PRICE)}. Starts automatically when Day Scan Simulator starts and
             catches up from 09:15. Order history is a column table of every fill (scroll for

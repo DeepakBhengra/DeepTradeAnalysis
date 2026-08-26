@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { AnalysisDatePicker } from "../components/AnalysisDatePicker";
+import { Deeppro1ProfitPctSelect } from "../components/Deeppro1ProfitPctSelect";
 import { SamcoOrdersPanels } from "../components/SamcoOrdersPanels";
 import { SamcoPnLPanel } from "../components/SamcoPnLPanel";
 import { SamcoTradeAnalysisPanel } from "../components/SamcoTradeAnalysisPanel";
@@ -50,6 +51,8 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
     setMaxPriceInput,
     stopLossPctInput,
     setStopLossPctInput,
+    profitPctInput,
+    applyProfitPct,
     ruleVariantInput,
     applyRuleVariant,
     loading,
@@ -423,6 +426,14 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
               >
                 Apply SL
               </button>
+              <Deeppro1ProfitPctSelect
+                id="samco-profit-pct"
+                value={profitPctInput}
+                disabled={loading}
+                onChange={(next) => {
+                  void applyProfitPct(next);
+                }}
+              />
               <button
                 type="button"
                 onClick={() => void applyTradingParams()}
@@ -442,11 +453,12 @@ export function SamcoTradingWidget({ isActive }: SamcoTradingWidgetProps) {
             {settings?.stopLossPct == null
               ? "off"
               : `${settings.stopLossPct}%`}{" "}
-            · Env defaults: ₹{settings?.envDefaultEntryPriceMin ?? "—"}–₹
+            · Profit (Deeppro1): {settings?.profitPct ?? profitPctInput}% · Env defaults: ₹
+            {settings?.envDefaultEntryPriceMin ?? "—"}–₹
             {settings?.envDefaultEntryPriceMax ?? "—"}, qty{" "}
             {settings?.envDefaultQuantity ?? "—"} · Click Apply to save price/qty/SL
-            edits; rule variant saves on change. When SL hits, position exits at mark
-            with no reverse entry.
+            edits; rule variant and profit % save on change. When SL hits, position exits at
+            mark with no reverse entry.
           </p>
         </section>
 

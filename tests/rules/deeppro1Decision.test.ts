@@ -144,6 +144,36 @@ describe("Deeppro1 square-off simulation", () => {
     expect(exit!.timeIst).toBe("11:30");
   });
 
+  it("uses a higher squareOffPct override so 0.5% move is not yet target", () => {
+    const dateKey = "2026-03-10";
+    const entry = 2000;
+    const candles: Candle[] = [
+      istCandle(dateKey, 11, 0, entry, entry + 2, entry - 2, entry),
+      istCandle(dateKey, 11, 15, 2004, 2005, 2003, 2004),
+      // mid ≈ 2010 → +0.5% — hits 0.45 but not 1.0
+      istCandle(dateKey, 11, 30, 2010, 2011, 2009, 2010),
+    ];
+    const snapshots = buildIndicatorSnapshots(candles);
+    const atDefault = simulateDeeppro1SquareOff(
+      snapshots,
+      dateKey,
+      0,
+      "BUY",
+      entry,
+      0.45,
+    );
+    const atOnePct = simulateDeeppro1SquareOff(
+      snapshots,
+      dateKey,
+      0,
+      "BUY",
+      entry,
+      1,
+    );
+    expect(atDefault?.exitReason).toBe("target");
+    expect(atOnePct).toBeNull();
+  });
+
   it("BUY: after 0.3% profit, exits at breakeven when mid returns to entry", () => {
     const dateKey = "2026-03-10";
     const entry = 2000;

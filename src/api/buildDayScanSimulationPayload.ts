@@ -37,7 +37,7 @@ import type {
 import { formatIstTime, getIstTimeParts, isValidAnalysisDate } from "../utils/marketTime.js";
 import { candleMidPrice } from "../utils/sessionMarkPrice.js";
 import { applyStopLossToDayScanSimulationPayload } from "../utils/dayScanStopLoss.js";
-import { getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
+import { getSamcoProfitPct, getSamcoStopLossPct } from "../samco/samcoRuntimeSettings.js";
 import { validateDayScanDate } from "./buildDeepakDayScanPayload.js";
 import {
   DayScanSimulationCache,
@@ -192,7 +192,9 @@ function evaluateRuleVariant(
     case "deeppro":
       return evaluateDeepproDecision(snapshots, date);
     case "deeppro1":
-      return evaluateDeeppro1Decision(snapshots, date);
+      return evaluateDeeppro1Decision(snapshots, date, {
+        squareOffPct: getSamcoProfitPct(),
+      });
     case "rulePnb":
       return isRulePnbSymbol(tradingSymbol)
         ? evaluateRulePnbDecision(snapshots, date)

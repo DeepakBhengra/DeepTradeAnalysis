@@ -3,6 +3,7 @@ import {
   deeppro1SignalToTradeSignal,
   evaluateDeeppro1Day,
 } from "../rules/deeppro1Decision.js";
+import { getSamcoProfitPct } from "../samco/samcoRuntimeSettings.js";
 import type {
   DeepakBacktestResult,
   DeepakBacktestSummary,
@@ -82,7 +83,9 @@ export function runDeeppro1Backtest(
   const trades: DeepakBacktestTrade[] = [];
 
   for (const date of targetDates) {
-    const day = evaluateDeeppro1Day(snapshots, date);
+    const day = evaluateDeeppro1Day(snapshots, date, {
+      squareOffPct: getSamcoProfitPct(),
+    });
     for (const signal of day.signals) {
       const tradeSignal = deeppro1SignalToTradeSignal(signal);
       trades.push({

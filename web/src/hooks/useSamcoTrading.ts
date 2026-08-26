@@ -22,6 +22,7 @@ import {
   isSamcoRuleVariant,
   type SamcoRuleVariant,
 } from "../utils/samcoRuleVariant";
+import { DEFAULT_DEEPPRO1_PROFIT_PCT, normalizeProfitPct } from "../utils/profitPct";
 import { todayIstDateKey } from "../utils/istTime";
 
 function resolveRuleVariant(value: string | undefined): SamcoRuleVariant {
@@ -39,6 +40,7 @@ export function useSamcoTrading(isActive: boolean) {
   const [minPriceInput, setMinPriceInput] = useState("0");
   const [maxPriceInput, setMaxPriceInput] = useState("3900");
   const [stopLossPctInput, setStopLossPctInput] = useState("");
+  const [profitPctInput, setProfitPctInput] = useState(DEFAULT_DEEPPRO1_PROFIT_PCT);
   const [ruleVariantInput, setRuleVariantInput] = useState<SamcoRuleVariant>(
     DEFAULT_SAMCO_RULE_VARIANT,
   );
@@ -59,6 +61,7 @@ export function useSamcoTrading(isActive: boolean) {
     setStopLossPctInput(
       nextSettings.stopLossPct == null ? "" : String(nextSettings.stopLossPct),
     );
+    setProfitPctInput(normalizeProfitPct(nextSettings.profitPct));
     setRuleVariantInput(resolveRuleVariant(nextSettings.ruleVariant));
   }, []);
 
@@ -259,6 +262,7 @@ export function useSamcoTrading(isActive: boolean) {
       setStopLossPctInput(
         next.stopLossPct == null ? "" : String(next.stopLossPct),
       );
+      setProfitPctInput(normalizeProfitPct(next.profitPct));
       setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -286,6 +290,7 @@ export function useSamcoTrading(isActive: boolean) {
       setStopLossPctInput(
         next.stopLossPct == null ? "" : String(next.stopLossPct),
       );
+      setProfitPctInput(normalizeProfitPct(next.profitPct));
       setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -310,6 +315,7 @@ export function useSamcoTrading(isActive: boolean) {
       setStopLossPctInput(
         next.stopLossPct == null ? "" : String(next.stopLossPct),
       );
+      setProfitPctInput(normalizeProfitPct(next.profitPct));
       setQuantityInput(String(next.effectiveQuantity));
       setMinPriceInput(String(next.entryPriceMin));
       setMaxPriceInput(String(next.entryPriceMax));
@@ -320,6 +326,32 @@ export function useSamcoTrading(isActive: boolean) {
       throw err;
     }
   }, [stopLossPctInput, clearInputsDirty]);
+
+  const applyProfitPct = useCallback(
+    async (nextProfitPct: number) => {
+      const profitPct = normalizeProfitPct(nextProfitPct);
+      setActionError(null);
+      setProfitPctInput(profitPct);
+      try {
+        const next = await updateSamcoSettings({ profitPct });
+        setSettings(next);
+        clearInputsDirty();
+        setProfitPctInput(normalizeProfitPct(next.profitPct));
+        setStopLossPctInput(
+          next.stopLossPct == null ? "" : String(next.stopLossPct),
+        );
+        setQuantityInput(String(next.effectiveQuantity));
+        setMinPriceInput(String(next.entryPriceMin));
+        setMaxPriceInput(String(next.entryPriceMax));
+        setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        setActionError(message);
+        throw err;
+      }
+    },
+    [clearInputsDirty],
+  );
 
   const applyRuleVariant = useCallback(
     async (nextVariant: SamcoRuleVariant) => {
@@ -337,6 +369,7 @@ export function useSamcoTrading(isActive: boolean) {
         setStopLossPctInput(
           next.stopLossPct == null ? "" : String(next.stopLossPct),
         );
+        setProfitPctInput(normalizeProfitPct(next.profitPct));
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         setActionError(message);
@@ -353,6 +386,7 @@ export function useSamcoTrading(isActive: boolean) {
     const stopLossRaw = stopLossPctInput.trim();
     const stopLossPct =
       stopLossRaw === "" || stopLossRaw === "0" ? null : Number(stopLossRaw);
+    const profitPct = normalizeProfitPct(profitPctInput);
     if (!Number.isInteger(quantity) || quantity < 1) {
       setActionError("Quantity must be a positive integer.");
       return;
@@ -374,6 +408,7 @@ export function useSamcoTrading(isActive: boolean) {
         entryPriceMax,
         ruleVariant: ruleVariantInput,
         stopLossPct,
+        profitPct,
       });
       setSettings(next);
       clearInputsDirty();
@@ -383,6 +418,7 @@ export function useSamcoTrading(isActive: boolean) {
       setStopLossPctInput(
         next.stopLossPct == null ? "" : String(next.stopLossPct),
       );
+      setProfitPctInput(normalizeProfitPct(next.profitPct));
       setRuleVariantInput(resolveRuleVariant(next.ruleVariant));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
@@ -394,6 +430,7 @@ export function useSamcoTrading(isActive: boolean) {
     minPriceInput,
     maxPriceInput,
     stopLossPctInput,
+    profitPctInput,
     ruleVariantInput,
     clearInputsDirty,
   ]);
@@ -499,6 +536,8 @@ export function useSamcoTrading(isActive: boolean) {
       markInputsDirty();
       setStopLossPctInput(value);
     },
+    profitPctInput,
+    applyProfitPct,
     ruleVariantInput,
     applyRuleVariant,
     loading,

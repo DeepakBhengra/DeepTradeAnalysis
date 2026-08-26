@@ -228,6 +228,7 @@ describe("samcoRuntimeSettings", () => {
       const settings = getSamcoRuntimeSettings(new Date("2026-06-29T10:00:00+05:30"));
       expect(settings.ruleVariant).toBe("deepak+deepak2");
       expect(settings.stopLossPct).toBeNull();
+      expect(settings.profitPct).toBe(0.45);
     } finally {
       process.chdir(originalCwd);
     }
@@ -250,6 +251,28 @@ describe("samcoRuntimeSettings", () => {
       expect(
         getSamcoRuntimeSettings(new Date("2026-06-29T11:00:00+05:30")).stopLossPct,
       ).toBeNull();
+    } finally {
+      process.chdir(originalCwd);
+    }
+  });
+
+  it("stores profit pct and defaults missing values to 0.45", async () => {
+    const originalCwd = process.cwd();
+
+    try {
+      process.chdir(tempDir);
+      const { setSamcoProfitPct, getSamcoProfitPct, getSamcoRuntimeSettings } =
+        await loadRuntimeSettingsModule();
+
+      const updated = setSamcoProfitPct(0.75, new Date("2026-06-29T06:00:00+05:30"));
+      expect(updated.profitPct).toBe(0.75);
+      expect(getSamcoProfitPct(new Date("2026-06-29T10:00:00+05:30"))).toBe(0.75);
+
+      const nextDay = getSamcoRuntimeSettings(new Date("2026-06-30T06:00:00+05:30"));
+      expect(nextDay.profitPct).toBe(0.75);
+
+      expect(() => setSamcoProfitPct(0)).toThrow(/positive/i);
+      expect(() => setSamcoProfitPct(-1)).toThrow(/positive/i);
     } finally {
       process.chdir(originalCwd);
     }

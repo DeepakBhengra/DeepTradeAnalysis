@@ -30,6 +30,7 @@ import {
   setSamcoDayQuantity,
   setSamcoDryRun,
   setSamcoEntryPriceRange,
+  setSamcoProfitPct,
   setSamcoRuleVariant,
   setSamcoStopLossPct,
 } from "../samco/samcoRuntimeSettings.js";
@@ -529,6 +530,7 @@ app.patch("/api/samco/settings", (req, res) => {
     const entryPriceMax = req.body?.entryPriceMax;
     const ruleVariant = req.body?.ruleVariant;
     const stopLossPct = req.body?.stopLossPct;
+    const profitPct = req.body?.profitPct;
     const confirmLive = req.body?.confirmLive === true;
 
     if (dryRun !== undefined && typeof dryRun !== "boolean") {
@@ -563,6 +565,13 @@ app.patch("/api/samco/settings", (req, res) => {
     ) {
       res.status(400).json({
         error: "stopLossPct must be a number or null when provided.",
+      });
+      return;
+    }
+
+    if (profitPct !== undefined && typeof profitPct !== "number") {
+      res.status(400).json({
+        error: "profitPct must be a number when provided.",
       });
       return;
     }
@@ -608,6 +617,15 @@ app.patch("/api/samco/settings", (req, res) => {
       setSamcoStopLossPct(stopLossPct);
     }
 
+    if (typeof profitPct === "number") {
+      const previousProfitPct = getSamcoRuntimeSettings().profitPct;
+      setSamcoProfitPct(profitPct);
+      // Deeppro1 targets change exits; invalidate sim frames that baked the old %.
+      if (getSamcoRuntimeSettings().profitPct !== previousProfitPct) {
+        dayScanSimulationCache.clear();
+      }
+    }
+
     res.json({
       ...getSamcoRuntimeSettings(),
       liveTradingEnabled: getSamcoLiveTradingEnabled(),
@@ -618,6 +636,7 @@ app.patch("/api/samco/settings", (req, res) => {
       message.includes("Quantity must") ||
       message.includes("Entry price") ||
       message.includes("Stop-loss") ||
+      message.includes("Profit %") ||
       message.includes("Invalid ruleVariant")
         ? 400
         : 500;

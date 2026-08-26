@@ -13,6 +13,7 @@ import { computeConfidenceScore } from "../rules/confidenceScore.js";
 import { evaluateDeepakDecision, evaluateDeepak2Decision } from "../rules/deepakDecision.js";
 import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
 import { evaluateDeeppro1Decision } from "../rules/deeppro1Decision.js";
+import { getSamcoProfitPct } from "../samco/samcoRuntimeSettings.js";
 import {
   evaluateRulePnbDecision,
   isRulePnbSymbol,
@@ -229,7 +230,11 @@ function buildPayloadFromCandles(input: {
   const deepproDecision =
     targetDateKey != null ? evaluateDeepproDecision(snapshots, targetDateKey) : null;
   const deeppro1Decision =
-    targetDateKey != null ? evaluateDeeppro1Decision(snapshots, targetDateKey) : null;
+    targetDateKey != null
+      ? evaluateDeeppro1Decision(snapshots, targetDateKey, {
+          squareOffPct: getSamcoProfitPct(),
+        })
+      : null;
   // RulePNB is PNB-only and never mixes into Deepak/Deeppro reasons or decision.
   const rulePnbDecision =
     targetDateKey != null && isRulePnbSymbol(dashboardSymbol.tradingSymbol)

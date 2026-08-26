@@ -286,11 +286,17 @@ function openFromCross(params: {
 /**
  * Evaluate Deeppro1 for one IST trade day (any symbol).
  * One open position at a time. Entries only at/before entryDeadlineIst (11:45).
- * Exits: 0.45% target, 0.3%→breakeven, opposite-cross flip, or forced 15:00 exit.
+ * Exits: squareOffPct target (default 0.45%), 0.3%→breakeven, opposite-cross flip, or forced 15:00 exit.
  */
+export interface Deeppro1EvaluateOptions {
+  /** Override config.deeppro1.squareOffPct (mid-price favourable move %). */
+  squareOffPct?: number;
+}
+
 export function evaluateDeeppro1Day(
   snapshots: IndicatorSnapshot[],
   dateKey: string,
+  options?: Deeppro1EvaluateOptions,
 ): Deeppro1ScanResult {
   const {
     sessionStart,
@@ -298,9 +304,15 @@ export function evaluateDeeppro1Day(
     entryDeadlineIst,
     forceExitIst,
     smi: smiCfg,
-    squareOffPct,
+    squareOffPct: configSquareOffPct,
     breakevenArmPct,
   } = config.deeppro1;
+  const squareOffPct =
+    options?.squareOffPct != null &&
+    Number.isFinite(options.squareOffPct) &&
+    options.squareOffPct > 0
+      ? options.squareOffPct
+      : configSquareOffPct;
 
   const smiSeries = computeStochasticMomentum(
     snapshots.map((s) => s.high),
@@ -493,8 +505,9 @@ export function deeppro1SignalToTradeSignal(
 export function evaluateDeeppro1Decision(
   snapshots: IndicatorSnapshot[],
   dateKey: string,
+  options?: Deeppro1EvaluateOptions,
 ): DeepakDecisionResult | null {
-  const day = evaluateDeeppro1Day(snapshots, dateKey);
+  const day = evaluateDeeppro1Day(snapshots, dateKey, options);
   if (day.signals.length === 0) {
     return null;
   }

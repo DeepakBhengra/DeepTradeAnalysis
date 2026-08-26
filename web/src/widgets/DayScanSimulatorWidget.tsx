@@ -6,11 +6,13 @@ import { SimulationControls } from "../components/SimulationControls";
 import { useDayScanSimulationContext } from "../context/DayScanSimulationContext";
 import { SECTOR_WATCHLIST_SIZE } from "../data/sectorWatchlist";
 import { useDayScanLiveRefresh } from "../hooks/useDayScanLiveRefresh";
+import { useSamcoProfitPct } from "../hooks/useSamcoProfitPct";
 import {
   DAY_SCAN_SIMULATION_VARIANT_OPTIONS,
   type DayScanSimulationVariant,
 } from "../utils/dayScanSimulationVariant";
 import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST } from "../utils/istTime";
+import { Deeppro1ProfitPctSelect } from "../components/Deeppro1ProfitPctSelect";
 
 /** Auto-refresh interval for Day Scan Simulator when date is IST today. */
 export const DAY_SCAN_SIMULATOR_LIVE_REFRESH_MS = 15 * 60 * 1000;
@@ -19,7 +21,10 @@ interface DayScanSimulatorWidgetProps {
   isActive: boolean;
 }
 
-function descriptionForVariant(variant: DayScanSimulationVariant): string {
+function descriptionForVariant(
+  variant: DayScanSimulationVariant,
+  profitPct: number,
+): string {
   const liveNote = ` If the selected date is today, after Start the simulator keeps waiting for each next 15m candle (re-scanning around candle close) until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
   const universe = `${SECTOR_WATCHLIST_SIZE} sector stocks`;
   if (variant === "all") {
@@ -37,7 +42,7 @@ function descriptionForVariant(variant: DayScanSimulationVariant): string {
     return `Replay ${DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)?.label ?? variant} signals for its locked symbol from 09:15–15:00 IST (10s per 15m candle). First Start loads market data; later candles advance from cache.${liveNote}`;
   }
   if (variant === "deeppro1") {
-    return `Replay Deeppro1 SMI black↔red crosses until 11:45 IST (exits: 0.45% target / 0.3%→breakeven / opposite flip / 15:00 force) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
+    return `Replay Deeppro1 SMI black↔red crosses until 11:45 IST (exits: ${profitPct}% target / 0.3%→breakeven / opposite flip / 15:00 force) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
   }
   const label =
     DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)
@@ -70,6 +75,12 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
     stop,
     reloadLatest,
   } = useDayScanSimulationContext();
+
+  const {
+    profitPct,
+    setProfitPct,
+    saving: profitPctSaving,
+  } = useSamcoProfitPct(isActive);
 
   const hasStarted = useMemo(
     () =>
@@ -173,6 +184,14 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
                 className="w-28 rounded-sm border border-kite-border bg-kite-bg px-2 py-1.5 text-xs text-kite-text focus:border-kite-orange focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
               />
             </label>
+            <Deeppro1ProfitPctSelect
+              id="dayscan-sim-profit-pct"
+              value={profitPct}
+              disabled={busy || profitPctSaving}
+              onChange={(next) => {
+                void setProfitPct(next);
+              }}
+            />
             <SimulationControls
               status={status}
               sessionIndex={sessionIndex}
@@ -185,7 +204,7 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
             />
           </div>
           <p className="m-0 mt-2 text-xs text-kite-muted">
-            {descriptionForVariant(ruleVariant)}
+            {descriptionForVariant(ruleVariant, profitPct)}
           </p>
           <p className="m-0 mt-1 text-[11px] text-kite-muted">
             Only entries with price in ₹{entryPriceMin}–₹{entryPriceMax} are shown and
@@ -193,7 +212,7 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
             {filteredOutEntryCount > 0
               ? ` · ${filteredOutEntryCount} entry signal(s) outside range hidden`
               : ""}
-            .
+            . Profit % is the Deeppro1 mid-price target (shared Samco setting).
           </p>
         </section>
 

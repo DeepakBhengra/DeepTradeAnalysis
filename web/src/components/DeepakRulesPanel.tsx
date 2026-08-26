@@ -65,7 +65,7 @@ const DEEPPRO1_RULES = [
   "One open position at a time per symbol/day",
   "Entry price = candle mid (high+low)/2 at the cross bar",
   "No new BUY/SELL after 11:45 IST (11:45 candle still allowed); exits continue after",
-  "Exit: 0.45% favourable mid target",
+  "Exit: selected Profit % favourable mid target (default 0.45%)",
   "Exit: after 0.3% profit, if mid returns to entry → breakeven",
   "Exit: opposite SMI cross closes the open side (and opens the new side if ≤ 11:45)",
   "Exit: still open at 15:00 → force exit at 15:00 mid",
@@ -287,7 +287,7 @@ export function DeepakRulesPanel({
             {variant === "deeppro"
               ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
               : variant === "deeppro1"
-                ? `${sessionLabel} · Generic all-stock SMI black↔red cross · entries until 11:45 IST · exits: 0.45% target / 0.3%→breakeven / opposite flip / 15:00 force · separate from Deeppro exhaustion · day scan evaluates the full watchlist.`
+                ? `${sessionLabel} · Generic all-stock SMI black↔red cross · entries until 11:45 IST · exits: selected Profit % target (default 0.45%) / 0.3%→breakeven / opposite flip / 15:00 force · separate from Deeppro exhaustion · day scan evaluates the full watchlist.`
                 : variant === "rulePnb"
                   ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
                   : variant === "ruleSunpharma"

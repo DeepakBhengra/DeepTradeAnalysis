@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { Deeppro1ProfitPctSelect } from "./Deeppro1ProfitPctSelect";
 import type { DayScanRuleVariant } from "../hooks/useVariantDayScan";
 import { DAY_SCAN_RULE_VARIANT_OPTIONS } from "../hooks/useVariantDayScan";
 
@@ -16,6 +17,10 @@ interface DayScanRunControlsProps {
   entryPriceMax?: string;
   onEntryPriceMinChange?: (value: string) => void;
   onEntryPriceMaxChange?: (value: string) => void;
+  /** Shared Samco Deeppro1 profit target %. */
+  profitPct?: number;
+  onProfitPctChange?: (profitPct: number) => void;
+  profitPctDisabled?: boolean;
   /** Prefix for input ids when multiple day-scan control blocks are mounted. */
   idPrefix?: string;
 }
@@ -33,17 +38,22 @@ export function DayScanRunControls({
   entryPriceMax,
   onEntryPriceMinChange,
   onEntryPriceMaxChange,
+  profitPct,
+  onProfitPctChange,
+  profitPctDisabled = false,
   idPrefix = "dayscan",
 }: DayScanRunControlsProps) {
   const dateId = `${idPrefix}-session-date`;
   const variantId = `${idPrefix}-rule-variant`;
   const minPriceId = `${idPrefix}-entry-price-min`;
   const maxPriceId = `${idPrefix}-entry-price-max`;
+  const profitPctId = `${idPrefix}-profit-pct`;
   const showPriceRange =
     entryPriceMin != null &&
     entryPriceMax != null &&
     onEntryPriceMinChange != null &&
     onEntryPriceMaxChange != null;
+  const showProfitPct = profitPct != null && onProfitPctChange != null;
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -115,6 +125,14 @@ export function DayScanRunControls({
             </label>
           </>
         )}
+        {showProfitPct && (
+          <Deeppro1ProfitPctSelect
+            id={profitPctId}
+            value={profitPct}
+            onChange={onProfitPctChange}
+            disabled={loading || profitPctDisabled}
+          />
+        )}
         <button
           type="button"
           onClick={onRun}
@@ -137,6 +155,12 @@ export function DayScanRunControls({
         <p className="m-0 mt-1 text-[11px] text-kite-muted">
           Results and Samco push only include trades with entry price in ₹{entryPriceMin}–
           ₹{entryPriceMax}.
+        </p>
+      )}
+      {showProfitPct && (
+        <p className="m-0 mt-1 text-[11px] text-kite-muted">
+          Profit % sets the Deeppro1 mid-price target (shared with Day Scan Simulator, Day
+          Order Simulator, and Samco). Changing it clears Day Scan Simulator cache.
         </p>
       )}
     </section>
