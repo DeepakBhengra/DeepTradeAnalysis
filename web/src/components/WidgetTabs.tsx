@@ -2,10 +2,6 @@ export type AppWidget =
   | "stockDashboard"
   | "deepakBacktest"
   | "deepakDayScan"
-  | "deepak2Backtest"
-  | "deepak2DayScan"
-  | "deepak3DayScan"
-  | "deepakWatchPartyDayScan"
   | "dayScanSimulator"
   | "dayOrderSimulator"
   | "samcoTrading"
@@ -21,10 +17,6 @@ const tabs: Array<{ id: AppWidget; label: string }> = [
   { id: "stockDashboard", label: "Stock 15m Dashboard" },
   { id: "deepakBacktest", label: "Deepak Backtest" },
   { id: "deepakDayScan", label: "Deepak Day Scan" },
-  { id: "deepak2Backtest", label: "Deepak-2 Backtest" },
-  { id: "deepak2DayScan", label: "Deepak-2 Day Scan" },
-  { id: "deepak3DayScan", label: "Deepak-3 Day Scan" },
-  { id: "deepakWatchPartyDayScan", label: "Watch Party Day Scan" },
   { id: "deepakPostMortem", label: "Deepak Post-Mortem" },
   { id: "dayScanPostMortem", label: "Day Scan Post-Mortem" },
   { id: "dayScanSimulator", label: "Day Scan Simulator" },
