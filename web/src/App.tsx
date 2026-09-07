@@ -4,16 +4,12 @@ import { KiteConnectButton } from "./components/KiteConnectButton";
 import { ThemeToggle } from "./components/ThemeToggle";
 import { WidgetTabs, type AppWidget } from "./components/WidgetTabs";
 import { DayScanSimulationProvider } from "./context/DayScanSimulationContext";
-import { Deepak2BacktestWidget } from "./widgets/Deepak2BacktestWidget";
-import { Deepak2DayScanWidget } from "./widgets/Deepak2DayScanWidget";
-import { Deepak3DayScanWidget } from "./widgets/Deepak3DayScanWidget";
 import { DeepakBacktestWidget } from "./widgets/DeepakBacktestWidget";
 import { DeepakDayScanWidget } from "./widgets/DeepakDayScanWidget";
 import { DayOrderSimulatorWidget } from "./widgets/DayOrderSimulatorWidget";
 import { DayScanSimulatorWidget } from "./widgets/DayScanSimulatorWidget";
 import { DayScanPostMortemWidget } from "./widgets/DayScanPostMortemWidget";
 import { DeepakPostMortemWidget } from "./widgets/DeepakPostMortemWidget";
-import { DeepakWatchPartyDayScanWidget } from "./widgets/DeepakWatchPartyDayScanWidget";
 import { SamcoTradingWidget } from "./widgets/SamcoTradingWidget";
 import { StockDashboardWidget } from "./widgets/StockDashboardWidget";
 import { readLocalStorage, writeLocalStorage } from "./utils/safeStorage";
@@ -26,14 +22,6 @@ const subtitles: Record<AppWidget, string> = {
   deepakBacktest: "Backtest Deepak BUY/SELL scenarios over a date range for any NSE equity.",
   deepakDayScan:
     "Run Deepak / Deepak-2 / Deepak-3 / Watch Party / Deeppro / Deeppro1 rules on sector large-caps for a single session date.",
-  deepak2Backtest:
-    "Backtest Deepak-2 BUY/SELL scenarios (10:15 IST session) over a date range for any NSE equity.",
-  deepak2DayScan:
-    "Run Deepak-2 BUY/SELL rules on 20 sector large-caps for a single session date (10:15 IST).",
-  deepak3DayScan:
-    "Run Deepak-3 sure-shot filters on 20 sector large-caps for a single session date (09:15 IST).",
-  deepakWatchPartyDayScan:
-    "Run Deepak @ 10:15 entries with Deepak-2 watch-party stop-loss across 20 sector large-caps.",
   deepakPostMortem:
     "Grade Deepak / Deepak-2 / Deeppro / Deeppro1 signals vs the session path for any NSE symbol and date.",
   dayScanPostMortem:
@@ -59,17 +47,15 @@ function readStoredTab(): AppWidget {
   if (stored === "deepakDayScan") {
     return "deepakDayScan";
   }
-  if (stored === "deepak2Backtest") {
-    return "deepak2Backtest";
-  }
-  if (stored === "deepak2DayScan") {
-    return "deepak2DayScan";
-  }
-  if (stored === "deepak3DayScan") {
-    return "deepak3DayScan";
-  }
-  if (stored === "deepakWatchPartyDayScan") {
-    return "deepakWatchPartyDayScan";
+  // Removed dedicated tabs — Deepak-2/3/Watch Party day scans live under Deepak Day Scan
+  // rule variant; Deepak-2 Backtest maps to Deepak Backtest.
+  if (
+    stored === "deepak2Backtest" ||
+    stored === "deepak2DayScan" ||
+    stored === "deepak3DayScan" ||
+    stored === "deepakWatchPartyDayScan"
+  ) {
+    return stored === "deepak2Backtest" ? "deepakBacktest" : "deepakDayScan";
   }
   if (stored === "deepakPostMortem") {
     return "deepakPostMortem";
@@ -128,22 +114,6 @@ export function App() {
       />
       <DeepakDayScanWidget
         isActive={activeWidget === "deepakDayScan"}
-        refreshTrigger={refreshTrigger}
-      />
-      <Deepak2BacktestWidget
-        isActive={activeWidget === "deepak2Backtest"}
-        refreshTrigger={refreshTrigger}
-      />
-      <Deepak2DayScanWidget
-        isActive={activeWidget === "deepak2DayScan"}
-        refreshTrigger={refreshTrigger}
-      />
-      <Deepak3DayScanWidget
-        isActive={activeWidget === "deepak3DayScan"}
-        refreshTrigger={refreshTrigger}
-      />
-      <DeepakWatchPartyDayScanWidget
-        isActive={activeWidget === "deepakWatchPartyDayScan"}
         refreshTrigger={refreshTrigger}
       />
       <DeepakPostMortemWidget
