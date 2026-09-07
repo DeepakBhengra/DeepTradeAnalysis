@@ -9,13 +9,15 @@ import { useDayScanLiveRefresh } from "../hooks/useDayScanLiveRefresh";
 import { useSamcoProfitPct } from "../hooks/useSamcoProfitPct";
 import {
   DAY_SCAN_SIMULATION_VARIANT_OPTIONS,
+  barMinutesForSimulationVariant,
   type DayScanSimulationVariant,
 } from "../utils/dayScanSimulationVariant";
 import { DAY_SCAN_LIVE_REFRESH_UNTIL_IST } from "../utils/istTime";
 import { Deeppro1ProfitPctSelect } from "../components/Deeppro1ProfitPctSelect";
 
-/** Auto-refresh interval for Day Scan Simulator when date is IST today. */
+/** Auto-refresh interval for Day Scan Simulator when date is IST today (15m variants). */
 export const DAY_SCAN_SIMULATOR_LIVE_REFRESH_MS = 15 * 60 * 1000;
+export const DAY_SCAN_SIMULATOR_LIVE_REFRESH_5M_MS = 5 * 60 * 1000;
 
 interface DayScanSimulatorWidgetProps {
   isActive: boolean;
@@ -25,7 +27,8 @@ function descriptionForVariant(
   variant: DayScanSimulationVariant,
   profitPct: number,
 ): string {
-  const liveNote = ` If the selected date is today, after Start the simulator keeps waiting for each next 15m candle (re-scanning around candle close) until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
+  const barMinutes = barMinutesForSimulationVariant(variant);
+  const liveNote = ` If the selected date is today, after Start the simulator keeps waiting for each next ${barMinutes}m candle (re-scanning around candle close) until ${DAY_SCAN_LIVE_REFRESH_UNTIL_IST} IST.`;
   const universe = `${SECTOR_WATCHLIST_SIZE} sector stocks`;
   if (variant === "all") {
     return `Replay Deepak, Deepak-2, and Watch Party signals across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
@@ -43,6 +46,9 @@ function descriptionForVariant(
   }
   if (variant === "deeppro1") {
     return `Replay Deeppro1 SMI black↔red crosses until 11:45 IST (exits: ${profitPct}% target / 0.3%→breakeven / opposite flip / 15:00 force) across ${universe} from 09:15–15:00 IST (10s per 15m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
+  }
+  if (variant === "deeppro2") {
+    return `Replay Deeppro2 — same SMI cross logic as Deeppro1 on 5-minute candles until 11:45 IST (exits: ${profitPct}% target / 0.3%→breakeven / opposite flip / 15:00 force) across ${universe} from 09:15–15:00 IST (10s per 5m candle). First Start loads market data (~1–2 min); later candles advance quickly from cache.${liveNote}`;
   }
   const label =
     DAY_SCAN_SIMULATION_VARIANT_OPTIONS.find((option) => option.value === variant)
@@ -101,7 +107,10 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
     run: () => {
       reloadLatest();
     },
-    intervalMs: DAY_SCAN_SIMULATOR_LIVE_REFRESH_MS,
+    intervalMs:
+      barMinutesForSimulationVariant(ruleVariant) === 5
+        ? DAY_SCAN_SIMULATOR_LIVE_REFRESH_5M_MS
+        : DAY_SCAN_SIMULATOR_LIVE_REFRESH_MS,
   });
 
   const isInitialLoad = loading && status === "loading";
@@ -212,7 +221,7 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
             {filteredOutEntryCount > 0
               ? ` · ${filteredOutEntryCount} entry signal(s) outside range hidden`
               : ""}
-            . Profit % is the Deeppro1 mid-price target (shared Samco setting).
+            . Profit % is the Deeppro1/Deeppro2 mid-price target (shared Samco setting).
           </p>
         </section>
 
@@ -225,7 +234,7 @@ export function DayScanSimulatorWidget({ isActive }: DayScanSimulatorWidgetProps
         {isTickUpdate && !isInitialLoad && (
           <section className="border border-kite-border bg-kite-surface p-3 text-xs text-kite-muted">
             {status === "waiting"
-              ? "Checking for the next 15m candle…"
+              ? `Checking for the next ${barMinutesForSimulationVariant(ruleVariant)}m candle…`
               : "Advancing to next candle…"}
           </section>
         )}

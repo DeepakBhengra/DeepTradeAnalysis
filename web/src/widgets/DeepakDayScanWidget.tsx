@@ -41,6 +41,7 @@ const CSV_PREFIX: Record<DayScanRuleVariant, string> = {
   watchParty: "deepak-watch-party-day-scan",
   deeppro: "deeppro-day-scan",
   deeppro1: "deeppro1-day-scan",
+  deeppro2: "deeppro2-day-scan",
   rulePnb: "rule-pnb-day-scan",
   ruleSunpharma: "rule-sunpharma-day-scan",
   ruleLtm: "rule-ltm-day-scan",
@@ -90,6 +91,8 @@ function descriptionForVariant(
       return `Scans ${universe} for ${label} Stch Mtm exhaustion reversals (pink-circle BUY/SELL, entry before 14:00 IST). May take several minutes depending on Kite response time.${liveRefresh}`;
     case "deeppro1":
       return `Scans ${universe} with ${label} — SMI black↔red cross entries (Stch Mtm 10,3,3) until 11:45 IST (one open position at a time). Exits: ${profitPct}% target, breakeven after 0.3% then return to entry, opposite-cross flip (also opens the new side if ≤ 11:45), or forced 15:00 exit. Separate from Deeppro exhaustion. May take several minutes depending on Kite response time.${liveRefresh}`;
+    case "deeppro2":
+      return `Scans ${universe} with ${label} — same SMI cross logic as Deeppro1 on 5-minute candles (Stch Mtm 10,3,3) until 11:45 IST. Exits: ${profitPct}% target, breakeven after 0.3% then return to entry, opposite-cross flip (also opens the new side if ≤ 11:45), or forced 15:00 exit. May take several minutes depending on Kite response time.${liveRefresh}`;
     case "rulePnb":
       return `Scans PNB only with ${label} — a separate RSI/SMI/BB proximity rule from the PNB favourable profit-range study (BUY quality / SELL quality / BUY extended, entry before 14:00 IST). Not mixed with Deepak or Deeppro and not applied to other stocks.${liveRefresh}`;
     case "ruleSunpharma":
@@ -117,6 +120,7 @@ function rulesPanelVariant(
   | "deepak3"
   | "deeppro"
   | "deeppro1"
+  | "deeppro2"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"
@@ -129,6 +133,7 @@ function rulesPanelVariant(
     variant === "deepak3" ||
     variant === "deeppro" ||
     variant === "deeppro1" ||
+    variant === "deeppro2" ||
     variant === "rulePnb" ||
     variant === "ruleSunpharma" ||
     isFavourableSymbolRuleVariant(variant)

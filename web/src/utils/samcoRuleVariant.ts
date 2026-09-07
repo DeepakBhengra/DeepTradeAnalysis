@@ -5,7 +5,8 @@ export type SamcoRuleVariant =
   | "deepak3"
   | "watchParty"
   | "deeppro"
-  | "deeppro1";
+  | "deeppro1"
+  | "deeppro2";
 
 export const DEFAULT_SAMCO_RULE_VARIANT: SamcoRuleVariant = "deepak+deepak2";
 
@@ -20,6 +21,7 @@ export const SAMCO_RULE_VARIANT_OPTIONS: ReadonlyArray<{
   { value: "watchParty", label: "Watch Party" },
   { value: "deeppro", label: "Deeppro" },
   { value: "deeppro1", label: "Deeppro1" },
+  { value: "deeppro2", label: "Deeppro2" },
 ];
 
 export const SAMCO_RULE_VARIANT_LABEL: Record<SamcoRuleVariant, string> = {
@@ -30,6 +32,7 @@ export const SAMCO_RULE_VARIANT_LABEL: Record<SamcoRuleVariant, string> = {
   watchParty: "Watch Party",
   deeppro: "Deeppro",
   deeppro1: "Deeppro1",
+  deeppro2: "Deeppro2",
 };
 
 export function isSamcoRuleVariant(

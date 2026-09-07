@@ -725,6 +725,24 @@ export const config = {
   },
 
   /**
+   * Deeppro2 — same SMI cross + % square-off logic as Deeppro1 on 5-minute candles.
+   * Session / entry-deadline / exit rules match Deeppro1; only the bar interval differs.
+   */
+  deeppro2: {
+    sessionStart: "09:15",
+    sessionEnd: "15:30",
+    entryDeadlineIst: "11:45",
+    forceExitIst: "15:00",
+    smi: {
+      lengthK: 10,
+      lengthD: 3,
+      lengthEma: 3,
+    },
+    squareOffPct: 0.45,
+    breakevenArmPct: 0.3,
+  },
+
+  /**
    * Per-symbol favourable profit-range rules (separate from Deepak/Deeppro/RulePNB/RuleSUNPHARMA).
    * Each entry is locked to one trading symbol. Thresholds from 60d rule-free IQR studies.
    */

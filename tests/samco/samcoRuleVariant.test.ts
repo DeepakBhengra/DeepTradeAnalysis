@@ -16,6 +16,7 @@ describe("samcoRuleVariant", () => {
 
   it("recognizes supported variants", () => {
     expect(isSamcoRuleVariant("deeppro1")).toBe(true);
+    expect(isSamcoRuleVariant("deeppro2")).toBe(true);
     expect(isSamcoRuleVariant("rulePnb")).toBe(false);
   });
 
@@ -25,6 +26,7 @@ describe("samcoRuleVariant", () => {
       "deepak2",
     ]);
     expect(strategiesForSamcoRuleVariant("deeppro1")).toEqual(["deeppro1"]);
+    expect(strategiesForSamcoRuleVariant("deeppro2")).toEqual(["deeppro2"]);
     expect(strategiesForSamcoRuleVariant("watchParty")).toEqual(["watchParty"]);
   });
 });

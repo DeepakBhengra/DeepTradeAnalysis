@@ -101,6 +101,7 @@ export type DayScanStrategy =
   | "deepak-watch-party"
   | "deeppro"
   | "deeppro1"
+  | "deeppro2"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"

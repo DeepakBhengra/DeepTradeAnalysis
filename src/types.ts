@@ -372,7 +372,7 @@ export interface Deeppro1Exit {
 
 export interface Deeppro1Signal {
   side: "BUY" | "SELL";
-  rule: "deeppro1";
+  rule: "deeppro1" | "deeppro2";
   dateKey: string;
   timeIst: string;
   scenarioKey: Deeppro1ScenarioKey;
@@ -390,7 +390,7 @@ export interface Deeppro1Signal {
 
 export interface Deeppro1ScanResult {
   dateKey: string;
-  rule: "deeppro1";
+  rule: "deeppro1" | "deeppro2";
   sessionStart: string;
   sessionEnd: string;
   signals: Deeppro1Signal[];
@@ -648,6 +648,7 @@ export type DayScanStrategy =
   | "deepak-watch-party"
   | "deeppro"
   | "deeppro1"
+  | "deeppro2"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"

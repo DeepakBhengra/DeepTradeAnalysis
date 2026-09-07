@@ -9,6 +9,7 @@ import { evaluateDeepak3Decision } from "../rules/deepak3Decision.js";
 import { evaluateDeepakWatchPartyDecision } from "../rules/deepakWatchParty.js";
 import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
 import { evaluateDeeppro1Decision } from "../rules/deeppro1Decision.js";
+import { evaluateDeeppro2Decision } from "../rules/deeppro2Decision.js";
 import {
   getSamcoProfitPct,
   getSamcoRuleVariant,
@@ -23,6 +24,7 @@ import {
 } from "../symbols/sectorWatchlist.js";
 import { buildSectorRandomizedWatchlist } from "../symbols/sectorWatchlistOrder.js";
 import type { DeepakDecisionResult, DeepakTradeSignal, IndicatorSnapshot } from "../types.js";
+import type { ChartInterval } from "../utils/chartInterval.js";
 import { formatUnknownError } from "../utils/formatError.js";
 import { formatIstTime, getIstTimeParts } from "../utils/marketTime.js";
 
@@ -52,6 +54,10 @@ export interface SamcoDayScanCycleResult {
   ruleVariant: SamcoRuleVariant;
   symbols: SamcoSymbolScanResult[];
   errors: Array<{ tradingSymbol: string; sector: string; error: string }>;
+}
+
+function chartIntervalForSamcoStrategy(strategy: SamcoStrategy): ChartInterval {
+  return strategy === "deeppro2" ? "5m" : "15m";
 }
 
 function adaptSignals(signals: DeepakTradeSignal[]): Pick<DeepakDecisionResult, "signals"> {
@@ -90,6 +96,12 @@ function evaluateStrategy(
       });
       return result ? adaptSignals(result.signals) : null;
     }
+    case "deeppro2": {
+      const result = evaluateDeeppro2Decision(snapshots, dateKey, {
+        squareOffPct: getSamcoProfitPct(),
+      });
+      return result ? adaptSignals(result.signals) : null;
+    }
   }
 }
 
@@ -106,15 +118,17 @@ async function scanSymbol(
 
   try {
     const dashboardSymbol = resolveDashboardSymbol(entry.tradingSymbol);
+    const interval = chartIntervalForSamcoStrategy(strategies[0] ?? "deepak");
     const candles = await fetchPnbCandles({
       symbol: dashboardSymbol.tradingSymbol,
       exchange: dashboardSymbol.exchange,
       segment: dashboardSymbol.segment,
       fromDate: dateKey,
       toDate: dateKey,
+      interval,
     });
 
-    const latestClosed = getLatestClosedCandle(candles);
+    const latestClosed = getLatestClosedCandle(candles, interval);
     if (!latestClosed) {
       return {
         ...base,

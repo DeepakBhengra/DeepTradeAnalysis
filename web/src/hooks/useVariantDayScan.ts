@@ -7,6 +7,7 @@ import {
   fetchDeepakWatchPartyDayScan,
   fetchDeepproDayScan,
   fetchDeeppro1DayScan,
+  fetchDeeppro2DayScan,
   fetchFavourableSymbolDayScan,
   fetchRulePnbDayScan,
   fetchRuleSunpharmaDayScan,
@@ -29,6 +30,7 @@ export type DayScanRuleVariant =
   | "watchParty"
   | "deeppro"
   | "deeppro1"
+  | "deeppro2"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"
@@ -49,6 +51,7 @@ export const DAY_SCAN_RULE_VARIANT_OPTIONS: ReadonlyArray<{
   { value: "watchParty", label: "Watch Party" },
   { value: "deeppro", label: "Deeppro" },
   { value: "deeppro1", label: "Deeppro1" },
+  { value: "deeppro2", label: "Deeppro2" },
   { value: "rulePnb", label: "RulePNB" },
   { value: "ruleSunpharma", label: "RuleSUNPHARMA" },
   { value: "ruleLtm", label: FAVOURABLE_RULE_LABEL.ruleLtm },
@@ -65,6 +68,7 @@ export const DAY_SCAN_RULE_VARIANT_LABEL: Record<DayScanRuleVariant, string> = {
   watchParty: "Watch Party",
   deeppro: "Deeppro",
   deeppro1: "Deeppro1",
+  deeppro2: "Deeppro2",
   rulePnb: "RulePNB",
   ruleSunpharma: "RuleSUNPHARMA",
   ruleLtm: FAVOURABLE_RULE_LABEL.ruleLtm,
@@ -84,6 +88,7 @@ export function isDayScanRuleVariant(
     value === "watchParty" ||
     value === "deeppro" ||
     value === "deeppro1" ||
+    value === "deeppro2" ||
     value === "rulePnb" ||
     value === "ruleSunpharma" ||
     isFavourableSymbolRuleVariant(value)
@@ -106,6 +111,8 @@ function fetchByVariant(
       return fetchDeepproDayScan(date, signal);
     case "deeppro1":
       return fetchDeeppro1DayScan(date, signal);
+    case "deeppro2":
+      return fetchDeeppro2DayScan(date, signal);
     case "rulePnb":
       return fetchRulePnbDayScan(date, signal);
     case "ruleSunpharma":

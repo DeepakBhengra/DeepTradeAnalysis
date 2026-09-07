@@ -9,13 +9,18 @@ import {
 import { getActiveKiteAccessToken } from "../kite/kiteAuth.js";
 import { applySymbolAlias, getSymbolAliasHint } from "../symbols/aliases.js";
 import type { Candle } from "../types.js";
+import type { ChartInterval } from "../utils/chartInterval.js";
+import {
+  intervalMinutes,
+  kiteHistoricalInterval,
+} from "../utils/chartInterval.js";
 import { formatUnknownError } from "../utils/formatError.js";
 
 export interface ChartQueryOptions {
   symbol?: string;
   exchange?: string;
   segment?: string;
-  interval?: "15m";
+  interval?: ChartInterval;
   range?: "5d" | "1mo" | "3mo";
   analysisDate?: string;
   fromDate?: string;
@@ -500,8 +505,8 @@ export async function fetchPnbCandles(
   const segment = resolveSegment(tradingSymbol, options.segment);
   const interval = options.interval ?? config.interval;
 
-  if (interval !== "15m") {
-    throw new Error("Only 15m interval is supported");
+  if (interval !== "15m" && interval !== "5m") {
+    throw new Error("Only 15m and 5m intervals are supported");
   }
 
   const kite = getKiteClient();
@@ -517,7 +522,7 @@ export async function fetchPnbCandles(
       () =>
         kite.getHistoricalData(
           instrumentToken,
-          "15minute",
+          kiteHistoricalInterval(interval),
           from,
           to,
           false,
@@ -535,14 +540,17 @@ export async function fetchPnbCandles(
   }
 }
 
-export function getLatestClosedCandle(candles: Candle[]): Candle | undefined {
+export function getLatestClosedCandle(
+  candles: Candle[],
+  interval: ChartInterval = config.interval,
+): Candle | undefined {
   if (candles.length === 0) {
     return undefined;
   }
 
   const last = candles[candles.length - 1];
   const now = Date.now();
-  const candleEnd = last.timestamp.getTime() + 15 * 60 * 1000;
+  const candleEnd = last.timestamp.getTime() + intervalMinutes(interval) * 60 * 1000;
 
   if (candleEnd <= now) {
     return last;

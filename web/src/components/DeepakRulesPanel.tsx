@@ -134,6 +134,7 @@ type RulesPanelVariant =
   | "deepak3"
   | "deeppro"
   | "deeppro1"
+  | "deeppro2"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"
@@ -246,6 +247,8 @@ export function DeepakRulesPanel({
           ? "Deeppro Buy / Sell Rules"
           : variant === "deeppro1"
             ? "Deeppro1 Buy / Sell Rules"
+            : variant === "deeppro2"
+              ? "Deeppro2 Buy / Sell Rules"
             : variant === "rulePnb"
               ? "RulePNB Buy / Sell Rules"
               : variant === "ruleSunpharma"
@@ -258,7 +261,7 @@ export function DeepakRulesPanel({
       ? DEEPAK3_SCENARIOS
       : variant === "deeppro"
         ? DEEPPRO_SCENARIOS
-        : variant === "deeppro1"
+        : variant === "deeppro1" || variant === "deeppro2"
           ? DEEPPRO1_SCENARIOS
           : variant === "rulePnb"
             ? RULEPNB_SCENARIOS
@@ -287,7 +290,9 @@ export function DeepakRulesPanel({
             {variant === "deeppro"
               ? `${sessionLabel} · Stch Mtm exhaustion reversal (pink-circle) · separate from Deepak scenario trails · day scan lists entry signals in the standard results table.`
               : variant === "deeppro1"
-                ? `${sessionLabel} · Generic all-stock SMI black↔red cross · entries until 11:45 IST · exits: selected Profit % target (default 0.45%) / 0.3%→breakeven / opposite flip / 15:00 force · separate from Deeppro exhaustion · day scan evaluates the full watchlist.`
+                ? `${sessionLabel} · Generic all-stock SMI black↔red cross on 15-minute candles · entries until 11:45 IST · exits: selected Profit % target (default 0.45%) / 0.3%→breakeven / opposite flip / 15:00 force · separate from Deeppro exhaustion · day scan evaluates the full watchlist.`
+                : variant === "deeppro2"
+                  ? `${sessionLabel} · Same SMI cross logic as Deeppro1 on 5-minute candles · entries until 11:45 IST · exits: selected Profit % target (default 0.45%) / 0.3%→breakeven / opposite flip / 15:00 force · day scan evaluates the full watchlist.`
                 : variant === "rulePnb"
                   ? `${sessionLabel} · PNB-only rule · favourable profit-range RSI / Stch Mtm / BB proximity gates · not mixed with Deepak or Deeppro · day scan evaluates PNB only.`
                   : variant === "ruleSunpharma"
@@ -303,7 +308,7 @@ export function DeepakRulesPanel({
               ))}
             </ul>
           )}
-          {variant === "deeppro1" && (
+          {(variant === "deeppro1" || variant === "deeppro2") && (
             <ul className="m-0 list-inside list-disc space-y-1 text-kite-muted">
               {DEEPPRO1_RULES.map((rule) => (
                 <li key={rule}>{rule}</li>

@@ -57,6 +57,8 @@ export function dayScanVariantToSamcoStrategy(
       return "deeppro";
     case "deeppro1":
       return "deeppro1";
+    case "deeppro2":
+      return "deeppro2";
     default:
       return null;
   }
@@ -131,7 +133,7 @@ export function ingestDayScanTrades(input: {
   const ruleVariant = dayScanVariantToSamcoRuleVariant(input.variant);
   if (!strategy || !ruleVariant) {
     throw new Error(
-      `Day Scan variant "${input.variant}" is not supported by Samco. Use deepak, deepak2, deepak3, watchParty, deeppro, or deeppro1.`,
+      `Day Scan variant "${input.variant}" is not supported by Samco. Use deepak, deepak2, deepak3, watchParty, deeppro, deeppro1, or deeppro2.`,
     );
   }
 

@@ -4,7 +4,8 @@ export type SamcoStrategy =
   | "deepak3"
   | "watchParty"
   | "deeppro"
-  | "deeppro1";
+  | "deeppro1"
+  | "deeppro2";
 
 export function buildSignalKey(params: {
   strategy: SamcoStrategy;
