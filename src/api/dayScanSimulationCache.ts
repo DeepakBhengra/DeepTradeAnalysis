@@ -9,6 +9,7 @@ import {
   SECTOR_WATCHLIST,
   type SectorWatchlistEntry,
 } from "../symbols/sectorWatchlist.js";
+import type { ChartInterval } from "../utils/chartInterval.js";
 import { formatUnknownError } from "../utils/formatError.js";
 import type { Candle, DayScanSimulationPayload } from "../types.js";
 import { isWithinAnalysisDayDisplay } from "../utils/marketTime.js";
@@ -21,6 +22,10 @@ function delay(ms: number): Promise<void> {
 
 function frameKey(date: string, variant: string, sessionIndex: number): string {
   return `${date}:${variant}:${sessionIndex}`;
+}
+
+function dataKey(date: string, interval: ChartInterval): string {
+  return `${date}:${interval}`;
 }
 
 export function getDayScanSessionCandles(
@@ -53,44 +58,57 @@ export function truncateDayScanCandlesForIndex(
 }
 
 export class DayScanSimulationCache {
-  private candlesByDate = new Map<string, Map<string, Candle[]>>();
-  private sessionCandlesByDate = new Map<string, Map<string, Candle[]>>();
-  private resolvedSymbolsByDate = new Map<string, Map<string, DashboardSymbolConfig>>();
-  private errorsByDate = new Map<string, Map<string, string>>();
+  private candlesByKey = new Map<string, Map<string, Candle[]>>();
+  private sessionCandlesByKey = new Map<string, Map<string, Candle[]>>();
+  private resolvedSymbolsByKey = new Map<string, Map<string, DashboardSymbolConfig>>();
+  private errorsByKey = new Map<string, Map<string, string>>();
   /** Frames keyed by date → variant → sessionIndex */
   private framesByDate = new Map<
     string,
     Map<string, Map<number, DayScanSimulationPayload>>
   >();
   private computingFrames = new Map<string, Promise<DayScanSimulationPayload>>();
-  private prefetchingDates = new Set<string>();
+  private prefetchingKeys = new Set<string>();
 
   /**
    * Prefetch watchlist candles for a session date.
    * Pass `force: true` to drop the cached day and re-fetch (needed for IST-today
-   * live simulation so newly completed 15m candles appear).
+   * live simulation so newly completed candles appear).
    */
-  async prefetch(date: string, options?: { force?: boolean }): Promise<void> {
+  async prefetch(
+    date: string,
+    options?: { force?: boolean; interval?: ChartInterval },
+  ): Promise<void> {
+    const interval = options?.interval ?? "15m";
+    const key = dataKey(date, interval);
     const force = options?.force === true;
 
     if (
       !force &&
-      this.candlesByDate.has(date) &&
-      this.getSessionCandleCount(date) > 0
+      this.candlesByKey.has(key) &&
+      this.getSessionCandleCount(date, interval) > 0
     ) {
       return;
     }
 
-    if (this.prefetchingDates.has(date)) {
-      await this.waitForPrefetch(date);
+    if (this.prefetchingKeys.has(key)) {
+      await this.waitForPrefetch(key);
       return this.prefetch(date, options);
     }
 
-    if (this.candlesByDate.has(date)) {
-      this.clearDate(date);
+    if (this.candlesByKey.has(key)) {
+      this.clearDateAndInterval(date, interval);
+      if (force) {
+        this.framesByDate.delete(date);
+        for (const frameKey of [...this.computingFrames.keys()]) {
+          if (frameKey.startsWith(`${date}:`)) {
+            this.computingFrames.delete(frameKey);
+          }
+        }
+      }
     }
 
-    this.prefetchingDates.add(date);
+    this.prefetchingKeys.add(key);
     const symbolCandles = new Map<string, Candle[]>();
     const sessionCandlesMemo = new Map<string, Candle[]>();
     const resolvedSymbolsMemo = new Map<string, DashboardSymbolConfig>();
@@ -100,7 +118,7 @@ export class DayScanSimulationCache {
       for (let index = 0; index < SECTOR_WATCHLIST.length; index += CONCURRENCY) {
         const batch = SECTOR_WATCHLIST.slice(index, index + CONCURRENCY);
         const results = await Promise.all(
-          batch.map((entry) => this.fetchSymbol(entry, date)),
+          batch.map((entry) => this.fetchSymbol(entry, date, interval)),
         );
 
         for (const result of results) {
@@ -124,12 +142,12 @@ export class DayScanSimulationCache {
         }
       }
 
-      this.candlesByDate.set(date, symbolCandles);
-      this.sessionCandlesByDate.set(date, sessionCandlesMemo);
-      this.resolvedSymbolsByDate.set(date, resolvedSymbolsMemo);
-      this.errorsByDate.set(date, symbolErrors);
+      this.candlesByKey.set(key, symbolCandles);
+      this.sessionCandlesByKey.set(key, sessionCandlesMemo);
+      this.resolvedSymbolsByKey.set(key, resolvedSymbolsMemo);
+      this.errorsByKey.set(key, symbolErrors);
     } finally {
-      this.prefetchingDates.delete(date);
+      this.prefetchingKeys.delete(key);
     }
   }
 
@@ -195,7 +213,7 @@ export class DayScanSimulationCache {
     sessionIndex: number,
     build: () => Promise<DayScanSimulationPayload>,
   ): void {
-    if (sessionIndex < 0 || sessionIndex >= this.getSessionCandleCount(date)) {
+    if (sessionIndex < 0) {
       return;
     }
 
@@ -213,31 +231,49 @@ export class DayScanSimulationCache {
     });
   }
 
-  getCandles(date: string, tradingSymbol: string): Candle[] | undefined {
-    return this.candlesByDate.get(date)?.get(tradingSymbol);
+  getCandles(
+    date: string,
+    tradingSymbol: string,
+    interval: ChartInterval = "15m",
+  ): Candle[] | undefined {
+    return this.candlesByKey.get(dataKey(date, interval))?.get(tradingSymbol);
   }
 
   getSessionCandlesForSymbol(
     date: string,
     tradingSymbol: string,
+    interval: ChartInterval = "15m",
   ): Candle[] | undefined {
-    return this.sessionCandlesByDate.get(date)?.get(tradingSymbol);
+    return this.sessionCandlesByKey
+      .get(dataKey(date, interval))
+      ?.get(tradingSymbol);
   }
 
   getResolvedSymbol(
     date: string,
     tradingSymbol: string,
+    interval: ChartInterval = "15m",
   ): DashboardSymbolConfig | undefined {
-    return this.resolvedSymbolsByDate.get(date)?.get(tradingSymbol);
+    return this.resolvedSymbolsByKey
+      .get(dataKey(date, interval))
+      ?.get(tradingSymbol);
   }
 
-  getSymbolError(date: string, tradingSymbol: string): string | undefined {
-    return this.errorsByDate.get(date)?.get(tradingSymbol);
+  getSymbolError(
+    date: string,
+    tradingSymbol: string,
+    interval: ChartInterval = "15m",
+  ): string | undefined {
+    return this.errorsByKey.get(dataKey(date, interval))?.get(tradingSymbol);
   }
 
-  getPrefetchErrorSummary(date: string): string | null {
-    const symbolErrors = this.errorsByDate.get(date);
-    const symbolCandles = this.candlesByDate.get(date);
+  getPrefetchErrorSummary(
+    date: string,
+    interval: ChartInterval = "15m",
+  ): string | null {
+    const key = dataKey(date, interval);
+    const symbolErrors = this.errorsByKey.get(key);
+    const symbolCandles = this.candlesByKey.get(key);
 
     if (!symbolErrors && !symbolCandles) {
       return null;
@@ -266,8 +302,13 @@ export class DayScanSimulationCache {
     return `No session candles found for ${date}. ${errors.length}/${watchlistSize} symbols failed (${successCount} loaded). ${examples}`;
   }
 
-  getSessionCandleCount(date: string): number {
-    const sessionCandlesBySymbol = this.sessionCandlesByDate.get(date);
+  getSessionCandleCount(
+    date: string,
+    interval: ChartInterval = "15m",
+  ): number {
+    const sessionCandlesBySymbol = this.sessionCandlesByKey.get(
+      dataKey(date, interval),
+    );
     if (sessionCandlesBySymbol) {
       for (const sessionCandles of sessionCandlesBySymbol.values()) {
         if (sessionCandles.length > 0) {
@@ -276,7 +317,7 @@ export class DayScanSimulationCache {
       }
     }
 
-    const symbolCandles = this.candlesByDate.get(date);
+    const symbolCandles = this.candlesByKey.get(dataKey(date, interval));
     if (!symbolCandles) {
       return 0;
     }
@@ -296,10 +337,11 @@ export class DayScanSimulationCache {
   }
 
   clearDate(date: string): void {
-    this.candlesByDate.delete(date);
-    this.sessionCandlesByDate.delete(date);
-    this.resolvedSymbolsByDate.delete(date);
-    this.errorsByDate.delete(date);
+    for (const key of [...this.candlesByKey.keys()]) {
+      if (key.startsWith(`${date}:`)) {
+        this.clearDateAndInterval(date, key.slice(date.length + 1) as ChartInterval);
+      }
+    }
     this.framesByDate.delete(date);
 
     for (const key of [...this.computingFrames.keys()]) {
@@ -310,17 +352,26 @@ export class DayScanSimulationCache {
   }
 
   clear(): void {
-    this.candlesByDate.clear();
-    this.sessionCandlesByDate.clear();
-    this.resolvedSymbolsByDate.clear();
-    this.errorsByDate.clear();
+    this.candlesByKey.clear();
+    this.sessionCandlesByKey.clear();
+    this.resolvedSymbolsByKey.clear();
+    this.errorsByKey.clear();
     this.framesByDate.clear();
     this.computingFrames.clear();
+  }
+
+  private clearDateAndInterval(date: string, interval: ChartInterval): void {
+    const key = dataKey(date, interval);
+    this.candlesByKey.delete(key);
+    this.sessionCandlesByKey.delete(key);
+    this.resolvedSymbolsByKey.delete(key);
+    this.errorsByKey.delete(key);
   }
 
   private async fetchSymbol(
     entry: SectorWatchlistEntry,
     date: string,
+    interval: ChartInterval,
   ): Promise<{
     tradingSymbol: string;
     candles: Candle[];
@@ -333,6 +384,7 @@ export class DayScanSimulationCache {
         exchange: dashboardSymbol.exchange,
         segment: dashboardSymbol.segment,
         analysisDate: date,
+        interval,
       });
 
       return {
@@ -350,10 +402,10 @@ export class DayScanSimulationCache {
     }
   }
 
-  private waitForPrefetch(date: string): Promise<void> {
+  private waitForPrefetch(key: string): Promise<void> {
     return new Promise((resolve) => {
       const check = () => {
-        if (!this.prefetchingDates.has(date)) {
+        if (!this.prefetchingKeys.has(key)) {
           resolve();
           return;
         }

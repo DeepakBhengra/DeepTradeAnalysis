@@ -540,6 +540,15 @@ export async function fetchDeeppro1DayScan(
   return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
 }
 
+export async function fetchDeeppro2DayScan(
+  date: string,
+  signal?: AbortSignal,
+): Promise<DeepakDayScanPayload> {
+  const params = new URLSearchParams({ date });
+  const url = `/api/backtest/deeppro2/day-scan?${params.toString()}`;
+  return fetchDayScanPayload<DeepakDayScanPayload>(url, signal);
+}
+
 export async function fetchRulePnbDayScan(
   date: string,
   signal?: AbortSignal,

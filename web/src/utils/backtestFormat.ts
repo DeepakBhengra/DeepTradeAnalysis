@@ -4,6 +4,7 @@ export function formatScenarioLabel(scenarioKey: string): string {
     .replace(/^deepak-3 /, "")
     .replace(/^deepak-2 /, "")
     .replace(/^deepak /, "")
+    .replace(/^deeppro2 /, "")
     .replace(/^deeppro1 /, "")
     .replace(/^deeppro /, "")
     .replace(/^rulePnb /, "")
@@ -27,6 +28,7 @@ export function formatDayScanStrategy(
     | "deepak-watch-party"
     | "deeppro"
     | "deeppro1"
+    | "deeppro2"
     | "rulePnb"
     | "ruleSunpharma"
     | "ruleLtm"
@@ -48,6 +50,8 @@ export function formatDayScanStrategy(
       return "Deeppro";
     case "deeppro1":
       return "Deeppro1";
+    case "deeppro2":
+      return "Deeppro2";
     case "rulePnb":
       return "RulePNB";
     case "ruleSunpharma":

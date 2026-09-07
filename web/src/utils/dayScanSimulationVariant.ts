@@ -26,6 +26,12 @@ export const DAY_SCAN_SIMULATION_VARIANT_LABEL: Record<
   ...DAY_SCAN_RULE_VARIANT_LABEL,
 };
 
+export function barMinutesForSimulationVariant(
+  variant: DayScanSimulationVariant,
+): number {
+  return variant === "deeppro2" ? 5 : 15;
+}
+
 export function isDayScanSimulationVariant(
   value: string | null | undefined,
 ): value is DayScanSimulationVariant {

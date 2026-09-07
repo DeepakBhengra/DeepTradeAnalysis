@@ -5,6 +5,8 @@ import {
 } from "../rules/favourableSymbolRule.js";
 import type { DayScanStrategy } from "../types.js";
 import { SECTOR_WATCHLIST, type SectorWatchlistEntry } from "../symbols/sectorWatchlist.js";
+import type { ChartInterval } from "../utils/chartInterval.js";
+import { chartIntervalForDeepproCrossRule } from "../utils/chartInterval.js";
 
 /** Day Scan rule ids accepted by the candle-by-candle simulator. */
 export type DayScanSimulationRuleVariant =
@@ -14,6 +16,7 @@ export type DayScanSimulationRuleVariant =
   | "watchParty"
   | "deeppro"
   | "deeppro1"
+  | "deeppro2"
   | "rulePnb"
   | "ruleSunpharma"
   | "ruleLtm"
@@ -35,6 +38,7 @@ const RULE_VARIANTS = new Set<string>([
   "watchParty",
   "deeppro",
   "deeppro1",
+  "deeppro2",
   "rulePnb",
   "ruleSunpharma",
   "ruleLtm",
@@ -81,6 +85,8 @@ export function dayScanStrategyForVariant(
       return "deeppro";
     case "deeppro1":
       return "deeppro1";
+    case "deeppro2":
+      return "deeppro2";
     case "rulePnb":
       return "rulePnb";
     case "ruleSunpharma":
@@ -129,6 +135,13 @@ export function isFavourableSimulationVariant(
 }
 
 /** Watchlist entries evaluated for this simulation variant. */
+/** Candle interval used when prefetching market data for a simulator variant. */
+export function chartIntervalForSimulationVariant(
+  variant: DayScanSimulationVariant,
+): ChartInterval {
+  return variant === "deeppro2" ? "5m" : "15m";
+}
+
 export function watchlistForSimulationVariant(
   variant: DayScanSimulationVariant,
 ): SectorWatchlistEntry[] {

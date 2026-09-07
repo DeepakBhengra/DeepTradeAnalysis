@@ -364,7 +364,7 @@ export function setSamcoRuleVariant(
   const parsed = parseSamcoRuleVariant(ruleVariant);
   if (parsed !== ruleVariant) {
     throw new Error(
-      `Invalid ruleVariant. Use one of: ${["deepak+deepak2", "deepak", "deepak2", "deepak3", "watchParty", "deeppro", "deeppro1"].join(", ")}.`,
+      `Invalid ruleVariant. Use one of: ${["deepak+deepak2", "deepak", "deepak2", "deepak3", "watchParty", "deeppro", "deeppro1", "deeppro2"].join(", ")}.`,
     );
   }
 

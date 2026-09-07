@@ -2,8 +2,9 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchDayScanSimulation } from "../api/client";
 import type { DayScanSimulationPayload } from "../types/backtest";
 import type { DayScanSimulationVariant } from "../utils/dayScanSimulationVariant";
+import { barMinutesForSimulationVariant } from "../utils/dayScanSimulationVariant";
 import {
-  msUntilNextQuarterHourIst,
+  msUntilNextBarIst,
   shouldLiveRefreshDayScan,
 } from "../utils/istTime";
 
@@ -225,7 +226,10 @@ export function useDayScanSimulation(
       return;
     }
 
-    const delayMs = msUntilNextQuarterHourIst(nowRef.current());
+    const delayMs = msUntilNextBarIst(
+      barMinutesForSimulationVariant(variant),
+      nowRef.current(),
+    );
     waitTimerRef.current = setTimeout(() => {
       void probeForNextLiveCandle();
     }, delayMs);
@@ -234,6 +238,7 @@ export function useDayScanSimulation(
     finishComplete,
     probeForNextLiveCandle,
     shouldKeepWaitingForLiveCandles,
+    variant,
   ]);
 
   scheduleLiveCandleWaitRef.current = scheduleLiveCandleWait;

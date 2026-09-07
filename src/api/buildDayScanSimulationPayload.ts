@@ -8,6 +8,7 @@ import { evaluateDeepak3Decision } from "../rules/deepak3Decision.js";
 import { evaluateDeepakWatchPartyDecision } from "../rules/deepakWatchParty.js";
 import { evaluateDeepproDecision } from "../rules/deepproDecision.js";
 import { evaluateDeeppro1Decision } from "../rules/deeppro1Decision.js";
+import { evaluateDeeppro2Decision } from "../rules/deeppro2Decision.js";
 import {
   evaluateFavourableSymbolDecision,
 } from "../rules/favourableSymbolRule.js";
@@ -43,7 +44,9 @@ import {
   DayScanSimulationCache,
   truncateDayScanCandlesForIndex,
 } from "./dayScanSimulationCache.js";
+import type { ChartInterval } from "../utils/chartInterval.js";
 import {
+  chartIntervalForSimulationVariant,
   dayScanStrategyForVariant,
   isFavourableSimulationVariant,
   parseDayScanSimulationVariant,
@@ -195,6 +198,10 @@ function evaluateRuleVariant(
       return evaluateDeeppro1Decision(snapshots, date, {
         squareOffPct: getSamcoProfitPct(),
       });
+    case "deeppro2":
+      return evaluateDeeppro2Decision(snapshots, date, {
+        squareOffPct: getSamcoProfitPct(),
+      });
     case "rulePnb":
       return isRulePnbSymbol(tradingSymbol)
         ? evaluateRulePnbDecision(snapshots, date)
@@ -223,9 +230,10 @@ function evaluateSymbolAtIndex(
   sessionIndex: number,
   cache: DayScanSimulationCache,
   variant: DayScanSimulationVariant,
+  interval: ChartInterval,
 ): { signals: DayScanSimulationSignal[]; error: DeepakDayScanError | null } {
-  const candles = cache.getCandles(date, entry.tradingSymbol);
-  const fetchError = cache.getSymbolError(date, entry.tradingSymbol);
+  const candles = cache.getCandles(date, entry.tradingSymbol, interval);
+  const fetchError = cache.getSymbolError(date, entry.tradingSymbol, interval);
 
   if (fetchError) {
     return {
@@ -249,7 +257,11 @@ function evaluateSymbolAtIndex(
     };
   }
 
-  const sessionCandles = cache.getSessionCandlesForSymbol(date, entry.tradingSymbol);
+  const sessionCandles = cache.getSessionCandlesForSymbol(
+    date,
+    entry.tradingSymbol,
+    interval,
+  );
   const truncated = truncateDayScanCandlesForIndex(
     candles,
     date,
@@ -257,7 +269,11 @@ function evaluateSymbolAtIndex(
     sessionCandles,
   );
   const snapshots = buildIndicatorSnapshots(truncated);
-  const dashboardSymbol = cache.getResolvedSymbol(date, entry.tradingSymbol);
+  const dashboardSymbol = cache.getResolvedSymbol(
+    date,
+    entry.tradingSymbol,
+    interval,
+  );
 
   if (!dashboardSymbol) {
     return {
@@ -316,14 +332,16 @@ async function computeDayScanSimulationFrame(input: {
   sessionIndex: number;
   cache: DayScanSimulationCache;
   variant: DayScanSimulationVariant;
+  interval: ChartInterval;
 }): Promise<DayScanSimulationPayload> {
-  const { date, sessionIndex, cache, variant } = input;
-  const sessionCandleCount = cache.getSessionCandleCount(date);
+  const { date, sessionIndex, cache, variant, interval } = input;
+  const sessionCandleCount = cache.getSessionCandleCount(date, interval);
   const watchlist = watchlistForSimulationVariant(variant);
 
   const referenceSymbol =
     watchlist[0]?.tradingSymbol ?? cache.getWatchlist()[0]?.tradingSymbol ?? "";
-  const sessionCandles = cache.getSessionCandlesForSymbol(date, referenceSymbol) ?? [];
+  const sessionCandles =
+    cache.getSessionCandlesForSymbol(date, referenceSymbol, interval) ?? [];
   const latestSessionCandle = sessionCandles[sessionIndex];
   const simulatedTimeIst = latestSessionCandle
     ? formatIstTime(latestSessionCandle.timestamp)
@@ -332,7 +350,7 @@ async function computeDayScanSimulationFrame(input: {
   const results = await Promise.all(
     watchlist.map((entry) =>
       Promise.resolve().then(() =>
-        evaluateSymbolAtIndex(entry, date, sessionIndex, cache, variant),
+        evaluateSymbolAtIndex(entry, date, sessionIndex, cache, variant, interval),
       ),
     ),
   );
@@ -394,6 +412,7 @@ async function computeDayScanSimulationFrame(input: {
     const sessionCandles = cache.getSessionCandlesForSymbol(
       date,
       entry.tradingSymbol,
+      interval,
     );
     const visibleSession = (sessionCandles ?? []).slice(0, sessionIndex + 1);
     const latest = visibleSession[visibleSession.length - 1];
@@ -440,24 +459,28 @@ export async function buildDayScanSimulationPayload(input: {
   }
 
   const variant = parseDayScanSimulationVariant(input.variant);
+  const interval = chartIntervalForSimulationVariant(variant);
 
-  await input.cache.prefetch(input.date, { force: input.refresh === true });
+  await input.cache.prefetch(input.date, {
+    force: input.refresh === true,
+    interval,
+  });
 
-  let sessionCandleCount = input.cache.getSessionCandleCount(input.date);
+  let sessionCandleCount = input.cache.getSessionCandleCount(input.date, interval);
   if (sessionCandleCount === 0) {
     const summary =
-      input.cache.getPrefetchErrorSummary(input.date) ??
+      input.cache.getPrefetchErrorSummary(input.date, interval) ??
       `No session candles found for ${input.date}.`;
     throw new Error(summary);
   }
 
   // Live today: if the client asks for a candle past the cached count, force one
-  // refresh so a newly completed 15m bar can extend the session.
+  // refresh so a newly completed bar can extend the session.
   if (input.sessionIndex >= sessionCandleCount && input.refresh !== true) {
     const todayKey = getIstTimeParts(new Date()).dateKey;
     if (input.date === todayKey) {
-      await input.cache.prefetch(input.date, { force: true });
-      sessionCandleCount = input.cache.getSessionCandleCount(input.date);
+      await input.cache.prefetch(input.date, { force: true, interval });
+      sessionCandleCount = input.cache.getSessionCandleCount(input.date, interval);
     }
   }
 
@@ -477,6 +500,7 @@ export async function buildDayScanSimulationPayload(input: {
         sessionIndex: input.sessionIndex,
         cache: input.cache,
         variant,
+        interval,
       }),
   );
 
@@ -488,6 +512,7 @@ export async function buildDayScanSimulationPayload(input: {
         sessionIndex: nextIndex,
         cache: input.cache,
         variant,
+        interval,
       }),
     );
   }
