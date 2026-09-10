@@ -2,13 +2,17 @@
 
 Pattern: BUY-quality levels (RSI 30–50, SMI ≤ −40, BB lower ≤ 0.7%) **but** SMI falling + MACD hist falling + next mid lower → enter **SELL** on confirm bar.
 
+Encoded in RuleICICIGI as scenario `sell_cascade` (Sc# 2). SELL quality still wins if it fires earlier the same day.
+
 | Metric | Value |
 |---|---:|
-| Cascade SELL days | 19 |
+| Cascade SELL days (pattern study) | 19 |
 | Best-SQ positive % | 84.2% |
 | EOD positive % | 63.2% |
 | Avg best SQ % | 0.55% |
 | Avg EOD % | 0.16% |
+
+**Highlight — 29 Jul 2026:** setup 10:15 → SELL entry 10:30 @ 1673.30 → best/EOD **+1.51%** (was a losing BUY without guards).
 
 | Date | Setup→Entry | Entry mid | RSI | SMI | Open DD | Best SQ | EOD |
 |---|---|---:|---:|---:|---:|---:|---:|

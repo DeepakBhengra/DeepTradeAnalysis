@@ -1,0 +1,4089 @@
+{
+  "symbol": "ICICIGI",
+  "from": "2026-01-01",
+  "requestedTo": "2026-08-31",
+  "effectiveTo": "2026-08-03",
+  "tradingDays": 144,
+  "source": "upstox-1m-resampled-15m",
+  "summary": {
+    "all": {
+      "n": 212,
+      "bestPosPct": 81.1,
+      "eodPosPct": 49.1,
+      "avgBest": 0.6,
+      "avgEod": -0.02
+    },
+    "buy": {
+      "n": 84,
+      "bestPosPct": 89.3,
+      "eodPosPct": 63.1,
+      "avgBest": 0.66,
+      "avgEod": 0.15
+    },
+    "sell": {
+      "n": 128,
+      "bestPosPct": 75.8,
+      "eodPosPct": 39.8,
+      "avgBest": 0.56,
+      "avgEod": -0.13
+    },
+    "buy_quality": {
+      "n": 41,
+      "bestPosPct": 85.4,
+      "eodPosPct": 63.4,
+      "avgBest": 0.6,
+      "avgEod": 0.08
+    },
+    "buy_extended": {
+      "n": 43,
+      "bestPosPct": 93,
+      "eodPosPct": 62.8,
+      "avgBest": 0.72,
+      "avgEod": 0.22
+    },
+    "sell_quality": {
+      "n": 90,
+      "bestPosPct": 75.6,
+      "eodPosPct": 38.9,
+      "avgBest": 0.53,
+      "avgEod": -0.16
+    },
+    "sell_cascade": {
+      "n": 38,
+      "bestPosPct": 76.3,
+      "eodPosPct": 42.1,
+      "avgBest": 0.63,
+      "avgEod": -0.08
+    }
+  },
+  "trades": [
+    {
+      "dateKey": "2026-01-01",
+      "dayLabel": "1 Jan 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "11:15",
+      "entryPrice": 1949.75,
+      "rsi": 45.9,
+      "smi": -38.4,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.37,
+      "eodPct": 0.37,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 44.0 in 30–50, SMI -46.5 ≤ -40, BB lower gap 0.14% (close) (setup 11:00) | guards: SMI rising -57.1→-46.5; MACD hist rising -1.76→-1.34; open drawdown -0.73% ≥ −0.8%; next-bar confirm mid 1948.05→1949.75"
+      ]
+    },
+    {
+      "dateKey": "2026-01-01",
+      "dayLabel": "1 Jan 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:45",
+      "entryPrice": 1950.75,
+      "rsi": 50.6,
+      "smi": 40.9,
+      "bestTimeIst": "13:45",
+      "bestPct": 0.07,
+      "eodPct": -0.32,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 50.6 in 45–75, SMI 40.9 ≥ 20, BB upper gap 0.59%"
+      ]
+    },
+    {
+      "dateKey": "2026-01-02",
+      "dayLabel": "2 Jan 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1981.05,
+      "rsi": 66.3,
+      "smi": 50.9,
+      "bestTimeIst": "13:45",
+      "bestPct": 0.52,
+      "eodPct": 0.36,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 66.3 in 45–75, SMI 50.9 ≥ 20, BB upper gap 0.36%"
+      ]
+    },
+    {
+      "dateKey": "2026-01-05",
+      "dayLabel": "5 Jan 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1972.55,
+      "rsi": 50,
+      "smi": -37.8,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.46,
+      "eodPct": 0.46,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 41.7 in 30–50, SMI -45.5 ≤ -40, BB lower gap 0.03% (close) (setup 09:30) | guards: SMI rising -47.5→-45.5; MACD hist rising -1.66→-1.47; open drawdown -0.33% ≥ −0.8%; next-bar confirm mid 1969.45→1972.55"
+      ]
+    },
+    {
+      "dateKey": "2026-01-05",
+      "dayLabel": "5 Jan 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1969,
+      "rsi": 43.1,
+      "smi": -49.8,
+      "bestTimeIst": "14:00",
+      "bestPct": 0.17,
+      "eodPct": -0.64,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 41.8 / SMI -40.3 near BB lower, momentum still falling — short on confirm (setup 11:45) | cascade: SMI falling -32.2→-40.3; MACD hist falling -0.94→-0.99; next-bar cascade mid 1969.35→1969.00"
+      ]
+    },
+    {
+      "dateKey": "2026-01-06",
+      "dayLabel": "6 Jan 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1986.15,
+      "rsi": 70.9,
+      "smi": 71,
+      "bestTimeIst": "10:15",
+      "bestPct": 0.25,
+      "eodPct": -1.21,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 70.9 in 45–75, SMI 71.0 ≥ 20, BB upper gap 0.47% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-07",
+      "dayLabel": "7 Jan 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 2014.4,
+      "rsi": 68.1,
+      "smi": 31.6,
+      "bestTimeIst": "15:15",
+      "bestPct": 2.43,
+      "eodPct": 2.43,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 68.1 in 45–75, SMI 31.6 ≥ 20, BB upper gap 0.38% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-08",
+      "dayLabel": "8 Jan 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1956.65,
+      "rsi": 27,
+      "smi": -64.2,
+      "bestTimeIst": "14:30",
+      "bestPct": 2.69,
+      "eodPct": 2.55,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 31.9 / SMI -61.9 near BB lower, momentum still falling — short on confirm (setup 09:30) | cascade: SMI falling -58.1→-61.9; MACD hist falling -1.96→-1.97; next-bar cascade mid 1957.30→1956.65"
+      ]
+    },
+    {
+      "dateKey": "2026-01-09",
+      "dayLabel": "9 Jan 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1908.25,
+      "rsi": 44.2,
+      "smi": -33.7,
+      "bestTimeIst": "10:15",
+      "bestPct": 0.01,
+      "eodPct": -0.51,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 48.7 in 30–50, SMI -43.5 ≤ -40, BB lower gap 0.15% (crossed) (setup 09:45) | guards: SMI rising -49.6→-43.5; MACD hist rising 1.44→1.91; open drawdown -0.67% ≥ −0.8%; next-bar confirm mid 1904.05→1908.25"
+      ]
+    },
+    {
+      "dateKey": "2026-01-09",
+      "dayLabel": "9 Jan 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1895.45,
+      "rsi": 32,
+      "smi": -54.8,
+      "bestTimeIst": "11:30",
+      "bestPct": 0.6,
+      "eodPct": -0.17,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 37.9 / SMI -41.5 near BB lower, momentum still falling — short on confirm (setup 10:45) | cascade: SMI falling -35.3→-41.5; MACD hist falling 2.09→1.86; next-bar cascade mid 1901.60→1895.45"
+      ]
+    },
+    {
+      "dateKey": "2026-01-12",
+      "dayLabel": "12 Jan 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1889.8,
+      "rsi": 45.1,
+      "smi": -52,
+      "bestTimeIst": "11:00",
+      "bestPct": 0.42,
+      "eodPct": -1.12,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 44.5 / SMI -48.0 near BB lower, momentum still falling — short on confirm (setup 10:00) | cascade: SMI falling -31.8→-48.0; MACD hist falling 1.04→0.63; next-bar cascade mid 1889.80→1889.80"
+      ]
+    },
+    {
+      "dateKey": "2026-01-12",
+      "dayLabel": "12 Jan 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1886.1,
+      "rsi": 36.8,
+      "smi": -61.2,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.32,
+      "eodPct": 1.32,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 43.6 in 30–50, SMI -65.4 ≤ -40, BB lower gap 0.12% (crossed) (setup 11:15) | guards: SMI rising -72.5→-65.4; MACD hist rising -0.30→-0.21; open drawdown -0.74% ≥ −0.8%; next-bar confirm mid 1883.75→1886.10"
+      ]
+    },
+    {
+      "dateKey": "2026-01-13",
+      "dayLabel": "13 Jan 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1913.7,
+      "rsi": 65,
+      "smi": 49.3,
+      "bestTimeIst": "14:30",
+      "bestPct": 2.4,
+      "eodPct": 1.43,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 65.0 in 45–75, SMI 49.3 ≥ 20, BB upper gap 0.20% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-14",
+      "dayLabel": "14 Jan 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1885.95,
+      "rsi": 63,
+      "smi": 35.6,
+      "bestTimeIst": "11:15",
+      "bestPct": 2.6,
+      "eodPct": 1.47,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.0 in 45–75, SMI 35.6 ≥ 20, BB upper gap 0.25% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-16",
+      "dayLabel": "16 Jan 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1848.5,
+      "rsi": 50,
+      "smi": 46.1,
+      "bestTimeIst": "09:30",
+      "bestPct": -0.2,
+      "eodPct": -1.34,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 50.0 in 45–75, SMI 46.1 ≥ 20, BB upper gap 0.24% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-19",
+      "dayLabel": "19 Jan 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1862.05,
+      "rsi": 46.4,
+      "smi": -61.4,
+      "bestTimeIst": "12:30",
+      "bestPct": -0.06,
+      "eodPct": -0.77,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 42.2 / SMI -48.4 near BB lower, momentum still falling — short on confirm (setup 10:15) | cascade: SMI falling -28.4→-48.4; MACD hist falling -0.23→-1.02; next-bar cascade mid 1864.90→1862.05"
+      ]
+    },
+    {
+      "dateKey": "2026-01-19",
+      "dayLabel": "19 Jan 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:15",
+      "entryPrice": 1870.2,
+      "rsi": 53.9,
+      "smi": -56.8,
+      "bestTimeIst": "15:00",
+      "bestPct": 0.86,
+      "eodPct": 0.33,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -64.3 ≤ 0 (negative preferred), BB lower gap 0.16% (≤ 1%), RSI 51.7 (setup 11:00) | guards: SMI rising -66.8→-64.3; MACD hist rising -1.32→-1.04; open drawdown -0.63% ≥ −0.8%; next-bar confirm mid 1865.70→1870.20"
+      ]
+    },
+    {
+      "dateKey": "2026-01-20",
+      "dayLabel": "20 Jan 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1873.05,
+      "rsi": 55.3,
+      "smi": 45.7,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.91,
+      "eodPct": 0.91,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 55.3 in 45–75, SMI 45.7 ≥ 20, BB upper gap 0.07% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-20",
+      "dayLabel": "20 Jan 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1874.6,
+      "rsi": 48.5,
+      "smi": -17.6,
+      "bestTimeIst": "11:45",
+      "bestPct": 0.04,
+      "eodPct": -0.99,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -30.4 ≤ 0 (negative preferred), BB lower gap 0.50% (≤ 1%), RSI 50.1 (setup 11:15) | guards: SMI rising -35.4→-30.4; MACD hist rising -0.69→-0.44; open drawdown -0.11% ≥ −0.8%; next-bar confirm mid 1870.95→1874.60"
+      ]
+    },
+    {
+      "dateKey": "2026-01-21",
+      "dayLabel": "21 Jan 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1850.2,
+      "rsi": 29.8,
+      "smi": -56.7,
+      "bestTimeIst": "10:30",
+      "bestPct": -0.25,
+      "eodPct": -0.72,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -56.8 ≤ 0 (negative preferred), BB lower gap 0.02% (≤ 1%), RSI 29.9 (setup 10:00) | guards: SMI rising -60.2→-56.8; MACD hist rising -1.91→-1.66; open drawdown -0.19% ≥ −0.8%; next-bar confirm mid 1849.60→1850.20"
+      ]
+    },
+    {
+      "dateKey": "2026-01-22",
+      "dayLabel": "22 Jan 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1821.2,
+      "rsi": 45.5,
+      "smi": -69,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.32,
+      "eodPct": -0.13,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 41.4 / SMI -65.6 near BB lower, momentum still falling — short on confirm (setup 10:15) | cascade: SMI falling -50.2→-65.6; MACD hist falling 1.14→0.31; next-bar cascade mid 1824.30→1821.20"
+      ]
+    },
+    {
+      "dateKey": "2026-01-23",
+      "dayLabel": "23 Jan 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1816.25,
+      "rsi": 57.9,
+      "smi": 25.4,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.27,
+      "eodPct": 1.27,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 57.9 in 45–75, SMI 25.4 ≥ 20, BB upper gap 0.42%"
+      ]
+    },
+    {
+      "dateKey": "2026-01-27",
+      "dayLabel": "27 Jan 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1791.65,
+      "rsi": 19.2,
+      "smi": -54.9,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.97,
+      "eodPct": 0.97,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -62.4 ≤ 0 (negative preferred), BB lower gap 0.19% (≤ 1%), RSI 20.0 (setup 09:45) | guards: SMI rising -70.4→-62.4; MACD hist rising -3.24→-2.62; open drawdown 0.05% ≥ −0.8%; next-bar confirm mid 1789.45→1791.65"
+      ]
+    },
+    {
+      "dateKey": "2026-01-27",
+      "dayLabel": "27 Jan 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1795.6,
+      "rsi": 49.2,
+      "smi": 52.5,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.33,
+      "eodPct": -0.74,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 49.2 in 45–75, SMI 52.5 ≥ 20, BB upper gap 0.96%"
+      ]
+    },
+    {
+      "dateKey": "2026-01-28",
+      "dayLabel": "28 Jan 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1824.55,
+      "rsi": 73,
+      "smi": 76.1,
+      "bestTimeIst": "12:45",
+      "bestPct": 0.55,
+      "eodPct": 0.15,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 73.0 in 45–75, SMI 76.1 ≥ 20, BB upper gap 0.53% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-28",
+      "dayLabel": "28 Jan 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "13:30",
+      "entryPrice": 1821.75,
+      "rsi": 48.6,
+      "smi": -37.7,
+      "bestTimeIst": "14:00",
+      "bestPct": 0.05,
+      "eodPct": 0,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -43.1 ≤ 0 (negative preferred), BB lower gap 0.80% (≤ 1%), RSI 50.3 (setup 13:15) | guards: SMI rising -51.2→-43.1; MACD hist rising -1.60→-1.41; open drawdown 0.31% ≥ −0.8%; next-bar confirm mid 1821.45→1821.75"
+      ]
+    },
+    {
+      "dateKey": "2026-01-29",
+      "dayLabel": "29 Jan 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1815.2,
+      "rsi": 46.4,
+      "smi": -4.3,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.61,
+      "eodPct": 0.61,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -13.8 ≤ 0 (negative preferred), BB lower gap 0.23% (≤ 1%), RSI 42.1 (setup 10:45) | guards: SMI rising -19.0→-13.8; MACD hist rising -1.48→-1.19; open drawdown 0.07% ≥ −0.8%; next-bar confirm mid 1814.50→1815.20"
+      ]
+    },
+    {
+      "dateKey": "2026-01-29",
+      "dayLabel": "29 Jan 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1821.2,
+      "rsi": 50.4,
+      "smi": 39.3,
+      "bestTimeIst": "14:15",
+      "bestPct": 0.28,
+      "eodPct": -0.27,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 50.4 in 45–75, SMI 39.3 ≥ 20, BB upper gap 0.22% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-01-30",
+      "dayLabel": "30 Jan 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 1815.65,
+      "rsi": 47.4,
+      "smi": -34.5,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.86,
+      "eodPct": 0.86,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 48.3 in 30–50, SMI -45.6 ≤ -40, BB lower gap 0.10% (crossed) (setup 13:30) | guards: SMI rising -48.8→-45.6; MACD hist rising -1.10→-1.00; open drawdown -0.36% ≥ −0.8%; next-bar confirm mid 1812.60→1815.65"
+      ]
+    },
+    {
+      "dateKey": "2026-02-01",
+      "dayLabel": "1 Feb 2026",
+      "weekday": "Sun",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1813.2,
+      "rsi": 54.6,
+      "smi": -54,
+      "bestTimeIst": "14:00",
+      "bestPct": 1.46,
+      "eodPct": 1.32,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 48.4 in 30–50, SMI -66.8 ≤ -40, BB lower gap 0.02% (close) (setup 10:00) | guards: SMI rising -79.7→-66.8; MACD hist rising -1.58→-1.04; open drawdown -0.26% ≥ −0.8%; next-bar confirm mid 1806.80→1813.20"
+      ]
+    },
+    {
+      "dateKey": "2026-02-01",
+      "dayLabel": "1 Feb 2026",
+      "weekday": "Sun",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1831.25,
+      "rsi": 58.7,
+      "smi": 35.2,
+      "bestTimeIst": "12:30",
+      "bestPct": 0.39,
+      "eodPct": -0.32,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 58.7 in 45–75, SMI 35.2 ≥ 20, BB upper gap 0.06% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-02",
+      "dayLabel": "2 Feb 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1817.05,
+      "rsi": 50,
+      "smi": -18,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.94,
+      "eodPct": 0.94,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -29.1 ≤ 0 (negative preferred), BB lower gap 0.37% (≤ 1%), RSI 36.5 (setup 12:15) | guards: SMI rising -35.2→-29.1; MACD hist rising -1.84→-1.52; open drawdown -0.30% ≥ −0.8%; next-bar confirm mid 1811.95→1817.05"
+      ]
+    },
+    {
+      "dateKey": "2026-02-02",
+      "dayLabel": "2 Feb 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 1819.2,
+      "rsi": 49.6,
+      "smi": 54.8,
+      "bestTimeIst": "14:30",
+      "bestPct": 0.14,
+      "eodPct": -0.82,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 49.6 in 45–75, SMI 54.8 ≥ 20, BB upper gap 0.47%"
+      ]
+    },
+    {
+      "dateKey": "2026-02-03",
+      "dayLabel": "3 Feb 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1866.7,
+      "rsi": 74,
+      "smi": 42.1,
+      "bestTimeIst": "11:30",
+      "bestPct": 0.8,
+      "eodPct": 0.42,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 74.0 in 45–75, SMI 42.1 ≥ 20, BB upper gap 1.19% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-04",
+      "dayLabel": "4 Feb 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1837.8,
+      "rsi": 28.4,
+      "smi": -82.9,
+      "bestTimeIst": "12:45",
+      "bestPct": 0.04,
+      "eodPct": -0.89,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 30.8 / SMI -76.7 near BB lower, momentum still falling — short on confirm (setup 12:15) | cascade: SMI falling -72.0→-76.7; MACD hist falling -2.32→-2.34; next-bar cascade mid 1841.35→1837.80"
+      ]
+    },
+    {
+      "dateKey": "2026-02-04",
+      "dayLabel": "4 Feb 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:30",
+      "entryPrice": 1846,
+      "rsi": 45.5,
+      "smi": -16.6,
+      "bestTimeIst": "14:30",
+      "bestPct": 0.47,
+      "eodPct": 0.44,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 30.2 in 30–50, SMI -55.9 ≤ -40, BB lower gap 0.40% (setup 13:15) | guards: SMI rising -72.2→-55.9; MACD hist rising -1.95→-1.47; open drawdown -0.63% ≥ −0.8%; next-bar confirm mid 1841.60→1846.00"
+      ]
+    },
+    {
+      "dateKey": "2026-02-05",
+      "dayLabel": "5 Feb 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1849.2,
+      "rsi": 61.2,
+      "smi": 52.6,
+      "bestTimeIst": "11:15",
+      "bestPct": 1.1,
+      "eodPct": -1.42,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 61.2 in 45–75, SMI 52.6 ≥ 20, BB upper gap 0.20% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-05",
+      "dayLabel": "5 Feb 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1839.45,
+      "rsi": 41.9,
+      "smi": -4.5,
+      "bestTimeIst": "13:45",
+      "bestPct": 1.98,
+      "eodPct": 1.95,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -30.7 ≤ 0 (negative preferred), BB lower gap 0.41% (≤ 1%), RSI 26.7 (setup 12:15) | guards: SMI rising -47.4→-30.7; MACD hist rising -0.79→-0.46; open drawdown -0.72% ≥ −0.8%; next-bar confirm mid 1835.80→1839.45"
+      ]
+    },
+    {
+      "dateKey": "2026-02-06",
+      "dayLabel": "6 Feb 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1868.7,
+      "rsi": 72.5,
+      "smi": 60.2,
+      "bestTimeIst": "13:00",
+      "bestPct": 1.16,
+      "eodPct": 0.37,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 72.5 in 45–75, SMI 60.2 ≥ 20, BB upper gap 0.87%"
+      ]
+    },
+    {
+      "dateKey": "2026-02-09",
+      "dayLabel": "9 Feb 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1868.75,
+      "rsi": 65.4,
+      "smi": 49.2,
+      "bestTimeIst": "10:15",
+      "bestPct": 1.05,
+      "eodPct": -0.96,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 65.4 in 45–75, SMI 49.2 ≥ 20, BB upper gap 0.68% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-09",
+      "dayLabel": "9 Feb 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1868.2,
+      "rsi": 61.8,
+      "smi": -12.4,
+      "bestTimeIst": "15:00",
+      "bestPct": 1.14,
+      "eodPct": 0.99,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -37.2 ≤ 0 (negative preferred), BB lower gap 0.41% (≤ 1%), RSI 61.0 (setup 10:30) | guards: SMI rising -46.7→-37.2; MACD hist rising -0.75→-0.24; open drawdown -0.60% ≥ −0.8%; next-bar confirm mid 1857.60→1868.20"
+      ]
+    },
+    {
+      "dateKey": "2026-02-10",
+      "dayLabel": "10 Feb 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1885.95,
+      "rsi": 56.3,
+      "smi": -20.9,
+      "bestTimeIst": "15:00",
+      "bestPct": 1.46,
+      "eodPct": 1.03,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 47.9 in 30–50, SMI -56.4 ≤ -40, BB lower gap 0.25% (close) (setup 10:00) | guards: SMI rising -57.3→-56.4; MACD hist rising -1.99→-1.87; open drawdown -0.44% ≥ −0.8%; next-bar confirm mid 1876.65→1885.95"
+      ]
+    },
+    {
+      "dateKey": "2026-02-10",
+      "dayLabel": "10 Feb 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1896.6,
+      "rsi": 61.1,
+      "smi": 21.7,
+      "bestTimeIst": "12:30",
+      "bestPct": 0.13,
+      "eodPct": -0.46,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 61.1 in 45–75, SMI 21.7 ≥ 20, BB upper gap 0.20% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-11",
+      "dayLabel": "11 Feb 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1896.95,
+      "rsi": 35.8,
+      "smi": -64.9,
+      "bestTimeIst": "10:15",
+      "bestPct": -0.18,
+      "eodPct": -1.61,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 48.2 / SMI -45.0 near BB lower, momentum still falling — short on confirm (setup 09:45) | cascade: SMI falling -17.1→-45.0; MACD hist falling -1.60→-2.01; next-bar cascade mid 1901.05→1896.95"
+      ]
+    },
+    {
+      "dateKey": "2026-02-11",
+      "dayLabel": "11 Feb 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1905.3,
+      "rsi": 45.3,
+      "smi": -49.7,
+      "bestTimeIst": "15:00",
+      "bestPct": 1.38,
+      "eodPct": 1.16,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 47.1 in 30–50, SMI -62.6 ≤ -40, BB lower gap 0.21% (close) (setup 10:15) | guards: SMI rising -64.9→-62.6; MACD hist rising -2.46→-2.19; open drawdown -0.60% ≥ −0.8%; next-bar confirm mid 1900.30→1905.30"
+      ]
+    },
+    {
+      "dateKey": "2026-02-12",
+      "dayLabel": "12 Feb 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1924.95,
+      "rsi": 51.4,
+      "smi": 0.7,
+      "bestTimeIst": "11:00",
+      "bestPct": 0.3,
+      "eodPct": 0.26,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -14.6 ≤ 0 (negative preferred), BB lower gap 0.22% (≤ 1%), RSI 48.2 (setup 09:45) | guards: SMI rising -24.6→-14.6; MACD hist rising -1.77→-1.55; open drawdown -0.01% ≥ −0.8%; next-bar confirm mid 1921.90→1924.95"
+      ]
+    },
+    {
+      "dateKey": "2026-02-12",
+      "dayLabel": "12 Feb 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1929.45,
+      "rsi": 56.5,
+      "smi": 29.5,
+      "bestTimeIst": "14:15",
+      "bestPct": 1.1,
+      "eodPct": -0.03,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 56.5 in 45–75, SMI 29.5 ≥ 20, BB upper gap 0.17% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-13",
+      "dayLabel": "13 Feb 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1908.5,
+      "rsi": 46.7,
+      "smi": -24.3,
+      "bestTimeIst": "12:30",
+      "bestPct": 0.92,
+      "eodPct": 0.13,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -35.2 ≤ 0 (negative preferred), BB lower gap 0.12% (≤ 1%), RSI 48.7 (setup 11:15) | guards: SMI rising -36.4→-35.2; MACD hist rising -0.35→-0.12; open drawdown 0.27% ≥ −0.8%; next-bar confirm mid 1903.95→1908.50"
+      ]
+    },
+    {
+      "dateKey": "2026-02-13",
+      "dayLabel": "13 Feb 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:15",
+      "entryPrice": 1920.7,
+      "rsi": 63.9,
+      "smi": 40.6,
+      "bestTimeIst": "14:00",
+      "bestPct": 0.61,
+      "eodPct": 0.51,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.9 in 45–75, SMI 40.6 ≥ 20, BB upper gap 0.23% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-16",
+      "dayLabel": "16 Feb 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1912.1,
+      "rsi": 41.6,
+      "smi": -38.3,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.67,
+      "eodPct": 0.67,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 49.0 in 30–50, SMI -42.2 ≤ -40, BB lower gap 0.30% (setup 11:15) | guards: SMI rising -50.1→-42.2; MACD hist rising -0.76→-0.42; open drawdown 0.04% ≥ −0.8%; next-bar confirm mid 1911.10→1912.10"
+      ]
+    },
+    {
+      "dateKey": "2026-02-16",
+      "dayLabel": "16 Feb 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:00",
+      "entryPrice": 1913.3,
+      "rsi": 47.8,
+      "smi": 21.6,
+      "bestTimeIst": "13:30",
+      "bestPct": 0,
+      "eodPct": -0.61,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 47.8 in 45–75, SMI 21.6 ≥ 20, BB upper gap 0.34%"
+      ]
+    },
+    {
+      "dateKey": "2026-02-17",
+      "dayLabel": "17 Feb 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1927.8,
+      "rsi": 72.1,
+      "smi": 49.7,
+      "bestTimeIst": "10:00",
+      "bestPct": 0.17,
+      "eodPct": 0.03,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 72.1 in 45–75, SMI 49.7 ≥ 20, BB upper gap 0.17% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-18",
+      "dayLabel": "18 Feb 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1949.85,
+      "rsi": 54.6,
+      "smi": 32.5,
+      "bestTimeIst": "14:30",
+      "bestPct": 0.14,
+      "eodPct": -0.7,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 54.6 in 45–75, SMI 32.5 ≥ 20, BB upper gap 0.43%"
+      ]
+    },
+    {
+      "dateKey": "2026-02-19",
+      "dayLabel": "19 Feb 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1956.3,
+      "rsi": 64.4,
+      "smi": 64.6,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.14,
+      "eodPct": 1.14,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 64.4 in 45–75, SMI 64.6 ≥ 20, BB upper gap 0.08% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-19",
+      "dayLabel": "19 Feb 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:00",
+      "entryPrice": 1946.95,
+      "rsi": 38.4,
+      "smi": -20.6,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.03,
+      "eodPct": -0.66,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 41.8 in 30–50, SMI -46.0 ≤ -40, BB lower gap 0.24% (close) (setup 12:45) | guards: SMI rising -71.3→-46.0; MACD hist rising -2.22→-1.58; open drawdown -0.59% ≥ −0.8%; next-bar confirm mid 1944.80→1946.95"
+      ]
+    },
+    {
+      "dateKey": "2026-02-20",
+      "dayLabel": "20 Feb 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1932.5,
+      "rsi": 47.8,
+      "smi": -44.9,
+      "bestTimeIst": "13:00",
+      "bestPct": -0.16,
+      "eodPct": -0.21,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 39.3 / SMI -58.5 near BB lower, momentum still falling — short on confirm (setup 09:15) | cascade: SMI falling -40.8→-58.5; MACD hist falling -1.11→-1.74; next-bar cascade mid 1935.45→1932.50"
+      ]
+    },
+    {
+      "dateKey": "2026-02-20",
+      "dayLabel": "20 Feb 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1938.6,
+      "rsi": 43.4,
+      "smi": -24.4,
+      "bestTimeIst": "10:45",
+      "bestPct": 0.2,
+      "eodPct": -0.11,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 47.8 in 30–50, SMI -44.9 ≤ -40, BB lower gap 0.22% (crossed) (setup 09:30) | guards: SMI rising -58.5→-44.9; MACD hist rising -1.74→-1.25; open drawdown -0.15% ≥ −0.8%; next-bar confirm mid 1932.50→1938.60"
+      ]
+    },
+    {
+      "dateKey": "2026-02-23",
+      "dayLabel": "23 Feb 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1958.8,
+      "rsi": 74.5,
+      "smi": 61,
+      "bestTimeIst": "11:45",
+      "bestPct": 0.74,
+      "eodPct": 0.38,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 74.5 in 45–75, SMI 61.0 ≥ 20, BB upper gap 0.04% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-24",
+      "dayLabel": "24 Feb 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1925.6,
+      "rsi": 32.4,
+      "smi": -68.2,
+      "bestTimeIst": "14:30",
+      "bestPct": 1.53,
+      "eodPct": 1.04,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 32.0 / SMI -55.1 near BB lower, momentum still falling — short on confirm (setup 09:15) | cascade: SMI falling -33.9→-55.1; MACD hist falling -1.36→-3.01; next-bar cascade mid 1938.80→1925.60"
+      ]
+    },
+    {
+      "dateKey": "2026-02-24",
+      "dayLabel": "24 Feb 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1931.55,
+      "rsi": 32.1,
+      "smi": -62.2,
+      "bestTimeIst": "11:00",
+      "bestPct": -0.05,
+      "eodPct": -1.35,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 38.2 in 30–50, SMI -64.1 ≤ -40, BB lower gap 0.28% (crossed) (setup 09:45) | guards: SMI rising -68.2→-64.1; MACD hist rising -3.96→-3.82; open drawdown -0.54% ≥ −0.8%; next-bar confirm mid 1928.40→1931.55"
+      ]
+    },
+    {
+      "dateKey": "2026-02-25",
+      "dayLabel": "25 Feb 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1911.75,
+      "rsi": 61.3,
+      "smi": 27.8,
+      "bestTimeIst": "15:00",
+      "bestPct": 1.54,
+      "eodPct": 1.29,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -7.7 ≤ 0 (negative preferred), BB lower gap 0.41% (≤ 1%), RSI 54.3 (setup 09:15) | guards: SMI rising -31.4→-7.7; MACD hist rising 0.41→1.12; open drawdown 0.00% ≥ −0.8%; next-bar confirm mid 1905.70→1911.75"
+      ]
+    },
+    {
+      "dateKey": "2026-02-25",
+      "dayLabel": "25 Feb 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1911.75,
+      "rsi": 61.3,
+      "smi": 27.8,
+      "bestTimeIst": "09:45",
+      "bestPct": -0.57,
+      "eodPct": -1.29,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 61.3 in 45–75, SMI 27.8 ≥ 20, BB upper gap 0.48%"
+      ]
+    },
+    {
+      "dateKey": "2026-02-26",
+      "dayLabel": "26 Feb 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1937.5,
+      "rsi": 63.8,
+      "smi": 25.3,
+      "bestTimeIst": "12:30",
+      "bestPct": 0.31,
+      "eodPct": -0.45,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.8 in 45–75, SMI 25.3 ≥ 20, BB upper gap 0.28% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-02-26",
+      "dayLabel": "26 Feb 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1937,
+      "rsi": 33.6,
+      "smi": -33.1,
+      "bestTimeIst": "15:00",
+      "bestPct": 0.5,
+      "eodPct": 0.48,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 46.5 in 30–50, SMI -41.5 ≤ -40, BB lower gap 0.22% (close) (setup 13:00) | guards: SMI rising -47.9→-41.5; MACD hist rising -1.69→-1.54; open drawdown -0.07% ≥ −0.8%; next-bar confirm mid 1936.05→1937.00"
+      ]
+    },
+    {
+      "dateKey": "2026-02-27",
+      "dayLabel": "27 Feb 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1917.6,
+      "rsi": 31.4,
+      "smi": -75.7,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.93,
+      "eodPct": 0.93,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 34.6 / SMI -63.0 near BB lower, momentum still falling — short on confirm (setup 09:45) | cascade: SMI falling -36.5→-63.0; MACD hist falling -1.25→-2.20; next-bar cascade mid 1922.40→1917.60"
+      ]
+    },
+    {
+      "dateKey": "2026-03-02",
+      "dayLabel": "2 Mar 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1895.45,
+      "rsi": 48.5,
+      "smi": 32,
+      "bestTimeIst": "14:00",
+      "bestPct": 0.11,
+      "eodPct": -0.09,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 48.5 in 45–75, SMI 32.0 ≥ 20, BB upper gap 0.71%"
+      ]
+    },
+    {
+      "dateKey": "2026-03-04",
+      "dayLabel": "4 Mar 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1875.65,
+      "rsi": 36.5,
+      "smi": -42.8,
+      "bestTimeIst": "10:15",
+      "bestPct": -0.02,
+      "eodPct": -1.1,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 40.6 in 30–50, SMI -40.8 ≤ -40, BB lower gap 0.64% (crossed) (setup 09:30) | guards: SMI rising -50.3→-40.8; MACD hist rising -1.86→-1.84; open drawdown -0.06% ≥ −0.8%; next-bar confirm mid 1872.80→1875.65"
+      ]
+    },
+    {
+      "dateKey": "2026-03-04",
+      "dayLabel": "4 Mar 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1871.55,
+      "rsi": 38.7,
+      "smi": -37.3,
+      "bestTimeIst": "14:30",
+      "bestPct": 1.09,
+      "eodPct": 0.88,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 36.5 / SMI -42.8 near BB lower, momentum still falling — short on confirm (setup 09:45) | cascade: SMI falling -40.8→-42.8; MACD hist falling -1.84→-2.29; next-bar cascade mid 1875.65→1871.55"
+      ]
+    },
+    {
+      "dateKey": "2026-03-05",
+      "dayLabel": "5 Mar 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1844.1,
+      "rsi": 41.9,
+      "smi": -60.6,
+      "bestTimeIst": "11:15",
+      "bestPct": 0.05,
+      "eodPct": -1.67,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 44.7 / SMI -44.8 near BB lower, momentum still falling — short on confirm (setup 10:15) | cascade: SMI falling -16.0→-44.8; MACD hist falling 1.20→0.59; next-bar cascade mid 1845.55→1844.10"
+      ]
+    },
+    {
+      "dateKey": "2026-03-05",
+      "dayLabel": "5 Mar 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1846.45,
+      "rsi": 41,
+      "smi": -68.5,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.54,
+      "eodPct": 1.54,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 39.0 in 30–50, SMI -73.6 ≤ -40, BB lower gap 0.32% (setup 11:45) | guards: SMI rising -78.9→-73.6; MACD hist rising 0.27→0.47; open drawdown -0.77% ≥ −0.8%; next-bar confirm mid 1846.25→1846.45"
+      ]
+    },
+    {
+      "dateKey": "2026-03-06",
+      "dayLabel": "6 Mar 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1869.1,
+      "rsi": 65.5,
+      "smi": 64.9,
+      "bestTimeIst": "10:30",
+      "bestPct": 0.49,
+      "eodPct": -0.7,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 65.5 in 45–75, SMI 64.9 ≥ 20, BB upper gap 0.04% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-03-09",
+      "dayLabel": "9 Mar 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1853.55,
+      "rsi": 29.8,
+      "smi": -66.5,
+      "bestTimeIst": "09:45",
+      "bestPct": 0.09,
+      "eodPct": -2.24,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 32.6 / SMI -43.4 near BB lower, momentum still falling — short on confirm (setup 09:15) | cascade: SMI falling 9.7→-43.4; MACD hist falling -0.41→-2.75; next-bar cascade mid 1856.60→1853.55"
+      ]
+    },
+    {
+      "dateKey": "2026-03-09",
+      "dayLabel": "9 Mar 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1857.55,
+      "rsi": 34,
+      "smi": -53.5,
+      "bestTimeIst": "15:15",
+      "bestPct": 2.02,
+      "eodPct": 2.02,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 30.6 in 30–50, SMI -62.5 ≤ -40, BB lower gap 0.36% (crossed) (setup 09:45) | guards: SMI rising -66.5→-62.5; MACD hist rising -4.05→-4.04; open drawdown -0.25% ≥ −0.8%; next-bar confirm mid 1851.90→1857.55"
+      ]
+    },
+    {
+      "dateKey": "2026-03-10",
+      "dayLabel": "10 Mar 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1895.65,
+      "rsi": 70.6,
+      "smi": 27.7,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.35,
+      "eodPct": 0.35,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 70.6 in 45–75, SMI 27.7 ≥ 20, BB upper gap 0.39% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-03-11",
+      "dayLabel": "11 Mar 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1872.4,
+      "rsi": 20.3,
+      "smi": -62.9,
+      "bestTimeIst": "11:45",
+      "bestPct": 1.55,
+      "eodPct": 0.12,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -70.1 ≤ 0 (negative preferred), BB lower gap 0.31% (≤ 1%), RSI 13.4 (setup 10:15) | guards: SMI rising -71.4→-70.1; MACD hist rising -3.21→-3.21; open drawdown -0.69% ≥ −0.8%; next-bar confirm mid 1869.85→1872.40"
+      ]
+    },
+    {
+      "dateKey": "2026-03-11",
+      "dayLabel": "11 Mar 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1895.1,
+      "rsi": 59.6,
+      "smi": 28.1,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.08,
+      "eodPct": 1.08,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 59.6 in 45–75, SMI 28.1 ≥ 20, BB upper gap 0.11% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-03-12",
+      "dayLabel": "12 Mar 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "12:45",
+      "entryPrice": 1843.9,
+      "rsi": 36.6,
+      "smi": -45.5,
+      "bestTimeIst": "13:00",
+      "bestPct": -0.07,
+      "eodPct": -0.77,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 33.9 / SMI -40.9 near BB lower, momentum still falling — short on confirm (setup 12:30) | cascade: SMI falling -37.7→-40.9; MACD hist falling -0.38→-0.42; next-bar cascade mid 1845.70→1843.90"
+      ]
+    },
+    {
+      "dateKey": "2026-03-13",
+      "dayLabel": "13 Mar 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1848.1,
+      "rsi": 49.5,
+      "smi": 41.1,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.69,
+      "eodPct": 0.69,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 49.5 in 45–75, SMI 41.1 ≥ 20, BB upper gap 0.07% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-03-13",
+      "dayLabel": "13 Mar 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1852.75,
+      "rsi": 55.2,
+      "smi": 8.2,
+      "bestTimeIst": "11:15",
+      "bestPct": 0.2,
+      "eodPct": -0.94,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -4.5 ≤ 0 (negative preferred), BB lower gap 0.32% (≤ 1%), RSI 58.8 (setup 10:45) | guards: SMI rising -16.0→-4.5; MACD hist rising 0.95→1.30; open drawdown 0.12% ≥ −0.8%; next-bar confirm mid 1850.40→1852.75"
+      ]
+    },
+    {
+      "dateKey": "2026-03-16",
+      "dayLabel": "16 Mar 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1834.4,
+      "rsi": 40.4,
+      "smi": -36.5,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.96,
+      "eodPct": 0.96,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -39.0 ≤ 0 (negative preferred), BB lower gap 0.04% (≤ 1%), RSI 41.8 (setup 09:30) | guards: SMI rising -48.5→-39.0; MACD hist rising -0.97→-0.73; open drawdown -0.25% ≥ −0.8%; next-bar confirm mid 1831.40→1834.40"
+      ]
+    },
+    {
+      "dateKey": "2026-03-16",
+      "dayLabel": "16 Mar 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1813.6,
+      "rsi": 35.2,
+      "smi": -57.5,
+      "bestTimeIst": "11:00",
+      "bestPct": -0.18,
+      "eodPct": -2.11,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 34.5 / SMI -48.8 near BB lower, momentum still falling — short on confirm (setup 10:30) | cascade: SMI falling -30.6→-48.8; MACD hist falling -0.52→-1.17; next-bar cascade mid 1825.30→1813.60"
+      ]
+    },
+    {
+      "dateKey": "2026-03-17",
+      "dayLabel": "17 Mar 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1853.05,
+      "rsi": 61.7,
+      "smi": 60.2,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.94,
+      "eodPct": 0.94,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 61.7 in 45–75, SMI 60.2 ≥ 20, BB upper gap 0.52% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-03-17",
+      "dayLabel": "17 Mar 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "13:30",
+      "entryPrice": 1842.25,
+      "rsi": 49.8,
+      "smi": 10,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.12,
+      "eodPct": -0.36,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -11.2 ≤ 0 (negative preferred), BB lower gap 0.14% (≤ 1%), RSI 45.0 (setup 13:15) | guards: SMI rising -31.5→-11.2; MACD hist rising -0.89→-0.62; open drawdown -0.69% ≥ −0.8%; next-bar confirm mid 1840.25→1842.25"
+      ]
+    },
+    {
+      "dateKey": "2026-03-18",
+      "dayLabel": "18 Mar 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1823.35,
+      "rsi": 68,
+      "smi": 66.6,
+      "bestTimeIst": "15:00",
+      "bestPct": -0.26,
+      "eodPct": -0.46,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 68.0 in 45–75, SMI 66.6 ≥ 20, BB upper gap 0.87%"
+      ]
+    },
+    {
+      "dateKey": "2026-03-19",
+      "dayLabel": "19 Mar 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1798.2,
+      "rsi": 39,
+      "smi": -63.4,
+      "bestTimeIst": "15:00",
+      "bestPct": 0.51,
+      "eodPct": 0.25,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 38.3 / SMI -59.4 near BB lower, momentum still falling — short on confirm (setup 09:45) | cascade: SMI falling -38.4→-59.4; MACD hist falling -1.67→-2.86; next-bar cascade mid 1800.85→1798.20"
+      ]
+    },
+    {
+      "dateKey": "2026-03-19",
+      "dayLabel": "19 Mar 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1807.6,
+      "rsi": 32,
+      "smi": -47,
+      "bestTimeIst": "13:45",
+      "bestPct": 0.17,
+      "eodPct": -0.77,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 31.5 in 30–50, SMI -57.9 ≤ -40, BB lower gap 0.62% (setup 10:45) | guards: SMI rising -64.7→-57.9; MACD hist rising -3.01→-2.42; open drawdown -0.36% ≥ −0.8%; next-bar confirm mid 1804.70→1807.60"
+      ]
+    },
+    {
+      "dateKey": "2026-03-20",
+      "dayLabel": "20 Mar 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1796.5,
+      "rsi": 37.1,
+      "smi": -33.3,
+      "bestTimeIst": "12:00",
+      "bestPct": 0.67,
+      "eodPct": -1.12,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -38.1 ≤ 0 (negative preferred), BB lower gap 0.11% (≤ 1%), RSI 34.3 (setup 09:30) | guards: SMI rising -39.2→-38.1; MACD hist rising -0.96→-0.91; open drawdown -0.40% ≥ −0.8%; next-bar confirm mid 1795.20→1796.50"
+      ]
+    },
+    {
+      "dateKey": "2026-03-20",
+      "dayLabel": "20 Mar 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1807.9,
+      "rsi": 50.2,
+      "smi": 32.6,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.74,
+      "eodPct": 1.74,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 50.2 in 45–75, SMI 32.6 ≥ 20, BB upper gap 0.46%"
+      ]
+    },
+    {
+      "dateKey": "2026-03-24",
+      "dayLabel": "24 Mar 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1725,
+      "rsi": 40.3,
+      "smi": -50.7,
+      "bestTimeIst": "11:00",
+      "bestPct": 1.05,
+      "eodPct": -0.35,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 33.7 / SMI -44.7 near BB lower, momentum still falling — short on confirm (setup 09:30) | cascade: SMI falling -36.1→-44.7; MACD hist falling 2.07→1.57; next-bar cascade mid 1729.85→1725.00"
+      ]
+    },
+    {
+      "dateKey": "2026-03-25",
+      "dayLabel": "25 Mar 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1758.25,
+      "rsi": 57.8,
+      "smi": 38.7,
+      "bestTimeIst": "11:15",
+      "bestPct": 0.25,
+      "eodPct": -0.67,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 57.8 in 45–75, SMI 38.7 ≥ 20, BB upper gap 0.10% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-03-30",
+      "dayLabel": "30 Mar 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1694.05,
+      "rsi": 28.3,
+      "smi": -66.7,
+      "bestTimeIst": "11:00",
+      "bestPct": 0.75,
+      "eodPct": -0.97,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 31.0 / SMI -56.9 near BB lower, momentum still falling — short on confirm (setup 10:00) | cascade: SMI falling -56.8→-56.9; MACD hist falling -4.46→-4.64; next-bar cascade mid 1701.40→1694.05"
+      ]
+    },
+    {
+      "dateKey": "2026-04-01",
+      "dayLabel": "1 Apr 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1740.15,
+      "rsi": 58.1,
+      "smi": 21.3,
+      "bestTimeIst": "15:15",
+      "bestPct": 2.62,
+      "eodPct": 2.62,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 58.1 in 45–75, SMI 21.3 ≥ 20, BB upper gap 0.51% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-04-02",
+      "dayLabel": "2 Apr 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 1661.2,
+      "rsi": 56.9,
+      "smi": 65.6,
+      "bestTimeIst": "14:00",
+      "bestPct": -0.23,
+      "eodPct": -1.76,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 56.9 in 45–75, SMI 65.6 ≥ 20, BB upper gap 0.77%"
+      ]
+    },
+    {
+      "dateKey": "2026-04-06",
+      "dayLabel": "6 Apr 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:45",
+      "entryPrice": 1699.2,
+      "rsi": 68.8,
+      "smi": 28.8,
+      "bestTimeIst": "13:00",
+      "bestPct": -0.13,
+      "eodPct": -0.9,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 68.8 in 45–75, SMI 28.8 ≥ 20, BB upper gap 0.28% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-04-07",
+      "dayLabel": "7 Apr 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1689.2,
+      "rsi": 52.1,
+      "smi": 47.6,
+      "bestTimeIst": "09:45",
+      "bestPct": -0.2,
+      "eodPct": -2.19,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 52.1 in 45–75, SMI 47.6 ≥ 20, BB upper gap 0.76%"
+      ]
+    },
+    {
+      "dateKey": "2026-04-09",
+      "dayLabel": "9 Apr 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1745.6,
+      "rsi": 40,
+      "smi": -36.8,
+      "bestTimeIst": "12:30",
+      "bestPct": 2.43,
+      "eodPct": 1.2,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 40.3 in 30–50, SMI -45.7 ≤ -40, BB lower gap 0.03% (close) (setup 09:45) | guards: SMI rising -54.8→-45.7; MACD hist rising -3.57→-2.98; open drawdown -0.64% ≥ −0.8%; next-bar confirm mid 1743.30→1745.60"
+      ]
+    },
+    {
+      "dateKey": "2026-04-09",
+      "dayLabel": "9 Apr 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1760.75,
+      "rsi": 59,
+      "smi": 29.8,
+      "bestTimeIst": "14:30",
+      "bestPct": -0.32,
+      "eodPct": -0.33,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 59.0 in 45–75, SMI 29.8 ≥ 20, BB upper gap 0.15% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-04-10",
+      "dayLabel": "10 Apr 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1793.1,
+      "rsi": 54,
+      "smi": 14.2,
+      "bestTimeIst": "10:45",
+      "bestPct": 0.21,
+      "eodPct": -0.25,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -20.1 ≤ 0 (negative preferred), BB lower gap 0.99% (≤ 1%), RSI 54.2 (setup 09:15) | guards: SMI rising -65.0→-20.1; MACD hist rising -1.93→-0.07; open drawdown 0.00% ≥ −0.8%; next-bar confirm mid 1785.75→1793.10"
+      ]
+    },
+    {
+      "dateKey": "2026-04-10",
+      "dayLabel": "10 Apr 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1793.7,
+      "rsi": 63,
+      "smi": 33.7,
+      "bestTimeIst": "14:30",
+      "bestPct": 1.18,
+      "eodPct": 0.29,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.0 in 45–75, SMI 33.7 ≥ 20, BB upper gap 0.01% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-04-13",
+      "dayLabel": "13 Apr 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1769.25,
+      "rsi": 37.5,
+      "smi": -12.1,
+      "bestTimeIst": "15:15",
+      "bestPct": 2.63,
+      "eodPct": 2.63,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -15.7 ≤ 0 (negative preferred), BB lower gap 0.28% (≤ 1%), RSI 41.4 (setup 09:45) | guards: SMI rising -22.0→-15.7; MACD hist rising -3.14→-2.70; open drawdown -0.01% ≥ −0.8%; next-bar confirm mid 1765.70→1769.25"
+      ]
+    },
+    {
+      "dateKey": "2026-04-13",
+      "dayLabel": "13 Apr 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1776.15,
+      "rsi": 48.3,
+      "smi": 35.8,
+      "bestTimeIst": "12:15",
+      "bestPct": -0.06,
+      "eodPct": -2.24,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 48.3 in 45–75, SMI 35.8 ≥ 20, BB upper gap 0.73%"
+      ]
+    },
+    {
+      "dateKey": "2026-04-16",
+      "dayLabel": "16 Apr 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1867.3,
+      "rsi": 55.7,
+      "smi": 41.2,
+      "bestTimeIst": "09:30",
+      "bestPct": 0.5,
+      "eodPct": -0.94,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 55.7 in 45–75, SMI 41.2 ≥ 20, BB upper gap 1.64% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-04-17",
+      "dayLabel": "17 Apr 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1890.8,
+      "rsi": 56.7,
+      "smi": 31.5,
+      "bestTimeIst": "13:30",
+      "bestPct": 1.19,
+      "eodPct": -0.02,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 56.7 in 45–75, SMI 31.5 ≥ 20, BB upper gap 0.51%"
+      ]
+    },
+    {
+      "dateKey": "2026-04-17",
+      "dayLabel": "17 Apr 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "14:00",
+      "entryPrice": 1878.55,
+      "rsi": 43.9,
+      "smi": -17.7,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.68,
+      "eodPct": 0.68,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 39.1 in 30–50, SMI -42.4 ≤ -40, BB lower gap 0.22% (close) (setup 13:45) | guards: SMI rising -65.7→-42.4; MACD hist rising -2.61→-1.69; open drawdown -0.27% ≥ −0.8%; next-bar confirm mid 1874.65→1878.55"
+      ]
+    },
+    {
+      "dateKey": "2026-04-20",
+      "dayLabel": "20 Apr 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1887.35,
+      "rsi": 54.4,
+      "smi": 40.9,
+      "bestTimeIst": "13:00",
+      "bestPct": 0.85,
+      "eodPct": 0.85,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 54.4 in 45–75, SMI 40.9 ≥ 20, BB upper gap 0.72% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-04-20",
+      "dayLabel": "20 Apr 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1875.9,
+      "rsi": 43,
+      "smi": -53.2,
+      "bestTimeIst": "15:00",
+      "bestPct": 0.22,
+      "eodPct": -0.25,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -53.0 ≤ 0 (negative preferred), BB lower gap 0.29% (≤ 1%), RSI 52.3 (setup 11:15) | guards: SMI rising -55.8→-53.0; MACD hist rising -0.93→-0.54; open drawdown -0.68% ≥ −0.8%; next-bar confirm mid 1874.45→1875.90"
+      ]
+    },
+    {
+      "dateKey": "2026-04-21",
+      "dayLabel": "21 Apr 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1854.45,
+      "rsi": 34.9,
+      "smi": -72.2,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.91,
+      "eodPct": 0.91,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 31.5 / SMI -72.0 near BB lower, momentum still falling — short on confirm (setup 09:45) | cascade: SMI falling -61.8→-72.0; MACD hist falling -2.17→-2.50; next-bar cascade mid 1856.30→1854.45"
+      ]
+    },
+    {
+      "dateKey": "2026-04-21",
+      "dayLabel": "21 Apr 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1857.2,
+      "rsi": 36.9,
+      "smi": -61.1,
+      "bestTimeIst": "11:15",
+      "bestPct": 0.25,
+      "eodPct": -1.05,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 38.2 in 30–50, SMI -68.0 ≤ -40, BB lower gap 0.04% (crossed) (setup 10:30) | guards: SMI rising -77.5→-68.0; MACD hist rising -2.66→-2.09; open drawdown -0.61% ≥ −0.8%; next-bar confirm mid 1851.65→1857.20"
+      ]
+    },
+    {
+      "dateKey": "2026-04-22",
+      "dayLabel": "22 Apr 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1827.75,
+      "rsi": 26.2,
+      "smi": -69.5,
+      "bestTimeIst": "12:30",
+      "bestPct": 0.49,
+      "eodPct": -0.11,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 33.9 / SMI -57.5 near BB lower, momentum still falling — short on confirm (setup 09:45) | cascade: SMI falling -54.1→-57.5; MACD hist falling -1.23→-1.40; next-bar cascade mid 1829.10→1827.75"
+      ]
+    },
+    {
+      "dateKey": "2026-04-22",
+      "dayLabel": "22 Apr 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1822.85,
+      "rsi": 51.4,
+      "smi": -40.7,
+      "bestTimeIst": "14:45",
+      "bestPct": 1.04,
+      "eodPct": 0.38,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 36.5 in 30–50, SMI -58.0 ≤ -40, BB lower gap 0.29% (close) (setup 13:00) | guards: SMI rising -60.5→-58.0; MACD hist rising -0.18→-0.01; open drawdown -0.64% ≥ −0.8%; next-bar confirm mid 1820.70→1822.85"
+      ]
+    },
+    {
+      "dateKey": "2026-04-23",
+      "dayLabel": "23 Apr 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1818.2,
+      "rsi": 43.4,
+      "smi": -20.6,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.87,
+      "eodPct": -0.39,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -19.3 ≤ 0 (negative preferred), BB lower gap 0.18% (≤ 1%), RSI 43.7 (setup 10:30) | guards: SMI rising -19.9→-19.3; MACD hist rising -0.42→-0.35; open drawdown -0.15% ≥ −0.8%; next-bar confirm mid 1816.30→1818.20"
+      ]
+    },
+    {
+      "dateKey": "2026-04-23",
+      "dayLabel": "23 Apr 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:45",
+      "entryPrice": 1819.3,
+      "rsi": 58.2,
+      "smi": 22.8,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.97,
+      "eodPct": 0.45,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 58.2 in 45–75, SMI 22.8 ≥ 20, BB upper gap 0.78%"
+      ]
+    },
+    {
+      "dateKey": "2026-04-24",
+      "dayLabel": "24 Apr 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1812.4,
+      "rsi": 42.7,
+      "smi": -44.9,
+      "bestTimeIst": "09:45",
+      "bestPct": -0.33,
+      "eodPct": -2.27,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 43.0 in 30–50, SMI -48.7 ≤ -40, BB lower gap 0.14% (crossed) (setup 09:15) | guards: SMI rising -55.0→-48.7; MACD hist rising -0.91→-0.75; open drawdown 0.00% ≥ −0.8%; next-bar confirm mid 1808.45→1812.40"
+      ]
+    },
+    {
+      "dateKey": "2026-04-27",
+      "dayLabel": "27 Apr 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1776.25,
+      "rsi": 51.9,
+      "smi": 21.3,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.41,
+      "eodPct": 0.41,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 51.9 in 45–75, SMI 21.3 ≥ 20, BB upper gap 0.46%"
+      ]
+    },
+    {
+      "dateKey": "2026-04-28",
+      "dayLabel": "28 Apr 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1772.05,
+      "rsi": 32.6,
+      "smi": -22.7,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.36,
+      "eodPct": 0.36,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 34.3 in 30–50, SMI -40.4 ≤ -40, BB lower gap 0.13% (close) (setup 09:45) | guards: SMI rising -57.1→-40.4; MACD hist rising -1.25→-0.82; open drawdown 0.10% ≥ −0.8%; next-bar confirm mid 1769.00→1772.05"
+      ]
+    },
+    {
+      "dateKey": "2026-04-28",
+      "dayLabel": "28 Apr 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1772.6,
+      "rsi": 51.1,
+      "smi": 21.3,
+      "bestTimeIst": "13:30",
+      "bestPct": 0.53,
+      "eodPct": -0.33,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 51.1 in 45–75, SMI 21.3 ≥ 20, BB upper gap 0.70%"
+      ]
+    },
+    {
+      "dateKey": "2026-04-29",
+      "dayLabel": "29 Apr 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1779.55,
+      "rsi": 70.4,
+      "smi": 55.7,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.65,
+      "eodPct": 0.57,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 70.4 in 45–75, SMI 55.7 ≥ 20, BB upper gap 0.24% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-04-30",
+      "dayLabel": "30 Apr 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1747.85,
+      "rsi": 29.1,
+      "smi": -40.7,
+      "bestTimeIst": "14:45",
+      "bestPct": 1.01,
+      "eodPct": 1,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -53.1 ≤ 0 (negative preferred), BB lower gap 0.43% (≤ 1%), RSI 26.3 (setup 11:30) | guards: SMI rising -58.5→-53.1; MACD hist rising -1.64→-1.02; open drawdown -0.28% ≥ −0.8%; next-bar confirm mid 1744.30→1747.85"
+      ]
+    },
+    {
+      "dateKey": "2026-04-30",
+      "dayLabel": "30 Apr 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:30",
+      "entryPrice": 1750.45,
+      "rsi": 65.6,
+      "smi": 41.2,
+      "bestTimeIst": "13:45",
+      "bestPct": -0.52,
+      "eodPct": -0.85,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 65.6 in 45–75, SMI 41.2 ≥ 20, BB upper gap 0.53%"
+      ]
+    },
+    {
+      "dateKey": "2026-05-04",
+      "dayLabel": "4 May 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1758.3,
+      "rsi": 70.9,
+      "smi": 28.4,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.72,
+      "eodPct": 0.34,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 70.9 in 45–75, SMI 28.4 ≥ 20, BB upper gap 0.48%"
+      ]
+    },
+    {
+      "dateKey": "2026-05-04",
+      "dayLabel": "4 May 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 1749.6,
+      "rsi": 36.4,
+      "smi": -66.7,
+      "bestTimeIst": "15:00",
+      "bestPct": 0.43,
+      "eodPct": 0.15,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 37.1 in 30–50, SMI -73.7 ≤ -40, BB lower gap 0.02% (close) (setup 13:30) | guards: SMI rising -83.9→-73.7; MACD hist rising -2.22→-1.86; open drawdown -0.66% ≥ −0.8%; next-bar confirm mid 1746.70→1749.60"
+      ]
+    },
+    {
+      "dateKey": "2026-05-05",
+      "dayLabel": "5 May 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1761.2,
+      "rsi": 69.3,
+      "smi": 25.4,
+      "bestTimeIst": "11:00",
+      "bestPct": 0.26,
+      "eodPct": -0.86,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 69.3 in 45–75, SMI 25.4 ≥ 20, BB upper gap 0.09% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-05-06",
+      "dayLabel": "6 May 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1784.7,
+      "rsi": 65.3,
+      "smi": 38.1,
+      "bestTimeIst": "09:45",
+      "bestPct": 0.34,
+      "eodPct": -1.38,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 65.3 in 45–75, SMI 38.1 ≥ 20, BB upper gap 0.30% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-05-07",
+      "dayLabel": "7 May 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1820.45,
+      "rsi": 63.8,
+      "smi": 41.3,
+      "bestTimeIst": "09:45",
+      "bestPct": -0.23,
+      "eodPct": -1.56,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.8 in 45–75, SMI 41.3 ≥ 20, BB upper gap 0.09% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-05-08",
+      "dayLabel": "8 May 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1838.3,
+      "rsi": 27.5,
+      "smi": -63.5,
+      "bestTimeIst": "12:45",
+      "bestPct": 1.85,
+      "eodPct": 0.81,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 43.6 / SMI -49.0 near BB lower, momentum still falling — short on confirm (setup 09:30) | cascade: SMI falling -20.8→-49.0; MACD hist falling -2.14→-2.68; next-bar cascade mid 1844.15→1838.30"
+      ]
+    },
+    {
+      "dateKey": "2026-05-08",
+      "dayLabel": "8 May 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1848.95,
+      "rsi": 50,
+      "smi": -29.6,
+      "bestTimeIst": "11:00",
+      "bestPct": 0.2,
+      "eodPct": -1.38,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 41.4 in 30–50, SMI -49.2 ≤ -40, BB lower gap 0.07% (close) (setup 10:15) | guards: SMI rising -65.8→-49.2; MACD hist rising -3.22→-2.69; open drawdown -0.52% ≥ −0.8%; next-bar confirm mid 1844.45→1848.95"
+      ]
+    },
+    {
+      "dateKey": "2026-05-11",
+      "dayLabel": "11 May 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1824.95,
+      "rsi": 58.9,
+      "smi": 25.4,
+      "bestTimeIst": "10:30",
+      "bestPct": -0.03,
+      "eodPct": -0.19,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 58.9 in 45–75, SMI 25.4 ≥ 20, BB upper gap 0.67%"
+      ]
+    },
+    {
+      "dateKey": "2026-05-12",
+      "dayLabel": "12 May 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1815.1,
+      "rsi": 18.5,
+      "smi": -70.2,
+      "bestTimeIst": "11:00",
+      "bestPct": -0.2,
+      "eodPct": -1.5,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -74.2 ≤ 0 (negative preferred), BB lower gap 0.14% (≤ 1%), RSI 20.1 (setup 10:30) | guards: SMI rising -83.3→-74.2; MACD hist rising -3.20→-2.50; open drawdown -0.59% ≥ −0.8%; next-bar confirm mid 1812.70→1815.10"
+      ]
+    },
+    {
+      "dateKey": "2026-05-13",
+      "dayLabel": "13 May 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1785.05,
+      "rsi": 45.4,
+      "smi": -27.1,
+      "bestTimeIst": "14:45",
+      "bestPct": 1.58,
+      "eodPct": 1.34,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 35.1 in 30–50, SMI -52.0 ≤ -40, BB lower gap 0.19% (crossed) (setup 09:45) | guards: SMI rising -64.4→-52.0; MACD hist rising -0.79→-0.35; open drawdown -0.36% ≥ −0.8%; next-bar confirm mid 1775.90→1785.05"
+      ]
+    },
+    {
+      "dateKey": "2026-05-13",
+      "dayLabel": "13 May 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1805.1,
+      "rsi": 60.5,
+      "smi": 43.5,
+      "bestTimeIst": "11:00",
+      "bestPct": 0.42,
+      "eodPct": -0.22,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 60.5 in 45–75, SMI 43.5 ≥ 20, BB upper gap 0.09% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "14 May 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1811.85,
+      "rsi": 53.6,
+      "smi": -27.8,
+      "bestTimeIst": "15:15",
+      "bestPct": 2.06,
+      "eodPct": 2.06,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -33.2 ≤ 0 (negative preferred), BB lower gap 0.51% (≤ 1%), RSI 53.4 (setup 10:15) | guards: SMI rising -39.3→-33.2; MACD hist rising -0.03→0.16; open drawdown -0.45% ≥ −0.8%; next-bar confirm mid 1809.75→1811.85"
+      ]
+    },
+    {
+      "dateKey": "2026-05-14",
+      "dayLabel": "14 May 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1821.35,
+      "rsi": 63.7,
+      "smi": 24.1,
+      "bestTimeIst": "12:15",
+      "bestPct": -0.21,
+      "eodPct": -1.52,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.7 in 45–75, SMI 24.1 ≥ 20, BB upper gap 0.02% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-05-15",
+      "dayLabel": "15 May 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1844.6,
+      "rsi": 71.1,
+      "smi": 46.9,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.59,
+      "eodPct": 0.53,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 71.1 in 45–75, SMI 46.9 ≥ 20, BB upper gap 0.42%"
+      ]
+    },
+    {
+      "dateKey": "2026-05-18",
+      "dayLabel": "18 May 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1799.1,
+      "rsi": 18.7,
+      "smi": -69.6,
+      "bestTimeIst": "13:45",
+      "bestPct": 0.98,
+      "eodPct": 0.64,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -72.4 ≤ 0 (negative preferred), BB lower gap 0.40% (≤ 1%), RSI 18.1 (setup 10:15) | guards: SMI rising -77.5→-72.4; MACD hist rising -5.97→-5.25; open drawdown -0.68% ≥ −0.8%; next-bar confirm mid 1798.75→1799.10"
+      ]
+    },
+    {
+      "dateKey": "2026-05-18",
+      "dayLabel": "18 May 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:30",
+      "entryPrice": 1815.1,
+      "rsi": 67.8,
+      "smi": 40.5,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.48,
+      "eodPct": 0.24,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 67.8 in 45–75, SMI 40.5 ≥ 20, BB upper gap 0.74%"
+      ]
+    },
+    {
+      "dateKey": "2026-05-19",
+      "dayLabel": "19 May 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1816,
+      "rsi": 49.7,
+      "smi": 5.8,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.77,
+      "eodPct": 0.34,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -1.0 ≤ 0 (negative preferred), BB lower gap 0.62% (≤ 1%), RSI 44.5 (setup 09:30) | guards: SMI rising -15.7→-1.0; MACD hist rising 1.04→1.22; open drawdown -0.16% ≥ −0.8%; next-bar confirm mid 1813.15→1816.00"
+      ]
+    },
+    {
+      "dateKey": "2026-05-19",
+      "dayLabel": "19 May 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1815.55,
+      "rsi": 52.1,
+      "smi": 26.6,
+      "bestTimeIst": "11:15",
+      "bestPct": -0.04,
+      "eodPct": -0.37,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 52.1 in 45–75, SMI 26.6 ≥ 20, BB upper gap 0.34%"
+      ]
+    },
+    {
+      "dateKey": "2026-05-20",
+      "dayLabel": "20 May 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1798.1,
+      "rsi": 32.5,
+      "smi": -61.6,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.01,
+      "eodPct": 1.01,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 31.0 / SMI -53.8 near BB lower, momentum still falling — short on confirm (setup 09:15) | cascade: SMI falling -17.3→-53.8; MACD hist falling -0.25→-2.10; next-bar cascade mid 1799.60→1798.10"
+      ]
+    },
+    {
+      "dateKey": "2026-05-20",
+      "dayLabel": "20 May 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1803.75,
+      "rsi": 30,
+      "smi": -44.5,
+      "bestTimeIst": "10:45",
+      "bestPct": 0.25,
+      "eodPct": -1.32,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 32.0 in 30–50, SMI -51.2 ≤ -40, BB lower gap 0.26% (crossed) (setup 10:00) | guards: SMI rising -57.8→-51.2; MACD hist rising -2.98→-2.82; open drawdown 0.06% ≥ −0.8%; next-bar confirm mid 1800.60→1803.75"
+      ]
+    },
+    {
+      "dateKey": "2026-05-21",
+      "dayLabel": "21 May 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1785.65,
+      "rsi": 43.6,
+      "smi": -8.3,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.93,
+      "eodPct": 0.93,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 40.2 in 30–50, SMI -41.8 ≤ -40, BB lower gap 0.35% (crossed) (setup 09:30) | guards: SMI rising -72.1→-41.8; MACD hist rising -1.28→-0.60; open drawdown -0.32% ≥ −0.8%; next-bar confirm mid 1776.10→1785.65"
+      ]
+    },
+    {
+      "dateKey": "2026-05-21",
+      "dayLabel": "21 May 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1784.5,
+      "rsi": 52.2,
+      "smi": 28.8,
+      "bestTimeIst": "10:30",
+      "bestPct": 0.13,
+      "eodPct": -0.99,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 52.2 in 45–75, SMI 28.8 ≥ 20, BB upper gap 0.83%"
+      ]
+    },
+    {
+      "dateKey": "2026-05-22",
+      "dayLabel": "22 May 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "14:00",
+      "entryPrice": 1822.05,
+      "rsi": 34.1,
+      "smi": -76.2,
+      "bestTimeIst": "14:30",
+      "bestPct": -0.02,
+      "eodPct": -0.3,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 38.1 / SMI -79.4 near BB lower, momentum still falling — short on confirm (setup 13:45) | cascade: SMI falling -69.9→-79.4; MACD hist falling -2.55→-3.13; next-bar cascade mid 1823.25→1822.05"
+      ]
+    },
+    {
+      "dateKey": "2026-05-25",
+      "dayLabel": "25 May 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1844.85,
+      "rsi": 63.6,
+      "smi": 20.8,
+      "bestTimeIst": "09:45",
+      "bestPct": -0.09,
+      "eodPct": -0.54,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.6 in 45–75, SMI 20.8 ≥ 20, BB upper gap 0.27% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-05-26",
+      "dayLabel": "26 May 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1855.1,
+      "rsi": 51.2,
+      "smi": -0.2,
+      "bestTimeIst": "12:30",
+      "bestPct": 0.8,
+      "eodPct": 0.4,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -5.5 ≤ 0 (negative preferred), BB lower gap 0.21% (≤ 1%), RSI 55.6 (setup 10:00) | guards: SMI rising -26.4→-5.5; MACD hist rising -1.29→-0.78; open drawdown 0.08% ≥ −0.8%; next-bar confirm mid 1854.25→1855.10"
+      ]
+    },
+    {
+      "dateKey": "2026-05-27",
+      "dayLabel": "27 May 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1853.25,
+      "rsi": 37.8,
+      "smi": -59.5,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.13,
+      "eodPct": 0.13,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 30.0 / SMI -59.8 near BB lower, momentum still falling — short on confirm (setup 10:15) | cascade: SMI falling -46.8→-59.8; MACD hist falling -2.01→-2.29; next-bar cascade mid 1854.00→1853.25"
+      ]
+    },
+    {
+      "dateKey": "2026-05-27",
+      "dayLabel": "27 May 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1861.65,
+      "rsi": 44,
+      "smi": -46.9,
+      "bestTimeIst": "11:45",
+      "bestPct": 0.27,
+      "eodPct": -0.58,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 37.8 in 30–50, SMI -59.5 ≤ -40, BB lower gap 0.05% (crossed) (setup 10:30) | guards: SMI rising -59.8→-59.5; MACD hist rising -2.29→-2.00; open drawdown -0.31% ≥ −0.8%; next-bar confirm mid 1853.25→1861.65"
+      ]
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "29 May 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1842.65,
+      "rsi": 27.6,
+      "smi": -36.2,
+      "bestTimeIst": "10:45",
+      "bestPct": -0.05,
+      "eodPct": -3.82,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 33.3 in 30–50, SMI -51.6 ≤ -40, BB lower gap 0.16% (close) (setup 10:15) | guards: SMI rising -70.3→-51.6; MACD hist rising -2.78→-2.04; open drawdown -0.52% ≥ −0.8%; next-bar confirm mid 1839.15→1842.65"
+      ]
+    },
+    {
+      "dateKey": "2026-05-29",
+      "dayLabel": "29 May 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1825.25,
+      "rsi": 35.3,
+      "smi": -60.9,
+      "bestTimeIst": "15:15",
+      "bestPct": 2.9,
+      "eodPct": 2.9,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 31.4 / SMI -47.9 near BB lower, momentum still falling — short on confirm (setup 12:15) | cascade: SMI falling -33.6→-47.9; MACD hist falling -0.96→-1.13; next-bar cascade mid 1825.65→1825.25"
+      ]
+    },
+    {
+      "dateKey": "2026-06-02",
+      "dayLabel": "2 Jun 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1730.95,
+      "rsi": 29.3,
+      "smi": -58.6,
+      "bestTimeIst": "12:30",
+      "bestPct": 0.5,
+      "eodPct": -0.9,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 34.7 / SMI -53.3 near BB lower, momentum still falling — short on confirm (setup 10:45) | cascade: SMI falling -32.0→-53.3; MACD hist falling 1.65→1.31; next-bar cascade mid 1732.45→1730.95"
+      ]
+    },
+    {
+      "dateKey": "2026-06-02",
+      "dayLabel": "2 Jun 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:00",
+      "entryPrice": 1739.15,
+      "rsi": 50,
+      "smi": -4,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.58,
+      "eodPct": 0.43,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 42.9 in 30–50, SMI -47.3 ≤ -40, BB lower gap 0.05% (crossed) (setup 12:45) | guards: SMI rising -76.7→-47.3; MACD hist rising 0.45→1.19; open drawdown -0.54% ≥ −0.8%; next-bar confirm mid 1729.55→1739.15"
+      ]
+    },
+    {
+      "dateKey": "2026-06-03",
+      "dayLabel": "3 Jun 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1730.95,
+      "rsi": 34.1,
+      "smi": -53.4,
+      "bestTimeIst": "12:15",
+      "bestPct": -0.04,
+      "eodPct": -0.58,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 39.4 / SMI -51.3 near BB lower, momentum still falling — short on confirm (setup 10:00) | cascade: SMI falling -48.2→-51.3; MACD hist falling -0.58→-0.64; next-bar cascade mid 1733.00→1730.95"
+      ]
+    },
+    {
+      "dateKey": "2026-06-03",
+      "dayLabel": "3 Jun 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1733.6,
+      "rsi": 39.2,
+      "smi": -40.6,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.46,
+      "eodPct": 0.43,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 43.8 in 30–50, SMI -44.1 ≤ -40, BB lower gap 0.60% (setup 10:30) | guards: SMI rising -53.4→-44.1; MACD hist rising -0.73→-0.20; open drawdown -0.10% ≥ −0.8%; next-bar confirm mid 1732.55→1733.60"
+      ]
+    },
+    {
+      "dateKey": "2026-06-04",
+      "dayLabel": "4 Jun 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1740.25,
+      "rsi": 51.7,
+      "smi": 25.6,
+      "bestTimeIst": "13:45",
+      "bestPct": 0.53,
+      "eodPct": 0.28,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 51.7 in 45–75, SMI 25.6 ≥ 20, BB upper gap 0.04% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-05",
+      "dayLabel": "5 Jun 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1745.65,
+      "rsi": 68.1,
+      "smi": 51.6,
+      "bestTimeIst": "09:45",
+      "bestPct": -0.07,
+      "eodPct": -0.72,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 68.1 in 45–75, SMI 51.6 ≥ 20, BB upper gap 0.59% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-08",
+      "dayLabel": "8 Jun 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1740.35,
+      "rsi": 43,
+      "smi": -58.7,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.11,
+      "eodPct": 0.11,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 40.7 / SMI -57.8 near BB lower, momentum still falling — short on confirm (setup 09:45) | cascade: SMI falling -50.1→-57.8; MACD hist falling -2.68→-3.04; next-bar cascade mid 1740.55→1740.35"
+      ]
+    },
+    {
+      "dateKey": "2026-06-08",
+      "dayLabel": "8 Jun 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1745.65,
+      "rsi": 46.2,
+      "smi": -46.7,
+      "bestTimeIst": "12:45",
+      "bestPct": 0.4,
+      "eodPct": -0.41,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 38.5 in 30–50, SMI -58.6 ≤ -40, BB lower gap 0.23% (close) (setup 10:30) | guards: SMI rising -61.4→-58.6; MACD hist rising -2.97→-2.55; open drawdown 0.25% ≥ −0.8%; next-bar confirm mid 1741.65→1745.65"
+      ]
+    },
+    {
+      "dateKey": "2026-06-09",
+      "dayLabel": "9 Jun 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1795.5,
+      "rsi": 69.6,
+      "smi": 62.4,
+      "bestTimeIst": "13:45",
+      "bestPct": 1.34,
+      "eodPct": 1.1,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 69.6 in 45–75, SMI 62.4 ≥ 20, BB upper gap 0.80% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "10 Jun 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1785.65,
+      "rsi": 44.1,
+      "smi": 2.6,
+      "bestTimeIst": "09:45",
+      "bestPct": 0.1,
+      "eodPct": -2.96,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -30.5 ≤ 0 (negative preferred), BB lower gap 0.05% (≤ 1%), RSI 44.6 (setup 09:15) | guards: SMI rising -46.5→-30.5; MACD hist rising -2.19→-1.62; open drawdown 0.00% ≥ −0.8%; next-bar confirm mid 1778.50→1785.65"
+      ]
+    },
+    {
+      "dateKey": "2026-06-10",
+      "dayLabel": "10 Jun 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1787.5,
+      "rsi": 48.2,
+      "smi": 24.2,
+      "bestTimeIst": "15:00",
+      "bestPct": 3.14,
+      "eodPct": 3.06,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 48.2 in 45–75, SMI 24.2 ≥ 20, BB upper gap 0.26% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-11",
+      "dayLabel": "11 Jun 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1726.9,
+      "rsi": 38,
+      "smi": -45.1,
+      "bestTimeIst": "11:00",
+      "bestPct": -0.05,
+      "eodPct": -0.68,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 34.0 in 30–50, SMI -54.0 ≤ -40, BB lower gap 0.34% (setup 10:15) | guards: SMI rising -64.3→-54.0; MACD hist rising -1.18→-0.62; open drawdown -0.10% ≥ −0.8%; next-bar confirm mid 1726.10→1726.90"
+      ]
+    },
+    {
+      "dateKey": "2026-06-11",
+      "dayLabel": "11 Jun 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1721.95,
+      "rsi": 42.6,
+      "smi": -35.6,
+      "bestTimeIst": "12:45",
+      "bestPct": 0.42,
+      "eodPct": 0.4,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 33.5 / SMI -44.2 near BB lower, momentum still falling — short on confirm (setup 11:15) | cascade: SMI falling -35.1→-44.2; MACD hist falling 0.31→0.17; next-bar cascade mid 1723.95→1721.95"
+      ]
+    },
+    {
+      "dateKey": "2026-06-12",
+      "dayLabel": "12 Jun 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1691.4,
+      "rsi": 32.3,
+      "smi": -59.3,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.27,
+      "eodPct": 0.27,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 36.7 in 30–50, SMI -58.2 ≤ -40, BB lower gap 0.19% (close) (setup 10:15) | guards: SMI rising -63.2→-58.2; MACD hist rising -2.26→-1.90; open drawdown -0.71% ≥ −0.8%; next-bar confirm mid 1690.95→1691.40"
+      ]
+    },
+    {
+      "dateKey": "2026-06-12",
+      "dayLabel": "12 Jun 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1674.6,
+      "rsi": 32.6,
+      "smi": -76.1,
+      "bestTimeIst": "13:30",
+      "bestPct": -0.11,
+      "eodPct": -1.28,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 30.9 / SMI -80.7 near BB lower, momentum still falling — short on confirm (setup 13:00) | cascade: SMI falling -79.9→-80.7; MACD hist falling -0.17→-0.21; next-bar cascade mid 1675.25→1674.60"
+      ]
+    },
+    {
+      "dateKey": "2026-06-15",
+      "dayLabel": "15 Jun 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:45",
+      "entryPrice": 1735.8,
+      "rsi": 71.1,
+      "smi": 44.5,
+      "bestTimeIst": "15:00",
+      "bestPct": -0.03,
+      "eodPct": -0.12,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 71.1 in 45–75, SMI 44.5 ≥ 20, BB upper gap 0.96%"
+      ]
+    },
+    {
+      "dateKey": "2026-06-16",
+      "dayLabel": "16 Jun 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1738.45,
+      "rsi": 57.4,
+      "smi": 33,
+      "bestTimeIst": "10:00",
+      "bestPct": -0.6,
+      "eodPct": -2.61,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 57.4 in 45–75, SMI 33.0 ≥ 20, BB upper gap 0.14% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-17",
+      "dayLabel": "17 Jun 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1779.45,
+      "rsi": 60.2,
+      "smi": 65.4,
+      "bestTimeIst": "10:45",
+      "bestPct": 0.03,
+      "eodPct": -0.63,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 60.2 in 45–75, SMI 65.4 ≥ 20, BB upper gap 0.10% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-17",
+      "dayLabel": "17 Jun 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1787.65,
+      "rsi": 61.1,
+      "smi": 7.5,
+      "bestTimeIst": "15:00",
+      "bestPct": 0.21,
+      "eodPct": 0.17,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -17.1 ≤ 0 (negative preferred), BB lower gap 0.56% (≤ 1%), RSI 47.7 (setup 12:15) | guards: SMI rising -25.8→-17.1; MACD hist rising -1.69→-1.30; open drawdown 0.22% ≥ −0.8%; next-bar confirm mid 1783.45→1787.65"
+      ]
+    },
+    {
+      "dateKey": "2026-06-18",
+      "dayLabel": "18 Jun 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:45",
+      "entryPrice": 1831.45,
+      "rsi": 68.5,
+      "smi": 49.8,
+      "bestTimeIst": "14:15",
+      "bestPct": -0.03,
+      "eodPct": -0.44,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 68.5 in 45–75, SMI 49.8 ≥ 20, BB upper gap 1.00%"
+      ]
+    },
+    {
+      "dateKey": "2026-06-19",
+      "dayLabel": "19 Jun 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1841.4,
+      "rsi": 51.8,
+      "smi": 33.3,
+      "bestTimeIst": "11:00",
+      "bestPct": 0.05,
+      "eodPct": -1.87,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 51.8 in 45–75, SMI 33.3 ≥ 20, BB upper gap 0.15% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-22",
+      "dayLabel": "22 Jun 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1885.3,
+      "rsi": 73.8,
+      "smi": 53.5,
+      "bestTimeIst": "14:00",
+      "bestPct": 1.4,
+      "eodPct": 1.37,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 73.8 in 45–75, SMI 53.5 ≥ 20, BB upper gap 0.35%"
+      ]
+    },
+    {
+      "dateKey": "2026-06-23",
+      "dayLabel": "23 Jun 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1861.7,
+      "rsi": 31.1,
+      "smi": -11.4,
+      "bestTimeIst": "09:45",
+      "bestPct": 0.08,
+      "eodPct": -1.51,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -28.6 ≤ 0 (negative preferred), BB lower gap 0.00% (≤ 1%), RSI 34.6 (setup 09:15) | guards: SMI rising -39.6→-28.6; MACD hist rising -1.64→-1.54; open drawdown 0.00% ≥ −0.8%; next-bar confirm mid 1856.80→1861.70"
+      ]
+    },
+    {
+      "dateKey": "2026-06-23",
+      "dayLabel": "23 Jun 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1844.2,
+      "rsi": 23.5,
+      "smi": -70.5,
+      "bestTimeIst": "13:45",
+      "bestPct": 0.98,
+      "eodPct": 0.57,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 30.0 / SMI -58.0 near BB lower, momentum still falling — short on confirm (setup 11:30) | cascade: SMI falling -46.4→-58.0; MACD hist falling -1.14→-1.27; next-bar cascade mid 1851.20→1844.20"
+      ]
+    },
+    {
+      "dateKey": "2026-06-24",
+      "dayLabel": "24 Jun 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1840.2,
+      "rsi": 54,
+      "smi": 20,
+      "bestTimeIst": "11:45",
+      "bestPct": 1.33,
+      "eodPct": 1.07,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 54.0 in 45–75, SMI 20.0 ≥ 20, BB upper gap 0.36%"
+      ]
+    },
+    {
+      "dateKey": "2026-06-25",
+      "dayLabel": "25 Jun 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1832.15,
+      "rsi": 66.1,
+      "smi": 8.4,
+      "bestTimeIst": "11:45",
+      "bestPct": 0.19,
+      "eodPct": -0.94,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -25.4 ≤ 0 (negative preferred), BB lower gap 0.62% (≤ 1%), RSI 60.4 (setup 09:15) | guards: SMI rising -37.2→-25.4; MACD hist rising 0.22→0.64; open drawdown 0.00% ≥ −0.8%; next-bar confirm mid 1829.80→1832.15"
+      ]
+    },
+    {
+      "dateKey": "2026-06-25",
+      "dayLabel": "25 Jun 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1834.5,
+      "rsi": 60,
+      "smi": 24.5,
+      "bestTimeIst": "15:00",
+      "bestPct": 1.2,
+      "eodPct": 1.07,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 60.0 in 45–75, SMI 24.5 ≥ 20, BB upper gap 0.24% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-06-29",
+      "dayLabel": "29 Jun 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1806,
+      "rsi": 31.3,
+      "smi": -73.2,
+      "bestTimeIst": "15:00",
+      "bestPct": 2.17,
+      "eodPct": 2.01,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 30.4 / SMI -61.6 near BB lower, momentum still falling — short on confirm (setup 09:15) | cascade: SMI falling -48.8→-61.6; MACD hist falling -1.41→-2.22; next-bar cascade mid 1812.85→1806.00"
+      ]
+    },
+    {
+      "dateKey": "2026-06-30",
+      "dayLabel": "30 Jun 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1756.4,
+      "rsi": 34.7,
+      "smi": -54.3,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.06,
+      "eodPct": 1.06,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 35.1 / SMI -43.5 near BB lower, momentum still falling — short on confirm (setup 10:00) | cascade: SMI falling -34.0→-43.5; MACD hist falling 0.68→0.52; next-bar cascade mid 1758.65→1756.40"
+      ]
+    },
+    {
+      "dateKey": "2026-06-30",
+      "dayLabel": "30 Jun 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 1753.15,
+      "rsi": 44.1,
+      "smi": -62.7,
+      "bestTimeIst": "14:30",
+      "bestPct": -0.02,
+      "eodPct": -0.88,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 43.9 in 30–50, SMI -77.0 ≤ -40, BB lower gap 0.30% (close) (setup 13:30) | guards: SMI rising -79.4→-77.0; MACD hist rising 0.37→0.58; open drawdown -0.75% ≥ −0.8%; next-bar confirm mid 1750.85→1753.15"
+      ]
+    },
+    {
+      "dateKey": "2026-07-01",
+      "dayLabel": "1 Jul 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1745.1,
+      "rsi": 46.1,
+      "smi": -38.9,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.72,
+      "eodPct": 0.72,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 41.7 in 30–50, SMI -63.9 ≤ -40, BB lower gap 0.05% (crossed) (setup 09:30) | guards: SMI rising -83.1→-63.9; MACD hist rising -0.62→-0.18; open drawdown 0.04% ≥ −0.8%; next-bar confirm mid 1739.40→1745.10"
+      ]
+    },
+    {
+      "dateKey": "2026-07-01",
+      "dayLabel": "1 Jul 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1752.1,
+      "rsi": 51.1,
+      "smi": 22.1,
+      "bestTimeIst": "13:00",
+      "bestPct": 0.38,
+      "eodPct": -0.32,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 51.1 in 45–75, SMI 22.1 ≥ 20, BB upper gap 0.20% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-02",
+      "dayLabel": "2 Jul 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1755.5,
+      "rsi": 53.8,
+      "smi": 35.6,
+      "bestTimeIst": "10:00",
+      "bestPct": 0.46,
+      "eodPct": -0.4,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 53.8 in 45–75, SMI 35.6 ≥ 20, BB upper gap 0.01% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-02",
+      "dayLabel": "2 Jul 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1758.3,
+      "rsi": 54.3,
+      "smi": 2,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.42,
+      "eodPct": 0.24,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -19.7 ≤ 0 (negative preferred), BB lower gap 0.52% (≤ 1%), RSI 50.4 (setup 10:30) | guards: SMI rising -37.9→-19.7; MACD hist rising -0.48→-0.04; open drawdown -0.26% ≥ −0.8%; next-bar confirm mid 1755.30→1758.30"
+      ]
+    },
+    {
+      "dateKey": "2026-07-03",
+      "dayLabel": "3 Jul 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1777.55,
+      "rsi": 68,
+      "smi": 33.8,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.62,
+      "eodPct": 0.19,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 68.0 in 45–75, SMI 33.8 ≥ 20, BB upper gap 0.41% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-03",
+      "dayLabel": "3 Jul 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1773.35,
+      "rsi": 62.8,
+      "smi": -0.9,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.05,
+      "eodPct": 0.05,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -10.3 ≤ 0 (negative preferred), BB lower gap 0.66% (≤ 1%), RSI 61.1 (setup 11:45) | guards: SMI rising -11.1→-10.3; MACD hist rising -0.28→-0.18; open drawdown -0.06% ≥ −0.8%; next-bar confirm mid 1771.80→1773.35"
+      ]
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "6 Jul 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:00",
+      "entryPrice": 1777.2,
+      "rsi": 61,
+      "smi": 3,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.52,
+      "eodPct": 0.52,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -17.5 ≤ 0 (negative preferred), BB lower gap 0.21% (≤ 1%), RSI 53.1 (setup 10:45) | guards: SMI rising -29.9→-17.5; MACD hist rising -0.34→0.04; open drawdown -0.19% ≥ −0.8%; next-bar confirm mid 1772.45→1777.20"
+      ]
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "6 Jul 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1779.45,
+      "rsi": 62.9,
+      "smi": 28.4,
+      "bestTimeIst": "11:45",
+      "bestPct": 0.09,
+      "eodPct": -0.39,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 62.9 in 45–75, SMI 28.4 ≥ 20, BB upper gap 0.16% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-07",
+      "dayLabel": "7 Jul 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1792.95,
+      "rsi": 67,
+      "smi": 51,
+      "bestTimeIst": "12:30",
+      "bestPct": 1.05,
+      "eodPct": -0.37,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 67.0 in 45–75, SMI 51.0 ≥ 20, BB upper gap 0.08% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-07",
+      "dayLabel": "7 Jul 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "13:00",
+      "entryPrice": 1796.5,
+      "rsi": 46.6,
+      "smi": -2.2,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.17,
+      "eodPct": 0.17,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -17.9 ≤ 0 (negative preferred), BB lower gap 0.07% (≤ 1%), RSI 53.4 (setup 12:45) | guards: SMI rising -69.8→-17.9; MACD hist rising -1.90→-0.46; open drawdown -0.29% ≥ −0.8%; next-bar confirm mid 1786.00→1796.50"
+      ]
+    },
+    {
+      "dateKey": "2026-07-09",
+      "dayLabel": "9 Jul 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1794.55,
+      "rsi": 43,
+      "smi": -46.9,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.16,
+      "eodPct": 0.16,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 36.3 in 30–50, SMI -57.7 ≤ -40, BB lower gap 0.25% (close) (setup 10:30) | guards: SMI rising -70.6→-57.7; MACD hist rising -2.87→-1.84; open drawdown -0.69% ≥ −0.8%; next-bar confirm mid 1789.30→1794.55"
+      ]
+    },
+    {
+      "dateKey": "2026-07-09",
+      "dayLabel": "9 Jul 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "11:15",
+      "entryPrice": 1787.5,
+      "rsi": 41.6,
+      "smi": -54,
+      "bestTimeIst": "13:45",
+      "bestPct": 0.05,
+      "eodPct": -0.56,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 42.3 / SMI -50.6 near BB lower, momentum still falling — short on confirm (setup 11:00) | cascade: SMI falling -46.9→-50.6; MACD hist falling -1.16→-1.19; next-bar cascade mid 1791.30→1787.50"
+      ]
+    },
+    {
+      "dateKey": "2026-07-10",
+      "dayLabel": "10 Jul 2026",
+      "weekday": "Fri",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1803.45,
+      "rsi": 61.9,
+      "smi": 53.3,
+      "bestTimeIst": "12:15",
+      "bestPct": 0,
+      "eodPct": -1.12,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 61.9 in 45–75, SMI 53.3 ≥ 20, BB upper gap 0.37% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-10",
+      "dayLabel": "10 Jul 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1810.55,
+      "rsi": 65.3,
+      "smi": 15.8,
+      "bestTimeIst": "14:15",
+      "bestPct": 1.21,
+      "eodPct": 0.73,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -19.9 ≤ 0 (negative preferred), BB lower gap 0.42% (≤ 1%), RSI 51.5 (setup 13:00) | guards: SMI rising -20.9→-19.9; MACD hist rising -0.15→-0.10; open drawdown 0.03% ≥ −0.8%; next-bar confirm mid 1803.95→1810.55"
+      ]
+    },
+    {
+      "dateKey": "2026-07-13",
+      "dayLabel": "13 Jul 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1755.4,
+      "rsi": 30.6,
+      "smi": -67.4,
+      "bestTimeIst": "10:00",
+      "bestPct": 0.11,
+      "eodPct": -1.86,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 31.0 / SMI -47.9 near BB lower, momentum still falling — short on confirm (setup 09:30) | cascade: SMI falling -11.5→-47.9; MACD hist falling -3.21→-6.18; next-bar cascade mid 1761.05→1755.40"
+      ]
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "14 Jul 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1769.65,
+      "rsi": 48.8,
+      "smi": 53.3,
+      "bestTimeIst": "12:00",
+      "bestPct": 0.99,
+      "eodPct": -1.1,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 48.8 in 45–75, SMI 53.3 ≥ 20, BB upper gap 0.40%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "14 Jul 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1760.75,
+      "rsi": 40.9,
+      "smi": -10.9,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.61,
+      "eodPct": 1.61,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -46.3 ≤ 0 (negative preferred), BB lower gap 0.83% (≤ 1%), RSI 23.2 (setup 12:15) | guards: SMI rising -68.4→-46.3; MACD hist rising -0.81→-0.16; open drawdown -0.61% ≥ −0.8%; next-bar confirm mid 1758.90→1760.75"
+      ]
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "15 Jul 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1810,
+      "rsi": 72.8,
+      "smi": 62.9,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.37,
+      "eodPct": -0.33,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 72.8 in 45–75, SMI 62.9 ≥ 20, BB upper gap 0.70%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "15 Jul 2026",
+      "weekday": "Wed",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "14:00",
+      "entryPrice": 1810.9,
+      "rsi": 53,
+      "smi": -23.6,
+      "bestTimeIst": "14:15",
+      "bestPct": 0.3,
+      "eodPct": 0.28,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 45.3 in 30–50, SMI -45.2 ≤ -40, BB lower gap 0.27% (close) (setup 13:45) | guards: SMI rising -58.1→-45.2; MACD hist rising -2.21→-1.86; open drawdown 0.46% ≥ −0.8%; next-bar confirm mid 1809.50→1810.90"
+      ]
+    },
+    {
+      "dateKey": "2026-07-17",
+      "dayLabel": "17 Jul 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1601.95,
+      "rsi": 39.6,
+      "smi": -11.5,
+      "bestTimeIst": "14:45",
+      "bestPct": 0.76,
+      "eodPct": 0.61,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -17.9 ≤ 0 (negative preferred), BB lower gap 0.26% (≤ 1%), RSI 49.5 (setup 09:45) | guards: SMI rising -21.6→-17.9; MACD hist rising 3.93→3.99; open drawdown 0.24% ≥ −0.8%; next-bar confirm mid 1598.25→1601.95"
+      ]
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "20 Jul 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1615.05,
+      "rsi": 64.2,
+      "smi": 21.4,
+      "bestTimeIst": "09:45",
+      "bestPct": 0.47,
+      "eodPct": -0.31,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 64.2 in 45–75, SMI 21.4 ≥ 20, BB upper gap 0.67% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "20 Jul 2026",
+      "weekday": "Mon",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1624.05,
+      "rsi": 74.9,
+      "smi": 20.7,
+      "bestTimeIst": "15:00",
+      "bestPct": -0.06,
+      "eodPct": -0.25,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -2.8 ≤ 0 (negative preferred), BB lower gap 0.98% (≤ 1%), RSI 77.0 (setup 10:15) | guards: SMI rising -26.2→-2.8; MACD hist rising 2.03→2.66; open drawdown 0.14% ≥ −0.8%; next-bar confirm mid 1617.25→1624.05"
+      ]
+    },
+    {
+      "dateKey": "2026-07-21",
+      "dayLabel": "21 Jul 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1619.8,
+      "rsi": 47.1,
+      "smi": -6,
+      "bestTimeIst": "15:00",
+      "bestPct": 0.27,
+      "eodPct": 0.2,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -19.6 ≤ 0 (negative preferred), BB lower gap 0.03% (≤ 1%), RSI 52.0 (setup 10:00) | guards: SMI rising -35.8→-19.6; MACD hist rising -1.19→-0.76; open drawdown 0.02% ≥ −0.8%; next-bar confirm mid 1617.05→1619.80"
+      ]
+    },
+    {
+      "dateKey": "2026-07-21",
+      "dayLabel": "21 Jul 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "11:15",
+      "entryPrice": 1622.7,
+      "rsi": 54.3,
+      "smi": 27.2,
+      "bestTimeIst": "13:15",
+      "bestPct": 0.12,
+      "eodPct": -0.02,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 54.3 in 45–75, SMI 27.2 ≥ 20, BB upper gap 0.09% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "23 Jul 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1580.25,
+      "rsi": 44.8,
+      "smi": -18.6,
+      "bestTimeIst": "15:15",
+      "bestPct": 2.68,
+      "eodPct": 2.68,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -24.2 ≤ 0 (negative preferred), BB lower gap 0.08% (≤ 1%), RSI 41.5 (setup 10:00) | guards: SMI rising -24.4→-24.2; MACD hist rising -0.10→0.01; open drawdown -0.12% ≥ −0.8%; next-bar confirm mid 1579.55→1580.25"
+      ]
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "23 Jul 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:45",
+      "entryPrice": 1591.15,
+      "rsi": 53.8,
+      "smi": 29.7,
+      "bestTimeIst": "11:00",
+      "bestPct": -0.45,
+      "eodPct": -1.98,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 53.8 in 45–75, SMI 29.7 ≥ 20, BB upper gap 0.08% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-27",
+      "dayLabel": "27 Jul 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1660.15,
+      "rsi": 56.1,
+      "smi": 26.4,
+      "bestTimeIst": "09:45",
+      "bestPct": -0.51,
+      "eodPct": -1.42,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 56.1 in 45–75, SMI 26.4 ≥ 20, BB upper gap 0.08% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "28 Jul 2026",
+      "weekday": "Tue",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1670.7,
+      "rsi": 49.8,
+      "smi": -45.2,
+      "bestTimeIst": "12:00",
+      "bestPct": 0,
+      "eodPct": -1.08,
+      "positiveBest": false,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 49.4 / SMI -43.7 near BB lower, momentum still falling — short on confirm (setup 11:30) | cascade: SMI falling -35.2→-43.7; MACD hist falling -1.35→-1.38; next-bar cascade mid 1671.35→1670.70"
+      ]
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "28 Jul 2026",
+      "weekday": "Tue",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "12:15",
+      "entryPrice": 1672.5,
+      "rsi": 39.3,
+      "smi": -41.4,
+      "bestTimeIst": "13:00",
+      "bestPct": 1.07,
+      "eodPct": 0.97,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI BUY quality: RSI 41.1 in 30–50, SMI -44.5 ≤ -40, BB lower gap 0.26% (close) (setup 12:00) | guards: SMI rising -45.2→-44.5; MACD hist rising -1.29→-1.21; open drawdown -0.65% ≥ −0.8%; next-bar confirm mid 1670.75→1672.50"
+      ]
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "29 Jul 2026",
+      "weekday": "Wed",
+      "side": "SELL",
+      "scenarioKey": "sell_cascade",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1673.9,
+      "rsi": 42.2,
+      "smi": -56.7,
+      "bestTimeIst": "15:15",
+      "bestPct": 1.64,
+      "eodPct": 1.64,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL cascade (falling-knife): oversold levels RSI 39.8 / SMI -47.3 near BB lower, momentum still falling — short on confirm (setup 10:15) | cascade: SMI falling -24.8→-47.3; MACD hist falling -0.74→-1.44; next-bar cascade mid 1675.70→1673.90"
+      ]
+    },
+    {
+      "dateKey": "2026-07-30",
+      "dayLabel": "30 Jul 2026",
+      "weekday": "Thu",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1637.75,
+      "rsi": 36.8,
+      "smi": -23.2,
+      "bestTimeIst": "13:00",
+      "bestPct": 0.51,
+      "eodPct": -0.1,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -49.6 ≤ 0 (negative preferred), BB lower gap 0.75% (≤ 1%), RSI 33.2 (setup 11:15) | guards: SMI rising -72.2→-49.6; MACD hist rising -0.98→0.06; open drawdown -0.45% ≥ −0.8%; next-bar confirm mid 1632.70→1637.75"
+      ]
+    },
+    {
+      "dateKey": "2026-07-30",
+      "dayLabel": "30 Jul 2026",
+      "weekday": "Thu",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1642.15,
+      "rsi": 63.6,
+      "smi": 70.8,
+      "bestTimeIst": "15:15",
+      "bestPct": 0.37,
+      "eodPct": 0.37,
+      "positiveBest": true,
+      "positiveEod": true,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 63.6 in 45–75, SMI 70.8 ≥ 20, BB upper gap 0.74%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-31",
+      "dayLabel": "31 Jul 2026",
+      "weekday": "Fri",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:30",
+      "entryPrice": 1634.05,
+      "rsi": 36.6,
+      "smi": -2.3,
+      "bestTimeIst": "12:45",
+      "bestPct": 0.11,
+      "eodPct": -0.69,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI BUY extended (biggest-mover style): SMI -3.1 ≤ 0 (negative preferred), BB lower gap 0.13% (≤ 1%), RSI 46.6 (setup 11:15) | guards: SMI rising -10.7→-3.1; MACD hist rising -0.24→0.11; open drawdown 0.03% ≥ −0.8%; next-bar confirm mid 1632.80→1634.05"
+      ]
+    },
+    {
+      "dateKey": "2026-08-03",
+      "dayLabel": "3 Aug 2026",
+      "weekday": "Mon",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1653.55,
+      "rsi": 72.5,
+      "smi": 36.8,
+      "bestTimeIst": "12:15",
+      "bestPct": 0.44,
+      "eodPct": -0.32,
+      "positiveBest": true,
+      "positiveEod": false,
+      "reasons": [
+        "RuleICICIGI SELL quality: RSI 72.5 in 45–75, SMI 36.8 ≥ 20, BB upper gap 0.78% (crossed)"
+      ]
+    }
+  ]
+}
