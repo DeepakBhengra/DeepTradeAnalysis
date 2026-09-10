@@ -1,0 +1,539 @@
+{
+  "rule": "rulePnb",
+  "symbol": "PNB",
+  "window": {
+    "from": "2026-07-01",
+    "to": "2026-07-31"
+  },
+  "tradeDaysScanned": 23,
+  "sourceSignalCount": 33,
+  "bestSqLossCount": 5,
+  "eodLossCount": 19,
+  "avgBestSqLossPct": -0.06,
+  "avgEodLossPct": -0.36,
+  "worstBestSqLoss": {
+    "dateKey": "2026-07-22",
+    "dayLabel": "Wed, 22 Jul 2026",
+    "weekday": "Wednesday",
+    "side": "BUY",
+    "scenarioKey": "buy_quality",
+    "entryTimeIst": "09:30",
+    "entryPrice": 111.23,
+    "squareOffTimeIst": "09:45",
+    "squareOffPrice": 111.06,
+    "profitPct": -0.15,
+    "eodTimeIst": "15:15",
+    "eodPrice": 110.73,
+    "eodProfitPct": -0.45,
+    "rsi": 37.2,
+    "smi": -55.9,
+    "reasons": [
+      "RulePNB BUY quality: RSI 37.2 in 25–50, SMI -55.9 ≤ -40, BB lower gap 0.39% (crossed)"
+    ]
+  },
+  "worstEodLoss": {
+    "dateKey": "2026-07-10",
+    "dayLabel": "Fri, 10 Jul 2026",
+    "weekday": "Friday",
+    "side": "SELL",
+    "scenarioKey": "sell_quality",
+    "entryTimeIst": "10:00",
+    "entryPrice": 104.06,
+    "squareOffTimeIst": "11:30",
+    "squareOffPrice": 103.99,
+    "profitPct": 0.07,
+    "eodTimeIst": "15:15",
+    "eodPrice": 105.45,
+    "eodProfitPct": -1.33,
+    "rsi": 64.3,
+    "smi": 41.3,
+    "reasons": [
+      "RulePNB SELL quality: RSI 64.3 in 50–70, SMI 41.3 ≥ 40, BB upper gap 0.09% (crossed)"
+    ]
+  },
+  "bestSqLosses": [
+    {
+      "dateKey": "2026-07-22",
+      "dayLabel": "Wed, 22 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 111.23,
+      "squareOffTimeIst": "09:45",
+      "squareOffPrice": 111.06,
+      "profitPct": -0.15,
+      "eodTimeIst": "15:15",
+      "eodPrice": 110.73,
+      "eodProfitPct": -0.45,
+      "rsi": 37.2,
+      "smi": -55.9,
+      "reasons": [
+        "RulePNB BUY quality: RSI 37.2 in 25–50, SMI -55.9 ≤ -40, BB lower gap 0.39% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-13",
+      "dayLabel": "Mon, 13 Jul 2026",
+      "weekday": "Monday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 105.98,
+      "squareOffTimeIst": "14:00",
+      "squareOffPrice": 106.07,
+      "profitPct": -0.09,
+      "eodTimeIst": "15:15",
+      "eodPrice": 106.34,
+      "eodProfitPct": -0.34,
+      "rsi": 61.1,
+      "smi": 54.6,
+      "reasons": [
+        "RulePNB SELL quality: RSI 61.1 in 50–70, SMI 54.6 ≥ 40, BB upper gap 0.06% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "Wed, 15 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:30",
+      "entryPrice": 105.82,
+      "squareOffTimeIst": "14:30",
+      "squareOffPrice": 105.79,
+      "profitPct": -0.02,
+      "eodTimeIst": "15:15",
+      "eodPrice": 105.79,
+      "eodProfitPct": -0.03,
+      "rsi": 45.6,
+      "smi": -58.5,
+      "reasons": [
+        "RulePNB BUY quality: RSI 45.6 in 25–50, SMI -58.5 ≤ -40, BB lower gap 0.41%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-16",
+      "dayLabel": "Thu, 16 Jul 2026",
+      "weekday": "Thursday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 105.75,
+      "squareOffTimeIst": "11:00",
+      "squareOffPrice": 105.72,
+      "profitPct": -0.02,
+      "eodTimeIst": "15:15",
+      "eodPrice": 105.22,
+      "eodProfitPct": -0.5,
+      "rsi": 36.9,
+      "smi": -52,
+      "reasons": [
+        "RulePNB BUY quality: RSI 36.9 in 25–50, SMI -52.0 ≤ -40, BB lower gap 0.01% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-24",
+      "dayLabel": "Fri, 24 Jul 2026",
+      "weekday": "Friday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:30",
+      "entryPrice": 110.1,
+      "squareOffTimeIst": "13:00",
+      "squareOffPrice": 110.12,
+      "profitPct": -0.01,
+      "eodTimeIst": "15:15",
+      "eodPrice": 110.41,
+      "eodProfitPct": -0.27,
+      "rsi": 66,
+      "smi": 53.3,
+      "reasons": [
+        "RulePNB SELL quality: RSI 66.0 in 50–70, SMI 53.3 ≥ 40, BB upper gap 0.15% (close)"
+      ]
+    }
+  ],
+  "eodLosses": [
+    {
+      "dateKey": "2026-07-10",
+      "dayLabel": "Fri, 10 Jul 2026",
+      "weekday": "Friday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 104.06,
+      "squareOffTimeIst": "11:30",
+      "squareOffPrice": 103.99,
+      "profitPct": 0.07,
+      "eodTimeIst": "15:15",
+      "eodPrice": 105.45,
+      "eodProfitPct": -1.33,
+      "rsi": 64.3,
+      "smi": 41.3,
+      "reasons": [
+        "RulePNB SELL quality: RSI 64.3 in 50–70, SMI 41.3 ≥ 40, BB upper gap 0.09% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-08",
+      "dayLabel": "Wed, 8 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 102.18,
+      "squareOffTimeIst": "11:15",
+      "squareOffPrice": 102.97,
+      "profitPct": 0.78,
+      "eodTimeIst": "15:15",
+      "eodPrice": 101.04,
+      "eodProfitPct": -1.12,
+      "rsi": 29.7,
+      "smi": -54.7,
+      "reasons": [
+        "RulePNB BUY quality: RSI 29.7 in 25–50, SMI -54.7 ≤ -40, BB lower gap 0.62% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-17",
+      "dayLabel": "Fri, 17 Jul 2026",
+      "weekday": "Friday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 105.26,
+      "squareOffTimeIst": "14:00",
+      "squareOffPrice": 104.84,
+      "profitPct": 0.4,
+      "eodTimeIst": "15:15",
+      "eodPrice": 105.82,
+      "eodProfitPct": -0.54,
+      "rsi": 58.1,
+      "smi": 42.1,
+      "reasons": [
+        "RulePNB SELL quality: RSI 58.1 in 50–70, SMI 42.1 ≥ 40, BB upper gap 0.06% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-16",
+      "dayLabel": "Thu, 16 Jul 2026",
+      "weekday": "Thursday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 105.75,
+      "squareOffTimeIst": "11:00",
+      "squareOffPrice": 105.72,
+      "profitPct": -0.02,
+      "eodTimeIst": "15:15",
+      "eodPrice": 105.22,
+      "eodProfitPct": -0.5,
+      "rsi": 36.9,
+      "smi": -52,
+      "reasons": [
+        "RulePNB BUY quality: RSI 36.9 in 25–50, SMI -52.0 ≤ -40, BB lower gap 0.01% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-22",
+      "dayLabel": "Wed, 22 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 111.23,
+      "squareOffTimeIst": "09:45",
+      "squareOffPrice": 111.06,
+      "profitPct": -0.15,
+      "eodTimeIst": "15:15",
+      "eodPrice": 110.73,
+      "eodProfitPct": -0.45,
+      "rsi": 37.2,
+      "smi": -55.9,
+      "reasons": [
+        "RulePNB BUY quality: RSI 37.2 in 25–50, SMI -55.9 ≤ -40, BB lower gap 0.39% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "Wed, 29 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "11:15",
+      "entryPrice": 111.45,
+      "squareOffTimeIst": "12:00",
+      "squareOffPrice": 111.68,
+      "profitPct": 0.21,
+      "eodTimeIst": "15:15",
+      "eodPrice": 111,
+      "eodProfitPct": -0.41,
+      "rsi": 38.5,
+      "smi": -43.4,
+      "reasons": [
+        "RulePNB BUY quality: RSI 38.5 in 25–50, SMI -43.4 ≤ -40, BB lower gap 0.03% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-31",
+      "dayLabel": "Fri, 31 Jul 2026",
+      "weekday": "Friday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 112.23,
+      "squareOffTimeIst": "10:00",
+      "squareOffPrice": 112.11,
+      "profitPct": 0.11,
+      "eodTimeIst": "15:15",
+      "eodPrice": 112.67,
+      "eodProfitPct": -0.39,
+      "rsi": 69.8,
+      "smi": 51.3,
+      "reasons": [
+        "RulePNB SELL quality: RSI 69.8 in 50–70, SMI 51.3 ≥ 40, BB upper gap 0.27% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-13",
+      "dayLabel": "Mon, 13 Jul 2026",
+      "weekday": "Monday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 105.98,
+      "squareOffTimeIst": "14:00",
+      "squareOffPrice": 106.07,
+      "profitPct": -0.09,
+      "eodTimeIst": "15:15",
+      "eodPrice": 106.34,
+      "eodProfitPct": -0.34,
+      "rsi": 61.1,
+      "smi": 54.6,
+      "reasons": [
+        "RulePNB SELL quality: RSI 61.1 in 50–70, SMI 54.6 ≥ 40, BB upper gap 0.06% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "Mon, 6 Jul 2026",
+      "weekday": "Monday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "11:45",
+      "entryPrice": 104.57,
+      "squareOffTimeIst": "12:15",
+      "squareOffPrice": 104.94,
+      "profitPct": 0.36,
+      "eodTimeIst": "15:15",
+      "eodPrice": 104.23,
+      "eodProfitPct": -0.32,
+      "rsi": 36.4,
+      "smi": -42.4,
+      "reasons": [
+        "RulePNB BUY quality: RSI 36.4 in 25–50, SMI -42.4 ≤ -40, BB lower gap 0.07% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-30",
+      "dayLabel": "Thu, 30 Jul 2026",
+      "weekday": "Thursday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:45",
+      "entryPrice": 111.36,
+      "squareOffTimeIst": "14:15",
+      "squareOffPrice": 111.3,
+      "profitPct": 0.05,
+      "eodTimeIst": "15:15",
+      "eodPrice": 111.71,
+      "eodProfitPct": -0.31,
+      "rsi": 65,
+      "smi": 50.5,
+      "reasons": [
+        "RulePNB SELL quality: RSI 65.0 in 50–70, SMI 50.5 ≥ 40, BB upper gap 0.06% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-01",
+      "dayLabel": "Wed, 1 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 107.21,
+      "squareOffTimeIst": "14:30",
+      "squareOffPrice": 106.81,
+      "profitPct": 0.38,
+      "eodTimeIst": "15:15",
+      "eodPrice": 107.51,
+      "eodProfitPct": -0.28,
+      "rsi": 66.5,
+      "smi": 54.9,
+      "reasons": [
+        "RulePNB SELL quality: RSI 66.5 in 50–70, SMI 54.9 ≥ 40, BB upper gap 0.09% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-24",
+      "dayLabel": "Fri, 24 Jul 2026",
+      "weekday": "Friday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "12:30",
+      "entryPrice": 110.1,
+      "squareOffTimeIst": "13:00",
+      "squareOffPrice": 110.12,
+      "profitPct": -0.01,
+      "eodTimeIst": "15:15",
+      "eodPrice": 110.41,
+      "eodProfitPct": -0.27,
+      "rsi": 66,
+      "smi": 53.3,
+      "reasons": [
+        "RulePNB SELL quality: RSI 66.0 in 50–70, SMI 53.3 ≥ 40, BB upper gap 0.15% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "Tue, 28 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "13:30",
+      "entryPrice": 111.92,
+      "squareOffTimeIst": "14:00",
+      "squareOffPrice": 112.03,
+      "profitPct": 0.1,
+      "eodTimeIst": "15:15",
+      "eodPrice": 111.63,
+      "eodProfitPct": -0.26,
+      "rsi": 56.3,
+      "smi": -10.6,
+      "reasons": [
+        "RulePNB BUY extended (biggest-mover style): SMI -10.6 < 0, BB lower gap 0.37% (wider ≤ 1.4%), RSI mixed (56.3)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-09",
+      "dayLabel": "Thu, 9 Jul 2026",
+      "weekday": "Thursday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 103.4,
+      "squareOffTimeIst": "14:30",
+      "squareOffPrice": 103.29,
+      "profitPct": 0.11,
+      "eodTimeIst": "15:15",
+      "eodPrice": 103.55,
+      "eodProfitPct": -0.15,
+      "rsi": 66.2,
+      "smi": 67.4,
+      "reasons": [
+        "RulePNB SELL quality: RSI 66.2 in 50–70, SMI 67.4 ≥ 40, BB upper gap 0.67%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "Tue, 14 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 105.02,
+      "squareOffTimeIst": "11:00",
+      "squareOffPrice": 105.28,
+      "profitPct": 0.25,
+      "eodTimeIst": "15:15",
+      "eodPrice": 104.91,
+      "eodProfitPct": -0.1,
+      "rsi": 37.4,
+      "smi": -40.7,
+      "reasons": [
+        "RulePNB BUY quality: RSI 37.4 in 25–50, SMI -40.7 ≤ -40, BB lower gap 0.14% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "Tue, 28 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:15",
+      "entryPrice": 111.56,
+      "squareOffTimeIst": "09:45",
+      "squareOffPrice": 111.56,
+      "profitPct": 0,
+      "eodTimeIst": "15:15",
+      "eodPrice": 111.63,
+      "eodProfitPct": -0.06,
+      "rsi": 65.5,
+      "smi": 47.9,
+      "reasons": [
+        "RulePNB SELL quality: RSI 65.5 in 50–70, SMI 47.9 ≥ 40, BB upper gap 0.12% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-21",
+      "dayLabel": "Tue, 21 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "12:30",
+      "entryPrice": 112.19,
+      "squareOffTimeIst": "14:00",
+      "squareOffPrice": 112.44,
+      "profitPct": 0.22,
+      "eodTimeIst": "15:15",
+      "eodPrice": 112.13,
+      "eodProfitPct": -0.05,
+      "rsi": 41.6,
+      "smi": -46,
+      "reasons": [
+        "RulePNB BUY quality: RSI 41.6 in 25–50, SMI -46.0 ≤ -40, BB lower gap 0.63%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "Wed, 15 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:30",
+      "entryPrice": 105.82,
+      "squareOffTimeIst": "14:30",
+      "squareOffPrice": 105.79,
+      "profitPct": -0.02,
+      "eodTimeIst": "15:15",
+      "eodPrice": 105.79,
+      "eodProfitPct": -0.03,
+      "rsi": 45.6,
+      "smi": -58.5,
+      "reasons": [
+        "RulePNB BUY quality: RSI 45.6 in 25–50, SMI -58.5 ≤ -40, BB lower gap 0.41%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-27",
+      "dayLabel": "Mon, 27 Jul 2026",
+      "weekday": "Monday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 111.57,
+      "squareOffTimeIst": "10:30",
+      "squareOffPrice": 110.88,
+      "profitPct": 0.62,
+      "eodTimeIst": "15:15",
+      "eodPrice": 111.58,
+      "eodProfitPct": -0.01,
+      "rsi": 67,
+      "smi": 53.5,
+      "reasons": [
+        "RulePNB SELL quality: RSI 67.0 in 50–70, SMI 53.5 ≥ 40, BB upper gap 0.01% (close)"
+      ]
+    }
+  ],
+  "generatedAtUtc": "2026-08-03T22:41:45.920Z"
+}
