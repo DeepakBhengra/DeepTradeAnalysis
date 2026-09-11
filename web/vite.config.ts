@@ -14,6 +14,21 @@ export default defineConfig({
         target: "http://localhost:3001",
         timeout: 900_000,
         proxyTimeout: 900_000,
+        configure(proxy) {
+          proxy.on("error", (_err, _req, res) => {
+            if ("headersSent" in res && !res.headersSent && "writeHead" in res) {
+              res.writeHead(503, { "Content-Type": "application/json" });
+            }
+            if ("end" in res) {
+              res.end(
+                JSON.stringify({
+                  error:
+                    "Cannot reach the API on port 3001. Start both servers with: npm run dev:dashboard",
+                }),
+              );
+            }
+          });
+        },
       },
     },
   },
