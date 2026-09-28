@@ -20,8 +20,7 @@ import {
   PEER_STOCKS,
   buildDayFollowRows,
   buildSymbolMorningDays,
-  countFollowAppearances,
-  countFollowWins,
+  filterRowsFollowingPeer,
   timedBarsFromCandles,
   type DayFollowRow,
   type MorningBar,
@@ -297,8 +296,18 @@ function scoreFor(row: DayFollowRow, peer: string): string {
   return `${found.score}/${found.maxScore}`;
 }
 
-function followedLabel(row: DayFollowRow): string {
-  return row.followed.join(" = ") || "—";
+function pnb1030Price(row: DayFollowRow): string {
+  const bar = barAt(row.pnb, "10:30");
+  return bar ? money(bar.close) : "—";
+}
+
+function niftyScore(row: DayFollowRow): string {
+  return scoreFor(row, "NIFTY BANK");
+}
+
+function tiedWith(row: DayFollowRow): string {
+  const others = row.followed.filter((peer) => peer !== "NIFTY BANK");
+  return others.length === 0 ? "—" : others.join(", ");
 }
 
 function kiteProbeMarkdown(probe: KiteProbe): string {
@@ -321,49 +330,24 @@ function kiteProbeMarkdown(probe: KiteProbe): string {
 
 function buildMarkdown(input: {
   rows: DayFollowRow[];
+  scannedDays: number;
   source: string;
   from: string;
   to: string;
   kite: KiteProbe;
 }): string {
-  const { rows, source, from, to, kite } = input;
-  const wins = countFollowWins(rows);
-  const appearances = countFollowAppearances(rows);
-  const ties = rows.filter((row) => row.followed.length > 1).length;
-  const ranked = [...PEER_STOCKS].sort((left, right) => {
-    const byAppear = (appearances[right] ?? 0) - (appearances[left] ?? 0);
-    if (byAppear !== 0) {
-      return byAppear;
-    }
-    return (wins[right] ?? 0) - (wins[left] ?? 0);
-  });
-  const top = ranked[0];
-  const topAppear = appearances[top] ?? 0;
-  const topPct =
-    rows.length === 0 ? "n/a" : `${round((topAppear / rows.length) * 100, 1)}%`;
-
-  const summaryTable = [
-    "| Peer | Best match including ties | Unique-follow days |",
-    "|------|--------------------------:|-------------------:|",
-    ...ranked.map((peer) => {
-      const appear = appearances[peer] ?? 0;
-      const unique = wins[peer] ?? 0;
-      const appearPct =
-        rows.length === 0 ? "n/a" : `${round((appear / rows.length) * 100, 1)}%`;
-      return `| ${peer} | ${appear} (${appearPct}) | ${unique} |`;
-    }),
-    `| Tie (two or more peers) | ${ties} (${rows.length === 0 ? "n/a" : `${round((ties / rows.length) * 100, 1)}%`}) | — |`,
-  ].join("\n");
+  const { rows, scannedDays, source, from, to, kite } = input;
+  const unique = rows.filter((row) => row.followed.length === 1).length;
+  const tied = rows.filter((row) => row.followed.length > 1).length;
+  const share =
+    scannedDays === 0 ? "n/a" : `${round((rows.length / scannedDays) * 100, 1)}%`;
 
   const compact = [
-    "| Date | PNB 09:15 color | PNB vs prev close | PNB 09:15 O / H / L / C | PNB morning 09:15→10:30 | PNB followed through 10:30 | Score |",
-    "|------|-----------------|-------------------|-------------------------|-------------------------|----------------------------|-------|",
+    "| Date | PNB 09:15 color | PNB vs prev close | PNB 09:15 O / H / L / C | PNB 10:30 price ₹ | PNB morning 09:15→10:30 | Score vs NIFTY BANK | Also tied with |",
+    "|------|-----------------|-------------------|-------------------------|------------------:|-------------------------|---------------------|----------------|",
     ...rows.map((row) => {
       const openBar = barAt(row.pnb, "09:15");
-      const best = row.scores
-        .filter((item) => row.followed.includes(item.peer))
-        .map((item) => `${item.score}/${item.maxScore}`)[0];
-      return `| ${row.date} | ${colorCell(openBar)} | ${row.pnb.openedVsPreviousClose} | ${ohlc(openBar)} | ${row.pnb.morningTrend} | ${followedLabel(row)} | ${best ?? "—"} |`;
+      return `| ${row.date} | ${colorCell(openBar)} | ${row.pnb.openedVsPreviousClose} | ${ohlc(openBar)} | ${pnb1030Price(row)} | ${row.pnb.morningTrend} | ${niftyScore(row)} | ${tiedWith(row)} |`;
     }),
   ].join("\n");
 
@@ -372,23 +356,24 @@ function buildMarkdown(input: {
     `${time} O / H / L / C`,
   ]);
   const detailSections = rows.map((row) => {
-    const header = `| Stock | Prev close ₹ | vs prev close | ${timeHeaders.join(" | ")} | Morning 09:15→10:30 | Follow score |`;
-    const align = `|---|---:|---|${timeHeaders.map((title) => (title.includes("H / L") ? "---" : "---")).join("|")}|---|---|`;
-    const stocks: SymbolMorningDay[] = [row.pnb, ...row.peers];
+    const header = `| Stock | Prev close ₹ | vs prev close | ${timeHeaders.join(" | ")} | 10:30 close ₹ | Morning 09:15→10:30 | Follow score |`;
+    const align = `|---|---:|---|${timeHeaders.map(() => "---").join("|")}|---:|---|---|`;
+    const nifty = row.peers.find((peer) => peer.stock === "NIFTY BANK");
+    const stocks: SymbolMorningDay[] = nifty ? [row.pnb, nifty] : [row.pnb];
     const body = stocks
       .map((day) => {
         const cells = MORNING_TIMES.flatMap((time) => {
           const bar = barAt(day, time);
           return [colorCell(bar), ohlc(bar)];
         });
-        const mark = row.followed.includes(day.stock) || day.stock === SUBJECT ? " **" : "";
+        const close1030 = barAt(day, "10:30");
         const score =
           day.stock === SUBJECT ? "subject" : scoreFor(row, day.stock);
-        return `| ${day.stock}${mark} | ${money(day.previousDayClose)} | ${day.openedVsPreviousClose} | ${cells.join(" | ")} | ${day.morningTrend} | ${score} |`;
+        return `| ${day.stock} ** | ${money(day.previousDayClose)} | ${day.openedVsPreviousClose} | ${cells.join(" | ")} | ${close1030 ? money(close1030.close) : "—"} | ${day.morningTrend} | ${score} |`;
       })
       .join("\n");
     return [
-      `### ${formatDayLabel(row.date)} (\`${row.date}\`) — PNB followed **${followedLabel(row)}**`,
+      `### ${formatDayLabel(row.date)} (\`${row.date}\`) — PNB followed **NIFTY BANK**${tiedWith(row) === "—" ? "" : ` (tied with ${tiedWith(row)})`}`,
       "",
       header,
       align,
@@ -396,32 +381,25 @@ function buildMarkdown(input: {
     ].join("\n");
   });
 
-  return `# PNB vs bank peers · 09:15–10:30 · 15m · last ${TARGET_TRADE_DAYS} trading days
+  return `# PNB days that followed NIFTY BANK · 09:15–10:30 · 15m · last ${TARGET_TRADE_DAYS} trading days
 
 - **Subject:** PNB
-- **Peers:** HDFCBANK, KOTAKBANK, INDUSINDBK (listed as INDUSINBK in the request), NIFTY BANK index, ICICIBANK
+- **Filter:** only sessions where NIFTY BANK was PNB's closest morning match through 10:30 (ties included)
 - **Chart:** 15-minute NSE session bars
-- **Window:** ${from} → ${to} (${rows.length} comparable sessions)
+- **Scanned window:** last ${scannedDays} trading days; **reported:** ${rows.length} NIFTY BANK-follow days (${share}) from ${from} → ${to}
+- **Unique NIFTY BANK follow:** ${unique} · **tied with another peer:** ${tied}
 - **09:15 vs previous close:** 09:15 open compared with the prior session's last 15m close
-- **09:15–10:30 fields:** candle color (close vs open), then open / high / low / close
+- **PNB 10:30 price:** close of PNB's 10:30 IST 15m candle
 - **Following score:** +3 if the 09:15 gap direction matches, +1 per matching candle color from 09:15 through 10:30, +3 if the 09:15-open-to-10:30-close trend matches (max 12 when all six bars exist)
 - **Data:** ${source}
 - **Generated (UTC):** ${new Date().toISOString()}
 
 ${kiteProbeMarkdown(kite)}
-## Who PNB followed through 10:30
-
-PNB's closest morning match was **${top}** on **${topAppear}/${rows.length}** days (${topPct}), counting ties. Unique-follow days are the subset where only that peer tied for first.
-
-${summaryTable}
-
-## All sessions — PNB summary
+## PNB sessions that followed NIFTY BANK
 
 ${compact}
 
-## Day-by-day peer candles
-
-Rows marked **bold** are PNB or the peer(s) it followed that morning.
+## Day-by-day PNB vs NIFTY BANK
 
 ${detailSections.join("\n\n")}
 `;
@@ -476,9 +454,10 @@ async function main(): Promise<void> {
     ]),
   );
   const allRows = buildDayFollowRows(daysByStock, SUBJECT, PEER_STOCKS);
-  const rows = allRows.slice(-TARGET_TRADE_DAYS);
+  const scanned = allRows.slice(-TARGET_TRADE_DAYS);
+  const rows = filterRowsFollowingPeer(scanned, "NIFTY BANK");
   if (rows.length === 0) {
-    throw new Error("No overlapping PNB / peer morning sessions found");
+    throw new Error("No PNB sessions followed NIFTY BANK in this window");
   }
 
   mkdirSync(REPORTS_DIR, { recursive: true });
@@ -486,33 +465,51 @@ async function main(): Promise<void> {
   const jsonPath = resolve(REPORTS_DIR, "pnb-bank-morning-follow-60d.json");
   const from = rows[0].date;
   const to = rows[rows.length - 1].date;
-  const wins = countFollowWins(rows);
-  writeFileSync(mdPath, buildMarkdown({ rows, source, from, to, kite }));
+  const scannedFrom = scanned[0]?.date ?? from;
+  const scannedTo = scanned[scanned.length - 1]?.date ?? to;
+  writeFileSync(
+    mdPath,
+    buildMarkdown({
+      rows,
+      scannedDays: scanned.length,
+      source,
+      from,
+      to,
+      kite,
+    }),
+  );
   writeFileSync(
     jsonPath,
     JSON.stringify(
       {
         subject: SUBJECT,
+        filterPeer: "NIFTY BANK",
         peers: [...PEER_STOCKS],
         interval: "15m",
         morningTimes: [...MORNING_TIMES],
         source,
         kite,
+        scannedFrom,
+        scannedTo,
+        scannedDays: scanned.length,
         from,
         to,
         tradeDays: rows.length,
-        followWins: wins,
-        followAppearances: countFollowAppearances(rows),
-        ties: rows.filter((row) => row.followed.length > 1).length,
+        uniqueNiftyFollow: rows.filter((row) => row.followed.length === 1).length,
+        tiedWithOtherPeer: rows.filter((row) => row.followed.length > 1).length,
         definitions: {
           openedVsPreviousClose:
             "09:15 open versus previous session last 15m close",
           candleColor: "green if close > open, red if close < open, doji if equal",
           morningTrend: "10:30 close versus that day's 09:15 open",
+          pnb1030Price: "Close of PNB's 10:30 IST 15m candle",
           followScore:
             "+3 gap match, +1 per matching 15m color 09:15-10:30, +3 morning-trend match",
         },
-        rows,
+        rows: rows.map((row) => ({
+          ...row,
+          pnb1030Price: barAt(row.pnb, "10:30")?.close ?? null,
+        })),
         generatedAt: new Date().toISOString(),
       },
       null,
@@ -524,16 +521,16 @@ async function main(): Promise<void> {
     JSON.stringify(
       {
         wrote: [mdPath, jsonPath],
-        tradeDays: rows.length,
+        scannedDays: scanned.length,
+        niftyFollowDays: rows.length,
         source,
-        kite,
+        kite: { connected: kite.connected, hasAccessToken: kite.hasAccessToken },
         from,
         to,
-        followWins: wins,
-        followAppearances: countFollowAppearances(rows),
         example: {
           date: rows[rows.length - 1]?.date,
           followed: rows[rows.length - 1]?.followed,
+          pnb1030Price: barAt(rows[rows.length - 1].pnb, "10:30")?.close ?? null,
         },
       },
       null,

@@ -5,8 +5,10 @@ import {
   classifyMorningTrend,
   countFollowAppearances,
   countFollowWins,
+  filterRowsFollowingPeer,
   pickBestFollow,
   scoreFollow,
+  barAtTime,
   type SymbolMorningDay,
   type TimedOhlcBar,
 } from "../../src/studies/pnbBankMorningFollow.js";
@@ -153,5 +155,32 @@ describe("pnbBankMorningFollow", () => {
     expect(rows[0].followed).toEqual(["HDFCBANK"]);
     expect(countFollowWins(rows).HDFCBANK).toBe(1);
     expect(countFollowAppearances(rows).HDFCBANK).toBe(1);
+  });
+
+  it("keeps only days where PNB followed NIFTY BANK", () => {
+    const pnb = morningDay("PNB", "lower", ["green", "red", "green", "red", "red", "red"], "down");
+    const nifty = morningDay("NIFTY BANK", "lower", ["green", "red", "green", "red", "red", "red"], "down");
+    const hdfc = morningDay("HDFCBANK", "upper", ["red", "green", "red", "green", "green", "green"], "up");
+    const laterPnb = { ...pnb, date: "2026-09-25" };
+    const laterHdfc = { ...hdfc, date: "2026-09-25" };
+    const rows = [
+      {
+        date: "2026-09-24",
+        pnb,
+        peers: [nifty, hdfc],
+        scores: [scoreFollow(pnb, nifty), scoreFollow(pnb, hdfc)],
+        followed: ["NIFTY BANK"],
+      },
+      {
+        date: "2026-09-25",
+        pnb: laterPnb,
+        peers: [laterHdfc],
+        scores: [scoreFollow(laterPnb, laterHdfc)],
+        followed: ["HDFCBANK"],
+      },
+    ];
+    const filtered = filterRowsFollowingPeer(rows, "NIFTY BANK");
+    expect(filtered.map((row) => row.date)).toEqual(["2026-09-24"]);
+    expect(barAtTime(filtered[0].pnb, "10:30")?.close).toBe(99);
   });
 });

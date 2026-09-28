@@ -279,6 +279,24 @@ export function buildDayFollowRows(
   return rows;
 }
 
+export function barAtTime(
+  day: SymbolMorningDay,
+  time: string,
+): MorningBar | undefined {
+  return day.bars.find((bar) => bar.timeIst === time);
+}
+
+export function followsPeer(row: DayFollowRow, peer: string): boolean {
+  return row.followed.includes(peer);
+}
+
+export function filterRowsFollowingPeer(
+  rows: DayFollowRow[],
+  peer: string,
+): DayFollowRow[] {
+  return rows.filter((row) => followsPeer(row, peer));
+}
+
 export function countFollowWins(rows: DayFollowRow[]): Record<string, number> {
   const counts: Record<string, number> = {};
   for (const peer of PEER_STOCKS) {
