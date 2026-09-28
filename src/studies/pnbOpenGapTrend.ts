@@ -1,9 +1,13 @@
 export type GapDirection = "lower" | "upper" | "unchanged";
 export type DayTrend = "downtrend" | "uptrend" | "flat";
+export type CandleColor = "green" | "red" | "doji";
 
 export interface SessionDayBars {
   dateKey: string;
   open0915: number;
+  close0915: number;
+  high0915: number;
+  low0915: number;
   close: number;
   high: number;
   highTimeIst: string;
@@ -29,6 +33,11 @@ export interface PnbOpenGapRow {
   nextDayHighTimeIst: string;
   nextDayLow: number;
   nextDayLowTimeIst: string;
+  candle0915Color: CandleColor;
+  candle0915High: number;
+  candle0915Low: number;
+  candle0915HighCrossedPrevCloseUp: boolean;
+  candle0915LowCrossedPrevCloseDown: boolean;
   gapPct: number;
   trendPct: number;
   matchesGapDownAndDowntrend: boolean;
@@ -79,6 +88,17 @@ export function sessionHighLow(bars: SessionBar[]): {
   return { high, highTimeIst, low, lowTimeIst };
 }
 
+/** 09:15 candle body color: green if close > open, red if close < open. */
+export function classifyCandleColor(open: number, close: number): CandleColor {
+  if (close > open) {
+    return "green";
+  }
+  if (close < open) {
+    return "red";
+  }
+  return "doji";
+}
+
 export function classifyDayTrend(
   sessionClose: number,
   open0915: number,
@@ -120,6 +140,11 @@ export function buildPnbOpenGapRows(
       nextDayHighTimeIst: current.highTimeIst,
       nextDayLow: current.low,
       nextDayLowTimeIst: current.lowTimeIst,
+      candle0915Color: classifyCandleColor(current.open0915, current.close0915),
+      candle0915High: current.high0915,
+      candle0915Low: current.low0915,
+      candle0915HighCrossedPrevCloseUp: current.high0915 > previous.close,
+      candle0915LowCrossedPrevCloseDown: current.low0915 < previous.close,
       gapPct,
       trendPct,
       matchesGapDownAndDowntrend:

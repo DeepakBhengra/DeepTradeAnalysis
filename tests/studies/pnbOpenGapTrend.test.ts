@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildPnbOpenGapRows,
+  classifyCandleColor,
   classifyDayTrend,
   classifyGap,
   sessionHighLow,
@@ -11,6 +12,12 @@ describe("pnbOpenGapTrend", () => {
     expect(classifyGap(100, 101)).toBe("lower");
     expect(classifyGap(102, 101)).toBe("upper");
     expect(classifyGap(101, 101)).toBe("unchanged");
+  });
+
+  it("classifies the 09:15 candle color from open vs close", () => {
+    expect(classifyCandleColor(100, 101)).toBe("green");
+    expect(classifyCandleColor(100, 99)).toBe("red");
+    expect(classifyCandleColor(100, 100)).toBe("doji");
   });
 
   it("classifies the day trend from 09:15 to session close", () => {
@@ -40,6 +47,9 @@ describe("pnbOpenGapTrend", () => {
       {
         dateKey: "2026-09-01",
         open0915: 110,
+        close0915: 109,
+        high0915: 110.5,
+        low0915: 108.5,
         close: 108,
         high: 111,
         highTimeIst: "10:00",
@@ -49,6 +59,9 @@ describe("pnbOpenGapTrend", () => {
       {
         dateKey: "2026-09-02",
         open0915: 106,
+        close0915: 105,
+        high0915: 108.2,
+        low0915: 105.4,
         close: 104,
         high: 106.5,
         highTimeIst: "09:15",
@@ -58,6 +71,9 @@ describe("pnbOpenGapTrend", () => {
       {
         dateKey: "2026-09-03",
         open0915: 107,
+        close0915: 108.5,
+        high0915: 108.8,
+        low0915: 103.5,
         close: 110,
         high: 111,
         highTimeIst: "14:45",
@@ -79,6 +95,11 @@ describe("pnbOpenGapTrend", () => {
       nextDayHighTimeIst: "09:15",
       nextDayLow: 103,
       nextDayLowTimeIst: "13:00",
+      candle0915Color: "red",
+      candle0915High: 108.2,
+      candle0915Low: 105.4,
+      candle0915HighCrossedPrevCloseUp: true,
+      candle0915LowCrossedPrevCloseDown: true,
     });
     expect(rows[1]).toMatchObject({
       date: "2026-09-03",
@@ -92,6 +113,11 @@ describe("pnbOpenGapTrend", () => {
       nextDayHighTimeIst: "14:45",
       nextDayLow: 106.8,
       nextDayLowTimeIst: "09:30",
+      candle0915Color: "green",
+      candle0915High: 108.8,
+      candle0915Low: 103.5,
+      candle0915HighCrossedPrevCloseUp: true,
+      candle0915LowCrossedPrevCloseDown: true,
     });
   });
 });
