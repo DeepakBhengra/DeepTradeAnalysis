@@ -296,8 +296,8 @@ function buildMarkdown(input: {
   const exampleUp = gapUpContinued[gapUpContinued.length - 1] ?? gapUpContinued[0];
 
   const table = [
-    "| Date | Stock | Previous day close ₹ | Next day 09:15 price ₹ | 09:15 candle color | 09:15 high ₹ | 09:15 high vs prev close | 09:15 low ₹ | 09:15 low vs prev close | Opened vs previous close | That day trend | Next day low ₹ | Low time (IST) | Next day high ₹ | High time (IST) |",
-    "|------|-------|---------------------:|-----------------------:|--------------------|-------------:|--------------------------|------------:|-------------------------|--------------------------|----------------|---------------:|----------------|----------------:|-----------------|",
+    "| Date | Stock | Previous day close ₹ | Next day 09:15 price ₹ | 09:15 candle color | 09:15 high ₹ | 09:15 low ₹ | 09:15 close ₹ | 09:15 high vs prev close | 09:15 low vs prev close | Opened vs previous close | That day trend | Next day low ₹ | Low time (IST) | Next day high ₹ | High time (IST) |",
+    "|------|-------|---------------------:|-----------------------:|--------------------|-------------:|------------:|--------------:|--------------------------|-------------------------|--------------------------|----------------|---------------:|----------------|----------------:|-----------------|",
     ...rows.map((row) => {
       const mark =
         row.matchesGapDownAndDowntrend || row.matchesGapUpAndUptrend ? " **" : "";
@@ -307,7 +307,7 @@ function buildMarkdown(input: {
       const lowCross = row.candle0915LowCrossedPrevCloseDown
         ? "lowest of 09:15 am price crossed downward the prev close price"
         : "no";
-      return `| ${row.date} | ${row.stock} | ${round(row.previousDayClose, 2).toFixed(2)} | ${round(row.nextDay0915Price, 2).toFixed(2)} | ${row.candle0915Color} | ${round(row.candle0915High, 2).toFixed(2)} | ${highCross} | ${round(row.candle0915Low, 2).toFixed(2)} | ${lowCross} | ${row.openedVsPreviousClose}${mark} | ${row.dayTrend}${mark} | ${round(row.nextDayLow, 2).toFixed(2)} | ${row.nextDayLowTimeIst} | ${round(row.nextDayHigh, 2).toFixed(2)} | ${row.nextDayHighTimeIst} |`;
+      return `| ${row.date} | ${row.stock} | ${round(row.previousDayClose, 2).toFixed(2)} | ${round(row.nextDay0915Price, 2).toFixed(2)} | ${row.candle0915Color} | ${round(row.candle0915High, 2).toFixed(2)} | ${round(row.candle0915Low, 2).toFixed(2)} | ${round(row.candle0915Close, 2).toFixed(2)} | ${highCross} | ${lowCross} | ${row.openedVsPreviousClose}${mark} | ${row.dayTrend}${mark} | ${round(row.nextDayLow, 2).toFixed(2)} | ${row.nextDayLowTimeIst} | ${round(row.nextDayHigh, 2).toFixed(2)} | ${row.nextDayHighTimeIst} |`;
     }),
   ].join("\n");
 
@@ -327,6 +327,7 @@ function buildMarkdown(input: {
       `- **09:15 candle color:** ${row.candle0915Color}`,
       `- **09:15 high:** ₹${round(row.candle0915High, 2).toFixed(2)}${row.candle0915HighCrossedPrevCloseUp ? " — highest of 09:15 am price crossed upward the prev close price" : ""}`,
       `- **09:15 low:** ₹${round(row.candle0915Low, 2).toFixed(2)}${row.candle0915LowCrossedPrevCloseDown ? " — lowest of 09:15 am price crossed downward the prev close price" : ""}`,
+      `- **09:15 close:** ₹${round(row.candle0915Close, 2).toFixed(2)}`,
     ].join("\n");
   };
 
@@ -339,7 +340,7 @@ function buildMarkdown(input: {
 - **Day trend:** session close versus that day's 09:15 open (downtrend = closed below 09:15, uptrend = closed above 09:15)
 - **Next day high / low:** highest high and lowest low of that same session's 15m bars; time is the first 15m candle that printed the extreme (IST)
 - **09:15 candle color:** green if that bar's close > open, red if close < open, doji if equal
-- **09:15 high / low:** high and low of the 09:15 15m candle; crossed upward / downward if that wick goes through the previous close
+- **09:15 high / low / close:** high, low, and close of the 09:15 15m candle; crossed upward / downward if that wick goes through the previous close
 - **Window:** ${from} → ${to} (${rows.length} comparable sessions; one extra prior day used for the first previous close)
 - **Data:** ${source}
 - **Generated (UTC):** ${new Date().toISOString()}
@@ -417,6 +418,9 @@ async function main(): Promise<void> {
           nextDayHigh: "Highest 15m high on that session; time is the first 15m candle that printed it",
           nextDayLow: "Lowest 15m low on that session; time is the first 15m candle that printed it",
           candle0915Color: "09:15 15m candle body: green if close > open, red if close < open",
+          candle0915High: "High of the 09:15 IST 15m candle",
+          candle0915Low: "Low of the 09:15 IST 15m candle",
+          candle0915Close: "Close of the 09:15 IST 15m candle",
           candle0915HighCrossedPrevCloseUp:
             "True when the 09:15 candle high is above the previous day's close",
           candle0915LowCrossedPrevCloseDown:

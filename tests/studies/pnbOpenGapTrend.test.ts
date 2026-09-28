@@ -98,6 +98,7 @@ describe("pnbOpenGapTrend", () => {
       candle0915Color: "red",
       candle0915High: 108.2,
       candle0915Low: 105.4,
+      candle0915Close: 105,
       candle0915HighCrossedPrevCloseUp: true,
       candle0915LowCrossedPrevCloseDown: true,
     });
@@ -116,6 +117,7 @@ describe("pnbOpenGapTrend", () => {
       candle0915Color: "green",
       candle0915High: 108.8,
       candle0915Low: 103.5,
+      candle0915Close: 108.5,
       candle0915HighCrossedPrevCloseUp: true,
       candle0915LowCrossedPrevCloseDown: true,
     });

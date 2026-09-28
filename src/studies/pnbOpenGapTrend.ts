@@ -36,6 +36,7 @@ export interface PnbOpenGapRow {
   candle0915Color: CandleColor;
   candle0915High: number;
   candle0915Low: number;
+  candle0915Close: number;
   candle0915HighCrossedPrevCloseUp: boolean;
   candle0915LowCrossedPrevCloseDown: boolean;
   gapPct: number;
@@ -143,6 +144,7 @@ export function buildPnbOpenGapRows(
       candle0915Color: classifyCandleColor(current.open0915, current.close0915),
       candle0915High: current.high0915,
       candle0915Low: current.low0915,
+      candle0915Close: current.close0915,
       candle0915HighCrossedPrevCloseUp: current.high0915 > previous.close,
       candle0915LowCrossedPrevCloseDown: current.low0915 < previous.close,
       gapPct,
