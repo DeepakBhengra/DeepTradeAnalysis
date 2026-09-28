@@ -5,6 +5,16 @@ export interface SessionDayBars {
   dateKey: string;
   open0915: number;
   close: number;
+  high: number;
+  highTimeIst: string;
+  low: number;
+  lowTimeIst: string;
+}
+
+export interface SessionBar {
+  timeIst: string;
+  high: number;
+  low: number;
 }
 
 export interface PnbOpenGapRow {
@@ -15,6 +25,10 @@ export interface PnbOpenGapRow {
   openedVsPreviousClose: GapDirection;
   dayTrend: DayTrend;
   sessionClose: number;
+  nextDayHigh: number;
+  nextDayHighTimeIst: string;
+  nextDayLow: number;
+  nextDayLowTimeIst: string;
   gapPct: number;
   trendPct: number;
   matchesGapDownAndDowntrend: boolean;
@@ -38,6 +52,33 @@ export function classifyGap(
  * Intraday trend from the 09:15 print to that session's close.
  * Downtrend = closed below 09:15; uptrend = closed above 09:15.
  */
+/** First 15m bar that printed the session high / low. */
+export function sessionHighLow(bars: SessionBar[]): {
+  high: number;
+  highTimeIst: string;
+  low: number;
+  lowTimeIst: string;
+} | null {
+  if (bars.length === 0) {
+    return null;
+  }
+  let high = bars[0].high;
+  let highTimeIst = bars[0].timeIst;
+  let low = bars[0].low;
+  let lowTimeIst = bars[0].timeIst;
+  for (const bar of bars) {
+    if (bar.high > high) {
+      high = bar.high;
+      highTimeIst = bar.timeIst;
+    }
+    if (bar.low < low) {
+      low = bar.low;
+      lowTimeIst = bar.timeIst;
+    }
+  }
+  return { high, highTimeIst, low, lowTimeIst };
+}
+
 export function classifyDayTrend(
   sessionClose: number,
   open0915: number,
@@ -75,6 +116,10 @@ export function buildPnbOpenGapRows(
       openedVsPreviousClose,
       dayTrend,
       sessionClose: current.close,
+      nextDayHigh: current.high,
+      nextDayHighTimeIst: current.highTimeIst,
+      nextDayLow: current.low,
+      nextDayLowTimeIst: current.lowTimeIst,
       gapPct,
       trendPct,
       matchesGapDownAndDowntrend:

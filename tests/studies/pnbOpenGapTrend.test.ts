@@ -3,6 +3,7 @@ import {
   buildPnbOpenGapRows,
   classifyDayTrend,
   classifyGap,
+  sessionHighLow,
 } from "../../src/studies/pnbOpenGapTrend.js";
 
 describe("pnbOpenGapTrend", () => {
@@ -18,11 +19,51 @@ describe("pnbOpenGapTrend", () => {
     expect(classifyDayTrend(100, 100)).toBe("flat");
   });
 
+  it("records the first 15m bar that printed the session high and low", () => {
+    expect(
+      sessionHighLow([
+        { timeIst: "09:15", high: 101, low: 99 },
+        { timeIst: "11:00", high: 104, low: 100 },
+        { timeIst: "14:30", high: 103, low: 97.5 },
+        { timeIst: "15:15", high: 104, low: 98 },
+      ]),
+    ).toEqual({
+      high: 104,
+      highTimeIst: "11:00",
+      low: 97.5,
+      lowTimeIst: "14:30",
+    });
+  });
+
   it("flags gap-down + downtrend and gap-up + uptrend days", () => {
     const rows = buildPnbOpenGapRows([
-      { dateKey: "2026-09-01", open0915: 110, close: 108 },
-      { dateKey: "2026-09-02", open0915: 106, close: 104 },
-      { dateKey: "2026-09-03", open0915: 107, close: 110 },
+      {
+        dateKey: "2026-09-01",
+        open0915: 110,
+        close: 108,
+        high: 111,
+        highTimeIst: "10:00",
+        low: 107,
+        lowTimeIst: "14:15",
+      },
+      {
+        dateKey: "2026-09-02",
+        open0915: 106,
+        close: 104,
+        high: 106.5,
+        highTimeIst: "09:15",
+        low: 103,
+        lowTimeIst: "13:00",
+      },
+      {
+        dateKey: "2026-09-03",
+        open0915: 107,
+        close: 110,
+        high: 111,
+        highTimeIst: "14:45",
+        low: 106.8,
+        lowTimeIst: "09:30",
+      },
     ]);
 
     expect(rows).toHaveLength(2);
@@ -34,6 +75,10 @@ describe("pnbOpenGapTrend", () => {
       dayTrend: "downtrend",
       matchesGapDownAndDowntrend: true,
       matchesGapUpAndUptrend: false,
+      nextDayHigh: 106.5,
+      nextDayHighTimeIst: "09:15",
+      nextDayLow: 103,
+      nextDayLowTimeIst: "13:00",
     });
     expect(rows[1]).toMatchObject({
       date: "2026-09-03",
@@ -43,6 +88,10 @@ describe("pnbOpenGapTrend", () => {
       dayTrend: "uptrend",
       matchesGapDownAndDowntrend: false,
       matchesGapUpAndUptrend: true,
+      nextDayHigh: 111,
+      nextDayHighTimeIst: "14:45",
+      nextDayLow: 106.8,
+      nextDayLowTimeIst: "09:30",
     });
   });
 });

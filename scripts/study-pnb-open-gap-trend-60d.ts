@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   buildPnbOpenGapRows,
+  sessionHighLow,
   type PnbOpenGapRow,
   type SessionDayBars,
 } from "../src/studies/pnbOpenGapTrend.js";
@@ -249,13 +250,24 @@ function toSessionDays(bars: RawBar[]): SessionDayBars[] {
     );
     const openBar = list.find((bar) => formatIstParts(bar.timestamp).timeIst === SESSION_START);
     const closeBar = list[list.length - 1];
-    if (!openBar || !closeBar) {
+    const extremes = sessionHighLow(
+      list.map((bar) => ({
+        timeIst: formatIstParts(bar.timestamp).timeIst,
+        high: bar.high,
+        low: bar.low,
+      })),
+    );
+    if (!openBar || !closeBar || !extremes) {
       continue;
     }
     days.push({
       dateKey,
       open0915: openBar.open,
       close: closeBar.close,
+      high: extremes.high,
+      highTimeIst: extremes.highTimeIst,
+      low: extremes.low,
+      lowTimeIst: extremes.lowTimeIst,
     });
   }
   return days;
@@ -281,12 +293,12 @@ function buildMarkdown(input: {
   const exampleUp = gapUpContinued[gapUpContinued.length - 1] ?? gapUpContinued[0];
 
   const table = [
-    "| Date | Stock | Previous day close ₹ | Next day 09:15 price ₹ | Opened vs previous close | That day trend |",
-    "|------|-------|---------------------:|-----------------------:|--------------------------|----------------|",
+    "| Date | Stock | Previous day close ₹ | Next day 09:15 price ₹ | Opened vs previous close | That day trend | Next day low ₹ | Low time (IST) | Next day high ₹ | High time (IST) |",
+    "|------|-------|---------------------:|-----------------------:|--------------------------|----------------|---------------:|----------------|----------------:|-----------------|",
     ...rows.map((row) => {
       const mark =
         row.matchesGapDownAndDowntrend || row.matchesGapUpAndUptrend ? " **" : "";
-      return `| ${row.date} | ${row.stock} | ${round(row.previousDayClose, 2).toFixed(2)} | ${round(row.nextDay0915Price, 2).toFixed(2)} | ${row.openedVsPreviousClose}${mark} | ${row.dayTrend}${mark} |`;
+      return `| ${row.date} | ${row.stock} | ${round(row.previousDayClose, 2).toFixed(2)} | ${round(row.nextDay0915Price, 2).toFixed(2)} | ${row.openedVsPreviousClose}${mark} | ${row.dayTrend}${mark} | ${round(row.nextDayLow, 2).toFixed(2)} | ${row.nextDayLowTimeIst} | ${round(row.nextDayHigh, 2).toFixed(2)} | ${row.nextDayHighTimeIst} |`;
     }),
   ].join("\n");
 
@@ -301,6 +313,8 @@ function buildMarkdown(input: {
       `- **Opened:** ${row.openedVsPreviousClose}`,
       `- **Session close:** ₹${round(row.sessionClose, 2).toFixed(2)} (${signedPct(row.trendPct)} from 09:15)`,
       `- **Day trend:** ${row.dayTrend}`,
+      `- **Next day low:** ₹${round(row.nextDayLow, 2).toFixed(2)} at ${row.nextDayLowTimeIst} IST`,
+      `- **Next day high:** ₹${round(row.nextDayHigh, 2).toFixed(2)} at ${row.nextDayHighTimeIst} IST`,
     ].join("\n");
   };
 
@@ -311,6 +325,7 @@ function buildMarkdown(input: {
 - **09:15 price:** open of the 09:15 candle
 - **Previous day close:** close of the last 15m bar of the prior session
 - **Day trend:** session close versus that day's 09:15 open (downtrend = closed below 09:15, uptrend = closed above 09:15)
+- **Next day high / low:** highest high and lowest low of that same session's 15m bars; time is the first 15m candle that printed the extreme (IST)
 - **Window:** ${from} → ${to} (${rows.length} comparable sessions; one extra prior day used for the first previous close)
 - **Data:** ${source}
 - **Generated (UTC):** ${new Date().toISOString()}
@@ -385,6 +400,8 @@ async function main(): Promise<void> {
           nextDay0915Price: "Open of the 09:15 IST 15m candle",
           previousDayClose: "Close of the last 15m bar of the prior NSE session",
           dayTrend: "Session close vs that day's 09:15 open",
+          nextDayHigh: "Highest 15m high on that session; time is the first 15m candle that printed it",
+          nextDayLow: "Lowest 15m low on that session; time is the first 15m candle that printed it",
         },
         rows,
         examples: {
