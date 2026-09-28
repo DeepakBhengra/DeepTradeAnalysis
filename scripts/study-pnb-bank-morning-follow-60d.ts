@@ -11,8 +11,9 @@
 import "../src/loadEnv.js";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { dashboardSymbols, resolveDashboardSymbol } from "../src/config.js";
+import { config, dashboardSymbols, resolveDashboardSymbol } from "../src/config.js";
 import { fetchPnbCandles } from "../src/data/pnbFeed.js";
+import { getKiteAuthStatus, getKiteLoginUrl } from "../src/kite/kiteAuth.js";
 import { hasValidKiteAccessToken } from "../src/kite/kiteTokenStore.js";
 import {
   MORNING_TIMES,
@@ -52,6 +53,66 @@ interface RawBar {
   high: number;
   low: number;
   close: number;
+}
+
+interface KiteProbe {
+  connected: boolean;
+  hasApiKey: boolean;
+  hasApiSecret: boolean;
+  hasAccessToken: boolean;
+  localStatusUrl: string;
+  kiteLoginHost: string | null;
+  kiteLoginHttp: number | null;
+  kiteLoginLocationHost: string | null;
+  historicalError: string | null;
+}
+
+async function probeKiteConnection(): Promise<KiteProbe> {
+  const status = getKiteAuthStatus();
+  const probe: KiteProbe = {
+    connected: status.connected,
+    hasApiKey: Boolean(config.kite.apiKey),
+    hasApiSecret: Boolean(config.kite.apiSecret),
+    hasAccessToken: hasValidKiteAccessToken(),
+    localStatusUrl: "http://localhost:3001/api/kite/status",
+    kiteLoginHost: null,
+    kiteLoginHttp: null,
+    kiteLoginLocationHost: null,
+    historicalError: null,
+  };
+
+  if (!probe.hasApiKey || !probe.hasApiSecret) {
+    probe.historicalError = "Missing KITE_API_KEY or KITE_API_SECRET";
+    return probe;
+  }
+
+  try {
+    const kiteLogin = getKiteLoginUrl();
+    probe.kiteLoginHost = new URL(kiteLogin).host;
+    const loginResponse = await fetch(kiteLogin, {
+      method: "GET",
+      redirect: "manual",
+      headers: { "User-Agent": "Mozilla/5.0" },
+    });
+    probe.kiteLoginHttp = loginResponse.status;
+    const location = loginResponse.headers.get("location");
+    if (location) {
+      probe.kiteLoginLocationHost = new URL(
+        location,
+        "https://kite.zerodha.com",
+      ).host;
+    }
+  } catch (error) {
+    probe.historicalError =
+      error instanceof Error ? error.message : String(error);
+    return probe;
+  }
+
+  if (!probe.hasAccessToken) {
+    probe.historicalError =
+      "Kite not connected. Click Connect Kite to log in, or set KITE_ACCESS_TOKEN in .env.";
+  }
+  return probe;
 }
 
 function round(value: number, digits = 2): number {
@@ -240,13 +301,32 @@ function followedLabel(row: DayFollowRow): string {
   return row.followed.join(" = ") || "—";
 }
 
+function kiteProbeMarkdown(probe: KiteProbe): string {
+  const connected = probe.connected ? "yes" : "no";
+  const login =
+    probe.kiteLoginHttp == null
+      ? "not checked"
+      : `${probe.kiteLoginHttp}${probe.kiteLoginLocationHost ? ` → ${probe.kiteLoginLocationHost}` : ""}`;
+  return `## Kite connection
+
+- **Connected:** ${connected}
+- **API key:** ${probe.hasApiKey ? "present" : "missing"}
+- **API secret:** ${probe.hasApiSecret ? "present" : "missing"}
+- **Access token:** ${probe.hasAccessToken ? "present" : "missing"}
+- **Local status:** \`${probe.localStatusUrl}\` → connected=${probe.connected}
+- **Zerodha login:** ${probe.kiteLoginHost ?? "n/a"} HTTP ${login}
+- **Historical 15m:** ${probe.historicalError ?? "ready"}
+`;
+}
+
 function buildMarkdown(input: {
   rows: DayFollowRow[];
   source: string;
   from: string;
   to: string;
+  kite: KiteProbe;
 }): string {
-  const { rows, source, from, to } = input;
+  const { rows, source, from, to, kite } = input;
   const wins = countFollowWins(rows);
   const appearances = countFollowAppearances(rows);
   const ties = rows.filter((row) => row.followed.length > 1).length;
@@ -328,6 +408,7 @@ function buildMarkdown(input: {
 - **Data:** ${source}
 - **Generated (UTC):** ${new Date().toISOString()}
 
+${kiteProbeMarkdown(kite)}
 ## Who PNB followed through 10:30
 
 PNB's closest morning match was **${top}** on **${topAppear}/${rows.length}** days (${topPct}), counting ties. Unique-follow days are the subset where only that peer tied for first.
@@ -346,12 +427,12 @@ ${detailSections.join("\n\n")}
 `;
 }
 
-async function loadUniverseBars(): Promise<{
+async function loadUniverseBars(kite: KiteProbe): Promise<{
   barsByStock: Record<string, RawBar[]>;
   source: string;
 }> {
   const barsByStock: Record<string, RawBar[]> = {};
-  if (hasValidKiteAccessToken()) {
+  if (kite.hasAccessToken) {
     console.log("Kite access token present — fetching Zerodha historical 15m");
     for (const entry of UNIVERSE) {
       process.stdout.write(`  Kite 15m ${entry.stock} ... `);
@@ -379,7 +460,12 @@ async function loadUniverseBars(): Promise<{
 }
 
 async function main(): Promise<void> {
-  const { barsByStock, source } = await loadUniverseBars();
+  process.stdout.write("Checking Kite connection ... ");
+  const kite = await probeKiteConnection();
+  console.log(kite.connected ? "connected" : "not connected");
+  console.log(JSON.stringify(kite, null, 2));
+
+  const { barsByStock, source } = await loadUniverseBars(kite);
   const daysByStock = Object.fromEntries(
     UNIVERSE.map((entry) => [
       entry.stock,
@@ -401,7 +487,7 @@ async function main(): Promise<void> {
   const from = rows[0].date;
   const to = rows[rows.length - 1].date;
   const wins = countFollowWins(rows);
-  writeFileSync(mdPath, buildMarkdown({ rows, source, from, to }));
+  writeFileSync(mdPath, buildMarkdown({ rows, source, from, to, kite }));
   writeFileSync(
     jsonPath,
     JSON.stringify(
@@ -411,6 +497,7 @@ async function main(): Promise<void> {
         interval: "15m",
         morningTimes: [...MORNING_TIMES],
         source,
+        kite,
         from,
         to,
         tradeDays: rows.length,
@@ -439,6 +526,7 @@ async function main(): Promise<void> {
         wrote: [mdPath, jsonPath],
         tradeDays: rows.length,
         source,
+        kite,
         from,
         to,
         followWins: wins,

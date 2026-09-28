@@ -8,7 +8,17 @@
 - **09:15–10:30 fields:** candle color (close vs open), then open / high / low / close
 - **Following score:** +3 if the 09:15 gap direction matches, +1 per matching candle color from 09:15 through 10:30, +3 if the 09:15-open-to-10:30-close trend matches (max 12 when all six bars exist)
 - **Data:** Upstox public 1m resampled to 15m (Kite historical unavailable — no access token)
-- **Generated (UTC):** 2026-09-28T13:12:43.727Z
+- **Generated (UTC):** 2026-09-28T13:48:45.348Z
+
+## Kite connection
+
+- **Connected:** no
+- **API key:** present
+- **API secret:** present
+- **Access token:** missing
+- **Local status:** `http://localhost:3001/api/kite/status` → connected=false
+- **Zerodha login:** kite.zerodha.com HTTP 302 → kite.zerodha.com
+- **Historical 15m:** Kite not connected. Click Connect Kite to log in, or set KITE_ACCESS_TOKEN in .env.
 
 ## Who PNB followed through 10:30
 
