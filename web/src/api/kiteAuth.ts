@@ -1,20 +1,10 @@
+import { errorMessageFromResponse } from "../utils/formatError";
+
 export interface KiteAuthStatus {
   connected: boolean;
   redirectUrl: string;
   appUrl: string;
   loginUrl: string;
-}
-
-async function readKiteError(response: Response, fallback: string): Promise<string> {
-  try {
-    const payload = (await response.json()) as { error?: string };
-    if (payload.error) {
-      return payload.error;
-    }
-  } catch {
-    // ignore JSON parse failures and use fallback
-  }
-  return fallback;
 }
 
 export async function fetchKiteStatus(): Promise<KiteAuthStatus> {
@@ -36,14 +26,7 @@ export async function fetchKiteStatus(): Promise<KiteAuthStatus> {
 
   if (!response.ok) {
     throw new Error(
-      await readKiteError(
-        response,
-        response.status === 500 ||
-          response.status === 502 ||
-          response.status === 503
-          ? "Cannot reach the API on port 3001. Start both servers with: npm run dev:dashboard"
-          : `Kite status request failed: ${response.status}`,
-      ),
+      await errorMessageFromResponse(response, "Kite status request failed"),
     );
   }
 
@@ -69,10 +52,7 @@ export async function submitKiteAccessToken(
 
   if (!response.ok) {
     throw new Error(
-      await readKiteError(
-        response,
-        `Saving Kite access token failed: ${response.status}`,
-      ),
+      await errorMessageFromResponse(response, "Saving Kite access token failed"),
     );
   }
 

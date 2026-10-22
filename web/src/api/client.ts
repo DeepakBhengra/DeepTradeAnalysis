@@ -15,7 +15,11 @@ import type {
 import type { DeepakPostMortemReport, PostMortemVariant } from "../types/postMortem";
 import type { DashboardSeriesPoint } from "../types/dashboard";
 import type { SignalDayOption } from "../utils/signalDaysFromTrades";
-import { formatNetworkFetchError, readApiErrorBody } from "../utils/formatError";
+import {
+  errorMessageFromResponse,
+  formatNetworkFetchError,
+  readApiErrorBody,
+} from "../utils/formatError";
 import { FAVOURABLE_RULE_LABEL, FAVOURABLE_RULE_SLUG } from "../utils/favourableSymbolRule";
 
 export {
@@ -106,8 +110,9 @@ export async function fetchDashboard(
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
-      throw new Error(readApiErrorBody(body, `Dashboard request failed: ${response.status}`));
+      throw new Error(
+        await errorMessageFromResponse(response, "Dashboard request failed"),
+      );
     }
     return response.json() as Promise<DashboardPayload>;
   } catch (err) {
@@ -139,8 +144,9 @@ export async function fetchDashboardSimulation(
   try {
     const response = await fetch(url, { signal: controller.signal });
     if (!response.ok) {
-      const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
-      throw new Error(readApiErrorBody(body, `Simulation request failed: ${response.status}`));
+      throw new Error(
+        await errorMessageFromResponse(response, "Simulation request failed"),
+      );
     }
     return response.json() as Promise<DashboardPayload>;
   } catch (err) {

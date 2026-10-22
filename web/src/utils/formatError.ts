@@ -1,3 +1,31 @@
+export const API_UNREACHABLE_HINT =
+  "Cannot reach the API on port 3001. Start both servers with: npm run dev:dashboard";
+
+export function opaqueHttpFallback(status: number, actionFailed: string): string {
+  if (status === 500 || status === 502 || status === 503) {
+    return API_UNREACHABLE_HINT;
+  }
+
+  return `${actionFailed}: ${status}`;
+}
+
+export async function errorMessageFromResponse(
+  response: Response,
+  actionFailed: string,
+): Promise<string> {
+  const fallback = opaqueHttpFallback(response.status, actionFailed);
+  try {
+    const payload = (await response.json()) as { error?: unknown };
+    if (payload.error != null) {
+      return formatUnknownError(payload.error);
+    }
+  } catch {
+    // ignore JSON parse failures and use fallback
+  }
+
+  return fallback;
+}
+
 export function formatUnknownError(error: unknown): string {
   if (error instanceof Error) {
     return error.message;

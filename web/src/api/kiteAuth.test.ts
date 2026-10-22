@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { fetchKiteStatus } from "./kiteAuth";
+import { fetchKiteStatus, submitKiteAccessToken } from "./kiteAuth";
 
 describe("fetchKiteStatus", () => {
   afterEach(() => {
@@ -56,6 +56,45 @@ describe("fetchKiteStatus", () => {
     );
 
     await expect(fetchKiteStatus()).rejects.toThrow(
+      /Cannot reach the API on port 3001/,
+    );
+  });
+});
+
+describe("submitKiteAccessToken", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("surfaces a JSON error body from a rejected token", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        json: async () => ({
+          error:
+            "Kite rejected this access token (incorrect api_key or access_token). Click Login via Zerodha to generate today's token. Do not paste request_token, PIN, or an instrument id.",
+        }),
+      }),
+    );
+
+    await expect(submitKiteAccessToken("742742")).rejects.toThrow(/Login via Zerodha/);
+  });
+
+  it("maps an opaque proxy 500 to a start-the-API message", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => {
+          throw new Error("not json");
+        },
+      }),
+    );
+
+    await expect(submitKiteAccessToken("abc")).rejects.toThrow(
       /Cannot reach the API on port 3001/,
     );
   });

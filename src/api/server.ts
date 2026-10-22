@@ -8,7 +8,9 @@ import {
   getKiteAuthStatus,
   getKiteLoginUrl,
   setManualKiteAccessToken,
+  verifyKiteAccessToken,
 } from "../kite/kiteAuth.js";
+import { httpStatusForKiteFailure } from "../kite/kiteSessionError.js";
 import {
   getSamcoAuthStatus,
   initializeSamcoSession,
@@ -154,7 +156,7 @@ app.get("/api/kite/status", (_req, res) => {
   }
 });
 
-app.post("/api/kite/token", (req, res) => {
+app.post("/api/kite/token", async (req, res) => {
   try {
     const accessToken =
       typeof req.body?.accessToken === "string"
@@ -163,6 +165,7 @@ app.post("/api/kite/token", (req, res) => {
           ? req.body.access_token
           : "";
 
+    await verifyKiteAccessToken(accessToken);
     const status = setManualKiteAccessToken(accessToken);
     cache.clear();
     simulationCache.clear();
@@ -170,7 +173,7 @@ app.post("/api/kite/token", (req, res) => {
     res.json(status);
   } catch (error) {
     const message = formatUnknownError(error);
-    res.status(400).json({ error: message });
+    res.status(httpStatusForKiteFailure(error, "token")).json({ error: message });
   }
 });
 
@@ -759,7 +762,7 @@ app.get("/api/dashboard", async (req, res) => {
     res.json(payload);
   } catch (error) {
     const message = formatUnknownError(error);
-    res.status(500).json({ error: message });
+    res.status(httpStatusForKiteFailure(error, "data")).json({ error: message });
   }
 });
 
@@ -808,7 +811,7 @@ app.get("/api/dashboard/simulate", async (req, res) => {
     }
   } catch (error) {
     const message = formatUnknownError(error);
-    res.status(500).json({ error: message });
+    res.status(httpStatusForKiteFailure(error, "data")).json({ error: message });
   }
 });
 
@@ -1538,6 +1541,23 @@ app.get("*", (req, res, next) => {
     }
   });
 });
+
+app.use(
+  (
+    error: unknown,
+    _req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    if (res.headersSent) {
+      next(error);
+      return;
+    }
+
+    const message = formatUnknownError(error);
+    res.status(httpStatusForKiteFailure(error, "data")).json({ error: message });
+  },
+);
 
 cache.startAutoRefresh();
 startSamcoTradingPoll();
