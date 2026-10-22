@@ -73,6 +73,7 @@ import { formatUnknownError } from "../utils/formatError.js";
 import { isValidAnalysisDate } from "../utils/marketTime.js";
 import {
   clearKiteReturnToCookie,
+  isAllowedLocalOrigin,
   readKiteReturnToCookie,
   resolveKiteReturnTo,
   setKiteReturnToCookie,
@@ -129,14 +130,13 @@ function disableSocketTimeout(
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (
-      origin == null ||
-      /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)
-    ) {
+    // Never throw here — cors treats Error as HTTP 500, which the UI
+    // surfaces as "Kite status request failed: 500".
+    if (origin == null || isAllowedLocalOrigin(origin)) {
       callback(null, true);
       return;
     }
-    callback(new Error("Not allowed by CORS"));
+    callback(null, false);
   },
 }));
 app.use(express.json({ limit: "2mb" }));
@@ -146,7 +146,12 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.get("/api/kite/status", (_req, res) => {
-  res.json(getKiteAuthStatus());
+  try {
+    res.json(getKiteAuthStatus());
+  } catch (error) {
+    const message = formatUnknownError(error);
+    res.status(500).json({ error: message });
+  }
 });
 
 app.post("/api/kite/token", (req, res) => {

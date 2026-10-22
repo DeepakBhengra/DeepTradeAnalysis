@@ -1,7 +1,8 @@
 import type { Request, Response } from "express";
 import { getKiteAppUrl } from "../config.js";
 
-const LOCALHOST_ORIGIN = /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/;
+const LOCALHOST_ORIGIN =
+  /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/;
 
 export function isAllowedLocalOrigin(value: string): boolean {
   return LOCALHOST_ORIGIN.test(value);

@@ -35,7 +35,16 @@ export async function fetchKiteStatus(): Promise<KiteAuthStatus> {
   }
 
   if (!response.ok) {
-    throw new Error(`Kite status request failed: ${response.status}`);
+    throw new Error(
+      await readKiteError(
+        response,
+        response.status === 500 ||
+          response.status === 502 ||
+          response.status === 503
+          ? "Cannot reach the API on port 3001. Start both servers with: npm run dev:dashboard"
+          : `Kite status request failed: ${response.status}`,
+      ),
+    );
   }
 
   return response.json() as Promise<KiteAuthStatus>;
