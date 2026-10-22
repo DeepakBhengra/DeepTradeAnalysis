@@ -46,33 +46,52 @@ function wrapKiteError(error: unknown): Error {
   return new Error(String(error));
 }
 
-export async function fetchPnbQuote(symbol: string): Promise<KiteQuote | null> {
+function toKiteQuote(quote: {
+  last_price: number;
+  buy_quantity: number;
+  sell_quantity: number;
+  depth?: {
+    buy?: Array<{ price: number; orders: number; quantity: number }>;
+    sell?: Array<{ price: number; orders: number; quantity: number }>;
+  };
+}): KiteQuote {
+  return {
+    lastPrice: quote.last_price,
+    buyQuantity: quote.buy_quantity,
+    sellQuantity: quote.sell_quantity,
+    bids: (quote.depth?.buy ?? []).map((level) => ({
+      price: level.price,
+      orders: level.orders,
+      quantity: level.quantity,
+    })),
+    asks: (quote.depth?.sell ?? []).map((level) => ({
+      price: level.price,
+      orders: level.orders,
+      quantity: level.quantity,
+    })),
+  };
+}
+
+export async function fetchKiteQuotes(
+  symbols: string[],
+): Promise<Record<string, KiteQuote>> {
   const kite = createKiteClient();
-
   try {
-    const quotes = await kite.getQuote(symbol);
-    const quote = quotes[symbol];
-
-    if (!quote) {
-      return null;
+    const quotes = await kite.getQuote(symbols);
+    const mapped: Record<string, KiteQuote> = {};
+    for (const symbol of symbols) {
+      const quote = quotes[symbol];
+      if (quote) {
+        mapped[symbol] = toKiteQuote(quote);
+      }
     }
-
-    return {
-      lastPrice: quote.last_price,
-      buyQuantity: quote.buy_quantity,
-      sellQuantity: quote.sell_quantity,
-      bids: quote.depth.buy.map((level) => ({
-        price: level.price,
-        orders: level.orders,
-        quantity: level.quantity,
-      })),
-      asks: quote.depth.sell.map((level) => ({
-        price: level.price,
-        orders: level.orders,
-        quantity: level.quantity,
-      })),
-    };
+    return mapped;
   } catch (error) {
     throw wrapKiteError(error);
   }
+}
+
+export async function fetchPnbQuote(symbol: string): Promise<KiteQuote | null> {
+  const quotes = await fetchKiteQuotes([symbol]);
+  return quotes[symbol] ?? null;
 }
