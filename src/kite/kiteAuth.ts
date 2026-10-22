@@ -1,6 +1,7 @@
 import { KiteConnect } from "kiteconnect";
 import type { Connect } from "kiteconnect";
 import { assertKiteApiKeys, config, getKiteAppUrl, getKiteRedirectUrl } from "../config.js";
+import { describeKiteSessionError } from "./kiteSessionError.js";
 import {
   getKiteAccessToken,
   hasValidKiteAccessToken,
@@ -85,4 +86,21 @@ export function setManualKiteAccessToken(accessToken: string): KiteAuthStatus {
   const normalized = normalizeAndValidateKiteAccessToken(accessToken);
   persistKiteAccessTokenToEnv(normalized);
   return getKiteAuthStatus();
+}
+
+export async function verifyKiteAccessToken(accessToken: string): Promise<void> {
+  const normalized = normalizeAndValidateKiteAccessToken(accessToken);
+  assertKiteApiKeys();
+
+  const kite = new KiteConnect({
+    api_key: config.kite.apiKey,
+    timeout: config.kite.requestTimeoutMs,
+  });
+  kite.setAccessToken(normalized);
+
+  try {
+    await kite.getProfile();
+  } catch (error) {
+    throw new Error(describeKiteSessionError(error));
+  }
 }

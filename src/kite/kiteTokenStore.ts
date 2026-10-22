@@ -55,7 +55,7 @@ export function persistKiteAccessTokenToEnv(token: string): void {
   const pattern = /^KITE_ACCESS_TOKEN=.*$/m;
 
   if (pattern.test(content)) {
-    writeFileSync(envPath, content.replace(pattern, line), "utf8");
+    writeFileSync(envPath, content.replace(pattern, () => line), "utf8");
     return;
   }
 
