@@ -5,6 +5,7 @@ import type {
   OrderBookSnapshot,
 } from "../types/orderBook";
 import { IST_TIMEZONE, todayIstDateKey } from "./istTime";
+import { maxQuantityBid, maxQuantityOffer } from "./orderBookGraph";
 
 export const ORDER_BOOK_RECORD_DEPTH_LEVELS = 5;
 
@@ -120,6 +121,10 @@ function recordingHeaders(): string[] {
     "Total Bid Qty",
     "Total Offer Orders",
     "Total Offer Qty",
+    "Max BID",
+    "Max BID Qty",
+    "Max OFFER",
+    "Max OFFER Qty",
   );
   return headers;
 }
@@ -148,11 +153,17 @@ function sampleCells(sample: OrderBookRecordingSample): string[] {
       xmlNumberCell(offer?.quantity ?? null),
     );
   }
+  const maxBid = maxQuantityBid(snapshot);
+  const maxOffer = maxQuantityOffer(snapshot);
   cells.push(
     xmlNumberCell(snapshot.bidOrders),
     xmlNumberCell(snapshot.buyQuantity),
     xmlNumberCell(snapshot.offerOrders),
     xmlNumberCell(snapshot.sellQuantity),
+    xmlNumberCell(maxBid?.price ?? null),
+    xmlNumberCell(maxBid?.quantity ?? null),
+    xmlNumberCell(maxOffer?.price ?? null),
+    xmlNumberCell(maxOffer?.quantity ?? null),
   );
   return cells;
 }
@@ -184,6 +195,31 @@ function kiteViewDepthRows(snapshot: OrderBookSnapshot): string[] {
     ]),
   );
   return rows;
+}
+
+function graphHeaders(): string[] {
+  return [
+    "Recorded at IST",
+    "Stock price",
+    "Max BID",
+    "Max BID Qty",
+    "Max OFFER",
+    "Max OFFER Qty",
+  ];
+}
+
+function graphSampleCells(sample: OrderBookRecordingSample): string[] {
+  const { snapshot } = sample;
+  const maxBid = maxQuantityBid(snapshot);
+  const maxOffer = maxQuantityOffer(snapshot);
+  return [
+    xmlStringCell(sample.recordedAtIst),
+    xmlNumberCell(snapshot.lastPrice),
+    xmlNumberCell(maxBid?.price ?? null),
+    xmlNumberCell(maxBid?.quantity ?? null),
+    xmlNumberCell(maxOffer?.price ?? null),
+    xmlNumberCell(maxOffer?.quantity ?? null),
+  ];
 }
 
 function kiteViewSampleRows(sample: OrderBookRecordingSample): string[] {
@@ -222,6 +258,10 @@ export function buildOrderBookRecordingWorkbookXml(
     ...samples.map((sample) => xmlRow(sampleCells(sample))),
   ];
   const kiteViewRows = samples.flatMap(kiteViewSampleRows);
+  const graphRows = [
+    xmlRow(graphHeaders().map(xmlStringCell)),
+    ...samples.map((sample) => xmlRow(graphSampleCells(sample))),
+  ];
   return `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -231,6 +271,7 @@ export function buildOrderBookRecordingWorkbookXml(
  xmlns:html="http://www.w3.org/TR/REC-html40">
 ${worksheet("Changes", changeRows)}
 ${worksheet("Kite view", kiteViewRows)}
+${worksheet("Graph", graphRows)}
 </Workbook>
 `;
 }

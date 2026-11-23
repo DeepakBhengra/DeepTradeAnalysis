@@ -6,6 +6,7 @@ import {
   type OrderBookSideRow,
   type OrderBookSnapshot,
 } from "../types/orderBook";
+import { OrderBookRecordingChart } from "./OrderBookRecordingChart";
 
 interface OrderBookCardProps {
   symbol: string | null;
@@ -201,6 +202,10 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
           Live bid / offer is available when Kite is connected.
         </p>
       )}
+
+      {recorder.samples.length > 0 ? (
+        <OrderBookRecordingChart samples={recorder.samples} />
+      ) : null}
     </section>
   );
 }

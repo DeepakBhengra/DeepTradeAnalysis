@@ -12,6 +12,12 @@ vi.mock("../hooks/useLiveOrderBook", () => ({
   }),
 }));
 
+vi.mock("./OrderBookRecordingChart", () => ({
+  OrderBookRecordingChart: ({ samples }: { samples: unknown[] }) => (
+    <div data-testid="order-book-graph">{samples.length} graph points</div>
+  ),
+}));
+
 const start = vi.fn();
 const stop = vi.fn();
 const download = vi.fn();
@@ -102,5 +108,6 @@ describe("OrderBookCard recording controls", () => {
     expect(screen.getByRole("button", { name: "Stop recording" })).toBeEnabled();
     expect(screen.getByRole("button", { name: "Start recording" })).toBeDisabled();
     expect(screen.getByText(/Recording/)).toBeInTheDocument();
+    expect(screen.getByTestId("order-book-graph")).toHaveTextContent("1 graph points");
   });
 });

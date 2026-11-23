@@ -75,7 +75,10 @@ describe("orderBookRecording", () => {
     expect(xml).toContain("Excel.Sheet");
     expect(xml).toContain("ss:Name=\"Changes\"");
     expect(xml).toContain("ss:Name=\"Kite view\"");
+    expect(xml).toContain("ss:Name=\"Graph\"");
     expect(xml).toContain("Stock price");
+    expect(xml).toContain("Max BID");
+    expect(xml).toContain("Max OFFER Qty");
     expect(xml).toContain("BID 1");
     expect(xml).toContain("OFFER 5 Qty");
     expect(xml).toContain("Total Bid Qty");
@@ -84,6 +87,8 @@ describe("orderBookRecording", () => {
     expect(xml).toContain("150.44");
     expect(xml).toContain("1773231");
     expect(xml).toContain("1773500");
+    expect(xml).toContain("12231");
+    expect(xml).toContain("850");
     expect(xml).toContain(">BID</Data>");
     expect(xml).toContain(">OFFER</Data>");
     expect(xml).toContain("5m");
