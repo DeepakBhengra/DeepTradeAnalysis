@@ -4,40 +4,80 @@ import type {
   OrderBookSnapshot,
 } from "../types/orderBook";
 
+export const ORDER_BOOK_DISPLAY_LEVELS = 5;
+
+export interface HighestQuantityLevel extends OrderBookSideRow {
+  /** 1-based index among the 5 displayed bid or offer rows. */
+  level: number;
+}
+
 export interface OrderBookGraphPoint {
   time: number;
   recordedAtIst: string;
   stockPrice: number;
-  maxBid: OrderBookSideRow | null;
-  maxOffer: OrderBookSideRow | null;
+  highestBidQty: HighestQuantityLevel | null;
+  highestOfferQty: HighestQuantityLevel | null;
 }
 
-/** Level with the largest quantity among the 5-level side; ties keep the nearer (first) price. */
-export function maxQuantityLevel(
-  levels: OrderBookSideRow[] | undefined,
-): OrderBookSideRow | null {
-  if (!levels || levels.length === 0) {
-    return null;
+function numericQty(value: unknown): number {
+  const qty = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(qty) ? qty : 0;
+}
+
+function displayedSideLevels(
+  snapshot: OrderBookSnapshot,
+  side: "bid" | "offer",
+): Array<{ row: OrderBookSideRow; level: number }> {
+  if (snapshot.rows.length > 0) {
+    return snapshot.rows.slice(0, ORDER_BOOK_DISPLAY_LEVELS).flatMap((paired, index) => {
+      const row = paired[side];
+      return row ? [{ row, level: index + 1 }] : [];
+    });
   }
 
-  let best: OrderBookSideRow | null = null;
-  for (const row of levels) {
-    if (!Number.isFinite(row.quantity) || row.quantity <= 0) {
+  const source = (side === "bid" ? snapshot.bids : snapshot.offers).slice(
+    0,
+    ORDER_BOOK_DISPLAY_LEVELS,
+  );
+  return source.map((row, index) => ({ row, level: index + 1 }));
+}
+
+/**
+ * Among the 5 bid (or offer) rows on screen at this instant, the row with the
+ * largest quantity — not the best price, and not a running max over time.
+ */
+export function highestQuantityAmongFive(
+  snapshot: OrderBookSnapshot,
+  side: "bid" | "offer",
+): HighestQuantityLevel | null {
+  let best: HighestQuantityLevel | null = null;
+  for (const { row, level } of displayedSideLevels(snapshot, side)) {
+    const quantity = numericQty(row.quantity);
+    if (quantity <= 0) {
       continue;
     }
-    if (!best || row.quantity > best.quantity) {
-      best = row;
+    if (!best || quantity > best.quantity) {
+      best = {
+        price: Number(row.price),
+        orders: numericQty(row.orders),
+        quantity,
+        level,
+      };
     }
   }
   return best;
 }
 
-export function maxQuantityBid(snapshot: OrderBookSnapshot): OrderBookSideRow | null {
-  return maxQuantityLevel(snapshot.bids);
+export function highestQuantityBid(
+  snapshot: OrderBookSnapshot,
+): HighestQuantityLevel | null {
+  return highestQuantityAmongFive(snapshot, "bid");
 }
 
-export function maxQuantityOffer(snapshot: OrderBookSnapshot): OrderBookSideRow | null {
-  return maxQuantityLevel(snapshot.offers);
+export function highestQuantityOffer(
+  snapshot: OrderBookSnapshot,
+): HighestQuantityLevel | null {
+  return highestQuantityAmongFive(snapshot, "offer");
 }
 
 function unixSeconds(iso: string): number {
@@ -48,7 +88,7 @@ function unixSeconds(iso: string): number {
   return Math.floor(ms / 1000);
 }
 
-/** One graph point per recorded snapshot: stock price vs time, plus max-qty bid/offer. */
+/** One graph point per snapshot: stock price vs time, plus highest-qty of 5 bids/offers. */
 export function buildOrderBookGraphPoints(
   samples: OrderBookRecordingSample[],
 ): OrderBookGraphPoint[] {
@@ -74,8 +114,8 @@ export function buildOrderBookGraphPoints(
       time,
       recordedAtIst: sample.recordedAtIst,
       stockPrice: snapshot.lastPrice,
-      maxBid: maxQuantityBid(snapshot),
-      maxOffer: maxQuantityOffer(snapshot),
+      highestBidQty: highestQuantityBid(snapshot),
+      highestOfferQty: highestQuantityOffer(snapshot),
     });
   }
 

@@ -85,13 +85,13 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
     const bidSeries = chart.addLineSeries({
       color: "#4CAF50",
       lineWidth: 1,
-      title: "Max-qty BID",
+      title: "Highest qty of 5 BIDs",
       priceLineVisible: false,
     });
     const offerSeries = chart.addLineSeries({
       color: "#DF514C",
       lineWidth: 1,
-      title: "Max-qty OFFER",
+      title: "Highest qty of 5 OFFERs",
       priceLineVisible: false,
     });
 
@@ -104,27 +104,27 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
     for (const point of points) {
       const time = point.time as UTCTimestamp;
       stock.push({ time, value: point.stockPrice });
-      if (point.maxBid) {
-        bids.push({ time, value: point.maxBid.price });
+      if (point.highestBidQty) {
+        bids.push({ time, value: point.highestBidQty.price });
         bidMarkers.push({
           time,
           position: "inBar",
           shape: "circle",
           color: "#4CAF50",
           text: annotateMarkers
-            ? `${point.maxBid.price.toFixed(2)} × ${formatQty(point.maxBid.quantity)}`
+            ? `L${point.highestBidQty.level} ${point.highestBidQty.price.toFixed(2)} × ${formatQty(point.highestBidQty.quantity)}`
             : undefined,
         });
       }
-      if (point.maxOffer) {
-        offers.push({ time, value: point.maxOffer.price });
+      if (point.highestOfferQty) {
+        offers.push({ time, value: point.highestOfferQty.price });
         offerMarkers.push({
           time,
           position: "inBar",
           shape: "circle",
           color: "#DF514C",
           text: annotateMarkers
-            ? `${point.maxOffer.price.toFixed(2)} × ${formatQty(point.maxOffer.quantity)}`
+            ? `L${point.highestOfferQty.level} ${point.highestOfferQty.price.toFixed(2)} × ${formatQty(point.highestOfferQty.quantity)}`
             : undefined,
         });
       }
@@ -153,17 +153,17 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
         return;
       }
 
-      const bid = point.maxBid
-        ? `${point.maxBid.price.toFixed(2)} × ${formatQty(point.maxBid.quantity)}`
+      const bid = point.highestBidQty
+        ? `L${point.highestBidQty.level} ${point.highestBidQty.price.toFixed(2)} × ${formatQty(point.highestBidQty.quantity)}`
         : "—";
-      const offer = point.maxOffer
-        ? `${point.maxOffer.price.toFixed(2)} × ${formatQty(point.maxOffer.quantity)}`
+      const offer = point.highestOfferQty
+        ? `L${point.highestOfferQty.level} ${point.highestOfferQty.price.toFixed(2)} × ${formatQty(point.highestOfferQty.quantity)}`
         : "—";
       tooltip.innerHTML = `
         <div class="text-kite-muted">${point.recordedAtIst}</div>
         <div>Stock <span class="font-medium text-kite-blue">${point.stockPrice.toFixed(2)}</span></div>
-        <div>Max BID <span class="font-medium text-kite-green">${bid}</span></div>
-        <div>Max OFFER <span class="font-medium text-kite-red">${offer}</span></div>
+        <div>Highest of 5 BIDs <span class="font-medium text-kite-green">${bid}</span></div>
+        <div>Highest of 5 OFFERs <span class="font-medium text-kite-red">${offer}</span></div>
       `;
       tooltip.style.display = "block";
 
@@ -201,7 +201,7 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
   return (
     <div className="mt-3 border-t border-kite-border/60 pt-3">
       <p className="m-0 mb-1 text-[10px] uppercase tracking-wide text-kite-muted">
-        Stock price vs time · max-qty bid / offer
+        Stock price vs time · highest qty of 5 bids / offers
       </p>
       <div className="relative min-h-[220px] w-full">
         <div ref={containerRef} className="h-[260px] w-full" />
@@ -216,15 +216,15 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
           {latest ? latest.stockPrice.toFixed(2) : "—"}
         </li>
         <li>
-          <span className="text-kite-green">Max BID</span>{" "}
-          {latest?.maxBid
-            ? `${latest.maxBid.price.toFixed(2)} × ${formatQty(latest.maxBid.quantity)}`
+          <span className="text-kite-green">Highest of 5 BIDs</span>{" "}
+          {latest?.highestBidQty
+            ? `L${latest.highestBidQty.level} ${latest.highestBidQty.price.toFixed(2)} × ${formatQty(latest.highestBidQty.quantity)}`
             : "—"}
         </li>
         <li>
-          <span className="text-kite-red">Max OFFER</span>{" "}
-          {latest?.maxOffer
-            ? `${latest.maxOffer.price.toFixed(2)} × ${formatQty(latest.maxOffer.quantity)}`
+          <span className="text-kite-red">Highest of 5 OFFERs</span>{" "}
+          {latest?.highestOfferQty
+            ? `L${latest.highestOfferQty.level} ${latest.highestOfferQty.price.toFixed(2)} × ${formatQty(latest.highestOfferQty.quantity)}`
             : "—"}
         </li>
       </ul>

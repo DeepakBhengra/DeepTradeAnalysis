@@ -77,8 +77,11 @@ describe("orderBookRecording", () => {
     expect(xml).toContain("ss:Name=\"Kite view\"");
     expect(xml).toContain("ss:Name=\"Graph\"");
     expect(xml).toContain("Stock price");
-    expect(xml).toContain("Max BID");
-    expect(xml).toContain("Max OFFER Qty");
+    expect(xml).toContain("Highest BID qty price");
+    expect(xml).toContain("Highest BID qty");
+    expect(xml).toContain("Highest BID level");
+    expect(xml).toContain("Highest OFFER qty price");
+    expect(xml).toContain("Highest qty BID");
     expect(xml).toContain("BID 1");
     expect(xml).toContain("OFFER 5 Qty");
     expect(xml).toContain("Total Bid Qty");
@@ -95,5 +98,26 @@ describe("orderBookRecording", () => {
     expect(buildOrderBookRecordingFilename([first], new Date("2026-11-23T07:46:00.000Z"))).toBe(
       "order-book_NSE-PNB_5m_2026-11-23.xls",
     );
+  });
+
+  it("writes the fattest of 5 bids, not the best-bid price or its qty", () => {
+    const fatBook: OrderBookSnapshot = {
+      ...snapshot,
+      lastPrice: 150.8,
+      bids: [
+        { price: 150.8, orders: 2, quantity: 500 },
+        { price: 150.75, orders: 4, quantity: 19032 },
+        { price: 150.74, orders: 1, quantity: 2000 },
+        { price: 150.73, orders: 1, quantity: 1000 },
+        { price: 150.72, orders: 1, quantity: 800 },
+      ],
+      rows: [],
+    };
+    const xml = buildOrderBookRecordingWorkbookXml([
+      buildOrderBookRecordingSample(fatBook, "1m", new Date("2026-11-23T08:56:17.000Z")),
+    ]);
+    expect(xml).toContain("150.75");
+    expect(xml).toContain("19032");
+    expect(xml).not.toContain("Max BID Qty");
   });
 });

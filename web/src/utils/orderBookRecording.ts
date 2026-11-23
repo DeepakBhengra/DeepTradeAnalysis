@@ -5,7 +5,7 @@ import type {
   OrderBookSnapshot,
 } from "../types/orderBook";
 import { IST_TIMEZONE, todayIstDateKey } from "./istTime";
-import { maxQuantityBid, maxQuantityOffer } from "./orderBookGraph";
+import { highestQuantityBid, highestQuantityOffer } from "./orderBookGraph";
 
 export const ORDER_BOOK_RECORD_DEPTH_LEVELS = 5;
 
@@ -121,10 +121,12 @@ function recordingHeaders(): string[] {
     "Total Bid Qty",
     "Total Offer Orders",
     "Total Offer Qty",
-    "Max BID",
-    "Max BID Qty",
-    "Max OFFER",
-    "Max OFFER Qty",
+    "Highest BID qty price",
+    "Highest BID qty",
+    "Highest BID level",
+    "Highest OFFER qty price",
+    "Highest OFFER qty",
+    "Highest OFFER level",
   );
   return headers;
 }
@@ -153,17 +155,19 @@ function sampleCells(sample: OrderBookRecordingSample): string[] {
       xmlNumberCell(offer?.quantity ?? null),
     );
   }
-  const maxBid = maxQuantityBid(snapshot);
-  const maxOffer = maxQuantityOffer(snapshot);
+  const highestBid = highestQuantityBid(snapshot);
+  const highestOffer = highestQuantityOffer(snapshot);
   cells.push(
     xmlNumberCell(snapshot.bidOrders),
     xmlNumberCell(snapshot.buyQuantity),
     xmlNumberCell(snapshot.offerOrders),
     xmlNumberCell(snapshot.sellQuantity),
-    xmlNumberCell(maxBid?.price ?? null),
-    xmlNumberCell(maxBid?.quantity ?? null),
-    xmlNumberCell(maxOffer?.price ?? null),
-    xmlNumberCell(maxOffer?.quantity ?? null),
+    xmlNumberCell(highestBid?.price ?? null),
+    xmlNumberCell(highestBid?.quantity ?? null),
+    xmlNumberCell(highestBid?.level ?? null),
+    xmlNumberCell(highestOffer?.price ?? null),
+    xmlNumberCell(highestOffer?.quantity ?? null),
+    xmlNumberCell(highestOffer?.level ?? null),
   );
   return cells;
 }
@@ -201,29 +205,35 @@ function graphHeaders(): string[] {
   return [
     "Recorded at IST",
     "Stock price",
-    "Max BID",
-    "Max BID Qty",
-    "Max OFFER",
-    "Max OFFER Qty",
+    "Highest BID qty price",
+    "Highest BID qty",
+    "Highest BID level",
+    "Highest OFFER qty price",
+    "Highest OFFER qty",
+    "Highest OFFER level",
   ];
 }
 
 function graphSampleCells(sample: OrderBookRecordingSample): string[] {
   const { snapshot } = sample;
-  const maxBid = maxQuantityBid(snapshot);
-  const maxOffer = maxQuantityOffer(snapshot);
+  const highestBid = highestQuantityBid(snapshot);
+  const highestOffer = highestQuantityOffer(snapshot);
   return [
     xmlStringCell(sample.recordedAtIst),
     xmlNumberCell(snapshot.lastPrice),
-    xmlNumberCell(maxBid?.price ?? null),
-    xmlNumberCell(maxBid?.quantity ?? null),
-    xmlNumberCell(maxOffer?.price ?? null),
-    xmlNumberCell(maxOffer?.quantity ?? null),
+    xmlNumberCell(highestBid?.price ?? null),
+    xmlNumberCell(highestBid?.quantity ?? null),
+    xmlNumberCell(highestBid?.level ?? null),
+    xmlNumberCell(highestOffer?.price ?? null),
+    xmlNumberCell(highestOffer?.quantity ?? null),
+    xmlNumberCell(highestOffer?.level ?? null),
   ];
 }
 
 function kiteViewSampleRows(sample: OrderBookRecordingSample): string[] {
   const { snapshot } = sample;
+  const highestBid = highestQuantityBid(snapshot);
+  const highestOffer = highestQuantityOffer(snapshot);
   return [
     xmlRow([
       xmlStringCell("Recorded at IST"),
@@ -237,6 +247,14 @@ function kiteViewSampleRows(sample: OrderBookRecordingSample): string[] {
       ["BID", "ORDERS", "QTY", "OFFER", "ORDERS", "QTY"].map(xmlStringCell),
     ),
     ...kiteViewDepthRows(snapshot),
+    xmlRow([
+      xmlStringCell("Highest qty BID"),
+      xmlNumberCell(highestBid?.price ?? null),
+      xmlNumberCell(highestBid?.quantity ?? null),
+      xmlStringCell("Highest qty OFFER"),
+      xmlNumberCell(highestOffer?.price ?? null),
+      xmlNumberCell(highestOffer?.quantity ?? null),
+    ]),
     xmlRow([xmlStringCell("")]),
   ];
 }
