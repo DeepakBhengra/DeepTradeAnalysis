@@ -2,6 +2,8 @@
 
 PNB NSE 15-minute signal engine using Bollinger Bands, RSI, MACD, and Stochastic Momentum. This document describes the **Deepak decision rules** (BB/RSI scenario trail), the **Deeppro** Stch Mtm exhaustion rules, **RulePNB** / **RuleSUNPHARMA**, and per-symbol favourable rules (**RuleLTM**, **RuleICICIGI**, **RuleTECHM**, **RuleTVSMOTOR**, **RulePOLICYBZR**) — how buy/sell signals are generated, how entries and exits are priced, and which quality gates apply on Day Scan / Post-Mortem.
 
+To run the **Trading Tools** dashboard in Visual Studio Code, see [Run in VS Code](#run-in-vs-code).
+
 Implementation (Deepak): `src/rules/deepakDecision.ts`, `src/rules/deepakCore.ts`, `src/rules/deepakTarget.ts`, `src/rules/bollingerUtils.ts`.
 
 Implementation (Deeppro): `src/rules/deepproDecision.ts`, `src/indicators/stochasticMomentum.ts`, `config.deeppro` in `src/config.ts`.
@@ -12,6 +14,117 @@ Implementation (RuleSUNPHARMA): `src/rules/ruleSunpharmaDecision.ts`, `config.ru
 
 Implementation (per-symbol favourable rules): `src/rules/favourableSymbolRule.ts`, `config.favourableSymbolRules` in `src/config.ts`.
 
+---
+
+## Run in VS Code
+
+These steps start the dashboard from Visual Studio Code: API on port **3001**, UI on port **5176**.
+
+### 1. Install prerequisites
+
+1. Install [Visual Studio Code](https://code.visualstudio.com/).
+2. Install [Node.js](https://nodejs.org/) **20 or later** (LTS). In a terminal, confirm with `node -v` and `npm -v`.
+3. Install [Git](https://git-scm.com/) if it is not already installed.
+
+### 2. Open this repository
+
+1. In VS Code choose **File → Open Folder…** and select the `DeepTradeAnalysis` folder — the one that contains `package.json` and `.env.example` (not a parent directory).
+2. If you do not have the code yet: **View → Command Palette** (`Ctrl+Shift+P` on Windows/Linux, `Cmd+Shift+P` on macOS) → **Git: Clone** → `https://github.com/DeepakBhengra/DeepTradeAnalysis.git` → then **Open Folder** on the clone.
+
+### 3. Install dependencies
+
+Open the VS Code terminal: **Terminal → New Terminal**. Run from the repo root:
+
+```bash
+npm install
+npm install --prefix web
+```
+
+The UI lives in `web/` with its own `package.json`, so both installs are required.
+
+### 4. Create `.env`
+
+```bash
+cp .env.example .env
+```
+
+Windows PowerShell: `Copy-Item .env.example .env`
+
+Edit `.env` and set at least:
+
+- `KITE_API_KEY`
+- `KITE_API_SECRET`
+
+Leave `KITE_ACCESS_TOKEN` as the placeholder until [step 7](#7-connect-kite-daily-access-token). Keep these URLs unchanged unless you know you need different ports:
+
+```
+KITE_REDIRECT_URL=http://localhost:3001/api/kite/callback
+KITE_APP_URL=http://localhost:5176
+```
+
+In the [Kite developer console](https://developers.kite.trade/), the app **redirect URL** must be exactly `http://localhost:3001/api/kite/callback`.
+
+Samco keys are optional until you use **Samco Trading**. Keep `SAMCO_DRY_RUN=true` unless you intend to place live orders.
+
+### 5. Start the dashboard
+
+In the same VS Code terminal, from the repo root:
+
+```bash
+npm run dev:dashboard
+```
+
+Wait until the terminal shows the API on `http://localhost:3001` and Vite on `http://localhost:5176`. Leave that terminal running.
+
+If ports **3001** or **5176** are already in use:
+
+```bash
+npm run dev:dashboard:clean
+```
+
+To run API and UI in **two** VS Code terminals instead:
+
+| Terminal | Command | Port |
+|----------|---------|------|
+| 1 | `npm run dev:api` | 3001 |
+| 2 | `npm run dev:web` | 5176 |
+
+### 6. Open the UI
+
+In Chrome or Edge go to [http://localhost:5176](http://localhost:5176).
+
+Or in VS Code: Command Palette → **Simple Browser: Show** → `http://localhost:5176`.
+
+### 7. Connect Kite (daily access token)
+
+Zerodha mints a new `access_token` each trading day (it expires around **6 AM IST** the next day). Do **not** paste `request_token`, PIN, or an instrument id into **Enter Kite token**.
+
+1. In the dashboard click **Login via Zerodha** (or **Reconnect via Zerodha**).
+2. Complete Kite login in the browser.
+3. You should return to the dashboard with a connected session. The app writes `KITE_ACCESS_TOKEN` into `.env`.
+
+### 8. Smoke-check
+
+- Kite shows as connected (not a 500).
+- **Stock 15m Dashboard**: load a symbol such as `PNB` or `RELIANCE`.
+- **Deepak Day Scan**: pick today’s date and run a scan after Kite is connected.
+
+### Troubleshooting
+
+| Symptom | What to do |
+|---------|------------|
+| `Saving Kite access token failed: 500` or `Dashboard request failed: 500` | The API on port 3001 is not running. Use `npm run dev:dashboard` so **both** processes start. |
+| `Cannot reach the API on port 3001` | Same as above, or another process holds 3001. Run `npm run dev:dashboard:clean`. |
+| Kite rejected the access token | Use **Login via Zerodha**. Confirm `KITE_API_KEY` / `KITE_API_SECRET` belong to the Kite app whose redirect URL is `http://localhost:3001/api/kite/callback`. |
+| `Port 3001 is already in use` | Stop the old API, or run `npm run dev:dashboard:clean`. |
+| Vite starts but the UI never loads data | The terminal must show **both** the API and the web process. The UI on 5176 proxies `/api` to 3001. |
+
+### Optional: tests
+
+```bash
+npm test
+npm test --prefix web
+```
 
 ---
 

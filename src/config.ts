@@ -1070,7 +1070,7 @@ export function getKiteRedirectUrl(): string {
 }
 
 export function getKiteAppUrl(): string {
-  return config.kite.appUrl || "http://localhost:5173";
+  return config.kite.appUrl || "http://localhost:5176";
 }
 
 export function assertKiteApiKeys(): void {

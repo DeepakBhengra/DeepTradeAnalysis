@@ -45,7 +45,7 @@ Not a formal npm workspaces monorepo: a **root Node backend** plus a nested **`w
 | Script | Role |
 |--------|------|
 | `npm run dev:api` | API on port **3001** (`tsx src/api/server.ts`) |
-| `npm run dev:web` | Vite UI on port **5173** |
+| `npm run dev:web` | Vite UI on port **5176** |
 | `npm run dev:dashboard` | API + web together |
 | `npm run dev` | CLI poll loop (`src/main.ts`) |
 | `npm test` | Backend Vitest |
@@ -82,7 +82,7 @@ Not a formal npm workspaces monorepo: a **root Node backend** plus a nested **`w
 | `src/context/` | e.g. `DayScanSimulationContext` (shared sim state) |
 | `src/api/` | `client.ts` (dashboard/day-scan), `samco.ts` |
 | `src/utils/` | Formatting, filters, paper/day-order engines, IST helpers |
-| `vite.config.ts` | Port **5173**, proxy `/api` → `localhost:3001` |
+| `vite.config.ts` | Port **5176**, proxy `/api` → `localhost:3001` |
 
 ---
 
@@ -99,7 +99,7 @@ Not a formal npm workspaces monorepo: a **root Node backend** plus a nested **`w
 ### Dev networking
 
 ```
-Browser (http://localhost:5173)
+Browser (http://localhost:5176)
     │  fetch("/api/...")
     ▼
 Vite proxy  ──►  Express API (http://localhost:3001)
@@ -269,7 +269,7 @@ Copy `.env.example` → `.env` and fill credentials.
 | Variable | Default / notes |
 |----------|-----------------|
 | `KITE_REDIRECT_URL` | `http://localhost:3001/api/kite/callback` — must match Kite Developer Console |
-| `KITE_APP_URL` | `http://localhost:5173` — browser return after login |
+| `KITE_APP_URL` | `http://localhost:5176` — browser return after login |
 | `KITE_API_BASE_URL` | Optional; defaults to `http://localhost:${PORT}` |
 | `KITE_INSTRUMENT_TOKEN` | Optional; skips instrument lookup |
 
@@ -390,7 +390,7 @@ Created at runtime (typically gitignored):
 ```
                  ┌──────────────────────┐
                  │   React dashboard    │
-                 │   (Vite :5173)       │
+                 │   (Vite :5176)       │
                  └──────────┬───────────┘
                             │ /api/*
                             ▼
@@ -410,7 +410,7 @@ Created at runtime (typically gitignored):
 ### Local development checklist
 
 1. Copy `.env.example` → `.env`; set **Kite** keys + access token (and **Samco** keys if testing execution).  
-2. `npm run dev:dashboard` — UI `http://localhost:5173`, API `http://localhost:3001`.  
+2. `npm run dev:dashboard` — UI `http://localhost:5176`, API `http://localhost:3001`.  
 3. Connect Kite via UI if token missing.  
 4. Run **Deepak Day Scan** for a date → signals appear; with a Samco-compatible variant they push to **Samco Trading**.  
 5. Keep `SAMCO_DRY_RUN=true` until you intentionally enable live trading.
