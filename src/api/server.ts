@@ -72,6 +72,7 @@ import {
   resolveDashboardSymbol,
 } from "../config.js";
 import { formatUnknownError } from "../utils/formatError.js";
+import { buildLiveOrderBook } from "./buildLiveOrderBook.js";
 import { isValidAnalysisDate } from "../utils/marketTime.js";
 import {
   clearKiteReturnToCookie,
@@ -735,6 +736,24 @@ app.post("/api/samco/live-trading", (req, res) => {
   } catch (error) {
     const message = formatUnknownError(error);
     res.status(500).json({ error: message });
+  }
+});
+
+app.get("/api/quote", async (req, res) => {
+  try {
+    const symbolParam =
+      typeof req.query.symbol === "string" ? req.query.symbol : undefined;
+    const snapshot = await buildLiveOrderBook(symbolParam);
+    res.json(snapshot);
+  } catch (error) {
+    const message = formatUnknownError(error);
+    const invalidSymbol =
+      /enter a valid nse symbol|invalid symbol|index symbols/i.test(message);
+    if (invalidSymbol) {
+      res.status(400).json({ error: message });
+      return;
+    }
+    res.status(httpStatusForKiteFailure(error, "data")).json({ error: message });
   }
 });
 

@@ -36,6 +36,8 @@ interface DashboardContentProps {
   showDatePicker?: boolean;
   showRefresh?: boolean;
   modeOverride?: string;
+  liveQuoteSymbol?: string | null;
+  liveQuoteEnabled?: boolean;
 }
 
 export function DashboardContent({
@@ -49,6 +51,8 @@ export function DashboardContent({
   showDatePicker = true,
   showRefresh = true,
   modeOverride,
+  liveQuoteSymbol = null,
+  liveQuoteEnabled = true,
 }: DashboardContentProps) {
   const effectiveMode =
     data?.mode === "simulation" || analysisDate ? "historical" : "live";
@@ -180,7 +184,10 @@ export function DashboardContent({
             <MacdPanel series={data.series} />
             <VolumePanel series={data.series} />
 
-            <OrderBookCard depth={data.depth} mode={effectiveMode} />
+            <OrderBookCard
+              symbol={liveQuoteSymbol ?? data.symbol}
+              enabled={liveQuoteEnabled}
+            />
 
             <ReasonsList reasons={data.reasons} />
           </div>

@@ -1,4 +1,5 @@
 import type { Decision, DashboardPayload } from "../types/dashboard";
+import type { OrderBookSnapshot } from "../types/orderBook";
 
 export type { Decision, DashboardPayload };
 
@@ -91,6 +92,19 @@ async function fetchJsonWithTimeout<T>(
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export async function fetchLiveOrderBook(
+  symbol: string,
+): Promise<OrderBookSnapshot> {
+  const params = new URLSearchParams({ symbol });
+  const response = await fetch(`/api/quote?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error(
+      await errorMessageFromResponse(response, "Order book request failed"),
+    );
+  }
+  return response.json() as Promise<OrderBookSnapshot>;
 }
 
 export async function fetchDashboard(

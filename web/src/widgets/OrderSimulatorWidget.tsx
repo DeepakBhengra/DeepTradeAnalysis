@@ -97,6 +97,8 @@ export function OrderSimulatorWidget({ isActive }: OrderSimulatorWidgetProps) {
             showDatePicker={false}
             showRefresh={false}
             modeOverride={modeOverride}
+            liveQuoteSymbol={activeSymbol}
+            liveQuoteEnabled={isActive}
             headerExtra={
               <SimulationControls
                 status={status}

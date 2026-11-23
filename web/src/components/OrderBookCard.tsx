@@ -1,142 +1,131 @@
-import type { DepthSnapshot } from "../types/dashboard";
+import { useLiveOrderBook } from "../hooks/useLiveOrderBook";
+import type { OrderBookSideRow, OrderBookSnapshot } from "../types/orderBook";
 
 interface OrderBookCardProps {
-  depth: DepthSnapshot | null;
-  mode: "live" | "historical";
+  symbol: string | null;
+  enabled?: boolean;
 }
 
 function formatIndianQty(value: number): string {
   return value.toLocaleString("en-IN");
 }
 
-function DepthRow({
-  price,
-  orders,
-  quantity,
-  maxQty,
-  side,
+function SideCells({
+  row,
+  qtyClass,
 }: {
-  price: number;
-  orders: number;
-  quantity: number;
-  maxQty: number;
-  side: "bid" | "ask";
+  row: OrderBookSideRow | null;
+  qtyClass: string;
 }) {
-  const widthPct = maxQty > 0 ? (quantity / maxQty) * 100 : 0;
-  const barColor = side === "bid" ? "bg-kite-green/15" : "bg-kite-red/15";
+  if (!row) {
+    return (
+      <>
+        <td className="px-2 py-0.5 text-kite-muted">—</td>
+        <td className="px-2 py-0.5 text-right text-kite-muted">—</td>
+        <td className="px-2 py-0.5 text-right text-kite-muted">—</td>
+      </>
+    );
+  }
 
   return (
-    <div className="relative grid grid-cols-[1fr_auto_auto] items-center gap-2 px-2 py-0.5 text-xs tabular-nums">
-      <div
-        className={`absolute inset-y-0 ${side === "bid" ? "left-0" : "right-0"} ${barColor}`}
-        style={{ width: `${widthPct}%` }}
-      />
-      <span className="relative z-10 font-medium text-kite-text">{price.toFixed(2)}</span>
-      <span className="relative z-10 text-kite-muted">{orders}</span>
-      <span className="relative z-10 text-right text-kite-text">
-        {formatIndianQty(quantity)}
-      </span>
+    <>
+      <td className="px-2 py-0.5 font-medium text-kite-text">{row.price.toFixed(2)}</td>
+      <td className="px-2 py-0.5 text-right text-kite-muted">{row.orders}</td>
+      <td className={`px-2 py-0.5 text-right font-medium ${qtyClass}`}>
+        {formatIndianQty(row.quantity)}
+      </td>
+    </>
+  );
+}
+
+export function OrderBookTable({ snapshot }: { snapshot: OrderBookSnapshot }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full min-w-[28rem] border-collapse text-xs tabular-nums">
+        <thead>
+          <tr className="text-[10px] uppercase tracking-wide text-kite-muted">
+            <th className="px-2 py-1 text-left font-medium text-kite-green">Bid</th>
+            <th className="px-2 py-1 text-right font-medium">Orders</th>
+            <th className="px-2 py-1 text-right font-medium">Qty</th>
+            <th className="px-2 py-1 text-left font-medium text-kite-red">Offer</th>
+            <th className="px-2 py-1 text-right font-medium">Orders</th>
+            <th className="px-2 py-1 text-right font-medium">Qty</th>
+          </tr>
+        </thead>
+        <tbody>
+          {snapshot.rows.map((row, index) => (
+            <tr key={`depth-${index}`} className="border-t border-kite-border/60">
+              <SideCells row={row.bid} qtyClass="text-kite-green" />
+              <SideCells row={row.offer} qtyClass="text-kite-red" />
+            </tr>
+          ))}
+          <tr className="border-t border-kite-border text-xs font-medium">
+            <td className="px-2 py-1 text-kite-muted">Total</td>
+            <td className="px-2 py-1 text-right text-kite-muted">
+              {formatIndianQty(snapshot.bidOrders)}
+            </td>
+            <td className="px-2 py-1 text-right text-kite-green">
+              {formatIndianQty(snapshot.buyQuantity)}
+            </td>
+            <td className="px-2 py-1 text-kite-muted">Total</td>
+            <td className="px-2 py-1 text-right text-kite-muted">
+              {formatIndianQty(snapshot.offerOrders)}
+            </td>
+            <td className="px-2 py-1 text-right text-kite-red">
+              {formatIndianQty(snapshot.sellQuantity)}
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   );
 }
 
-export function OrderBookCard({ depth, mode }: OrderBookCardProps) {
-  if (mode === "historical" || !depth) {
-    return (
-      <section className="border border-kite-border bg-kite-surface p-3">
-        <h2 className="m-0 mb-2 text-xs font-medium uppercase tracking-wide text-kite-muted">
-          Order Book
-        </h2>
-        <p className="m-0 text-xs text-kite-muted">
-          Order book depth is available in live mode only.
-        </p>
-      </section>
-    );
-  }
-
-  const maxBidQty = Math.max(...depth.bids.map((level) => level.quantity), 1);
-  const maxAskQty = Math.max(...depth.asks.map((level) => level.quantity), 1);
+export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
+  const { data, loading, error } = useLiveOrderBook(symbol, enabled);
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
         <h2 className="m-0 text-xs font-medium uppercase tracking-wide text-kite-muted">
-          Order Book
+          Live order book
         </h2>
-        <div className="flex flex-wrap gap-3 text-[10px] tabular-nums text-kite-muted">
-          <span>
-            LTP{" "}
-            <span className="font-medium text-kite-text">
-              {depth.lastPrice.toFixed(2)}
+        {data ? (
+          <div className="flex flex-wrap gap-3 text-[10px] tabular-nums text-kite-muted">
+            <span>{data.symbol}</span>
+            <span>
+              LTP{" "}
+              <span className="font-medium text-kite-text">
+                {data.lastPrice.toFixed(2)}
+              </span>
             </span>
-          </span>
-          <span>
-            Spread{" "}
-            <span className="font-medium text-kite-text">
-              {depth.spread.toFixed(2)}
-            </span>
-          </span>
-          <span>
-            Imbalance{" "}
-            <span className="font-medium text-kite-text">
-              {depth.imbalanceRatio.toFixed(2)}
-            </span>
-          </span>
-        </div>
-      </div>
-
-      <div className="mb-2 grid grid-cols-2 gap-px text-[10px] uppercase tracking-wide text-kite-muted">
-        <div className="rounded-sm bg-kite-surface px-2 py-1">
-          Total Bid: {formatIndianQty(depth.buyQuantity)}
-        </div>
-        <div className="rounded-sm bg-kite-surface px-2 py-1 text-right">
-          Total Offer: {formatIndianQty(depth.sellQuantity)}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-px md:grid-cols-2">
-        <div>
-          <p className="m-0 mb-1 px-2 text-[10px] font-medium uppercase tracking-wide text-kite-green">
-            Bids
-          </p>
-          <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-2 pb-1 text-[10px] uppercase tracking-wide text-kite-muted">
-            <span>Price</span>
-            <span>Orders</span>
-            <span className="text-right">Qty</span>
+            <span>5-level Kite depth · 5s refresh</span>
           </div>
-          {depth.bids.map((level) => (
-            <DepthRow
-              key={`bid-${level.price}`}
-              price={level.price}
-              orders={level.orders}
-              quantity={level.quantity}
-              maxQty={maxBidQty}
-              side="bid"
-            />
-          ))}
-        </div>
-
-        <div>
-          <p className="m-0 mb-1 px-2 text-[10px] font-medium uppercase tracking-wide text-kite-red">
-            Offers
-          </p>
-          <div className="grid grid-cols-[1fr_auto_auto] gap-2 px-2 pb-1 text-[10px] uppercase tracking-wide text-kite-muted">
-            <span>Price</span>
-            <span>Orders</span>
-            <span className="text-right">Qty</span>
-          </div>
-          {depth.asks.map((level) => (
-            <DepthRow
-              key={`ask-${level.price}`}
-              price={level.price}
-              orders={level.orders}
-              quantity={level.quantity}
-              maxQty={maxAskQty}
-              side="ask"
-            />
-          ))}
-        </div>
+        ) : null}
       </div>
+
+      {!symbol ? (
+        <p className="m-0 text-xs text-kite-muted">Load a symbol to fetch live bid / offer.</p>
+      ) : loading && !data ? (
+        <p className="m-0 text-xs text-kite-muted">Fetching live bid / offer from Kite…</p>
+      ) : error && !data ? (
+        <p className="m-0 text-xs text-kite-red">{error}</p>
+      ) : data && data.rows.length === 0 ? (
+        <p className="m-0 text-xs text-kite-muted">
+          Kite returned no 5-level depth for {data.symbol}.
+        </p>
+      ) : data ? (
+        <>
+          {error ? (
+            <p className="mb-2 text-xs text-kite-red">{error}</p>
+          ) : null}
+          <OrderBookTable snapshot={data} />
+        </>
+      ) : (
+        <p className="m-0 text-xs text-kite-muted">
+          Live bid / offer is available when Kite is connected.
+        </p>
+      )}
     </section>
   );
 }

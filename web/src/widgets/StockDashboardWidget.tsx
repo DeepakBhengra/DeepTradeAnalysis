@@ -57,6 +57,8 @@ export function StockDashboardWidget({
         analysisDate={analysisDate}
         onAnalysisDateChange={setAnalysisDate}
         onRefresh={() => void refresh()}
+        liveQuoteSymbol={activeSymbol}
+        liveQuoteEnabled={isActive}
       />
     </div>
   );

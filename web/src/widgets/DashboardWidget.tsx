@@ -35,6 +35,8 @@ export function DashboardWidget({
         analysisDate={analysisDate}
         onAnalysisDateChange={setAnalysisDate}
         onRefresh={() => void refresh()}
+        liveQuoteSymbol={dashboardId}
+        liveQuoteEnabled={isActive}
       />
     </div>
   );
