@@ -1,11 +1,21 @@
 import { describe, expect, it } from "vitest";
 import type { KiteQuote } from "../../src/data/quoteFeed.js";
+import type { DepthLevel } from "../../src/types.js";
 import {
+  ORDER_BOOK_DEPTH_LEVELS,
   buildOrderBookSnapshot,
   formatIndianQty,
   formatOrderBookMarkdown,
   pairDepthRows,
 } from "../../src/studies/pnbOrderBookSnapshot.js";
+
+function makeLevels(count: number, start: number, step: number): DepthLevel[] {
+  return Array.from({ length: count }, (_, i) => ({
+    price: Number((start + i * step).toFixed(2)),
+    orders: i + 1,
+    quantity: (i + 1) * 100,
+  }));
+}
 
 const screenshotQuote: KiteQuote = {
   lastPrice: 121.4,
@@ -30,7 +40,9 @@ const screenshotQuote: KiteQuote = {
 describe("pnbOrderBookSnapshot", () => {
   it("pairs bid and offer rows with price, orders, and qty", () => {
     const snapshot = buildOrderBookSnapshot("BSE:PNB", screenshotQuote);
-    expect(snapshot.rows).toHaveLength(5);
+    expect(snapshot.rows).toHaveLength(ORDER_BOOK_DEPTH_LEVELS);
+    expect(snapshot.liveLevelCount).toBe(5);
+    expect(snapshot.requestedLevels).toBe(20);
     expect(snapshot.rows[0]).toEqual({
       bid: { price: 121.35, orders: 9, quantity: 35006 },
       offer: { price: 121.45, orders: 1, quantity: 80 },
@@ -72,5 +84,30 @@ describe("pnbOrderBookSnapshot", () => {
         offer: { price: 3, orders: 2, quantity: 7 },
       },
     ]);
+  });
+
+  it("keeps 20 live bid/offer levels and drops empty placeholders", () => {
+    const quote: KiteQuote = {
+      lastPrice: 150.95,
+      buyQuantity: 2013775,
+      sellQuantity: 2676374,
+      bids: [
+        ...makeLevels(20, 150.92, -0.01),
+        { price: 0, orders: 0, quantity: 0 },
+      ],
+      asks: [
+        ...makeLevels(25, 150.95, 0.01),
+        { price: 0, orders: 0, quantity: 0 },
+      ],
+    };
+
+    const snapshot = buildOrderBookSnapshot("NSE:PNB", quote);
+    expect(snapshot.liveLevelCount).toBe(20);
+    expect(snapshot.rows).toHaveLength(20);
+    expect(snapshot.rows[0]?.bid?.price).toBe(150.92);
+    expect(snapshot.rows[19]?.bid?.price).toBe(150.73);
+    expect(snapshot.rows[19]?.offer?.price).toBe(151.14);
+    expect(snapshot.bids).toHaveLength(20);
+    expect(snapshot.offers).toHaveLength(20);
   });
 });

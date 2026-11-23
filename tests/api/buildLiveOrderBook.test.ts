@@ -32,6 +32,9 @@ describe("buildLiveOrderBook", () => {
     });
     expect(snapshot.buyQuantity).toBe(2013775);
     expect(snapshot.sellQuantity).toBe(2676374);
+    expect(snapshot.liveLevelCount).toBe(1);
+    expect(snapshot.requestedLevels).toBe(20);
+    expect(snapshot.rows).toHaveLength(20);
   });
 
   it("throws when Kite returns no quote", async () => {

@@ -16,6 +16,8 @@ export interface OrderBookSnapshot {
   sellQuantity: number;
   bidOrders: number;
   offerOrders: number;
+  liveLevelCount: number;
+  requestedLevels: number;
   bids: OrderBookSideRow[];
   offers: OrderBookSideRow[];
   rows: PairedDepthRow[];
