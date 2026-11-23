@@ -2,7 +2,7 @@
 
 This document describes the project structure, frontend and backend layout, main API routes, API key / environment requirements, and core data flows.
 
-For trading **rule semantics** (Deepak, Deeppro, RulePNB, etc.), see [`README.md`](./README.md).
+For trading **rule semantics** (Deepak, Deeppro, RulePNB, etc.), see [`README.md`](./README.md). **Deeppro2** detailed rules are in [§11](#11-deeppro2-rules-5-minute-smi-cross) below.
 
 ---
 
@@ -12,7 +12,7 @@ For trading **rule semantics** (Deepak, Deeppro, RulePNB, etc.), see [`README.md
 
 | Capability | Description |
 |------------|-------------|
-| Signal engine | BB / RSI / MACD / Stochastic Momentum rules on Kite 15m candles |
+| Signal engine | BB / RSI / MACD / Stochastic Momentum rules on Kite 15m candles (**Deeppro2** uses **5m**) |
 | Day Scan | Sector (and single-symbol) scans for a chosen IST date |
 | Day Scan Simulator | Candle-by-candle replay of Day Scan signals |
 | Day Order Simulator | Paper trading of those signals (₹1 crore capital) |
@@ -113,7 +113,7 @@ Production: Express serves `web/dist` and the same `/api` routes on `PORT` (defa
 |--------|-------|----------------|
 | `stockDashboard` | Stock 15m Dashboard | Live / historical symbol dashboard |
 | `deepakBacktest` / `deepak2Backtest` | Deepak / Deepak-2 Backtest | Date-range backtests |
-| `deepakDayScan` | Deepak Day Scan | Unified Day Scan (rule variant selector) — **pushes to Samco** |
+| `deepakDayScan` | Deepak Day Scan | Unified Day Scan (rule variant selector, including **Deeppro2**) — **pushes to Samco** |
 | `deepak2DayScan` / `deepak3DayScan` / `deepakWatchPartyDayScan` | Dedicated day-scan UIs | Variant-specific scans |
 | `deepakPostMortem` / `dayScanPostMortem` | Post-Mortem | Signal grading / reports |
 | `dayScanSimulator` | Day Scan Simulator | Candle replay |
@@ -211,6 +211,7 @@ Base URL (dev): `http://localhost:3001` (or via Vite proxy as `/api`).
 | GET | `/api/backtest/deepak-watch-party/day-scan` |
 | GET | `/api/backtest/deeppro/day-scan` |
 | GET | `/api/backtest/deeppro1/day-scan` |
+| GET | `/api/backtest/deeppro2/day-scan` |
 | GET | `/api/backtest/rule-pnb/day-scan` |
 | GET | `/api/backtest/rule-sunpharma/day-scan` |
 | GET | `/api/backtest/rule-sunpharma1/day-scan` |
@@ -306,7 +307,7 @@ Helper: `assertSamcoApiKeys()`.
 | `KITE_REQUEST_TIMEOUT_MS`, `KITE_MAX_CONCURRENT_REQUESTS`, `KITE_REQUEST_RETRIES` | Kite client tuning |
 | `DAY_SCAN_CONCURRENCY`, `DAY_SCAN_SYMBOL_TIMEOUT_MS`, `DAY_SCAN_KITE_RETRIES`, … | Day Scan batching |
 
-Rule thresholds (Deepak, Deeppro, Deeppro1, RulePNB, …) live in **`src/config.ts`**, not `.env`.
+Rule thresholds (Deepak, Deeppro, Deeppro1, Deeppro2, RulePNB, …) live in **`src/config.ts`**, not `.env`.
 
 ### Runtime Samco settings file
 
@@ -422,6 +423,110 @@ Created at runtime (typically gitignored):
 | Doc | Content |
 |-----|---------|
 | [`README.md`](./README.md) | Deepak / Deeppro / RulePNB signal and exit rules |
+| [§11 Deeppro2 rules](#11-deeppro2-rules-5-minute-smi-cross) | Deeppro2 5m SMI-cross entries and exits |
 | [`.env.example`](./.env.example) | Template for API keys and Samco defaults |
 | `src/config.ts` | Full config surface and rule thresholds |
 | `src/api/server.ts` | Authoritative route list |
+
+---
+
+## 11. Deeppro2 rules (5-minute SMI cross)
+
+**Deeppro2** is the 5-minute-candle twin of **Deeppro1**. Same SMI black↔red cross entries, same same-day mid-price exits. It is **not** Deeppro (pink-circle exhaustion): no peak/trough SMI, BB, MACD, or RSI quality gates.
+
+| | Deeppro1 | Deeppro2 |
+|---|---|---|
+| Bar interval | Kite **15m** | Kite **5m** |
+| SMI | Stch Mtm **(10, 3, 3)** Wilder **RMA** double-smooth, signal EMA **3** | Same |
+| Session | 09:15–15:30 IST | Same |
+| New entries | At or before **11:45** IST (11:45 bar allowed; 11:50+ blocked) | Same clock, on 5m bars |
+| Universe | Full `SECTOR_WATCHLIST` | Same |
+| One position | Per symbol per day | Same |
+
+Implementation: `src/rules/deeppro2Decision.ts` → `evaluateDeepproCrossDay(..., "deeppro2", config.deeppro2)` in `src/rules/deepproCrossDecision.ts`. Config: `config.deeppro2` in `src/config.ts`. Interval helper: `chartIntervalForDeepproCrossRule("deeppro2")` → `"5m"`.
+
+### Surfaces
+
+| Surface | Location |
+|---------|----------|
+| Day Scan | Rule variant **Deeppro2** (`GET /api/backtest/deeppro2/day-scan?date=YYYY-MM-DD`) |
+| Payload | `buildDeeppro2DayScanPayload()` — `fetchPnbCandles({ interval: "5m" })` |
+| Simulator | Day Scan Simulator / Day Order Simulator — **10s per 5m candle** (vs 15m variants) |
+| Samco | Variant `deeppro2` (MIS of Day Scan signals) |
+| UI rules panel | **Deeppro2 Buy / Sell Rules** in `DeepakRulesPanel` |
+
+There is no separate range-backtest route for Deeppro2 (unlike Deeppro1).
+
+### Indicator
+
+On each 5m bar, Stochastic Momentum is computed from high / low / close:
+
+- `%K` length **10**
+- Double-smooth **Wilder RMA** length **3** (not Deeppro’s EMA path)
+- Signal line EMA length **3**
+
+On Kite this is **Stch Mtm (10, 3, 3)**: black = SMI, red = signal.
+
+### Entry
+
+Session filter: bar time in **09:15–15:30 IST** on the scan date. One open position at a time per symbol/day.
+
+A **true SMI↔signal cross** on the current 5m bar vs the previous 5m bar:
+
+| Side | Scenario key | Cross |
+|------|----------------|-------|
+| **SELL** | `sell_smi_down_cross` (sc# 1) | Previous SMI **>** signal, current SMI **≤** signal (black crossed below red) |
+| **BUY** | `buy_smi_up_cross` (sc# 1) | Previous SMI **<** signal, current SMI **≥** signal (black crossed above red) |
+
+All four values (`prevSmi`, `prevSignal`, `curSmi`, `curSignal`) must be finite. **Entry price** = candle **mid** `(high + low) / 2` on the cross bar.
+
+**Entry deadline:** no new BUY/SELL after **11:45 IST**. The 11:45 candle is still allowed. Exits may fire after 11:45.
+
+### Exits (same-day mid, first match wins)
+
+Evaluated on later same-day 5m bars while a position is open. Favourable move is measured on **mid**:
+
+- BUY: `(exitMid − entryMid) / entryMid × 100`
+- SELL: `(entryMid − exitMid) / entryMid × 100`
+
+| Priority | Reason | Rule |
+|----------|--------|------|
+| 1 | `target` | Favourable mid ≥ **Profit %** (Samco/Day Scan setting; default **`squareOffPct` 0.45%**) |
+| 2 | `breakeven` | After favourable mid first reaches **`breakevenArmPct` 0.3%**, if mid later returns to entry (BUY: mid ≤ entry; SELL: mid ≥ entry) |
+| 3 | `flip` | Opposite SMI cross on this bar. Closes the open side. If time is still **≤ 11:45**, opens the new side at this bar’s mid |
+| 4 | `eod` | Still open at **`forceExitIst` 15:00** → exit at that 5m bar’s mid |
+
+If the day ends still open before 15:00 (incomplete session), the signal is left **without an exit**. Day Scan can then overlay Samco **stop-loss %** on mark bars (`applyStopLossExitsToTrades`).
+
+A target/breakeven/eod exit on a bar that also has an SMI cross **does not flip**: the cross may open a **new** position only if entry is still allowed (≤ 11:45). Flip is the opposite-cross-while-open path.
+
+### Config (`config.deeppro2`)
+
+```ts
+deeppro2: {
+  sessionStart: "09:15",
+  sessionEnd: "15:30",
+  entryDeadlineIst: "11:45",
+  forceExitIst: "15:00",
+  smi: { lengthK: 10, lengthD: 3, lengthEma: 3 },
+  squareOffPct: 0.45,
+  breakevenArmPct: 0.3,
+}
+```
+
+Day Scan / simulator pass `squareOffPct: getSamcoProfitPct()` so the **Profit %** control overrides the 0.45% default.
+
+### What Deeppro2 does not do
+
+- Not Deeppro exhaustion (no SMI ≥ 40 / ≤ −40, no peak 65 / trough −65, no BB tag, no MACD fade, no RSI quality window)
+- Not Deeppro1’s 15m bars
+- No BB / RSI / MACD gates on the SMI cross
+- No new entries after 11:45; no reverse on a stop-loss exit (Samco SL is a separate overlay)
+
+### Tests
+
+Deeppro2 shares `evaluateDeepproCrossDay` with Deeppro1. Coverage is:
+
+- `tests/rules/deeppro1Decision.test.ts` — SMI cross, 11:45 deadline, target / breakeven / flip / 15:00 exits
+- `tests/api/buildDayScanSimulationPayload.test.ts` — `variant=deeppro2` uses 5m replay
+- `tests/samco/samcoRuleVariant.test.ts` — Samco accepts `deeppro2`
