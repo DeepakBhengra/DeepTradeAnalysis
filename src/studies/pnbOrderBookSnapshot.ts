@@ -1,6 +1,9 @@
 import type { DepthLevel } from "../types.js";
 import type { KiteQuote } from "../data/quoteFeed.js";
 
+/** Kite Connect getQuote / websocket full mode return 5 bid and 5 offer levels. */
+export const ORDER_BOOK_DEPTH_LEVELS = 5;
+
 export interface OrderBookSideRow {
   price: number;
   orders: number;
@@ -29,11 +32,14 @@ export function formatIndianQty(value: number): string {
 }
 
 export function toOrderBookRows(levels: DepthLevel[]): OrderBookSideRow[] {
-  return levels.map((level) => ({
-    price: level.price,
-    orders: level.orders,
-    quantity: level.quantity,
-  }));
+  return levels
+    .filter((level) => level.price > 0 || level.quantity > 0 || level.orders > 0)
+    .slice(0, ORDER_BOOK_DEPTH_LEVELS)
+    .map((level) => ({
+      price: level.price,
+      orders: level.orders,
+      quantity: level.quantity,
+    }));
 }
 
 export function pairDepthRows(

@@ -73,4 +73,38 @@ describe("pnbOrderBookSnapshot", () => {
       },
     ]);
   });
+
+  it("keeps only 5 live bid/offer levels and drops empty placeholders", () => {
+    const quote: KiteQuote = {
+      lastPrice: 150.43,
+      buyQuantity: 2013775,
+      sellQuantity: 2676374,
+      bids: [
+        { price: 150.43, orders: 4, quantity: 1400 },
+        { price: 150.42, orders: 2, quantity: 641 },
+        { price: 150.41, orders: 6, quantity: 954 },
+        { price: 150.4, orders: 37, quantity: 12635 },
+        { price: 150.39, orders: 8, quantity: 2351 },
+        { price: 150.38, orders: 8, quantity: 1985 },
+        { price: 0, orders: 0, quantity: 0 },
+      ],
+      asks: [
+        { price: 150.44, orders: 1, quantity: 393 },
+        { price: 150.48, orders: 4, quantity: 843 },
+        { price: 150.49, orders: 4, quantity: 1417 },
+        { price: 150.5, orders: 8, quantity: 2279 },
+        { price: 150.51, orders: 8, quantity: 2307 },
+        { price: 150.52, orders: 9, quantity: 7987 },
+        { price: 0, orders: 0, quantity: 0 },
+      ],
+    };
+
+    const snapshot = buildOrderBookSnapshot("NSE:PNB", quote);
+    expect(snapshot.rows).toHaveLength(5);
+    expect(snapshot.bids).toHaveLength(5);
+    expect(snapshot.offers).toHaveLength(5);
+    expect(snapshot.rows[0]?.bid?.price).toBe(150.43);
+    expect(snapshot.rows[4]?.bid?.price).toBe(150.39);
+    expect(snapshot.rows[4]?.offer?.price).toBe(150.51);
+  });
 });
