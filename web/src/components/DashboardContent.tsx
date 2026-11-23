@@ -184,14 +184,16 @@ export function DashboardContent({
             <MacdPanel series={data.series} />
             <VolumePanel series={data.series} />
 
-            <OrderBookCard
-              symbol={liveQuoteSymbol ?? data.symbol}
-              enabled={liveQuoteEnabled}
-            />
-
             <ReasonsList reasons={data.reasons} />
           </div>
         )}
+
+        <div className="mt-px">
+          <OrderBookCard
+            symbol={liveQuoteSymbol ?? data?.symbol ?? null}
+            enabled={liveQuoteEnabled}
+          />
+        </div>
       </main>
     </>
   );
