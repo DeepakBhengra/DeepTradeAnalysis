@@ -40,7 +40,7 @@ function SideCells({
 
 export function OrderBookTable({ snapshot }: { snapshot: OrderBookSnapshot }) {
   return (
-    <div className="max-h-[28rem] overflow-auto">
+    <div className="overflow-x-auto">
       <table className="w-full min-w-[28rem] border-collapse text-xs tabular-nums">
         <thead>
           <tr className="text-[10px] uppercase tracking-wide text-kite-muted">
@@ -99,9 +99,7 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
                 {data.lastPrice.toFixed(2)}
               </span>
             </span>
-            <span>
-              {data.liveLevelCount}/{data.requestedLevels} live levels · 5s refresh
-            </span>
+            <span>5-level Kite depth · 5s refresh</span>
           </div>
         ) : null}
       </div>
@@ -112,20 +110,14 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
         <p className="m-0 text-xs text-kite-muted">Fetching live bid / offer from Kite…</p>
       ) : error && !data ? (
         <p className="m-0 text-xs text-kite-red">{error}</p>
-      ) : data && data.liveLevelCount === 0 ? (
+      ) : data && data.rows.length === 0 ? (
         <p className="m-0 text-xs text-kite-muted">
-          Kite returned no market depth for {data.symbol}.
+          Kite returned no 5-level depth for {data.symbol}.
         </p>
       ) : data ? (
         <>
           {error ? (
             <p className="mb-2 text-xs text-kite-red">{error}</p>
-          ) : null}
-          {data.liveLevelCount < data.requestedLevels ? (
-            <p className="mb-2 text-[10px] text-kite-muted">
-              Showing {data.liveLevelCount} of {data.requestedLevels} levels. Kite Connect
-              getQuote supplies 5-level depth; 20-level (Level 3) is only on Kite web/app.
-            </p>
           ) : null}
           <OrderBookTable snapshot={data} />
         </>

@@ -11,22 +11,14 @@ const snapshot: OrderBookSnapshot = {
   sellQuantity: 2676374,
   bidOrders: 11,
   offerOrders: 18,
-  liveLevelCount: 20,
-  requestedLevels: 20,
   bids: [{ price: 150.92, orders: 1, quantity: 474 }],
   offers: [{ price: 150.95, orders: 2, quantity: 295 }],
-  rows: Array.from({ length: 20 }, (_, index) => ({
-    bid: {
-      price: Number((150.92 - index * 0.01).toFixed(2)),
-      orders: 1,
-      quantity: 474 + index,
+  rows: [
+    {
+      bid: { price: 150.92, orders: 1, quantity: 474 },
+      offer: { price: 150.95, orders: 2, quantity: 295 },
     },
-    offer: {
-      price: Number((150.95 + index * 0.01).toFixed(2)),
-      orders: 2,
-      quantity: 295 + index,
-    },
-  })),
+  ],
 };
 
 describe("OrderBookTable", () => {
@@ -41,12 +33,5 @@ describe("OrderBookTable", () => {
     expect(screen.getByText("295")).toBeInTheDocument();
     expect(screen.getByText("20,13,775")).toBeInTheDocument();
     expect(screen.getByText("26,76,374")).toBeInTheDocument();
-  });
-
-  it("renders 20 bid/offer rows", () => {
-    render(<OrderBookTable snapshot={snapshot} />);
-    expect(screen.getByText("150.73")).toBeInTheDocument();
-    expect(screen.getByText("151.14")).toBeInTheDocument();
-    expect(document.querySelectorAll("tbody tr")).toHaveLength(21);
   });
 });

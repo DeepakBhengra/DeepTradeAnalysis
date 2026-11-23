@@ -24,8 +24,6 @@ describe("useLiveOrderBook", () => {
       sellQuantity: 12,
       bidOrders: 1,
       offerOrders: 1,
-      liveLevelCount: 1,
-      requestedLevels: 20,
       bids: [{ price: 2387, orders: 1, quantity: 10 }],
       offers: [{ price: 2388, orders: 1, quantity: 12 }],
       rows: [

@@ -1037,7 +1037,7 @@ export const config = {
     wallThresholdQty: 10_000,
     tightSpreadPct: 0.1,
     wallProximityPct: 0.5,
-    nearLevels: 20,
+    nearLevels: 5,
   },
 
   confidence: {
