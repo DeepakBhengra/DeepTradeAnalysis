@@ -20,3 +20,14 @@ export interface OrderBookSnapshot {
   offers: OrderBookSideRow[];
   rows: PairedDepthRow[];
 }
+
+export const ORDER_BOOK_RECORD_INTERVALS = ["1m", "5m", "15m", "30m"] as const;
+
+export type OrderBookRecordInterval = (typeof ORDER_BOOK_RECORD_INTERVALS)[number];
+
+export interface OrderBookRecordingSample {
+  recordedAtIso: string;
+  recordedAtIst: string;
+  interval: OrderBookRecordInterval;
+  snapshot: OrderBookSnapshot;
+}
