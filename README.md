@@ -18,7 +18,7 @@ Implementation (per-symbol favourable rules): `src/rules/favourableSymbolRule.ts
 
 ## Run in VS Code
 
-These steps start the dashboard from Visual Studio Code: API on port **3001**, UI on port **5173**.
+These steps start the dashboard from Visual Studio Code: API on port **3001**, UI on port **5176**.
 
 ### 1. Install prerequisites
 
@@ -59,7 +59,7 @@ Leave `KITE_ACCESS_TOKEN` as the placeholder until [step 7](#7-connect-kite-dail
 
 ```
 KITE_REDIRECT_URL=http://localhost:3001/api/kite/callback
-KITE_APP_URL=http://localhost:5173
+KITE_APP_URL=http://localhost:5176
 ```
 
 In the [Kite developer console](https://developers.kite.trade/), the app **redirect URL** must be exactly `http://localhost:3001/api/kite/callback`.
@@ -74,9 +74,9 @@ In the same VS Code terminal, from the repo root:
 npm run dev:dashboard
 ```
 
-Wait until the terminal shows the API on `http://localhost:3001` and Vite on `http://localhost:5173`. Leave that terminal running.
+Wait until the terminal shows the API on `http://localhost:3001` and Vite on `http://localhost:5176`. Leave that terminal running.
 
-If ports **3001** or **5173** are already in use:
+If ports **3001** or **5176** are already in use:
 
 ```bash
 npm run dev:dashboard:clean
@@ -87,13 +87,13 @@ To run API and UI in **two** VS Code terminals instead:
 | Terminal | Command | Port |
 |----------|---------|------|
 | 1 | `npm run dev:api` | 3001 |
-| 2 | `npm run dev:web` | 5173 |
+| 2 | `npm run dev:web` | 5176 |
 
 ### 6. Open the UI
 
-In Chrome or Edge go to [http://localhost:5173](http://localhost:5173).
+In Chrome or Edge go to [http://localhost:5176](http://localhost:5176).
 
-Or in VS Code: Command Palette → **Simple Browser: Show** → `http://localhost:5173`.
+Or in VS Code: Command Palette → **Simple Browser: Show** → `http://localhost:5176`.
 
 ### 7. Connect Kite (daily access token)
 
@@ -117,7 +117,7 @@ Zerodha mints a new `access_token` each trading day (it expires around **6 AM IS
 | `Cannot reach the API on port 3001` | Same as above, or another process holds 3001. Run `npm run dev:dashboard:clean`. |
 | Kite rejected the access token | Use **Login via Zerodha**. Confirm `KITE_API_KEY` / `KITE_API_SECRET` belong to the Kite app whose redirect URL is `http://localhost:3001/api/kite/callback`. |
 | `Port 3001 is already in use` | Stop the old API, or run `npm run dev:dashboard:clean`. |
-| Vite starts but the UI never loads data | The terminal must show **both** the API and the web process. The UI on 5173 proxies `/api` to 3001. |
+| Vite starts but the UI never loads data | The terminal must show **both** the API and the web process. The UI on 5176 proxies `/api` to 3001. |
 
 ### Optional: tests
 

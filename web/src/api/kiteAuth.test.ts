@@ -16,7 +16,7 @@ describe("fetchKiteStatus", () => {
         json: async () => ({
           connected: false,
           redirectUrl: "http://localhost:3001/api/kite/callback",
-          appUrl: "http://localhost:5173",
+          appUrl: "http://localhost:5176",
           loginUrl: "",
         }),
       }),
@@ -25,7 +25,7 @@ describe("fetchKiteStatus", () => {
     await expect(fetchKiteStatus()).resolves.toEqual({
       connected: false,
       redirectUrl: "http://localhost:3001/api/kite/callback",
-      appUrl: "http://localhost:5173",
+      appUrl: "http://localhost:5176",
       loginUrl: "",
     });
   });

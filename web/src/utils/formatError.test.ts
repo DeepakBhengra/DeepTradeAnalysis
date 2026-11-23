@@ -70,6 +70,6 @@ describe("formatNetworkFetchError", () => {
     const message = formatNetworkFetchError(new Error("Failed to fetch"), "day scan");
     expect(message).toContain("Cannot connect to the API server");
     expect(message).toContain("npm run dev:dashboard");
-    expect(message).toContain("localhost:5173");
+    expect(message).toContain("localhost:5176");
   });
 });

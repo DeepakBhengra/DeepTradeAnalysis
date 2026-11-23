@@ -82,7 +82,7 @@ export function formatNetworkFetchError(error: unknown, context: string): string
     lower.includes("connection refused") ||
     lower.includes("econnrefused")
   ) {
-    return `Cannot connect to the API server (${context}). Run npm run dev:dashboard in the project folder, wait for both API (port 3001) and web (port 5173) to start, then open http://localhost:5173.`;
+    return `Cannot connect to the API server (${context}). Run npm run dev:dashboard in the project folder, wait for both API (port 3001) and web (port 5176) to start, then open http://localhost:5176.`;
   }
 
   return message;
