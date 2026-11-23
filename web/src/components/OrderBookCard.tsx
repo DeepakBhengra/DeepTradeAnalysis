@@ -116,7 +116,7 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-kite-muted">
-          Record interval
+          Time range
           <select
             className={controlClassName}
             value={recorder.interval}
@@ -156,7 +156,21 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
         >
           Download XLS
         </button>
-        <span className="text-[10px] text-kite-muted">
+        <span
+          className={`inline-flex items-center gap-1.5 text-[10px] ${
+            recorder.recording ? "font-medium text-kite-red" : "text-kite-muted"
+          }`}
+          role="status"
+          aria-label={
+            recorder.recording ? "Recording in progress" : "Recording stopped"
+          }
+        >
+          {recorder.recording ? (
+            <span className="relative inline-flex h-2.5 w-2.5" aria-hidden="true">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-kite-red opacity-70" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-kite-red" />
+            </span>
+          ) : null}
           {recorder.recording ? "Recording" : "Stopped"}
           {` · ${recorder.samples.length} snapshot${recorder.samples.length === 1 ? "" : "s"}`}
         </span>

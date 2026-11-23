@@ -8,13 +8,36 @@ import { IST_TIMEZONE, todayIstDateKey } from "./istTime";
 
 export const ORDER_BOOK_RECORD_DEPTH_LEVELS = 5;
 
-export const ORDER_BOOK_RECORD_INTERVAL_MS: Record<OrderBookRecordInterval, number> =
+/** How long a recording run lasts before it auto-stops. */
+export const ORDER_BOOK_RECORD_DURATION_MS: Record<OrderBookRecordInterval, number> =
   {
     "1m": 60_000,
     "5m": 5 * 60_000,
     "15m": 15 * 60_000,
     "30m": 30 * 60_000,
   };
+
+/** Poll while recording so each observed bid/offer/total/LTP change becomes a row. */
+export const ORDER_BOOK_RECORD_POLL_MS = 1_000;
+
+export const ORDER_BOOK_RECORD_INTERVAL_MS = ORDER_BOOK_RECORD_DURATION_MS;
+
+function sideFingerprint(row: OrderBookSideRow): string {
+  return `${row.price}:${row.orders}:${row.quantity}`;
+}
+
+/** Stable key for “did the visible book or stock price change?” */
+export function orderBookChangeFingerprint(snapshot: OrderBookSnapshot): string {
+  return [
+    snapshot.lastPrice,
+    snapshot.bidOrders,
+    snapshot.buyQuantity,
+    snapshot.offerOrders,
+    snapshot.sellQuantity,
+    snapshot.bids.map(sideFingerprint).join("|"),
+    snapshot.offers.map(sideFingerprint).join("|"),
+  ].join(";");
+}
 
 export function formatOrderBookRecordedAtIst(date: Date): string {
   const parts = new Intl.DateTimeFormat("en-GB", {
@@ -78,18 +101,18 @@ function levelOrNull(
 function recordingHeaders(): string[] {
   const headers = [
     "Recorded at IST",
-    "Interval",
+    "Stock price",
     "Symbol",
-    "LTP",
+    "Time range",
   ];
   for (let level = 1; level <= ORDER_BOOK_RECORD_DEPTH_LEVELS; level++) {
-    headers.push(`Bid${level} Price`, `Bid${level} Orders`, `Bid${level} Qty`);
+    headers.push(`BID ${level}`, `BID ${level} Orders`, `BID ${level} Qty`);
   }
   for (let level = 1; level <= ORDER_BOOK_RECORD_DEPTH_LEVELS; level++) {
     headers.push(
-      `Offer${level} Price`,
-      `Offer${level} Orders`,
-      `Offer${level} Qty`,
+      `OFFER ${level}`,
+      `OFFER ${level} Orders`,
+      `OFFER ${level} Qty`,
     );
   }
   headers.push(
@@ -105,9 +128,9 @@ function sampleCells(sample: OrderBookRecordingSample): string[] {
   const { snapshot } = sample;
   const cells = [
     xmlStringCell(sample.recordedAtIst),
-    xmlStringCell(sample.interval),
-    xmlStringCell(snapshot.symbol),
     xmlNumberCell(snapshot.lastPrice),
+    xmlStringCell(snapshot.symbol),
+    xmlStringCell(sample.interval),
   ];
   for (let index = 0; index < ORDER_BOOK_RECORD_DEPTH_LEVELS; index++) {
     const bid = levelOrNull(snapshot.bids, index);
@@ -134,12 +157,71 @@ function sampleCells(sample: OrderBookRecordingSample): string[] {
   return cells;
 }
 
+function kiteViewDepthRows(snapshot: OrderBookSnapshot): string[] {
+  const rows: string[] = [];
+  for (let index = 0; index < ORDER_BOOK_RECORD_DEPTH_LEVELS; index++) {
+    const bid = levelOrNull(snapshot.bids, index);
+    const offer = levelOrNull(snapshot.offers, index);
+    rows.push(
+      xmlRow([
+        xmlNumberCell(bid?.price ?? null),
+        xmlNumberCell(bid?.orders ?? null),
+        xmlNumberCell(bid?.quantity ?? null),
+        xmlNumberCell(offer?.price ?? null),
+        xmlNumberCell(offer?.orders ?? null),
+        xmlNumberCell(offer?.quantity ?? null),
+      ]),
+    );
+  }
+  rows.push(
+    xmlRow([
+      xmlStringCell("Total"),
+      xmlNumberCell(snapshot.bidOrders),
+      xmlNumberCell(snapshot.buyQuantity),
+      xmlStringCell("Total"),
+      xmlNumberCell(snapshot.offerOrders),
+      xmlNumberCell(snapshot.sellQuantity),
+    ]),
+  );
+  return rows;
+}
+
+function kiteViewSampleRows(sample: OrderBookRecordingSample): string[] {
+  const { snapshot } = sample;
+  return [
+    xmlRow([
+      xmlStringCell("Recorded at IST"),
+      xmlStringCell(sample.recordedAtIst),
+      xmlStringCell("Stock price"),
+      xmlNumberCell(snapshot.lastPrice),
+      xmlStringCell("Symbol"),
+      xmlStringCell(snapshot.symbol),
+    ]),
+    xmlRow(
+      ["BID", "ORDERS", "QTY", "OFFER", "ORDERS", "QTY"].map(xmlStringCell),
+    ),
+    ...kiteViewDepthRows(snapshot),
+    xmlRow([xmlStringCell("")]),
+  ];
+}
+
+function worksheet(name: string, rows: string[]): string {
+  return ` <Worksheet ss:Name="${escapeXml(name)}">
+  <Table>
+${rows.map((row) => `   ${row}`).join("\n")}
+  </Table>
+ </Worksheet>`;
+}
+
 /** Excel SpreadsheetML workbook (.xls) of recorded 5-level bid/offer snapshots. */
 export function buildOrderBookRecordingWorkbookXml(
   samples: OrderBookRecordingSample[],
 ): string {
-  const headerRow = xmlRow(recordingHeaders().map(xmlStringCell));
-  const dataRows = samples.map((sample) => xmlRow(sampleCells(sample)));
+  const changeRows = [
+    xmlRow(recordingHeaders().map(xmlStringCell)),
+    ...samples.map((sample) => xmlRow(sampleCells(sample))),
+  ];
+  const kiteViewRows = samples.flatMap(kiteViewSampleRows);
   return `<?xml version="1.0"?>
 <?mso-application progid="Excel.Sheet"?>
 <Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
@@ -147,12 +229,8 @@ export function buildOrderBookRecordingWorkbookXml(
  xmlns:x="urn:schemas-microsoft-com:office:excel"
  xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
  xmlns:html="http://www.w3.org/TR/REC-html40">
- <Worksheet ss:Name="Order book">
-  <Table>
-   ${headerRow}
-${dataRows.map((row) => `   ${row}`).join("\n")}
-  </Table>
- </Worksheet>
+${worksheet("Changes", changeRows)}
+${worksheet("Kite view", kiteViewRows)}
 </Workbook>
 `;
 }

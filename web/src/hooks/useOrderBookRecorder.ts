@@ -6,9 +6,11 @@ import type {
   OrderBookRecordingSample,
 } from "../types/orderBook";
 import {
-  ORDER_BOOK_RECORD_INTERVAL_MS,
+  ORDER_BOOK_RECORD_DURATION_MS,
+  ORDER_BOOK_RECORD_POLL_MS,
   buildOrderBookRecordingSample,
   downloadOrderBookRecordingXls,
+  orderBookChangeFingerprint,
 } from "../utils/orderBookRecording";
 
 export function useOrderBookRecorder(symbol: string | null) {
@@ -16,8 +18,9 @@ export function useOrderBookRecorder(symbol: string | null) {
   const [recording, setRecording] = useState(false);
   const [samples, setSamples] = useState<OrderBookRecordingSample[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const requestIdRef = useRef(0);
+  const sessionIdRef = useRef(0);
   const intervalRef = useRef(interval);
+  const lastFingerprintRef = useRef<string | null>(null);
   intervalRef.current = interval;
 
   const capture = useCallback(async () => {
@@ -25,19 +28,24 @@ export function useOrderBookRecorder(symbol: string | null) {
       return;
     }
 
-    const requestId = ++requestIdRef.current;
+    const sessionId = sessionIdRef.current;
     try {
       const snapshot = await fetchLiveOrderBook(symbol);
-      if (requestId !== requestIdRef.current) {
+      if (sessionId !== sessionIdRef.current) {
         return;
       }
+      const fingerprint = orderBookChangeFingerprint(snapshot);
+      if (fingerprint === lastFingerprintRef.current) {
+        return;
+      }
+      lastFingerprintRef.current = fingerprint;
       setSamples((prev) => [
         ...prev,
         buildOrderBookRecordingSample(snapshot, intervalRef.current),
       ]);
       setError(null);
     } catch (err) {
-      if (requestId !== requestIdRef.current) {
+      if (sessionId !== sessionIdRef.current) {
         return;
       }
       setError(err instanceof Error ? err.message : String(err));
@@ -48,14 +56,15 @@ export function useOrderBookRecorder(symbol: string | null) {
     if (!symbol || recording) {
       return;
     }
-    requestIdRef.current += 1;
+    sessionIdRef.current += 1;
+    lastFingerprintRef.current = null;
     setSamples([]);
     setError(null);
     setRecording(true);
   }, [symbol, recording]);
 
   const stop = useCallback(() => {
-    requestIdRef.current += 1;
+    sessionIdRef.current += 1;
     setRecording(false);
   }, []);
 
@@ -69,15 +78,19 @@ export function useOrderBookRecorder(symbol: string | null) {
     }
 
     void capture();
-    const timer = window.setInterval(() => {
+    const poll = window.setInterval(() => {
       void capture();
-    }, ORDER_BOOK_RECORD_INTERVAL_MS[interval]);
+    }, ORDER_BOOK_RECORD_POLL_MS);
+    const autoStop = window.setTimeout(() => {
+      stop();
+    }, ORDER_BOOK_RECORD_DURATION_MS[interval]);
 
     return () => {
-      requestIdRef.current += 1;
-      window.clearInterval(timer);
+      sessionIdRef.current += 1;
+      window.clearInterval(poll);
+      window.clearTimeout(autoStop);
     };
-  }, [recording, symbol, interval, capture]);
+  }, [recording, symbol, interval, capture, stop]);
 
   return {
     interval,

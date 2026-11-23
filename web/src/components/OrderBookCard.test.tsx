@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { OrderBookCard, OrderBookTable } from "./OrderBookCard";
 import type { OrderBookSnapshot } from "../types/orderBook";
@@ -17,17 +17,19 @@ const stop = vi.fn();
 const download = vi.fn();
 const setRecordInterval = vi.fn();
 
+const recorder = {
+  interval: "5m" as const,
+  setRecordInterval,
+  recording: false,
+  samples: [] as unknown[],
+  error: null as string | null,
+  start,
+  stop,
+  download,
+};
+
 vi.mock("../hooks/useOrderBookRecorder", () => ({
-  useOrderBookRecorder: () => ({
-    interval: "5m",
-    setRecordInterval,
-    recording: false,
-    samples: [],
-    error: null,
-    start,
-    stop,
-    download,
-  }),
+  useOrderBookRecorder: () => recorder,
 }));
 
 const snapshot: OrderBookSnapshot = {
@@ -63,19 +65,42 @@ describe("OrderBookTable", () => {
 });
 
 describe("OrderBookCard recording controls", () => {
-  it("exposes start, stop, interval, and download XLS", () => {
+  beforeEach(() => {
+    start.mockClear();
+    stop.mockClear();
+    download.mockClear();
+    setRecordInterval.mockClear();
+    recorder.recording = false;
+    recorder.samples = [];
+    recorder.error = null;
+    recorder.interval = "5m";
+  });
+
+  it("exposes start, stop, time range, and download XLS", () => {
     render(<OrderBookCard symbol="PNB" />);
 
     fireEvent.click(screen.getByRole("button", { name: "Start recording" }));
     expect(start).toHaveBeenCalled();
 
     expect(screen.getByRole("button", { name: "Stop recording" })).toBeDisabled();
+    expect(screen.getByLabelText("Recording stopped")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText(/Record interval/i), {
+    fireEvent.change(screen.getByLabelText(/Time range/i), {
       target: { value: "15m" },
     });
     expect(setRecordInterval).toHaveBeenCalledWith("15m");
 
     expect(screen.getByRole("button", { name: "Download XLS" })).toBeDisabled();
+  });
+
+  it("shows a recording-in-progress status while capturing", () => {
+    recorder.recording = true;
+    recorder.samples = [{}];
+    render(<OrderBookCard symbol="PNB" />);
+
+    expect(screen.getByLabelText("Recording in progress")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Stop recording" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Start recording" })).toBeDisabled();
+    expect(screen.getByText(/Recording/)).toBeInTheDocument();
   });
 });

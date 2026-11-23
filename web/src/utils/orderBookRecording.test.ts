@@ -6,22 +6,29 @@ import {
   buildOrderBookRecordingSample,
   buildOrderBookRecordingWorkbookXml,
   formatOrderBookRecordedAtIst,
+  orderBookChangeFingerprint,
 } from "./orderBookRecording";
 
 const snapshot: OrderBookSnapshot = {
   symbol: "NSE:PNB",
-  lastPrice: 150.36,
-  buyQuantity: 1846708,
-  sellQuantity: 2848826,
-  bidOrders: 66,
-  offerOrders: 38,
+  lastPrice: 150.43,
+  buyQuantity: 1773231,
+  sellQuantity: 2920024,
+  bidOrders: 35,
+  offerOrders: 9,
   bids: [
-    { price: 150.32, orders: 3, quantity: 364 },
-    { price: 150.31, orders: 2, quantity: 5498 },
+    { price: 150.43, orders: 7, quantity: 2057 },
+    { price: 150.42, orders: 1, quantity: 195 },
+    { price: 150.41, orders: 7, quantity: 3162 },
+    { price: 150.40, orders: 11, quantity: 9805 },
+    { price: 150.39, orders: 9, quantity: 12231 },
   ],
   offers: [
-    { price: 150.37, orders: 3, quantity: 1367 },
-    { price: 150.38, orders: 8, quantity: 4120 },
+    { price: 150.45, orders: 1, quantity: 422 },
+    { price: 150.46, orders: 1, quantity: 19 },
+    { price: 150.47, orders: 2, quantity: 573 },
+    { price: 150.48, orders: 1, quantity: 404 },
+    { price: 150.49, orders: 4, quantity: 850 },
   ],
   rows: [],
 };
@@ -33,22 +40,54 @@ describe("orderBookRecording", () => {
     );
   });
 
-  it("builds an Excel workbook with 5-level bid/offer columns", () => {
-    const sample: OrderBookRecordingSample = buildOrderBookRecordingSample(
+  it("fingerprints bid/offer/totals and stock price changes", () => {
+    const same = orderBookChangeFingerprint(snapshot);
+    expect(orderBookChangeFingerprint({ ...snapshot, rows: [] })).toBe(same);
+    expect(
+      orderBookChangeFingerprint({ ...snapshot, lastPrice: 150.44 }),
+    ).not.toBe(same);
+    expect(
+      orderBookChangeFingerprint({
+        ...snapshot,
+        bids: snapshot.bids.map((row, index) =>
+          index === 0 ? { ...row, quantity: 2100 } : row,
+        ),
+      }),
+    ).not.toBe(same);
+    expect(
+      orderBookChangeFingerprint({ ...snapshot, buyQuantity: 1_800_000 }),
+    ).not.toBe(same);
+  });
+
+  it("builds an Excel workbook with Kite bid/offer columns, totals, and stock price", () => {
+    const first: OrderBookRecordingSample = buildOrderBookRecordingSample(
       snapshot,
       "5m",
       new Date("2026-11-23T07:46:00.000Z"),
     );
-    const xml = buildOrderBookRecordingWorkbookXml([sample]);
+    const second: OrderBookRecordingSample = buildOrderBookRecordingSample(
+      { ...snapshot, lastPrice: 150.44, buyQuantity: 1_773_500 },
+      "5m",
+      new Date("2026-11-23T07:46:01.000Z"),
+    );
+    const xml = buildOrderBookRecordingWorkbookXml([first, second]);
 
     expect(xml).toContain("Excel.Sheet");
-    expect(xml).toContain("Bid1 Price");
-    expect(xml).toContain("Offer5 Qty");
+    expect(xml).toContain("ss:Name=\"Changes\"");
+    expect(xml).toContain("ss:Name=\"Kite view\"");
+    expect(xml).toContain("Stock price");
+    expect(xml).toContain("BID 1");
+    expect(xml).toContain("OFFER 5 Qty");
+    expect(xml).toContain("Total Bid Qty");
     expect(xml).toContain("NSE:PNB");
-    expect(xml).toContain("150.32");
-    expect(xml).toContain("1846708");
+    expect(xml).toContain("150.43");
+    expect(xml).toContain("150.44");
+    expect(xml).toContain("1773231");
+    expect(xml).toContain("1773500");
+    expect(xml).toContain(">BID</Data>");
+    expect(xml).toContain(">OFFER</Data>");
     expect(xml).toContain("5m");
-    expect(buildOrderBookRecordingFilename([sample], new Date("2026-11-23T07:46:00.000Z"))).toBe(
+    expect(buildOrderBookRecordingFilename([first], new Date("2026-11-23T07:46:00.000Z"))).toBe(
       "order-book_NSE-PNB_5m_2026-11-23.xls",
     );
   });
