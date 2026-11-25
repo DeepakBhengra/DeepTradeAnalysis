@@ -7,6 +7,7 @@ import {
   buildOrderBookRecordingWorkbookXml,
   formatOrderBookRecordedAtIst,
   orderBookChangeFingerprint,
+  trimOrderBookLiveTrail,
 } from "./orderBookRecording";
 
 const snapshot: OrderBookSnapshot = {
@@ -119,5 +120,38 @@ describe("orderBookRecording", () => {
     expect(xml).toContain("150.75");
     expect(xml).toContain("19032");
     expect(xml).not.toContain("Max BID Qty");
+  });
+
+  it("trims the live trail to the selected window and keeps the latest tick", () => {
+    const first = buildOrderBookRecordingSample(
+      snapshot,
+      "1m",
+      new Date("2026-11-25T06:00:00.000Z"),
+    );
+    const second = buildOrderBookRecordingSample(
+      { ...snapshot, lastPrice: 150.44 },
+      "1m",
+      new Date("2026-11-25T06:00:20.000Z"),
+    );
+    const latest = buildOrderBookRecordingSample(
+      { ...snapshot, lastPrice: 150.5 },
+      "1m",
+      new Date("2026-11-25T06:02:00.000Z"),
+    );
+
+    const trimmed = trimOrderBookLiveTrail(
+      [first, second],
+      60_000,
+      Date.parse("2026-11-25T06:01:10.000Z"),
+    );
+    expect(trimmed).toEqual([second]);
+
+    const stale = trimOrderBookLiveTrail(
+      [first, second, latest],
+      60_000,
+      Date.parse("2026-11-25T06:05:00.000Z"),
+    );
+    expect(stale).toHaveLength(1);
+    expect(stale[0]?.snapshot.lastPrice).toBe(150.5);
   });
 });

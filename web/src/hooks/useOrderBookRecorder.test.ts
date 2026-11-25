@@ -2,16 +2,9 @@ import { act, renderHook } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { useOrderBookRecorder } from "./useOrderBookRecorder";
+import type { OrderBookSnapshot } from "../types/orderBook";
 
-vi.mock("../api/client", () => ({
-  fetchLiveOrderBook: vi.fn(),
-}));
-
-import { fetchLiveOrderBook } from "../api/client";
-
-const fetchLiveOrderBookMock = vi.mocked(fetchLiveOrderBook);
-
-const snapshot = {
+const snapshot: OrderBookSnapshot = {
   symbol: "NSE:PNB",
   lastPrice: 150.43,
   buyQuantity: 1773231,
@@ -23,62 +16,49 @@ const snapshot = {
   rows: [],
 };
 
-async function flush() {
-  await act(async () => {
-    await Promise.resolve();
-    await Promise.resolve();
-  });
-}
-
 describe("useOrderBookRecorder", () => {
   afterEach(() => {
-    vi.clearAllMocks();
     vi.useRealTimers();
   });
 
-  it("does not fetch until Start recording", async () => {
-    const { result } = renderHook(() => useOrderBookRecorder("PNB"));
+  it("does not record until Start recording even when a live snapshot is present", () => {
+    const { result } = renderHook(() => useOrderBookRecorder("PNB", snapshot));
 
-    await flush();
-
-    expect(fetchLiveOrderBookMock).not.toHaveBeenCalled();
     expect(result.current.recording).toBe(false);
     expect(result.current.samples).toHaveLength(0);
   });
 
   it("writes a row on start, skips unchanged books, appends on bid/offer change, then stops", async () => {
-    vi.useFakeTimers();
-    fetchLiveOrderBookMock.mockResolvedValue(snapshot);
-
-    const { result } = renderHook(() => useOrderBookRecorder("PNB"));
+    const { result, rerender } = renderHook(
+      ({ book }: { book: OrderBookSnapshot | null }) => useOrderBookRecorder("PNB", book),
+      { initialProps: { book: snapshot } },
+    );
 
     act(() => {
       result.current.start();
     });
-    await flush();
+    await act(async () => {
+      await Promise.resolve();
+    });
 
     expect(result.current.recording).toBe(true);
     expect(result.current.samples).toHaveLength(1);
-    expect(fetchLiveOrderBookMock).toHaveBeenCalledWith("PNB");
 
+    rerender({ book: snapshot });
     await act(async () => {
-      vi.advanceTimersByTime(1_000);
-      await Promise.resolve();
       await Promise.resolve();
     });
-
     expect(result.current.samples).toHaveLength(1);
 
-    fetchLiveOrderBookMock.mockResolvedValue({
-      ...snapshot,
-      lastPrice: 150.44,
-      bids: [{ price: 150.43, orders: 8, quantity: 2100 }],
-      buyQuantity: 1_773_500,
+    rerender({
+      book: {
+        ...snapshot,
+        lastPrice: 150.44,
+        bids: [{ price: 150.43, orders: 8, quantity: 2100 }],
+        buyQuantity: 1_773_500,
+      },
     });
-
     await act(async () => {
-      vi.advanceTimersByTime(1_000);
-      await Promise.resolve();
       await Promise.resolve();
     });
 
@@ -88,10 +68,10 @@ describe("useOrderBookRecorder", () => {
     act(() => {
       result.current.stop();
     });
-
+    rerender({
+      book: { ...snapshot, lastPrice: 150.5 },
+    });
     await act(async () => {
-      vi.advanceTimersByTime(1_000);
-      await Promise.resolve();
       await Promise.resolve();
     });
 
@@ -101,23 +81,23 @@ describe("useOrderBookRecorder", () => {
 
   it("auto-stops when the selected time range elapses", async () => {
     vi.useFakeTimers();
-    fetchLiveOrderBookMock.mockResolvedValue(snapshot);
-
-    const { result } = renderHook(() => useOrderBookRecorder("PNB"));
+    const { result } = renderHook(() => useOrderBookRecorder("PNB", snapshot));
 
     act(() => {
       result.current.start();
     });
-    await flush();
+    await act(async () => {
+      await Promise.resolve();
+    });
     expect(result.current.recording).toBe(true);
+    expect(result.current.samples).toHaveLength(1);
 
     await act(async () => {
       vi.advanceTimersByTime(60_000);
       await Promise.resolve();
-      await Promise.resolve();
     });
 
     expect(result.current.recording).toBe(false);
-    expect(result.current.samples.length).toBeGreaterThanOrEqual(1);
+    expect(result.current.samples).toHaveLength(1);
   });
 });

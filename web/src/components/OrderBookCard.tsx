@@ -1,4 +1,5 @@
 import { useLiveOrderBook } from "../hooks/useLiveOrderBook";
+import { useOrderBookLiveTrail } from "../hooks/useOrderBookLiveTrail";
 import { useOrderBookRecorder } from "../hooks/useOrderBookRecorder";
 import {
   ORDER_BOOK_RECORD_INTERVALS,
@@ -93,7 +94,8 @@ const controlClassName =
 
 export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
   const { data, loading, error } = useLiveOrderBook(symbol, enabled);
-  const recorder = useOrderBookRecorder(symbol);
+  const recorder = useOrderBookRecorder(symbol, data);
+  const liveSamples = useOrderBookLiveTrail(data, recorder.interval, symbol);
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -110,14 +112,14 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
                 {data.lastPrice.toFixed(2)}
               </span>
             </span>
-            <span>5-level Kite depth · 5s refresh</span>
+            <span>5-level Kite depth · 1s live graph</span>
           </div>
         ) : null}
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-2">
         <label className="flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-kite-muted">
-          Time range
+          Live window
           <select
             className={controlClassName}
             value={recorder.interval}
@@ -173,7 +175,10 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
             </span>
           ) : null}
           {recorder.recording ? "Recording" : "Stopped"}
-          {` · ${recorder.samples.length} snapshot${recorder.samples.length === 1 ? "" : "s"}`}
+          {` · ${liveSamples.length} live tick${liveSamples.length === 1 ? "" : "s"}`}
+          {recorder.samples.length > 0
+            ? ` · ${recorder.samples.length} recorded`
+            : ""}
         </span>
       </div>
       {recorder.error ? (
@@ -203,8 +208,12 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
         </p>
       )}
 
-      {recorder.samples.length > 0 ? (
-        <OrderBookRecordingChart samples={recorder.samples} />
+      {liveSamples.length > 0 ? (
+        <OrderBookRecordingChart samples={liveSamples} live />
+      ) : data ? (
+        <p className="mt-3 mb-0 border-t border-kite-border/60 pt-3 text-[10px] uppercase tracking-wide text-kite-muted">
+          Live graph starting…
+        </p>
       ) : null}
     </section>
   );

@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef } from "react";
 import {
   ColorType,
   createChart,
+  type IChartApi,
+  type ISeriesApi,
   type LineData,
   type MouseEventParams,
   type SeriesMarker,
@@ -17,6 +19,7 @@ import { formatIstCrosshairTime, IST_TIMEZONE } from "../utils/istTime";
 
 interface OrderBookRecordingChartProps {
   samples: OrderBookRecordingSample[];
+  live?: boolean;
 }
 
 function formatQty(value: number): string {
@@ -41,17 +44,65 @@ function pointByTime(
   return points.find((point) => point.time === time);
 }
 
-export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProps) {
+function seriesFromPoints(points: OrderBookGraphPoint[], annotateMarkers: boolean) {
+  const stock: LineData[] = [];
+  const bids: LineData[] = [];
+  const offers: LineData[] = [];
+  const bidMarkers: SeriesMarker<UTCTimestamp>[] = [];
+  const offerMarkers: SeriesMarker<UTCTimestamp>[] = [];
+
+  for (const point of points) {
+    const time = point.time as UTCTimestamp;
+    stock.push({ time, value: point.stockPrice });
+    if (point.highestBidQty) {
+      bids.push({ time, value: point.highestBidQty.price });
+      bidMarkers.push({
+        time,
+        position: "inBar",
+        shape: "circle",
+        color: "#4CAF50",
+        text: annotateMarkers
+          ? `L${point.highestBidQty.level} ${point.highestBidQty.price.toFixed(2)} × ${formatQty(point.highestBidQty.quantity)}`
+          : undefined,
+      });
+    }
+    if (point.highestOfferQty) {
+      offers.push({ time, value: point.highestOfferQty.price });
+      offerMarkers.push({
+        time,
+        position: "inBar",
+        shape: "circle",
+        color: "#DF514C",
+        text: annotateMarkers
+          ? `L${point.highestOfferQty.level} ${point.highestOfferQty.price.toFixed(2)} × ${formatQty(point.highestOfferQty.quantity)}`
+          : undefined,
+      });
+    }
+  }
+
+  return { stock, bids, offers, bidMarkers, offerMarkers };
+}
+
+export function OrderBookRecordingChart({
+  samples,
+  live = false,
+}: OrderBookRecordingChartProps) {
   const { isDark } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const stockSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const bidSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
+  const offerSeriesRef = useRef<ISeriesApi<"Line"> | null>(null);
   const points = useMemo(() => buildOrderBookGraphPoints(samples), [samples]);
+  const pointsRef = useRef(points);
+  pointsRef.current = points;
   const latest = points[points.length - 1] ?? null;
   const annotateMarkers = points.length <= 40;
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container || points.length === 0) {
+    if (!container) {
       return;
     }
 
@@ -72,6 +123,8 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
         borderColor: palette.border,
         timeVisible: true,
         secondsVisible: true,
+        rightOffset: 4,
+        shiftVisibleRangeOnNewBar: true,
       },
       height: 260,
     });
@@ -95,46 +148,17 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
       priceLineVisible: false,
     });
 
-    const stock: LineData[] = [];
-    const bids: LineData[] = [];
-    const offers: LineData[] = [];
-    const bidMarkers: SeriesMarker<UTCTimestamp>[] = [];
-    const offerMarkers: SeriesMarker<UTCTimestamp>[] = [];
+    chartRef.current = chart;
+    stockSeriesRef.current = stockSeries;
+    bidSeriesRef.current = bidSeries;
+    offerSeriesRef.current = offerSeries;
 
-    for (const point of points) {
-      const time = point.time as UTCTimestamp;
-      stock.push({ time, value: point.stockPrice });
-      if (point.highestBidQty) {
-        bids.push({ time, value: point.highestBidQty.price });
-        bidMarkers.push({
-          time,
-          position: "inBar",
-          shape: "circle",
-          color: "#4CAF50",
-          text: annotateMarkers
-            ? `L${point.highestBidQty.level} ${point.highestBidQty.price.toFixed(2)} × ${formatQty(point.highestBidQty.quantity)}`
-            : undefined,
-        });
-      }
-      if (point.highestOfferQty) {
-        offers.push({ time, value: point.highestOfferQty.price });
-        offerMarkers.push({
-          time,
-          position: "inBar",
-          shape: "circle",
-          color: "#DF514C",
-          text: annotateMarkers
-            ? `L${point.highestOfferQty.level} ${point.highestOfferQty.price.toFixed(2)} × ${formatQty(point.highestOfferQty.quantity)}`
-            : undefined,
-        });
-      }
-    }
-
-    stockSeries.setData(stock);
-    bidSeries.setData(bids);
-    offerSeries.setData(offers);
-    bidSeries.setMarkers(bidMarkers);
-    offerSeries.setMarkers(offerMarkers);
+    const initial = seriesFromPoints(pointsRef.current, pointsRef.current.length <= 40);
+    stockSeries.setData(initial.stock);
+    bidSeries.setData(initial.bids);
+    offerSeries.setData(initial.offers);
+    bidSeries.setMarkers(initial.bidMarkers);
+    offerSeries.setMarkers(initial.offerMarkers);
     chart.timeScale().fitContent();
 
     const handleCrosshairMove = (param: MouseEventParams) => {
@@ -147,7 +171,7 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
         return;
       }
 
-      const point = pointByTime(points, param.time as UTCTimestamp);
+      const point = pointByTime(pointsRef.current, param.time as UTCTimestamp);
       if (!point) {
         tooltip.style.display = "none";
         return;
@@ -191,8 +215,33 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
       chart.unsubscribeCrosshairMove(handleCrosshairMove);
       disconnect();
       chart.remove();
+      chartRef.current = null;
+      stockSeriesRef.current = null;
+      bidSeriesRef.current = null;
+      offerSeriesRef.current = null;
     };
-  }, [points, isDark, annotateMarkers]);
+  }, [isDark]);
+
+  useEffect(() => {
+    const chart = chartRef.current;
+    const stockSeries = stockSeriesRef.current;
+    const bidSeries = bidSeriesRef.current;
+    const offerSeries = offerSeriesRef.current;
+    if (!chart || !stockSeries || !bidSeries || !offerSeries) {
+      return;
+    }
+
+    const { stock, bids, offers, bidMarkers, offerMarkers } = seriesFromPoints(
+      points,
+      annotateMarkers,
+    );
+    stockSeries.setData(stock);
+    bidSeries.setData(bids);
+    offerSeries.setData(offers);
+    bidSeries.setMarkers(bidMarkers);
+    offerSeries.setMarkers(offerMarkers);
+    chart.timeScale().fitContent();
+  }, [points, annotateMarkers, isDark]);
 
   if (points.length === 0) {
     return null;
@@ -200,8 +249,16 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
 
   return (
     <div className="mt-3 border-t border-kite-border/60 pt-3">
-      <p className="m-0 mb-1 text-[10px] uppercase tracking-wide text-kite-muted">
-        Stock price vs time · highest qty of 5 bids / offers
+      <p className="m-0 mb-1 flex items-center gap-1.5 text-[10px] uppercase tracking-wide text-kite-muted">
+        {live ? (
+          <span className="relative inline-flex h-2 w-2" aria-hidden="true">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-kite-green opacity-70" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-kite-green" />
+          </span>
+        ) : null}
+        {live
+          ? "Live · stock price vs time · highest qty of 5 bids / offers"
+          : "Stock price vs time · highest qty of 5 bids / offers"}
       </p>
       <div className="relative min-h-[220px] w-full">
         <div ref={containerRef} className="h-[260px] w-full" />
@@ -226,6 +283,9 @@ export function OrderBookRecordingChart({ samples }: OrderBookRecordingChartProp
           {latest?.highestOfferQty
             ? `L${latest.highestOfferQty.level} ${latest.highestOfferQty.price.toFixed(2)} × ${formatQty(latest.highestOfferQty.quantity)}`
             : "—"}
+        </li>
+        <li>
+          {points.length} tick{points.length === 1 ? "" : "s"}
         </li>
       </ul>
     </div>

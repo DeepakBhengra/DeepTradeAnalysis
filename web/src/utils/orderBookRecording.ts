@@ -23,6 +23,23 @@ export const ORDER_BOOK_RECORD_POLL_MS = 1_000;
 
 export const ORDER_BOOK_RECORD_INTERVAL_MS = ORDER_BOOK_RECORD_DURATION_MS;
 
+/** Drop live-graph ticks older than the selected window; keep the latest tick if all are stale. */
+export function trimOrderBookLiveTrail(
+  samples: OrderBookRecordingSample[],
+  windowMs: number,
+  nowMs: number = Date.now(),
+): OrderBookRecordingSample[] {
+  if (samples.length === 0) {
+    return samples;
+  }
+  const cutoff = nowMs - windowMs;
+  const kept = samples.filter((sample) => {
+    const ts = Date.parse(sample.recordedAtIso);
+    return Number.isFinite(ts) && ts >= cutoff;
+  });
+  return kept.length > 0 ? kept : samples.slice(-1);
+}
+
 function sideFingerprint(row: OrderBookSideRow): string {
   return `${row.price}:${row.orders}:${row.quantity}`;
 }

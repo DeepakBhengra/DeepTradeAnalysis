@@ -2,8 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { fetchLiveOrderBook } from "../api/client";
 import type { OrderBookSnapshot } from "../types/orderBook";
-
-const POLL_INTERVAL_MS = 5_000;
+import {
+  buildDemoOrderBookSnapshot,
+  isLiveGraphDemoEnabled,
+} from "../utils/orderBookLiveDemo";
+import { ORDER_BOOK_RECORD_POLL_MS } from "../utils/orderBookRecording";
 
 export function useLiveOrderBook(symbol: string | null, enabled: boolean) {
   const [data, setData] = useState<OrderBookSnapshot | null>(null);
@@ -45,11 +48,27 @@ export function useLiveOrderBook(symbol: string | null, enabled: boolean) {
       return;
     }
 
+    if (isLiveGraphDemoEnabled()) {
+      let tick = 0;
+      const emit = () => {
+        tick += 1;
+        setData(buildDemoOrderBookSnapshot(symbol, tick));
+        setError(null);
+        setLoading(false);
+      };
+      emit();
+      const timer = window.setInterval(emit, ORDER_BOOK_RECORD_POLL_MS);
+      return () => {
+        requestIdRef.current += 1;
+        window.clearInterval(timer);
+      };
+    }
+
     setLoading(true);
     void refresh();
     const timer = setInterval(() => {
       void refresh();
-    }, POLL_INTERVAL_MS);
+    }, ORDER_BOOK_RECORD_POLL_MS);
 
     return () => {
       requestIdRef.current += 1;

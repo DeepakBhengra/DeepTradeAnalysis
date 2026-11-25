@@ -34,8 +34,14 @@ const recorder = {
   download,
 };
 
+let liveTrailSamples: unknown[] = [];
+
 vi.mock("../hooks/useOrderBookRecorder", () => ({
   useOrderBookRecorder: () => recorder,
+}));
+
+vi.mock("../hooks/useOrderBookLiveTrail", () => ({
+  useOrderBookLiveTrail: () => liveTrailSamples,
 }));
 
 const snapshot: OrderBookSnapshot = {
@@ -80,6 +86,7 @@ describe("OrderBookCard recording controls", () => {
     recorder.samples = [];
     recorder.error = null;
     recorder.interval = "5m";
+    liveTrailSamples = [];
   });
 
   it("exposes start, stop, time range, and download XLS", () => {
@@ -91,7 +98,7 @@ describe("OrderBookCard recording controls", () => {
     expect(screen.getByRole("button", { name: "Stop recording" })).toBeDisabled();
     expect(screen.getByLabelText("Recording stopped")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText(/Time range/i), {
+    fireEvent.change(screen.getByLabelText(/Live window/i), {
       target: { value: "15m" },
     });
     expect(setRecordInterval).toHaveBeenCalledWith("15m");
@@ -102,6 +109,7 @@ describe("OrderBookCard recording controls", () => {
   it("shows a recording-in-progress status while capturing", () => {
     recorder.recording = true;
     recorder.samples = [{}];
+    liveTrailSamples = [{}];
     render(<OrderBookCard symbol="PNB" />);
 
     expect(screen.getByLabelText("Recording in progress")).toBeInTheDocument();
@@ -109,5 +117,15 @@ describe("OrderBookCard recording controls", () => {
     expect(screen.getByRole("button", { name: "Start recording" })).toBeDisabled();
     expect(screen.getByText(/Recording/)).toBeInTheDocument();
     expect(screen.getByTestId("order-book-graph")).toHaveTextContent("1 graph points");
+  });
+
+  it("keeps generating the graph from the live trail after recording stops", () => {
+    recorder.recording = false;
+    recorder.samples = [];
+    liveTrailSamples = [{}, {}, {}];
+    render(<OrderBookCard symbol="PNB" />);
+
+    expect(screen.getByLabelText("Recording stopped")).toBeInTheDocument();
+    expect(screen.getByTestId("order-book-graph")).toHaveTextContent("3 graph points");
   });
 });
