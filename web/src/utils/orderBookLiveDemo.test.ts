@@ -10,4 +10,16 @@ describe("orderBookLiveDemo", () => {
     expect(highestQuantityOffer(snapshot)?.level).toBe(3);
     expect(snapshot.lastPrice).toBe(147.93);
   });
+
+  it("makes last price touch the fat bid, then the fat offer, on a 10-tick cycle", () => {
+    const touchBid = buildDemoOrderBookSnapshot("PNB", 10);
+    expect(touchBid.lastPrice).toBe(highestQuantityBid(touchBid)?.price);
+
+    const mid = buildDemoOrderBookSnapshot("PNB", 3);
+    expect(mid.lastPrice).not.toBe(highestQuantityBid(mid)?.price);
+    expect(mid.lastPrice).not.toBe(highestQuantityOffer(mid)?.price);
+
+    const touchOffer = buildDemoOrderBookSnapshot("PNB", 5);
+    expect(touchOffer.lastPrice).toBe(highestQuantityOffer(touchOffer)?.price);
+  });
 });

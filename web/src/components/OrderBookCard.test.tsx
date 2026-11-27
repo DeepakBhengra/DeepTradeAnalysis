@@ -1,8 +1,8 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { OrderBookCard, OrderBookTable } from "./OrderBookCard";
-import type { OrderBookSnapshot } from "../types/orderBook";
+import { OrderBookCard, OrderBookTable, OrderBookTouchReportTable } from "./OrderBookCard";
+import type { OrderBookSnapshot, OrderBookTouchEvent } from "../types/orderBook";
 
 vi.mock("../hooks/useLiveOrderBook", () => ({
   useLiveOrderBook: () => ({
@@ -35,6 +35,8 @@ const recorder = {
 };
 
 let liveTrailSamples: unknown[] = [];
+const downloadTouchReport = vi.fn();
+let touchEvents: OrderBookTouchEvent[] = [];
 
 vi.mock("../hooks/useOrderBookRecorder", () => ({
   useOrderBookRecorder: () => recorder,
@@ -42,6 +44,13 @@ vi.mock("../hooks/useOrderBookRecorder", () => ({
 
 vi.mock("../hooks/useOrderBookLiveTrail", () => ({
   useOrderBookLiveTrail: () => liveTrailSamples,
+}));
+
+vi.mock("../hooks/useOrderBookTouchReport", () => ({
+  useOrderBookTouchReport: () => ({
+    events: touchEvents,
+    download: downloadTouchReport,
+  }),
 }));
 
 const snapshot: OrderBookSnapshot = {
@@ -138,6 +147,8 @@ describe("OrderBookCard recording controls", () => {
     recorder.error = null;
     recorder.interval = "5m";
     liveTrailSamples = [];
+    touchEvents = [];
+    downloadTouchReport.mockClear();
   });
 
   it("exposes start, stop, time range, and download XLS", () => {
@@ -155,6 +166,7 @@ describe("OrderBookCard recording controls", () => {
     expect(setRecordInterval).toHaveBeenCalledWith("15m");
 
     expect(screen.getByRole("button", { name: "Download XLS" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Download touch report" })).toBeDisabled();
   });
 
   it("shows a recording-in-progress status while capturing", () => {
@@ -178,5 +190,68 @@ describe("OrderBookCard recording controls", () => {
 
     expect(screen.getByLabelText("Recording stopped")).toBeInTheDocument();
     expect(screen.getByTestId("order-book-graph")).toHaveTextContent("3 graph points");
+  });
+
+  it("enables download of the stock-price touch report", () => {
+    touchEvents = [
+      {
+        recordedAtIso: "2026-11-27T07:16:41.000Z",
+        recordedAtIst: "2026-11-27 12:46:41",
+        symbol: "NSE:PNB",
+        stockPrice: 147.69,
+        touched: "highest_bid",
+        highestBidPrice: 147.69,
+        highestBidQty: 8336,
+        highestBidLevel: 3,
+        highestOfferPrice: 147.75,
+        highestOfferQty: 11210,
+        highestOfferLevel: 2,
+        totalBidQty: 18482,
+        totalOfferQty: 2663647,
+        totalBidOrders: 23,
+        totalOfferOrders: 22,
+      },
+    ];
+    render(<OrderBookCard symbol="PNB" />);
+
+    expect(screen.getByText(/1 touch/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Download touch report" }));
+    expect(downloadTouchReport).toHaveBeenCalled();
+  });
+});
+
+describe("OrderBookTouchReportTable", () => {
+  it("lists timing, fat bid/offer, stock price, and totals", () => {
+    render(
+      <OrderBookTouchReportTable
+        events={[
+          {
+            recordedAtIso: "2026-11-27T07:16:41.000Z",
+            recordedAtIst: "2026-11-27 12:46:41",
+            symbol: "NSE:PNB",
+            stockPrice: 147.69,
+            touched: "highest_bid",
+            highestBidPrice: 147.69,
+            highestBidQty: 8336,
+            highestBidLevel: 3,
+            highestOfferPrice: 147.75,
+            highestOfferQty: 11210,
+            highestOfferLevel: 2,
+            totalBidQty: 18482,
+            totalOfferQty: 2663647,
+            totalBidOrders: 23,
+            totalOfferOrders: 22,
+          },
+        ]}
+      />,
+    );
+
+    expect(screen.getByText("2026-11-27 12:46:41")).toBeInTheDocument();
+    expect(screen.getByText("Highest BID", { selector: "td" })).toBeInTheDocument();
+    expect(screen.getByText("147.69")).toBeInTheDocument();
+    expect(screen.getByText(/147\.69 × 8,336/)).toBeInTheDocument();
+    expect(screen.getByText(/147\.75 × 11,210/)).toBeInTheDocument();
+    expect(screen.getByText("18,482")).toBeInTheDocument();
+    expect(screen.getByText("26,63,647")).toBeInTheDocument();
   });
 });

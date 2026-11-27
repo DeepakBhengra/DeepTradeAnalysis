@@ -12,23 +12,30 @@ export function buildDemoOrderBookSnapshot(
   symbol: string,
   tick: number,
 ): OrderBookSnapshot {
-  const lastPrice = Number((147.9 + (tick % 11) * 0.01).toFixed(2));
+  const mid = Number((147.9 + (tick % 11) * 0.01).toFixed(2));
   const fatBidQty = 18_000 + (tick % 6) * 250;
   const fatOfferQty = 6_000 + (tick % 5) * 180;
   const bids = [
-    { price: lastPrice - 0.05, orders: 1, quantity: 500 + tick },
-    { price: lastPrice - 0.1, orders: 4, quantity: fatBidQty },
-    { price: lastPrice - 0.11, orders: 1, quantity: 2_000 },
-    { price: lastPrice - 0.12, orders: 3, quantity: 756 },
-    { price: lastPrice - 0.13, orders: 2, quantity: 607 },
+    { price: Number((mid - 0.05).toFixed(2)), orders: 1, quantity: 500 + tick },
+    { price: Number((mid - 0.1).toFixed(2)), orders: 4, quantity: fatBidQty },
+    { price: Number((mid - 0.11).toFixed(2)), orders: 1, quantity: 2_000 },
+    { price: Number((mid - 0.12).toFixed(2)), orders: 3, quantity: 756 },
+    { price: Number((mid - 0.13).toFixed(2)), orders: 2, quantity: 607 },
   ];
   const offers = [
-    { price: lastPrice + 0.05, orders: 3, quantity: 233 },
-    { price: lastPrice + 0.06, orders: 6, quantity: 1_472 },
-    { price: lastPrice + 0.07, orders: 8, quantity: fatOfferQty },
-    { price: lastPrice + 0.08, orders: 8, quantity: 2_967 },
-    { price: lastPrice + 0.09, orders: 12, quantity: 1_330 },
+    { price: Number((mid + 0.05).toFixed(2)), orders: 3, quantity: 233 },
+    { price: Number((mid + 0.06).toFixed(2)), orders: 6, quantity: 1_472 },
+    { price: Number((mid + 0.07).toFixed(2)), orders: 8, quantity: fatOfferQty },
+    { price: Number((mid + 0.08).toFixed(2)), orders: 8, quantity: 2_967 },
+    { price: Number((mid + 0.09).toFixed(2)), orders: 12, quantity: 1_330 },
   ];
+  const phase = tick % 10;
+  const lastPrice =
+    phase === 0
+      ? bids[1].price
+      : phase === 5
+        ? offers[2].price
+        : mid;
   return {
     symbol: symbol.includes(":") ? symbol : `NSE:${symbol}`,
     lastPrice,
