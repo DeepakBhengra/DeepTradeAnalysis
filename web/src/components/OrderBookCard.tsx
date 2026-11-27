@@ -7,6 +7,7 @@ import {
   type OrderBookSideRow,
   type OrderBookSnapshot,
 } from "../types/orderBook";
+import { highestQuantityBid, highestQuantityOffer } from "../utils/orderBookGraph";
 import { OrderBookRecordingChart } from "./OrderBookRecordingChart";
 
 interface OrderBookCardProps {
@@ -21,9 +22,11 @@ function formatIndianQty(value: number): string {
 function SideCells({
   row,
   qtyClass,
+  emphasize = false,
 }: {
   row: OrderBookSideRow | null;
   qtyClass: string;
+  emphasize?: boolean;
 }) {
   if (!row) {
     return (
@@ -35,11 +38,16 @@ function SideCells({
     );
   }
 
+  const weight = emphasize ? "text-sm font-bold" : "font-medium";
+
   return (
     <>
-      <td className="px-2 py-0.5 font-medium text-kite-text">{row.price.toFixed(2)}</td>
+      <td className={`px-2 py-0.5 ${weight} text-kite-text`}>{row.price.toFixed(2)}</td>
       <td className="px-2 py-0.5 text-right text-kite-muted">{row.orders}</td>
-      <td className={`px-2 py-0.5 text-right font-medium ${qtyClass}`}>
+      <td
+        className={`px-2 py-0.5 text-right ${weight} ${qtyClass}`}
+        data-highest-qty={emphasize ? "true" : undefined}
+      >
         {formatIndianQty(row.quantity)}
       </td>
     </>
@@ -47,6 +55,9 @@ function SideCells({
 }
 
 export function OrderBookTable({ snapshot }: { snapshot: OrderBookSnapshot }) {
+  const highestBid = highestQuantityBid(snapshot);
+  const highestOffer = highestQuantityOffer(snapshot);
+
   return (
     <div className="overflow-x-auto">
       <table className="w-full min-w-[28rem] border-collapse text-xs tabular-nums">
@@ -63,8 +74,16 @@ export function OrderBookTable({ snapshot }: { snapshot: OrderBookSnapshot }) {
         <tbody>
           {snapshot.rows.map((row, index) => (
             <tr key={`depth-${index}`} className="border-t border-kite-border/60">
-              <SideCells row={row.bid} qtyClass="text-kite-green" />
-              <SideCells row={row.offer} qtyClass="text-kite-red" />
+              <SideCells
+                row={row.bid}
+                qtyClass="text-kite-green"
+                emphasize={highestBid?.level === index + 1}
+              />
+              <SideCells
+                row={row.offer}
+                qtyClass="text-kite-red"
+                emphasize={highestOffer?.level === index + 1}
+              />
             </tr>
           ))}
           <tr className="border-t border-kite-border text-xs font-medium">

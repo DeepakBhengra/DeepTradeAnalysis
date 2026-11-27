@@ -74,6 +74,57 @@ describe("OrderBookTable", () => {
     expect(screen.getByText("20,13,775")).toBeInTheDocument();
     expect(screen.getByText("26,76,374")).toBeInTheDocument();
   });
+
+  it("bolds the fattest of 5 bid qtys and the fattest of 5 offer qtys", () => {
+    const depth: OrderBookSnapshot = {
+      ...snapshot,
+      bids: [
+        { price: 147.71, orders: 4, quantity: 1194 },
+        { price: 147.7, orders: 7, quantity: 4563 },
+        { price: 147.69, orders: 4, quantity: 8336 },
+        { price: 147.68, orders: 4, quantity: 1462 },
+        { price: 147.67, orders: 4, quantity: 900 },
+      ],
+      offers: [
+        { price: 147.74, orders: 3, quantity: 23 },
+        { price: 147.75, orders: 12, quantity: 11210 },
+        { price: 147.76, orders: 1, quantity: 12 },
+        { price: 147.77, orders: 3, quantity: 472 },
+        { price: 147.78, orders: 3, quantity: 100 },
+      ],
+      rows: [
+        {
+          bid: { price: 147.71, orders: 4, quantity: 1194 },
+          offer: { price: 147.74, orders: 3, quantity: 23 },
+        },
+        {
+          bid: { price: 147.7, orders: 7, quantity: 4563 },
+          offer: { price: 147.75, orders: 12, quantity: 11210 },
+        },
+        {
+          bid: { price: 147.69, orders: 4, quantity: 8336 },
+          offer: { price: 147.76, orders: 1, quantity: 12 },
+        },
+        {
+          bid: { price: 147.68, orders: 4, quantity: 1462 },
+          offer: { price: 147.77, orders: 3, quantity: 472 },
+        },
+        {
+          bid: { price: 147.67, orders: 4, quantity: 900 },
+          offer: { price: 147.78, orders: 3, quantity: 100 },
+        },
+      ],
+    };
+
+    render(<OrderBookTable snapshot={depth} />);
+
+    expect(screen.getByText("8,336")).toHaveAttribute("data-highest-qty", "true");
+    expect(screen.getByText("8,336")).toHaveClass("font-bold", "text-sm");
+    expect(screen.getByText("11,210")).toHaveAttribute("data-highest-qty", "true");
+    expect(screen.getByText("11,210")).toHaveClass("font-bold", "text-sm");
+    expect(screen.getByText("4,563")).not.toHaveAttribute("data-highest-qty");
+    expect(screen.getByText("472")).not.toHaveAttribute("data-highest-qty");
+  });
 });
 
 describe("OrderBookCard recording controls", () => {
