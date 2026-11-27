@@ -44,14 +44,28 @@ function pointByTime(
   return points.find((point) => point.time === time);
 }
 
-function seriesFromPoints(points: OrderBookGraphPoint[], annotateMarkers: boolean) {
+function lastIndexWith(
+  points: OrderBookGraphPoint[],
+  key: "highestBidQty" | "highestOfferQty",
+): number {
+  for (let index = points.length - 1; index >= 0; index--) {
+    if (points[index]?.[key]) {
+      return index;
+    }
+  }
+  return -1;
+}
+
+function seriesFromPoints(points: OrderBookGraphPoint[]) {
   const stock: LineData[] = [];
   const bids: LineData[] = [];
   const offers: LineData[] = [];
   const bidMarkers: SeriesMarker<UTCTimestamp>[] = [];
   const offerMarkers: SeriesMarker<UTCTimestamp>[] = [];
+  const lastBidIndex = lastIndexWith(points, "highestBidQty");
+  const lastOfferIndex = lastIndexWith(points, "highestOfferQty");
 
-  for (const point of points) {
+  points.forEach((point, index) => {
     const time = point.time as UTCTimestamp;
     stock.push({ time, value: point.stockPrice });
     if (point.highestBidQty) {
@@ -61,9 +75,10 @@ function seriesFromPoints(points: OrderBookGraphPoint[], annotateMarkers: boolea
         position: "inBar",
         shape: "circle",
         color: "#4CAF50",
-        text: annotateMarkers
-          ? `L${point.highestBidQty.level} ${point.highestBidQty.price.toFixed(2)} × ${formatQty(point.highestBidQty.quantity)}`
-          : undefined,
+        text:
+          index === lastBidIndex
+            ? `L${point.highestBidQty.level} ${point.highestBidQty.price.toFixed(2)} × ${formatQty(point.highestBidQty.quantity)}`
+            : undefined,
       });
     }
     if (point.highestOfferQty) {
@@ -73,12 +88,13 @@ function seriesFromPoints(points: OrderBookGraphPoint[], annotateMarkers: boolea
         position: "inBar",
         shape: "circle",
         color: "#DF514C",
-        text: annotateMarkers
-          ? `L${point.highestOfferQty.level} ${point.highestOfferQty.price.toFixed(2)} × ${formatQty(point.highestOfferQty.quantity)}`
-          : undefined,
+        text:
+          index === lastOfferIndex
+            ? `L${point.highestOfferQty.level} ${point.highestOfferQty.price.toFixed(2)} × ${formatQty(point.highestOfferQty.quantity)}`
+            : undefined,
       });
     }
-  }
+  });
 
   return { stock, bids, offers, bidMarkers, offerMarkers };
 }
@@ -98,7 +114,6 @@ export function OrderBookRecordingChart({
   const pointsRef = useRef(points);
   pointsRef.current = points;
   const latest = points[points.length - 1] ?? null;
-  const annotateMarkers = points.length <= 40;
 
   useEffect(() => {
     const container = containerRef.current;
@@ -153,7 +168,7 @@ export function OrderBookRecordingChart({
     bidSeriesRef.current = bidSeries;
     offerSeriesRef.current = offerSeries;
 
-    const initial = seriesFromPoints(pointsRef.current, pointsRef.current.length <= 40);
+    const initial = seriesFromPoints(pointsRef.current);
     stockSeries.setData(initial.stock);
     bidSeries.setData(initial.bids);
     offerSeries.setData(initial.offers);
@@ -231,17 +246,14 @@ export function OrderBookRecordingChart({
       return;
     }
 
-    const { stock, bids, offers, bidMarkers, offerMarkers } = seriesFromPoints(
-      points,
-      annotateMarkers,
-    );
+    const { stock, bids, offers, bidMarkers, offerMarkers } = seriesFromPoints(points);
     stockSeries.setData(stock);
     bidSeries.setData(bids);
     offerSeries.setData(offers);
     bidSeries.setMarkers(bidMarkers);
     offerSeries.setMarkers(offerMarkers);
     chart.timeScale().fitContent();
-  }, [points, annotateMarkers, isDark]);
+  }, [points, isDark]);
 
   if (points.length === 0) {
     return null;
@@ -257,7 +269,7 @@ export function OrderBookRecordingChart({
           </span>
         ) : null}
         {live
-          ? "Live · stock price vs time · highest qty of 5 bids / offers"
+          ? "Live · last 30 highest-qty bids / offers"
           : "Stock price vs time · highest qty of 5 bids / offers"}
       </p>
       <div className="relative min-h-[220px] w-full">
@@ -285,7 +297,7 @@ export function OrderBookRecordingChart({
             : "—"}
         </li>
         <li>
-          {points.length} tick{points.length === 1 ? "" : "s"}
+          {points.length}/30 tick{points.length === 1 ? "" : "s"}
         </li>
       </ul>
     </div>

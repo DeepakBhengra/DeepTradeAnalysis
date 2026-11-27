@@ -154,4 +154,22 @@ describe("orderBookRecording", () => {
     expect(stale).toHaveLength(1);
     expect(stale[0]?.snapshot.lastPrice).toBe(150.5);
   });
+
+  it("keeps only the last 30 live-graph instances", () => {
+    const samples = Array.from({ length: 31 }, (_, index) =>
+      buildOrderBookRecordingSample(
+        { ...snapshot, lastPrice: 150 + index },
+        "5m",
+        new Date(Date.parse("2026-11-27T06:00:00.000Z") + index * 1_000),
+      ),
+    );
+    const trimmed = trimOrderBookLiveTrail(
+      samples,
+      5 * 60_000,
+      Date.parse("2026-11-27T06:00:31.000Z"),
+    );
+    expect(trimmed).toHaveLength(30);
+    expect(trimmed[0]?.snapshot.lastPrice).toBe(151);
+    expect(trimmed[29]?.snapshot.lastPrice).toBe(180);
+  });
 });

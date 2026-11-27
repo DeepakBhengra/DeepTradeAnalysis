@@ -74,4 +74,30 @@ describe("useOrderBookLiveTrail", () => {
     expect(result.current).toHaveLength(1);
     expect(result.current[0]?.recordedAtIso).toBe("2026-11-25T06:00:00.000Z");
   });
+
+  it("keeps only 30 highest-bid/offer ticks on the live graph", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-27T06:00:00.000Z"));
+
+    const { result, rerender } = renderHook(
+      ({ book }: { book: OrderBookSnapshot }) =>
+        useOrderBookLiveTrail(book, "5m", "PNB"),
+      { initialProps: { book: snapshot } },
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    for (let index = 1; index <= 31; index++) {
+      vi.setSystemTime(new Date(Date.parse("2026-11-27T06:00:00.000Z") + index * 1_000));
+      rerender({ book: { ...snapshot, lastPrice: 150 + index } });
+      await act(async () => {
+        await Promise.resolve();
+      });
+    }
+
+    expect(result.current).toHaveLength(30);
+    expect(result.current[0]?.snapshot.lastPrice).toBe(152);
+    expect(result.current[29]?.snapshot.lastPrice).toBe(181);
+  });
 });

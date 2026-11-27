@@ -23,11 +23,15 @@ export const ORDER_BOOK_RECORD_POLL_MS = 1_000;
 
 export const ORDER_BOOK_RECORD_INTERVAL_MS = ORDER_BOOK_RECORD_DURATION_MS;
 
-/** Drop live-graph ticks older than the selected window; keep the latest tick if all are stale. */
+/** How many highest-bid / highest-offer ticks the live graph keeps on screen. */
+export const ORDER_BOOK_GRAPH_MAX_INSTANCES = 30;
+
+/** Drop live-graph ticks older than the window or past the 30-instance cap. */
 export function trimOrderBookLiveTrail(
   samples: OrderBookRecordingSample[],
   windowMs: number,
   nowMs: number = Date.now(),
+  maxInstances: number = ORDER_BOOK_GRAPH_MAX_INSTANCES,
 ): OrderBookRecordingSample[] {
   if (samples.length === 0) {
     return samples;
@@ -37,7 +41,11 @@ export function trimOrderBookLiveTrail(
     const ts = Date.parse(sample.recordedAtIso);
     return Number.isFinite(ts) && ts >= cutoff;
   });
-  return kept.length > 0 ? kept : samples.slice(-1);
+  const byTime = kept.length > 0 ? kept : samples.slice(-1);
+  if (byTime.length <= maxInstances) {
+    return byTime;
+  }
+  return byTime.slice(-maxInstances);
 }
 
 function sideFingerprint(row: OrderBookSideRow): string {

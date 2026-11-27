@@ -14,7 +14,7 @@ import {
 
 /**
  * Always-on rolling trail for the live graph. Appends about once a second while
- * Kite snapshots arrive, independent of Start/Stop recording.
+ * Kite snapshots arrive, independent of Start/Stop recording. Caps at 30 ticks.
  */
 export function useOrderBookLiveTrail(
   snapshot: OrderBookSnapshot | null,
