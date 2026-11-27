@@ -1,13 +1,16 @@
 import { useLiveOrderBook } from "../hooks/useLiveOrderBook";
 import { useOrderBookLiveTrail } from "../hooks/useOrderBookLiveTrail";
 import { useOrderBookRecorder } from "../hooks/useOrderBookRecorder";
+import { useOrderBookTouchReport } from "../hooks/useOrderBookTouchReport";
 import {
   ORDER_BOOK_RECORD_INTERVALS,
   type OrderBookRecordInterval,
   type OrderBookSideRow,
   type OrderBookSnapshot,
+  type OrderBookTouchEvent,
 } from "../types/orderBook";
 import { highestQuantityBid, highestQuantityOffer } from "../utils/orderBookGraph";
+import { formatTouchSideLabel } from "../utils/orderBookTouchReport";
 import { OrderBookRecordingChart } from "./OrderBookRecordingChart";
 
 interface OrderBookCardProps {
@@ -108,6 +111,98 @@ export function OrderBookTable({ snapshot }: { snapshot: OrderBookSnapshot }) {
   );
 }
 
+function formatPrice(value: number | null): string {
+  return value == null || !Number.isFinite(value) ? "—" : value.toFixed(2);
+}
+
+export function OrderBookTouchReportTable({
+  events,
+}: {
+  events: OrderBookTouchEvent[];
+}) {
+  const rows = [...events].reverse();
+  return (
+    <div className="mt-3 border-t border-kite-border/60 pt-3">
+      <h3 className="m-0 mb-1 text-[10px] font-medium uppercase tracking-wide text-kite-muted">
+        Stock price touches · highest BID / OFFER
+      </h3>
+      <p className="m-0 mb-2 text-[10px] text-kite-muted">
+        Logged when last price meets the fattest of the 5 bids or 5 offers. Totals
+        are the full book at that instant.
+      </p>
+      {events.length === 0 ? (
+        <p className="m-0 text-xs text-kite-muted">
+          No touches yet — last price has not met the highest-qty bid or offer.
+        </p>
+      ) : (
+        <div className="max-h-48 overflow-auto">
+          <table className="w-full min-w-[40rem] border-collapse text-xs tabular-nums">
+            <thead>
+              <tr className="text-[10px] uppercase tracking-wide text-kite-muted">
+                <th className="px-2 py-1 text-left font-medium">Time IST</th>
+                <th className="px-2 py-1 text-left font-medium">Touched</th>
+                <th className="px-2 py-1 text-right font-medium">Stock</th>
+                <th className="px-2 py-1 text-right font-medium text-kite-green">
+                  Highest BID
+                </th>
+                <th className="px-2 py-1 text-right font-medium text-kite-red">
+                  Highest OFFER
+                </th>
+                <th className="px-2 py-1 text-right font-medium text-kite-green">
+                  Total BID
+                </th>
+                <th className="px-2 py-1 text-right font-medium text-kite-red">
+                  Total OFFER
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((event) => (
+                <tr
+                  key={event.recordedAtIso}
+                  className="border-t border-kite-border/60"
+                >
+                  <td className="px-2 py-0.5 text-kite-text">{event.recordedAtIst}</td>
+                  <td
+                    className={`px-2 py-0.5 font-medium ${
+                      event.touched === "highest_offer"
+                        ? "text-kite-red"
+                        : "text-kite-green"
+                    }`}
+                  >
+                    {formatTouchSideLabel(event.touched)}
+                  </td>
+                  <td className="px-2 py-0.5 text-right font-medium text-kite-text">
+                    {formatPrice(event.stockPrice)}
+                  </td>
+                  <td className="px-2 py-0.5 text-right text-kite-green">
+                    {formatPrice(event.highestBidPrice)} ×{" "}
+                    {event.highestBidQty == null
+                      ? "—"
+                      : formatIndianQty(event.highestBidQty)}
+                  </td>
+                  <td className="px-2 py-0.5 text-right text-kite-red">
+                    {formatPrice(event.highestOfferPrice)} ×{" "}
+                    {event.highestOfferQty == null
+                      ? "—"
+                      : formatIndianQty(event.highestOfferQty)}
+                  </td>
+                  <td className="px-2 py-0.5 text-right text-kite-green">
+                    {formatIndianQty(event.totalBidQty)}
+                  </td>
+                  <td className="px-2 py-0.5 text-right text-kite-red">
+                    {formatIndianQty(event.totalOfferQty)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const controlClassName =
   "cursor-pointer rounded-sm border border-kite-border bg-kite-bg px-2.5 py-1 text-xs text-kite-text hover:bg-kite-surface disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -115,6 +210,7 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
   const { data, loading, error } = useLiveOrderBook(symbol, enabled);
   const recorder = useOrderBookRecorder(symbol, data);
   const liveSamples = useOrderBookLiveTrail(data, recorder.interval, symbol);
+  const touchReport = useOrderBookTouchReport(data, symbol);
 
   return (
     <section className="border border-kite-border bg-kite-surface p-3">
@@ -178,6 +274,14 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
         >
           Download XLS
         </button>
+        <button
+          type="button"
+          className={controlClassName}
+          disabled={touchReport.events.length === 0}
+          onClick={touchReport.download}
+        >
+          Download touch report
+        </button>
         <span
           className={`inline-flex items-center gap-1.5 text-[10px] ${
             recorder.recording ? "font-medium text-kite-red" : "text-kite-muted"
@@ -198,6 +302,9 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
           {recorder.samples.length > 0
             ? ` · ${recorder.samples.length} recorded`
             : ""}
+          {` · ${touchReport.events.length} touch${
+            touchReport.events.length === 1 ? "" : "es"
+          }`}
         </span>
       </div>
       {recorder.error ? (
@@ -233,6 +340,10 @@ export function OrderBookCard({ symbol, enabled = true }: OrderBookCardProps) {
         <p className="mt-3 mb-0 border-t border-kite-border/60 pt-3 text-[10px] uppercase tracking-wide text-kite-muted">
           Live graph starting…
         </p>
+      ) : null}
+
+      {data || touchReport.events.length > 0 ? (
+        <OrderBookTouchReportTable events={touchReport.events} />
       ) : null}
     </section>
   );

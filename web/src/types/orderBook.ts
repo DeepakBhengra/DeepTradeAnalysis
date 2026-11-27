@@ -31,3 +31,24 @@ export interface OrderBookRecordingSample {
   interval: OrderBookRecordInterval;
   snapshot: OrderBookSnapshot;
 }
+
+export type OrderBookTouchSide = "highest_bid" | "highest_offer" | "both";
+
+/** One instance where last price met the fattest of 5 bids or 5 offers. */
+export interface OrderBookTouchEvent {
+  recordedAtIso: string;
+  recordedAtIst: string;
+  symbol: string;
+  stockPrice: number;
+  touched: OrderBookTouchSide;
+  highestBidPrice: number | null;
+  highestBidQty: number | null;
+  highestBidLevel: number | null;
+  highestOfferPrice: number | null;
+  highestOfferQty: number | null;
+  highestOfferLevel: number | null;
+  totalBidQty: number;
+  totalOfferQty: number;
+  totalBidOrders: number;
+  totalOfferOrders: number;
+}
