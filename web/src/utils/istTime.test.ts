@@ -39,6 +39,16 @@ describe("istTime", () => {
     expect(formatIstTickMark(nseOpenUtcSeconds, TickMarkType.Time)).toBe("09:15");
   });
 
+  it("formats second-level axis ticks in IST, not UTC", () => {
+    const utcSeconds = Math.floor(
+      new Date("2026-11-27T06:51:30.000Z").getTime() / 1000,
+    );
+    expect(formatIstTickMark(utcSeconds, TickMarkType.TimeWithSeconds)).toBe(
+      "12:21:30",
+    );
+    expect(formatIstTickMark(utcSeconds, TickMarkType.Time)).toBe("12:21");
+  });
+
   it("formats trading-day labels with weekday", () => {
     expect(formatIstTickMark(nseOpenUtcSeconds, TickMarkType.DayOfMonth)).toBe(
       "Thu, 18 Jun",

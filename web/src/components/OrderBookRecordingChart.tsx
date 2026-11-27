@@ -15,7 +15,7 @@ import type { OrderBookGraphPoint } from "../utils/orderBookGraph";
 import { buildOrderBookGraphPoints } from "../utils/orderBookGraph";
 import type { OrderBookRecordingSample } from "../types/orderBook";
 import { getChartPalette, getChartTheme, observeResize } from "../utils/chartTheme";
-import { formatIstCrosshairTime, IST_TIMEZONE } from "../utils/istTime";
+import { formatIstCrosshairTime, formatIstTickMark, IST_TIMEZONE } from "../utils/istTime";
 
 interface OrderBookRecordingChartProps {
   samples: OrderBookRecordingSample[];
@@ -122,24 +122,29 @@ export function OrderBookRecordingChart({
     }
 
     const palette = getChartPalette(isDark);
+    const theme = getChartTheme(isDark);
     const chart = createChart(container, {
-      ...getChartTheme(isDark),
+      ...theme,
       layout: {
         background: { type: ColorType.Solid, color: palette.background },
         textColor: palette.text,
         attributionLogo: false,
       },
       localization: {
+        ...theme.localization,
         locale: "en-IN",
         timeFormatter: (time) =>
           `${formatIstCrosshairTime(time)} ${formatCrosshairTimeWithSeconds(time as UTCTimestamp)}`,
       },
       timeScale: {
+        ...theme.timeScale,
         borderColor: palette.border,
         timeVisible: true,
         secondsVisible: true,
         rightOffset: 4,
         shiftVisibleRangeOnNewBar: true,
+        tickMarkFormatter: (time, tickMarkType) =>
+          formatIstTickMark(time, tickMarkType) ?? "",
       },
       height: 260,
     });
@@ -269,8 +274,8 @@ export function OrderBookRecordingChart({
           </span>
         ) : null}
         {live
-          ? "Live · last 30 highest-qty bids / offers"
-          : "Stock price vs time · highest qty of 5 bids / offers"}
+          ? "Live · last 30 highest-qty bids / offers · IST"
+          : "Stock price vs time · highest qty of 5 bids / offers · IST"}
       </p>
       <div className="relative min-h-[220px] w-full">
         <div ref={containerRef} className="h-[260px] w-full" />
