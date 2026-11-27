@@ -1,0 +1,537 @@
+{
+  "rule": "ruleSunpharma",
+  "symbol": "SUNPHARMA",
+  "window": {
+    "from": "2026-07-01",
+    "to": "2026-07-31"
+  },
+  "tradeDaysScanned": 23,
+  "dataSource": "yahoo:SUNPHARMA.NS:15m:60d",
+  "positiveCount": 26,
+  "positiveBuyCount": 18,
+  "positiveSellCount": 8,
+  "avgPositiveSqPct": 0.57,
+  "positiveTrades": [
+    {
+      "dateKey": "2026-07-03",
+      "dayLabel": "Fri, 3 Jul 2026",
+      "weekday": "Friday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1878.35,
+      "squareOffTimeIst": "11:15",
+      "squareOffPrice": 1922.4,
+      "profitPct": 2.35,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1905.2,
+      "eodProfitPct": 1.43,
+      "rsi": 61.8,
+      "smi": 18.7,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI 18.7 mid-zone (≤ 40), BB lower gap 0.29% (≤ 0.5%), RSI 61.8"
+      ]
+    },
+    {
+      "dateKey": "2026-07-27",
+      "dayLabel": "Mon, 27 Jul 2026",
+      "weekday": "Monday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1942.55,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1974.15,
+      "profitPct": 1.63,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1974.15,
+      "eodProfitPct": 1.63,
+      "rsi": 56.5,
+      "smi": 9.8,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI 9.8 mid-zone (≤ 40), BB lower gap 0.07% (≤ 0.5%), RSI 56.5"
+      ]
+    },
+    {
+      "dateKey": "2026-07-31",
+      "dayLabel": "Fri, 31 Jul 2026",
+      "weekday": "Friday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 2012.6,
+      "squareOffTimeIst": "13:30",
+      "squareOffPrice": 2044,
+      "profitPct": 1.56,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1989,
+      "eodProfitPct": -1.17,
+      "rsi": 46.1,
+      "smi": -24,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI -24.0 mid-zone (≤ 40), BB lower gap 0.28% (≤ 0.5%), RSI 46.1"
+      ]
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "Tue, 14 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1926,
+      "squareOffTimeIst": "14:30",
+      "squareOffPrice": 1948.05,
+      "profitPct": 1.14,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1943.6,
+      "eodProfitPct": 0.91,
+      "rsi": 59.5,
+      "smi": -7.2,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI -7.2 mid-zone (≤ 40), BB lower gap 0.05% (≤ 0.5%), RSI 59.5"
+      ]
+    },
+    {
+      "dateKey": "2026-07-23",
+      "dayLabel": "Thu, 23 Jul 2026",
+      "weekday": "Thursday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "12:30",
+      "entryPrice": 1932.6,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1953.5,
+      "profitPct": 1.08,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1952.95,
+      "eodProfitPct": 1.05,
+      "rsi": 46.9,
+      "smi": -45.3,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 46.9 in 33–56, SMI -45.3 ≤ -40, BB lower gap 0.14% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-21",
+      "dayLabel": "Tue, 21 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1944.3,
+      "squareOffTimeIst": "12:45",
+      "squareOffPrice": 1964,
+      "profitPct": 1.01,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1957.45,
+      "eodProfitPct": 0.68,
+      "rsi": 45.9,
+      "smi": 16,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI 16.0 mid-zone (≤ 40), BB lower gap 0.09% (≤ 0.5%), RSI 45.9"
+      ]
+    },
+    {
+      "dateKey": "2026-07-07",
+      "dayLabel": "Tue, 7 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1907.45,
+      "squareOffTimeIst": "09:45",
+      "squareOffPrice": 1919.15,
+      "profitPct": 0.61,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1901.75,
+      "eodProfitPct": -0.3,
+      "rsi": 51,
+      "smi": 21.7,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI 21.7 mid-zone (≤ 40), BB lower gap 0.00% (≤ 0.5%), RSI 51.0"
+      ]
+    },
+    {
+      "dateKey": "2026-07-20",
+      "dayLabel": "Mon, 20 Jul 2026",
+      "weekday": "Monday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1945.05,
+      "squareOffTimeIst": "13:15",
+      "squareOffPrice": 1956.6,
+      "profitPct": 0.59,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1956.2,
+      "eodProfitPct": 0.57,
+      "rsi": 44.5,
+      "smi": -19.5,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI -19.5 mid-zone (≤ 40), BB lower gap 0.30% (≤ 0.5%), RSI 44.5"
+      ]
+    },
+    {
+      "dateKey": "2026-07-01",
+      "dayLabel": "Wed, 1 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1863.6,
+      "squareOffTimeIst": "13:30",
+      "squareOffPrice": 1873.4,
+      "profitPct": 0.53,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1867.35,
+      "eodProfitPct": 0.2,
+      "rsi": 54.4,
+      "smi": -50.3,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 54.4 in 33–56, SMI -50.3 ≤ -40, BB lower gap 0.05% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-13",
+      "dayLabel": "Mon, 13 Jul 2026",
+      "weekday": "Monday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "09:30",
+      "entryPrice": 1920.3,
+      "squareOffTimeIst": "13:45",
+      "squareOffPrice": 1930.2,
+      "profitPct": 0.52,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1921.35,
+      "eodProfitPct": 0.05,
+      "rsi": 35.6,
+      "smi": -49.2,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 35.6 in 33–56, SMI -49.2 ≤ -40, BB lower gap 0.17% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-06",
+      "dayLabel": "Mon, 6 Jul 2026",
+      "weekday": "Monday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1905.45,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1913.9,
+      "profitPct": 0.44,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1913.9,
+      "eodProfitPct": 0.44,
+      "rsi": 45.1,
+      "smi": -7.7,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI -7.7 mid-zone (≤ 40), BB lower gap 0.06% (≤ 0.5%), RSI 45.1"
+      ]
+    },
+    {
+      "dateKey": "2026-07-16",
+      "dayLabel": "Thu, 16 Jul 2026",
+      "weekday": "Thursday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1948.25,
+      "squareOffTimeIst": "11:30",
+      "squareOffPrice": 1955.95,
+      "profitPct": 0.4,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1949.55,
+      "eodProfitPct": 0.07,
+      "rsi": 45,
+      "smi": -44.2,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 45.0 in 33–56, SMI -44.2 ≤ -40, BB lower gap 0.10% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-13",
+      "dayLabel": "Mon, 13 Jul 2026",
+      "weekday": "Monday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1928.55,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1921.35,
+      "profitPct": 0.37,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1921.35,
+      "eodProfitPct": 0.37,
+      "rsi": 70,
+      "smi": 62,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 70.0 in 56–72, SMI 62.0 ≥ 40, BB upper gap 0.28% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-27",
+      "dayLabel": "Mon, 27 Jul 2026",
+      "weekday": "Monday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:00",
+      "entryPrice": 1953.6,
+      "squareOffTimeIst": "11:00",
+      "squareOffPrice": 1947.6,
+      "profitPct": 0.31,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1974.15,
+      "eodProfitPct": -1.05,
+      "rsi": 66.8,
+      "smi": 50.6,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 66.8 in 56–72, SMI 50.6 ≥ 40, BB upper gap 0.27% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-02",
+      "dayLabel": "Thu, 2 Jul 2026",
+      "weekday": "Thursday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 1876.1,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1870.5,
+      "profitPct": 0.3,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1870.5,
+      "eodProfitPct": 0.3,
+      "rsi": 57.1,
+      "smi": 46.9,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 57.1 in 56–72, SMI 46.9 ≥ 40, BB upper gap 0.02% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-22",
+      "dayLabel": "Wed, 22 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1936.8,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1942.55,
+      "profitPct": 0.3,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1941.9,
+      "eodProfitPct": 0.26,
+      "rsi": 48.2,
+      "smi": -46.8,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 48.2 in 33–56, SMI -46.8 ≤ -40, BB lower gap 0.42%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "Tue, 28 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "11:45",
+      "entryPrice": 1979.35,
+      "squareOffTimeIst": "12:45",
+      "squareOffPrice": 1985.05,
+      "profitPct": 0.29,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1978.35,
+      "eodProfitPct": -0.05,
+      "rsi": 58.9,
+      "smi": 2.3,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI 2.3 mid-zone (≤ 40), BB lower gap 0.44% (≤ 0.5%), RSI 58.9"
+      ]
+    },
+    {
+      "dateKey": "2026-07-28",
+      "dayLabel": "Tue, 28 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1983.4,
+      "squareOffTimeIst": "15:15",
+      "squareOffPrice": 1978.35,
+      "profitPct": 0.25,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1978.35,
+      "eodProfitPct": 0.25,
+      "rsi": 60.1,
+      "smi": 63.6,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 60.1 in 56–72, SMI 63.6 ≥ 40, BB upper gap 0.04% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "Wed, 29 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1982.7,
+      "squareOffTimeIst": "14:15",
+      "squareOffPrice": 1977.9,
+      "profitPct": 0.24,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1986.8,
+      "eodProfitPct": -0.21,
+      "rsi": 62.3,
+      "smi": 49.5,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 62.3 in 56–72, SMI 49.5 ≥ 40, BB upper gap 0.06% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-29",
+      "dayLabel": "Wed, 29 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_extended",
+      "entryTimeIst": "09:15",
+      "entryPrice": 1983.1,
+      "squareOffTimeIst": "15:00",
+      "squareOffPrice": 1987.7,
+      "profitPct": 0.23,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1986.8,
+      "eodProfitPct": 0.19,
+      "rsi": 52.1,
+      "smi": -19.6,
+      "reasons": [
+        "RuleSUNPHARMA BUY extended (biggest-mover style): less oversold — SMI -19.6 mid-zone (≤ 40), BB lower gap 0.04% (≤ 0.5%), RSI 52.1"
+      ]
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "Wed, 15 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:15",
+      "entryPrice": 1950.95,
+      "squareOffTimeIst": "14:45",
+      "squareOffPrice": 1953.5,
+      "profitPct": 0.13,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1951.3,
+      "eodProfitPct": 0.02,
+      "rsi": 38.1,
+      "smi": -60.2,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 38.1 in 33–56, SMI -60.2 ≤ -40, BB lower gap 0.42%"
+      ]
+    },
+    {
+      "dateKey": "2026-07-17",
+      "dayLabel": "Fri, 17 Jul 2026",
+      "weekday": "Friday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "12:00",
+      "entryPrice": 1940.1,
+      "squareOffTimeIst": "13:00",
+      "squareOffPrice": 1942.6,
+      "profitPct": 0.13,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1929,
+      "eodProfitPct": -0.57,
+      "rsi": 36.6,
+      "smi": -50.3,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 36.6 in 33–56, SMI -50.3 ≤ -40, BB lower gap 0.02% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-30",
+      "dayLabel": "Thu, 30 Jul 2026",
+      "weekday": "Thursday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:15",
+      "entryPrice": 2003.8,
+      "squareOffTimeIst": "14:15",
+      "squareOffPrice": 2001.65,
+      "profitPct": 0.11,
+      "eodTimeIst": "15:15",
+      "eodPrice": 2002.05,
+      "eodProfitPct": 0.09,
+      "rsi": 70.8,
+      "smi": 53.1,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 70.8 in 56–72, SMI 53.1 ≥ 40, BB upper gap 0.06% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-14",
+      "dayLabel": "Tue, 14 Jul 2026",
+      "weekday": "Tuesday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "10:30",
+      "entryPrice": 1933,
+      "squareOffTimeIst": "11:00",
+      "squareOffPrice": 1931.35,
+      "profitPct": 0.09,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1943.6,
+      "eodProfitPct": -0.55,
+      "rsi": 57.4,
+      "smi": 43.1,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 57.4 in 56–72, SMI 43.1 ≥ 40, BB upper gap 0.06% (close)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-15",
+      "dayLabel": "Wed, 15 Jul 2026",
+      "weekday": "Wednesday",
+      "side": "SELL",
+      "scenarioKey": "sell_quality",
+      "entryTimeIst": "09:45",
+      "entryPrice": 1952.55,
+      "squareOffTimeIst": "13:15",
+      "squareOffPrice": 1950.95,
+      "profitPct": 0.08,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1951.3,
+      "eodProfitPct": 0.06,
+      "rsi": 64,
+      "smi": 41.8,
+      "reasons": [
+        "RuleSUNPHARMA SELL quality: RSI 64.0 in 56–72, SMI 41.8 ≥ 40, BB upper gap 0.13% (crossed)"
+      ]
+    },
+    {
+      "dateKey": "2026-07-02",
+      "dayLabel": "Thu, 2 Jul 2026",
+      "weekday": "Thursday",
+      "side": "BUY",
+      "scenarioKey": "buy_quality",
+      "entryTimeIst": "13:00",
+      "entryPrice": 1873.3,
+      "squareOffTimeIst": "14:45",
+      "squareOffPrice": 1873.5,
+      "profitPct": 0.01,
+      "eodTimeIst": "15:15",
+      "eodPrice": 1870.5,
+      "eodProfitPct": -0.15,
+      "rsi": 40.9,
+      "smi": -53.7,
+      "reasons": [
+        "RuleSUNPHARMA BUY quality: RSI 40.9 in 33–56, SMI -53.7 ≤ -40, BB lower gap 0.23% (close)"
+      ]
+    }
+  ],
+  "generatedAtUtc": "2026-08-03T23:41:56.413Z"
+}
